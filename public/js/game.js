@@ -225,13 +225,7 @@ class BridgeGame {
     // Set text
     if (textBox) {
       textBox.querySelector('.tutorial-text').textContent = step.text;
-
-      // Position text box near the target
-      if (target) {
-        const rect = target.getBoundingClientRect();
-        textBox.style.left = Math.min(rect.left, window.innerWidth - 380) + 'px';
-        textBox.style.top = (rect.bottom + 20) + 'px';
-      }
+      // Text box is fixed-positioned via CSS — no manual positioning needed
     }
 
     // Update dots

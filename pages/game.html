@@ -16,6 +16,40 @@
       <p class="intake-subtitle">Answer these questions about your business. Be honest — your ship is only as strong as your answers.</p>
 
       <div class="intake-question">
+        <label for="businessName">What is your business called?</label>
+        <input type="text" name="businessName" id="businessName" required placeholder="Your business name">
+      </div>
+
+      <div class="intake-question">
+        <label for="businessDescription">In one sentence, what does your business do?</label>
+        <input type="text" name="businessDescription" id="businessDescription" required placeholder="We help [who] do [what] by [how]">
+      </div>
+
+      <div class="intake-question">
+        <label for="annualRevenue">What is your approximate annual revenue?</label>
+        <select name="annualRevenue" id="annualRevenue" required>
+          <option value="">Select range</option>
+          <option value="under_50k">Under $50K</option>
+          <option value="50k_100k">$50K - $100K</option>
+          <option value="100k_250k">$100K - $250K</option>
+          <option value="250k_500k">$250K - $500K</option>
+          <option value="over_500k">Over $500K</option>
+        </select>
+      </div>
+
+      <div class="intake-question">
+        <label for="yearsInBusiness">How long have you been in business?</label>
+        <select name="yearsInBusiness" id="yearsInBusiness" required>
+          <option value="">Select one</option>
+          <option value="under_1">Less than 1 year</option>
+          <option value="1_3">1-3 years</option>
+          <option value="3_5">3-5 years</option>
+          <option value="5_10">5-10 years</option>
+          <option value="over_10">Over 10 years</option>
+        </select>
+      </div>
+
+      <div class="intake-question">
         <label for="industry">What industry is your business in?</label>
         <select name="industry" id="industry" required>
           <option value="">Select your industry</option>

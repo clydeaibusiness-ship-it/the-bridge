@@ -564,18 +564,27 @@
   border-radius: 4px;
   box-shadow: 0 0 0 9999px rgba(10, 10, 15, 0.7);
   transition: all 0.5s ease;
+  z-index: 91;
+  pointer-events: none;
+  max-width: 95vw;
+  max-height: 90vh;
 }
 
 .tutorial-text-box {
-  position: absolute;
+  position: fixed;
+  bottom: 100px;
+  left: 50%;
+  transform: translateX(-50%);
   background: #12121a;
   border: 1px solid #2a2a3a;
   border-radius: 2px;
   padding: 1.5rem;
-  max-width: 360px;
+  max-width: min(360px, 90vw);
+  width: 90vw;
   font-size: var(--text-sm);
   color: #c8c0b0;
   line-height: 1.6;
+  z-index: 92;
 }
 
 .tutorial-step-indicator {
