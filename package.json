@@ -13,7 +13,8 @@
     "helmet": "^7.1.0",
     "dotenv": "^16.3.1",
     "@supabase/supabase-js": "^2.39.0",
-    "@clerk/clerk-sdk-node": "^5.0.0",
+    "@clerk/backend": "^1.0.0",
+    "@clerk/express": "^1.0.0",
     "stripe": "^14.0.0",
     "resend": "^2.0.0",
     "@anthropic-ai/sdk": "^0.14.0"

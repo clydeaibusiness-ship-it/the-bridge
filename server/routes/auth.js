@@ -1,12 +1,18 @@
 const express = require('express');
 const router = express.Router();
-const { createClient } = require('@clerk/clerk-sdk-node');
 const { createUser, getUserByClerkId } = require('../services/supabase');
 const { sendWelcomeEmail } = require('../services/email');
 
-const clerkClient = process.env.CLERK_SECRET_KEY
-  ? createClient({ secretKey: process.env.CLERK_SECRET_KEY })
-  : null;
+// Clerk client - try the new SDK, fall back gracefully
+let clerkClient = null;
+try {
+  const { createClerkClient } = require('@clerk/backend');
+  if (process.env.CLERK_SECRET_KEY) {
+    clerkClient = createClerkClient({ secretKey: process.env.CLERK_SECRET_KEY });
+  }
+} catch (e) {
+  console.log('Clerk backend SDK not available, using email-only auth');
+}
 
 /**
  * POST /api/auth/magic-link
