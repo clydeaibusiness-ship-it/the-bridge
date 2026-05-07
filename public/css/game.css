@@ -572,19 +572,20 @@
 
 .tutorial-text-box {
   position: fixed;
-  bottom: 100px;
+  bottom: 80px;
   left: 50%;
   transform: translateX(-50%);
   background: #12121a;
-  border: 1px solid #2a2a3a;
-  border-radius: 2px;
-  padding: 1.5rem;
-  max-width: min(360px, 90vw);
-  width: 90vw;
-  font-size: var(--text-sm);
-  color: #c8c0b0;
-  line-height: 1.6;
+  border: 1px solid #c8b89a;
+  border-radius: 4px;
+  padding: 1.25rem 1.5rem;
+  max-width: min(360px, 88vw);
+  width: 88vw;
+  font-size: 15px;
+  color: #f5f0e8;
+  line-height: 1.65;
   z-index: 92;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
 }
 
 .tutorial-step-indicator {
@@ -612,17 +613,20 @@
 
 .tutorial-next {
   font-family: var(--font-mono);
-  font-size: var(--text-xs);
+  font-size: 14px;
+  font-weight: 700;
   letter-spacing: 0.1em;
-  color: #c8b89a;
-  background: none;
+  color: #0a0a0f;
+  background: #c8b89a;
   border: none;
+  border-radius: 2px;
+  padding: 0.5rem 1.25rem;
   cursor: pointer;
   text-transform: uppercase;
 }
 
 .tutorial-next:hover {
-  color: #f5f0e8;
+  background: #f5f0e8;
 }
 
 /* ---------- Intake Form Overlay ---------- */
@@ -706,11 +710,128 @@
   margin-top: 1rem;
 }
 
+/* ---------- Exit Button ---------- */
+.exit-button {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 36px;
+  height: 36px;
+  background: rgba(26, 26, 38, 0.6);
+  border: 1px solid #2a2a3a;
+  border-radius: 2px;
+  color: #c8c0b0;
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+  transition: all 0.2s ease;
+}
+
+.exit-button:hover {
+  background: rgba(26, 26, 38, 0.9);
+  color: #f5f0e8;
+}
+
+/* Exit Confirmation Modal */
+.exit-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 10, 15, 0.85);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+}
+
+.exit-modal.active {
+  display: flex;
+}
+
+.exit-modal-panel {
+  background: #12121a;
+  border: 1px solid #2a2a3a;
+  border-radius: 2px;
+  padding: 2rem;
+  max-width: 380px;
+  width: 90%;
+  text-align: center;
+}
+
+.exit-modal-title {
+  font-size: var(--text-lg);
+  color: #f5f0e8;
+  margin-bottom: 0.5rem;
+}
+
+.exit-modal-text {
+  font-size: var(--text-sm);
+  color: #6a6460;
+  margin-bottom: 1.5rem;
+  line-height: 1.5;
+}
+
+.exit-modal-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.exit-modal-save {
+  background: #f5f0e8;
+  color: #0a0a0f;
+  font-family: var(--font-primary);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 2px;
+  cursor: pointer;
+}
+
+.exit-modal-leave {
+  background: transparent;
+  color: #6a6460;
+  font-family: var(--font-primary);
+  font-size: var(--text-sm);
+  padding: 0.75rem 1.5rem;
+  border: 1px solid #2a2a3a;
+  border-radius: 2px;
+  cursor: pointer;
+}
+
+.exit-modal-cancel {
+  background: none;
+  border: none;
+  color: #6a6460;
+  font-size: var(--text-xs);
+  cursor: pointer;
+  padding: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+/* ---------- Lever Descriptions ---------- */
+.lever-desc {
+  font-family: var(--font-primary);
+  font-size: 10px;
+  color: #6a6460;
+  line-height: 1.3;
+  margin-top: 2px;
+}
+
 /* ---------- Responsive ---------- */
 @media (max-width: 900px) {
   .game-page {
     grid-template-columns: 1fr;
-    grid-template-rows: 1fr 200px 80px;
+    grid-template-rows: 45vh auto 60px;
+  }
+
+  .battlefield {
+    min-height: 45vh;
   }
 
   .lever-panel {
@@ -718,27 +839,72 @@
     grid-row: 2;
     border-left: none;
     border-top: 1px solid #2a2a3a;
-    flex-direction: row;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    overflow-x: auto;
     padding: 1rem;
+    max-height: 35vh;
+    overflow-y: auto;
+  }
+
+  .focus-points-display {
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.75rem;
   }
 
   .levers-list {
-    flex-direction: row;
-    gap: 1rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
   }
 
   .lever-item {
-    min-width: 100px;
+    min-width: 0;
+  }
+
+  .lever-label {
+    font-size: 10px;
+  }
+
+  .lever-desc {
+    display: none;
   }
 
   .status-bar {
     grid-column: 1;
     grid-row: 3;
-    gap: 1.5rem;
-    padding: 0 1rem;
+    gap: 1rem;
+    padding: 0 0.75rem;
     overflow-x: auto;
+  }
+
+  .stat-readout {
+    min-width: auto;
+  }
+
+  .stat-label {
+    font-size: 9px;
+  }
+
+  .stat-number {
+    font-size: var(--text-sm);
+  }
+
+  .diagnosis-line {
+    display: none;
+  }
+
+  .go-button {
+    padding: 0.5rem 1.25rem;
+    font-size: var(--text-xs);
+  }
+
+  .sector-display,
+  .turn-display {
+    font-size: 9px;
+  }
+
+  .exit-button {
+    top: 8px;
+    right: 8px;
+    width: 32px;
+    height: 32px;
   }
 }

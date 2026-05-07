@@ -315,7 +315,21 @@ class BridgeGame {
 
     this.threatEl = document.createElement('div');
     this.threatEl.className = 'threat';
-    this.threatEl.innerHTML = `<img src="/assets/svg/threats/${threatId}.svg" alt="${THREAT_NAMES[threatId]}" style="width:100%;height:100%;filter:invert(0.9);">`;
+
+    // Fetch and inline the SVG so currentColor works
+    fetch(`/assets/svg/threats/${threatId}.svg`)
+      .then(r => r.text())
+      .then(svgText => {
+        if (this.threatEl) {
+          this.threatEl.innerHTML = svgText;
+          // Set color to cream for dark game background
+          this.threatEl.style.color = '#c8b89a';
+        }
+      })
+      .catch(() => {
+        // Fallback: simple warning shape
+        this.threatEl.innerHTML = `<svg viewBox="0 0 60 60"><polygon points="30,10 50,50 10,50" fill="none" stroke="#c8b89a" stroke-width="2"/><text x="30" y="40" text-anchor="middle" fill="#c8b89a" font-size="14">!</text></svg>`;
+      });
 
     this.elements.battlefield.appendChild(this.threatEl);
 

@@ -201,8 +201,22 @@
   <!-- Game Interface -->
   <div class="game-page">
 
+    <!-- Exit Confirmation Modal -->
+    <div class="exit-modal" id="exit-modal">
+      <div class="exit-modal-panel">
+        <h3 class="exit-modal-title">Leaving the bridge?</h3>
+        <p class="exit-modal-text">Your current run will be lost unless you save it.</p>
+        <div class="exit-modal-actions">
+          <button class="exit-modal-save" onclick="window.location.href='/login?action=save&return=/game'">Save progress with email</button>
+          <button class="exit-modal-leave" onclick="window.location.href='/'">Leave without saving</button>
+          <button class="exit-modal-cancel" onclick="document.getElementById('exit-modal').classList.remove('active')">Keep playing</button>
+        </div>
+      </div>
+    </div>
+
     <!-- Zone 1: Battlefield -->
     <div class="battlefield">
+      <button class="exit-button" onclick="document.getElementById('exit-modal').classList.add('active')" title="Exit game">✕</button>
       <div class="sector-display">SECTOR 1</div>
       <div class="turn-display">TURN 0</div>
 
@@ -244,30 +258,37 @@
         <div class="lever-item" data-lever="positioning">
           <div class="lever-label">Positioning <span class="lever-value">5</span></div>
           <input type="range" class="lever-slider" min="1" max="10" value="5">
+          <div class="lever-desc">How clearly your market knows who you are and why you're different</div>
         </div>
         <div class="lever-item" data-lever="informationAsymmetry">
           <div class="lever-label">Intel <span class="lever-value">5</span></div>
           <input type="range" class="lever-slider" min="1" max="10" value="5">
+          <div class="lever-desc">What you know that your competitors don't — your edge in information</div>
         </div>
         <div class="lever-item" data-lever="time">
           <div class="lever-label">Time <span class="lever-value">5</span></div>
           <input type="range" class="lever-slider" min="1" max="10" value="5">
+          <div class="lever-desc">How well you allocate time to high-leverage work vs. reactive tasks</div>
         </div>
         <div class="lever-item" data-lever="capital">
           <div class="lever-label">Capital <span class="lever-value">5</span></div>
           <input type="range" class="lever-slider" min="1" max="10" value="5">
+          <div class="lever-desc">Financial runway and how strategically you deploy every dollar</div>
         </div>
         <div class="lever-item" data-lever="differentiation">
           <div class="lever-label">Edge <span class="lever-value">5</span></div>
           <input type="range" class="lever-slider" min="1" max="10" value="5">
+          <div class="lever-desc">How quickly a customer can feel the difference between you and competitors</div>
         </div>
         <div class="lever-item" data-lever="habitDesign">
           <div class="lever-label">Habit <span class="lever-value">5</span></div>
           <input type="range" class="lever-slider" min="1" max="10" value="5">
+          <div class="lever-desc">Whether customers come back on autopilot or have to decide each time</div>
         </div>
         <div class="lever-item" data-lever="switchingCosts">
           <div class="lever-label">Lock-In <span class="lever-value">5</span></div>
           <input type="range" class="lever-slider" min="1" max="10" value="5">
+          <div class="lever-desc">How painful it would be for a customer to leave you for a competitor</div>
         </div>
       </div>
     </div>
