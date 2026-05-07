@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>The Bridge — Simulator</title>
   <link rel="stylesheet" href="/css/global.css">
   <link rel="stylesheet" href="/css/game.css">
@@ -151,7 +151,6 @@
         <textarea name="biggestUncertainty" id="biggestUncertainty" rows="3" required placeholder="Be specific. This shapes your ship."></textarea>
       </div>
 
-      <!-- Hidden fields for scoring (default values for optional scoring inputs) -->
       <input type="hidden" name="dataUsage" value="some">
       <input type="hidden" name="decisionSpeed" value="mixed">
       <input type="hidden" name="investmentApproach" value="mixed">
@@ -162,24 +161,6 @@
     </form>
   </div>
 
-  <!-- Tutorial Overlay -->
-  <div class="tutorial-overlay">
-    <div class="tutorial-spotlight"></div>
-    <div class="tutorial-text-box">
-      <p class="tutorial-text"></p>
-      <div class="tutorial-step-indicator">
-        <div class="tutorial-dots">
-          <div class="tutorial-dot"></div>
-          <div class="tutorial-dot"></div>
-          <div class="tutorial-dot"></div>
-          <div class="tutorial-dot"></div>
-          <div class="tutorial-dot"></div>
-        </div>
-        <button class="tutorial-next">Next →</button>
-      </div>
-    </div>
-  </div>
-
   <!-- Death Screen Overlay -->
   <div class="death-overlay">
     <div class="death-panel">
@@ -187,18 +168,15 @@
       <p class="death-summary"></p>
       <hr class="death-divider">
       <div class="death-actions">
-        <button class="death-cta-primary">Continue Flying Free</button>
-        <p class="death-cta-desc">Save your ship and keep playing with your email</p>
+        <button class="death-cta-primary">Play Again</button>
         <button class="death-cta-secondary">A Real Threat Is on the Horizon</button>
         <p class="death-cta-desc">Your business faces the same vulnerability. Become a member and learn how to captain it.</p>
       </div>
-      <div class="death-debrief-status">
-        Your run summary will be ready shortly.
-      </div>
+      <div class="death-debrief-status"></div>
     </div>
   </div>
 
-  <!-- Game Interface -->
+  <!-- Game Interface — Mobile-first vertical stack -->
   <div class="game-page">
 
     <!-- Exit Confirmation Modal -->
@@ -214,11 +192,17 @@
       </div>
     </div>
 
-    <!-- Zone 1: Battlefield -->
+    <!-- Zone 1: Battlefield (top ~55%) -->
     <div class="battlefield">
       <button class="exit-button" onclick="document.getElementById('exit-modal').classList.add('active')" title="Exit game">✕</button>
       <div class="sector-display">SECTOR 1</div>
       <div class="turn-display">TURN 0</div>
+
+      <!-- Passenger count -->
+      <div class="passenger-display">
+        <span class="passenger-icon">●●●</span>
+        <span class="passenger-count">10</span>
+      </div>
 
       <!-- Destination marker -->
       <div class="destination-marker">
@@ -244,79 +228,41 @@
         </svg>
       </div>
 
-      <!-- Passenger indicators -->
+      <!-- Passenger orbit dots -->
       <div class="passenger-indicators"></div>
+
+      <!-- Diagnosis line (in battlefield now) -->
+      <div class="diagnosis-line"></div>
     </div>
 
-    <!-- Zone 2: Lever Panel -->
+    <!-- Zone 2: Lever Panel (bottom ~45%, fixed, no scroll) -->
     <div class="lever-panel">
-      <div class="focus-points-display">
-        <div class="focus-points-label">Focus Points</div>
-        <div class="focus-points-value">20</div>
-      </div>
-      <div class="levers-list">
-        <div class="lever-item" data-lever="positioning">
-          <div class="lever-label">Positioning <span class="lever-value">5</span></div>
-          <input type="range" class="lever-slider" min="1" max="10" value="5">
-          <div class="lever-desc">How clearly your market knows who you are and why you're different</div>
-        </div>
-        <div class="lever-item" data-lever="informationAsymmetry">
-          <div class="lever-label">Intel <span class="lever-value">5</span></div>
-          <input type="range" class="lever-slider" min="1" max="10" value="5">
-          <div class="lever-desc">What you know that your competitors don't — your edge in information</div>
-        </div>
-        <div class="lever-item" data-lever="time">
-          <div class="lever-label">Time <span class="lever-value">5</span></div>
-          <input type="range" class="lever-slider" min="1" max="10" value="5">
-          <div class="lever-desc">How well you allocate time to high-leverage work vs. reactive tasks</div>
-        </div>
-        <div class="lever-item" data-lever="capital">
-          <div class="lever-label">Capital <span class="lever-value">5</span></div>
-          <input type="range" class="lever-slider" min="1" max="10" value="5">
-          <div class="lever-desc">Financial runway and how strategically you deploy every dollar</div>
-        </div>
-        <div class="lever-item" data-lever="differentiation">
-          <div class="lever-label">Edge <span class="lever-value">5</span></div>
-          <input type="range" class="lever-slider" min="1" max="10" value="5">
-          <div class="lever-desc">How quickly a customer can feel the difference between you and competitors</div>
-        </div>
-        <div class="lever-item" data-lever="habitDesign">
-          <div class="lever-label">Habit <span class="lever-value">5</span></div>
-          <input type="range" class="lever-slider" min="1" max="10" value="5">
-          <div class="lever-desc">Whether customers come back on autopilot or have to decide each time</div>
-        </div>
-        <div class="lever-item" data-lever="switchingCosts">
-          <div class="lever-label">Lock-In <span class="lever-value">5</span></div>
-          <input type="range" class="lever-slider" min="1" max="10" value="5">
-          <div class="lever-desc">How painful it would be for a customer to leave you for a competitor</div>
-        </div>
-      </div>
+      <!-- Built dynamically by game.js -->
     </div>
 
-    <!-- Zone 3: Status Bar -->
+    <!-- Zone 3: Status Bar (pinned bottom) -->
     <div class="status-bar">
       <div class="stat-readout" data-stat="momentum">
-        <span class="stat-label">Momentum</span>
+        <span class="stat-label">MOM</span>
         <div class="stat-row">
           <span class="stat-number">5.0</span>
           <div class="stat-bar"><div class="stat-bar-fill" style="width:50%"></div></div>
         </div>
       </div>
       <div class="stat-readout" data-stat="resilience">
-        <span class="stat-label">Resilience</span>
+        <span class="stat-label">RES</span>
         <div class="stat-row">
           <span class="stat-number">5.0</span>
           <div class="stat-bar"><div class="stat-bar-fill" style="width:50%"></div></div>
         </div>
       </div>
       <div class="stat-readout" data-stat="clarity">
-        <span class="stat-label">Clarity</span>
+        <span class="stat-label">CLR</span>
         <div class="stat-row">
           <span class="stat-number">5.0</span>
           <div class="stat-bar"><div class="stat-bar-fill" style="width:50%"></div></div>
         </div>
       </div>
-      <div class="diagnosis-line"></div>
       <button class="go-button" disabled>GO</button>
     </div>
 
