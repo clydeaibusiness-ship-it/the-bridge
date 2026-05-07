@@ -58,33 +58,46 @@
     </div>
   </div>
 
-  <script
-    async
-    crossorigin="anonymous"
-    data-clerk-publishable-key="pk_test_b2JsaWdpbmctcHl0aG9uLTUuY2xlcmsuYWNjb3VudHMuZGV2JA"
-    src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js"
-    type="text/javascript"
-  ></script>
   <script>
-    window.addEventListener('load', async () => {
-      await window.Clerk.load();
+    // Load Clerk dynamically
+    const CLERK_PK = 'pk_test_b2JsaWdpbmctcHl0aG9uLTUuY2xlcmsuYWNjb3VudHMuZGV2JA';
 
-      if (window.Clerk.user) {
-        // Already signed in — redirect to dashboard
-        const params = new URLSearchParams(window.location.search);
-        const returnUrl = params.get('return') || '/dashboard';
-        window.location.href = returnUrl;
-        return;
-      }
-
-      // Mount the sign-in component
+    async function initClerk() {
       const authDiv = document.getElementById('clerk-auth');
-      window.Clerk.mountSignIn(authDiv, {
-        afterSignInUrl: '/dashboard',
-        afterSignUpUrl: '/dashboard',
-        signUpUrl: '/login',
-      });
-    });
+
+      try {
+        // Import Clerk from their official CDN
+        const { Clerk } = await import('https://cdn.jsdelivr.net/npm/@clerk/clerk-js/+esm');
+        const clerk = new Clerk(CLERK_PK);
+        await clerk.load();
+
+        if (clerk.user) {
+          const params = new URLSearchParams(window.location.search);
+          const returnUrl = params.get('return') || '/dashboard';
+          window.location.href = returnUrl;
+          return;
+        }
+
+        clerk.mountSignIn(authDiv, {
+          afterSignInUrl: '/dashboard',
+          afterSignUpUrl: '/dashboard',
+        });
+      } catch (e) {
+        console.error('Clerk failed:', e);
+        authDiv.innerHTML = `
+          <div style="border:1px solid var(--color-border);border-radius:2px;padding:2rem;max-width:360px;width:100%;">
+            <p style="margin-bottom:1rem;font-size:14px;color:var(--color-ink-light);">Enter your email to sign in or create an account.</p>
+            <form onsubmit="event.preventDefault();fetch('/api/auth/magic-link',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:this.email.value})}).then(()=>{document.getElementById('login-msg').style.display='block'})">
+              <input name="email" type="email" required placeholder="your@email.com" style="width:100%;padding:0.75rem 1rem;border:1px solid var(--color-border);border-radius:2px;font-family:var(--font-primary);font-size:14px;margin-bottom:0.75rem;background:var(--color-paper-bright);">
+              <button type="submit" class="btn-primary" style="width:100%;text-align:center;">Send Magic Link</button>
+            </form>
+            <p id="login-msg" style="display:none;margin-top:1rem;font-size:13px;color:var(--color-safe);">Check your email for a sign-in link.</p>
+          </div>
+        `;
+      }
+    }
+
+    initClerk();
   </script>
 </body>
 </html>
