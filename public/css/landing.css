@@ -1,0 +1,360 @@
+/* ============================================
+   THE BRIDGE — Landing Page Styles
+   Light theme: paper background, ink elements
+   ============================================ */
+
+/* ---------- Background decoration ---------- */
+.site-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.site-bg svg {
+  width: 100%;
+  height: 100%;
+  opacity: 0.08;
+}
+
+.site-content {
+  position: relative;
+  z-index: 1;
+}
+
+/* ---------- Section 1: Hero ---------- */
+.hero {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  padding: var(--space-2xl) 0;
+}
+
+.hero-grid {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: var(--space-xl);
+  align-items: center;
+}
+
+.hero-headline {
+  font-size: var(--text-hero);
+  font-weight: 600;
+  line-height: 1.05;
+  color: var(--color-ink);
+  margin-bottom: var(--space-lg);
+  max-width: 14ch;
+}
+
+.hero-sub {
+  font-size: var(--text-lg);
+  color: var(--color-ink-light);
+  max-width: 52ch;
+  margin-bottom: var(--space-xl);
+  line-height: 1.6;
+}
+
+.hero-actions {
+  display: flex;
+  gap: var(--space-md);
+  flex-wrap: wrap;
+}
+
+.hero-preview {
+  position: relative;
+  border: 1px solid var(--color-border-strong);
+  border-radius: 2px;
+  overflow: hidden;
+  aspect-ratio: 4 / 3;
+  background: #0a0a0f;
+}
+
+.hero-preview-label {
+  position: absolute;
+  bottom: -2rem;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-ink-ghost);
+  letter-spacing: 0.06em;
+}
+
+/* Pulse border on the game preview */
+.hero-preview::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: 1px solid var(--color-signal);
+  border-radius: 2px;
+  opacity: 0;
+  animation: preview-pulse 3s ease-in-out infinite;
+}
+
+@keyframes preview-pulse {
+  0%, 100% { opacity: 0; }
+  50% { opacity: 0.4; }
+}
+
+/* ---------- Section 2: The Problem ---------- */
+.problem {
+  background: var(--color-ink);
+  color: var(--color-paper);
+  padding: var(--space-2xl) 0;
+}
+
+.problem h2 {
+  color: var(--color-paper);
+  margin-bottom: var(--space-xl);
+}
+
+.problem-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-xl);
+}
+
+.problem-stat {
+  text-align: center;
+}
+
+.problem-stat .stat-number {
+  font-family: var(--font-mono);
+  font-size: var(--text-3xl);
+  font-weight: 700;
+  color: var(--color-signal);
+  display: block;
+  margin-bottom: var(--space-sm);
+}
+
+.problem-stat .stat-desc {
+  font-size: var(--text-sm);
+  color: var(--color-paper);
+  opacity: 0.8;
+  max-width: 28ch;
+  margin: 0 auto;
+  line-height: 1.5;
+}
+
+/* ---------- Section 3: Product Explanation ---------- */
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-xl);
+}
+
+.product-card {
+  padding: var(--space-xl) var(--space-lg);
+  border: 1px solid var(--color-border);
+  border-radius: 2px;
+  transition: border-color 0.3s ease;
+}
+
+.product-card:hover {
+  border-color: var(--color-ink-mid);
+}
+
+.product-card-icon {
+  width: 48px;
+  height: 48px;
+  margin-bottom: var(--space-lg);
+}
+
+.product-card-icon svg {
+  width: 100%;
+  height: 100%;
+  fill: none;
+  stroke: var(--color-ink);
+  stroke-width: 1.5;
+}
+
+.product-card h3 {
+  margin-bottom: var(--space-md);
+}
+
+.product-card p {
+  color: var(--color-ink-light);
+  font-size: var(--text-sm);
+  line-height: 1.65;
+}
+
+/* ---------- Section 4: Who This Is For ---------- */
+.audience-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-xl);
+}
+
+.audience-col h3 {
+  margin-bottom: var(--space-lg);
+  padding-bottom: var(--space-sm);
+  border-bottom: 2px solid var(--color-ink);
+}
+
+.audience-col.not-for h3 {
+  border-bottom-color: var(--color-ink-ghost);
+}
+
+.audience-col ul {
+  list-style: none;
+  padding: 0;
+}
+
+.audience-col li {
+  padding: var(--space-sm) 0;
+  padding-left: 1.5rem;
+  position: relative;
+  font-size: var(--text-sm);
+  color: var(--color-ink-light);
+  line-height: 1.6;
+}
+
+.audience-col.for-you li::before {
+  content: '→';
+  position: absolute;
+  left: 0;
+  color: var(--color-ink);
+}
+
+.audience-col.not-for li::before {
+  content: '—';
+  position: absolute;
+  left: 0;
+  color: var(--color-ink-ghost);
+}
+
+/* ---------- Section 5: Pricing ---------- */
+.pricing-card {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: var(--space-xl);
+  border: 2px solid var(--color-ink);
+  border-radius: 2px;
+  text-align: center;
+}
+
+.pricing-tier {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--color-ink-ghost);
+  margin-bottom: var(--space-md);
+}
+
+.pricing-amount {
+  font-family: var(--font-mono);
+  font-size: var(--text-3xl);
+  font-weight: 700;
+  color: var(--color-ink);
+}
+
+.pricing-annual {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--color-ink-ghost);
+  margin-bottom: var(--space-lg);
+}
+
+.pricing-features {
+  list-style: none;
+  padding: 0;
+  margin-bottom: var(--space-xl);
+  text-align: left;
+}
+
+.pricing-features li {
+  padding: var(--space-sm) 0;
+  font-size: var(--text-sm);
+  color: var(--color-ink-light);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.pricing-features li:last-child {
+  border-bottom: none;
+}
+
+.pricing-ghost-text {
+  margin-top: var(--space-md);
+  font-size: var(--text-xs);
+  color: var(--color-ink-ghost);
+}
+
+/* ---------- Section 6: Footer ---------- */
+.site-footer {
+  padding: var(--space-xl) 0;
+  border-top: 1px solid var(--color-border);
+}
+
+.footer-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-lg);
+}
+
+.footer-logo {
+  font-family: var(--font-primary);
+  font-weight: 600;
+  font-size: var(--text-lg);
+  color: var(--color-ink);
+  border: none;
+}
+
+.footer-links {
+  display: flex;
+  gap: var(--space-lg);
+}
+
+.footer-links a {
+  font-size: var(--text-sm);
+  color: var(--color-ink-ghost);
+  border: none;
+  transition: color 0.2s ease;
+}
+
+.footer-links a:hover {
+  color: var(--color-ink);
+}
+
+.footer-tagline {
+  text-align: center;
+  font-size: var(--text-sm);
+  color: var(--color-ink-ghost);
+  font-style: italic;
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 768px) {
+  .hero-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-headline {
+    font-size: var(--text-2xl);
+  }
+
+  .hero-preview {
+    max-width: 100%;
+    aspect-ratio: 16 / 10;
+  }
+
+  .problem-grid,
+  .product-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .audience-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .footer-row {
+    flex-direction: column;
+    gap: var(--space-md);
+  }
+}

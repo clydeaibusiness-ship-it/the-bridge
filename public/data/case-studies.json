@@ -1,0 +1,86 @@
+{
+  "churn-wave": [
+    {
+      "business": "MoviePass",
+      "story": "MoviePass offered unlimited movies for $9.95/month with zero switching costs — customers could cancel instantly. When they raised prices, 90% of subscribers left within months because nothing tied them to the service.",
+      "lesson": "Without lock-in, your best customers are one price change away from becoming someone else's customers."
+    },
+    {
+      "business": "Blue Apron",
+      "story": "Blue Apron spent heavily on acquisition but built almost no switching costs. Customers tried it, enjoyed it, then churned when HelloFresh offered a discount. Customer acquisition cost stayed high because retention never improved.",
+      "lesson": "Acquisition without retention is a leaking bucket. The switching cost lever isn't optional — it's structural."
+    }
+  ],
+  "blind-side": [
+    {
+      "business": "Blockbuster",
+      "story": "Blockbuster had the data to see streaming coming. They chose to ignore it because their current model was profitable. Netflix didn't beat them on product — it beat them on information asymmetry about where the market was headed.",
+      "lesson": "The most dangerous blind spot isn't what you don't know — it's what you think you know that's no longer true."
+    },
+    {
+      "business": "Kodak",
+      "story": "Kodak invented the digital camera in 1975 but buried it to protect film sales. They had the information but refused to act on it. By the time they pivoted, the market had moved without them.",
+      "lesson": "Having intelligence and acting on intelligence are different levers entirely."
+    }
+  ],
+  "drift": [
+    {
+      "business": "Yahoo",
+      "story": "Yahoo tried to be everything — search engine, email, news portal, social network, ad platform. Each pivot diluted their positioning further. Google did one thing perfectly while Yahoo did twenty things adequately.",
+      "lesson": "Strategic drift doesn't feel like failure while it's happening. It feels like opportunity. That's what makes it lethal."
+    },
+    {
+      "business": "J.C. Penney",
+      "story": "J.C. Penney abandoned their core customer to chase a younger demographic, eliminating coupons and sales that their actual customers valued. Sales dropped 25% in one year. They drifted from who they were to who they wished they were.",
+      "lesson": "Repositioning without understanding why your current customers stay is drift disguised as strategy."
+    }
+  ],
+  "burn": [
+    {
+      "business": "WeWork",
+      "story": "WeWork burned through $3.4 billion in a single year subsidizing below-market rents to grow fast. When the IPO collapsed, they had no path to profitability because every unit of growth lost money.",
+      "lesson": "Growth funded by capital burn only works if each unit eventually becomes profitable. If it doesn't, you're not growing — you're spending."
+    },
+    {
+      "business": "Pets.com",
+      "story": "Pets.com spent $11.8 million on a Super Bowl ad when their entire revenue was $8.8 million. They burned through capital faster than they could build a customer base. The sock puppet became famous; the business lasted 268 days.",
+      "lesson": "Capital deployed on awareness before product-market fit is money set on fire."
+    }
+  ],
+  "commoditization": [
+    {
+      "business": "Generic Android phones",
+      "story": "Hundreds of Android phone manufacturers compete on specs and price. Apple captures 80%+ of smartphone industry profits with 20% market share because they differentiated on experience, ecosystem, and brand — not hardware.",
+      "lesson": "When you compete on the same dimensions as everyone else, the only remaining lever is price. And someone will always go lower."
+    },
+    {
+      "business": "Dollar Shave Club",
+      "story": "Gillette owned the razor market until Dollar Shave Club reframed the category. They didn't make a better razor — they made buying razors feel different. Gillette's differentiation was product. DSC's was experience.",
+      "lesson": "Commoditization is a framing problem, not a product problem. Change what you're competing on."
+    }
+  ],
+  "assumption": [
+    {
+      "business": "Quibi",
+      "story": "Quibi assumed people wanted premium short-form video on mobile. They spent $1.75 billion before discovering their core assumption was wrong — people already had YouTube, TikTok, and Instagram for short content. The product solved a problem nobody had.",
+      "lesson": "The most expensive assumption is the one you never test. Quibi tested at scale what should have been tested at $50K."
+    },
+    {
+      "business": "Segway",
+      "story": "Segway assumed that personal electric transportation would replace walking for mainstream consumers. The product worked perfectly. The assumption about market need was completely wrong. They sold to mall cops instead of the masses.",
+      "lesson": "A working product built on a broken assumption is still a failure. Test the assumption before perfecting the product."
+    }
+  ],
+  "noise": [
+    {
+      "business": "Brandless",
+      "story": "Brandless tried to win by removing branding entirely — generic packaging, $3 price point for everything. In a sea of noise, they chose to be invisible. Without a distinct habit trigger or emotional hook, customers forgot they existed.",
+      "lesson": "Being unremarkable is not the same as being simple. You need to be remembered to be chosen again."
+    },
+    {
+      "business": "Google+",
+      "story": "Google+ launched into a space where Facebook already owned the social habit. Despite Google's distribution advantage, users had no internal trigger to open Google+ instead. The habit belonged to someone else.",
+      "lesson": "In a noisy market, the business with the strongest habit loop wins — not the one with the best product or the biggest budget."
+    }
+  ]
+}

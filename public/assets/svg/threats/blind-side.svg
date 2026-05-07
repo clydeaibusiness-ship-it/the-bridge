@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 60">
+  <!-- Blind Side: dense solid mass, no glow, no warning. Just impact. -->
+  <g opacity="0.85">
+    <polygon points="30,6 52,24 48,50 12,50 8,24" fill="currentColor" opacity="0.8"/>
+    <polygon points="30,12 46,26 43,46 17,46 14,26" fill="currentColor" opacity="0.9"/>
+  </g>
+</svg>

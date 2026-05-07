@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Bridge — Dashboard</title>
+  <link rel="stylesheet" href="/css/global.css">
+  <link rel="stylesheet" href="/css/dashboard.css">
+</head>
+<body>
+  <div class="dashboard-page">
+    <div class="container">
+
+      <div class="dashboard-header">
+        <h1 class="dashboard-welcome">Welcome back, Captain.</h1>
+        <nav class="dashboard-nav">
+          <a href="/game">Launch Simulator</a>
+          <a href="/">Home</a>
+          <a href="/api/auth/logout">Sign Out</a>
+        </nav>
+      </div>
+
+      <div class="dashboard-grid">
+
+        <!-- Left Column: Ship Status -->
+        <div class="ship-status-panel">
+          <div class="ship-status-header">
+            <div class="ship-status-name" id="dash-ship-name">The Venture</div>
+            <div class="ship-status-destination" id="dash-destination">→ NORTH STAR</div>
+          </div>
+
+          <div class="ship-display">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 80">
+              <defs>
+                <filter id="dsg"><feGaussianBlur stdDeviation="2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+                <linearGradient id="det" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#c8b89a" stop-opacity="0.6"/><stop offset="100%" stop-color="#c8b89a" stop-opacity="0"/></linearGradient>
+              </defs>
+              <rect x="22" y="60" width="16" height="30" fill="url(#det)" opacity="0.4"/>
+              <path d="M30,4 L48,60 L30,52 L12,60 Z" fill="#f5f0e8" filter="url(#dsg)"/>
+              <path d="M12,60 L2,72 L18,64 Z" fill="#c8c0b0"/>
+              <path d="M48,60 L58,72 L42,64 Z" fill="#c8c0b0"/>
+              <ellipse cx="30" cy="28" rx="5" ry="7" fill="#1a1a26" stroke="#c8b89a" stroke-width="1"/>
+            </svg>
+          </div>
+
+          <div class="dashboard-stats">
+            <div class="dashboard-stat">
+              <span class="dashboard-stat-label">Momentum</span>
+              <span class="dashboard-stat-value" id="dash-momentum">5.0</span>
+            </div>
+            <div class="dashboard-stat-bar"><div class="dashboard-stat-bar-fill" id="dash-momentum-bar" style="width:50%"></div></div>
+
+            <div class="dashboard-stat">
+              <span class="dashboard-stat-label">Resilience</span>
+              <span class="dashboard-stat-value" id="dash-resilience">5.0</span>
+            </div>
+            <div class="dashboard-stat-bar"><div class="dashboard-stat-bar-fill" id="dash-resilience-bar" style="width:50%"></div></div>
+
+            <div class="dashboard-stat">
+              <span class="dashboard-stat-label">Clarity</span>
+              <span class="dashboard-stat-value" id="dash-clarity">5.0</span>
+            </div>
+            <div class="dashboard-stat-bar"><div class="dashboard-stat-bar-fill" id="dash-clarity-bar" style="width:50%"></div></div>
+          </div>
+
+          <a href="/game" class="btn-primary" style="width:100%;text-align:center;">Resume Game</a>
+        </div>
+
+        <!-- Center Column: Commander -->
+        <div class="commander-panel">
+          <div class="commander-header">
+            <h2 class="commander-title">The Commander</h2>
+            <span class="commander-sessions">20 of 20 sessions remaining this month</span>
+          </div>
+
+          <!-- Locked state for non-members -->
+          <div class="commander-locked" id="commander-locked" style="display:none;">
+            <div>
+              <p class="commander-locked-text">The Commander is available to Ensign members. Every conversation starts with your full business context already loaded.</p>
+              <a href="/#pricing" class="btn-primary">Become a Member</a>
+            </div>
+          </div>
+
+          <!-- Active chat for members -->
+          <div class="commander-messages" id="commander-messages">
+            <div class="commander-message from-commander">
+              Welcome back, Captain. I've reviewed your latest run data. What would you like to work on?
+            </div>
+          </div>
+
+          <div class="commander-input-area" id="commander-input-area">
+            <input type="text" class="commander-input" placeholder="Ask the Commander anything about your business...">
+            <button class="commander-send">Send</button>
+          </div>
+        </div>
+
+        <!-- Right Column: Chart & History -->
+        <div class="chart-panel">
+
+          <!-- Navigation Chart -->
+          <div class="chart-card" id="chart-card" style="display:none;">
+            <h3>Navigation Chart</h3>
+            <p class="chart-summary" id="chart-summary">Your latest strategic assessment is ready.</p>
+            <div class="chart-actions">
+              <a href="#" class="btn-primary" id="chart-download">Download PDF</a>
+              <button class="btn-ghost" id="chart-regenerate">Regenerate</button>
+            </div>
+          </div>
+
+          <!-- No chart yet -->
+          <div class="chart-prompt" id="chart-prompt">
+            <p>You haven't generated a Navigation Chart yet. Complete the full intake to receive your personalized strategic assessment.</p>
+            <a href="/game" class="btn-primary">Start the Intake</a>
+          </div>
+
+          <!-- Run History -->
+          <div class="run-history">
+            <div class="run-history-header">Run History</div>
+            <div id="run-history-list">
+              <!-- Populated dynamically -->
+              <div class="run-entry" style="display:none;">
+                <div class="run-entry-header">
+                  <span class="run-entry-number">No runs yet</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/dashboard.js"></script>
+</body>
+</html>

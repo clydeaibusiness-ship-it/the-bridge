@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 80" id="bridge-ship">
+  <defs>
+    <filter id="ship-glow">
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <linearGradient id="engine-trail" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#c8b89a" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#c8b89a" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Engine trail -->
+  <rect class="engine-trail" x="22" y="60" width="16" height="30"
+        fill="url(#engine-trail)" opacity="0.4"/>
+
+  <!-- Main hull -->
+  <path class="ship-hull"
+        d="M30,4 L48,60 L30,52 L12,60 Z"
+        fill="#f5f0e8" filter="url(#ship-glow)"/>
+
+  <!-- Left fin -->
+  <path class="ship-fin"
+        d="M12,60 L2,72 L18,64 Z"
+        fill="#c8c0b0"/>
+
+  <!-- Right fin -->
+  <path class="ship-fin"
+        d="M48,60 L58,72 L42,64 Z"
+        fill="#c8c0b0"/>
+
+  <!-- Cockpit -->
+  <ellipse class="ship-cockpit" cx="30" cy="28" rx="5" ry="7"
+           fill="#1a1a26" stroke="#c8b89a" stroke-width="1"/>
+
+  <!-- Hull center line -->
+  <line x1="30" y1="8" x2="30" y2="52"
+        stroke="#c8b89a" stroke-width="0.5" opacity="0.4"/>
+</svg>

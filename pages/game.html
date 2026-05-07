@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Bridge — Simulator</title>
+  <link rel="stylesheet" href="/css/global.css">
+  <link rel="stylesheet" href="/css/game.css">
+</head>
+<body class="game-theme">
+
+  <!-- Intake Form Overlay -->
+  <div class="intake-overlay" style="display:none;">
+    <form class="intake-form" id="intake-form">
+      <h2 class="intake-title">Build Your Ship</h2>
+      <p class="intake-subtitle">Answer these questions about your business. Be honest — your ship is only as strong as your answers.</p>
+
+      <div class="intake-question">
+        <label for="industry">What industry is your business in?</label>
+        <select name="industry" id="industry" required>
+          <option value="">Select your industry</option>
+          <option value="ecommerce">E-commerce / Retail</option>
+          <option value="saas">Software / SaaS</option>
+          <option value="services">Professional Services</option>
+          <option value="food">Food & Beverage</option>
+          <option value="health">Health & Wellness</option>
+          <option value="creative">Creative / Media</option>
+          <option value="construction">Construction / Trades</option>
+          <option value="education">Education / Training</option>
+          <option value="manufacturing">Manufacturing</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+
+      <div class="intake-question">
+        <label for="customerClarity">How clearly can you describe your ideal customer?</label>
+        <select name="customerClarity" id="customerClarity" required>
+          <option value="">Select one</option>
+          <option value="very_clear">Very clear — I know exactly who they are and where to find them</option>
+          <option value="somewhat_clear">Somewhat clear — I have a general sense but it's broad</option>
+          <option value="vague">Vague — I sell to whoever shows up</option>
+        </select>
+      </div>
+
+      <div class="intake-question">
+        <label for="competitiveAdvantage">How strong is your competitive advantage?</label>
+        <select name="competitiveAdvantage" id="competitiveAdvantage" required>
+          <option value="">Select one</option>
+          <option value="strong">Strong — we do something nobody else can easily replicate</option>
+          <option value="moderate">Moderate — we're better than average but it's not defensible</option>
+          <option value="unclear">Unclear — I'm not sure what makes us different</option>
+        </select>
+      </div>
+
+      <div class="intake-question">
+        <label for="customerInsight">How well do you understand why customers actually buy from you?</label>
+        <select name="customerInsight" id="customerInsight" required>
+          <option value="">Select one</option>
+          <option value="deep">Deep — I know their real motivations, not just what they say</option>
+          <option value="surface">Surface — I know what they tell me but suspect there's more</option>
+          <option value="guessing">Guessing — I'm mostly assuming</option>
+        </select>
+      </div>
+
+      <div class="intake-question">
+        <label for="timeAllocation">Where does most of your time go?</label>
+        <select name="timeAllocation" id="timeAllocation" required>
+          <option value="">Select one</option>
+          <option value="strategic">Strategic work — planning, building systems, high-leverage activities</option>
+          <option value="mixed">Mixed — some strategy, a lot of putting out fires</option>
+          <option value="reactive">Reactive — mostly dealing with whatever comes at me today</option>
+        </select>
+      </div>
+
+      <div class="intake-question">
+        <label for="runway">How would you describe your financial position?</label>
+        <select name="runway" id="runway" required>
+          <option value="">Select one</option>
+          <option value="comfortable">Comfortable — enough runway to invest deliberately</option>
+          <option value="tight">Tight — cash flow is manageable but there's no margin for error</option>
+          <option value="critical">Critical — every dollar matters right now</option>
+        </select>
+      </div>
+
+      <div class="intake-question">
+        <label for="uniqueness">If you disappeared tomorrow, how easy would it be for customers to find an identical replacement?</label>
+        <select name="uniqueness" id="uniqueness" required>
+          <option value="">Select one</option>
+          <option value="very_unique">Very hard — what we offer is genuinely different</option>
+          <option value="somewhat_unique">Somewhat hard — we have some differences but there are alternatives</option>
+          <option value="commodity">Easy — there are many options that do roughly what we do</option>
+        </select>
+      </div>
+
+      <div class="intake-question">
+        <label for="repeatBehavior">How do customers interact with your business over time?</label>
+        <select name="repeatBehavior" id="repeatBehavior" required>
+          <option value="">Select one</option>
+          <option value="habitual">Habitual — they come back regularly without being asked</option>
+          <option value="occasional">Occasional — they return sometimes but it's not automatic</option>
+          <option value="one_time">One-time — most customers buy once and don't come back</option>
+        </select>
+      </div>
+
+      <div class="intake-question">
+        <label for="customerInvestment">How much have your customers invested in your product or service?</label>
+        <select name="customerInvestment" id="customerInvestment" required>
+          <option value="">Select one</option>
+          <option value="high">High — they've built data, history, or workflows around us</option>
+          <option value="moderate">Moderate — some investment but switching wouldn't be devastating</option>
+          <option value="low">Low — they could switch tomorrow with minimal friction</option>
+        </select>
+      </div>
+
+      <div class="intake-question">
+        <label for="biggestUncertainty">In one sentence: what is the single biggest uncertainty in your business right now?</label>
+        <textarea name="biggestUncertainty" id="biggestUncertainty" rows="3" required placeholder="Be specific. This shapes your ship."></textarea>
+      </div>
+
+      <!-- Hidden fields for scoring (default values for optional scoring inputs) -->
+      <input type="hidden" name="dataUsage" value="some">
+      <input type="hidden" name="decisionSpeed" value="mixed">
+      <input type="hidden" name="investmentApproach" value="mixed">
+      <input type="hidden" name="triggerClarity" value="somewhat">
+      <input type="hidden" name="dataLock" value="some">
+
+      <button type="submit" class="btn-primary intake-submit">Launch My Ship</button>
+    </form>
+  </div>
+
+  <!-- Tutorial Overlay -->
+  <div class="tutorial-overlay">
+    <div class="tutorial-spotlight"></div>
+    <div class="tutorial-text-box">
+      <p class="tutorial-text"></p>
+      <div class="tutorial-step-indicator">
+        <div class="tutorial-dots">
+          <div class="tutorial-dot"></div>
+          <div class="tutorial-dot"></div>
+          <div class="tutorial-dot"></div>
+          <div class="tutorial-dot"></div>
+          <div class="tutorial-dot"></div>
+        </div>
+        <button class="tutorial-next">Next →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Death Screen Overlay -->
+  <div class="death-overlay">
+    <div class="death-panel">
+      <h2 class="death-ship-name"></h2>
+      <p class="death-summary"></p>
+      <hr class="death-divider">
+      <div class="death-actions">
+        <button class="death-cta-primary">Continue Flying Free</button>
+        <p class="death-cta-desc">Save your ship and keep playing with your email</p>
+        <button class="death-cta-secondary">A Real Threat Is on the Horizon</button>
+        <p class="death-cta-desc">Your business faces the same vulnerability. Become a member and learn how to captain it.</p>
+      </div>
+      <div class="death-debrief-status">
+        Your run summary will be ready shortly.
+      </div>
+    </div>
+  </div>
+
+  <!-- Game Interface -->
+  <div class="game-page">
+
+    <!-- Zone 1: Battlefield -->
+    <div class="battlefield">
+      <div class="sector-display">SECTOR 1</div>
+      <div class="turn-display">TURN 0</div>
+
+      <!-- Destination marker -->
+      <div class="destination-marker">
+        <svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
+          <path d="M30,2 L33,27 L58,30 L33,33 L30,58 L27,33 L2,30 L27,27 Z" fill="#c8b89a" opacity="0.4"/>
+        </svg>
+      </div>
+      <div class="destination-label">DESTINATION</div>
+
+      <!-- Ship -->
+      <div class="ship-container">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 80">
+          <defs>
+            <filter id="sg"><feGaussianBlur stdDeviation="2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+            <linearGradient id="et" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#c8b89a" stop-opacity="0.6"/><stop offset="100%" stop-color="#c8b89a" stop-opacity="0"/></linearGradient>
+          </defs>
+          <rect class="engine-trail" x="22" y="60" width="16" height="30" fill="url(#et)" opacity="0.4"/>
+          <path class="ship-hull" d="M30,4 L48,60 L30,52 L12,60 Z" fill="#f5f0e8" filter="url(#sg)"/>
+          <path class="ship-fin" d="M12,60 L2,72 L18,64 Z" fill="#c8c0b0"/>
+          <path class="ship-fin" d="M48,60 L58,72 L42,64 Z" fill="#c8c0b0"/>
+          <ellipse class="ship-cockpit" cx="30" cy="28" rx="5" ry="7" fill="#1a1a26" stroke="#c8b89a" stroke-width="1"/>
+          <line x1="30" y1="8" x2="30" y2="52" stroke="#c8b89a" stroke-width="0.5" opacity="0.4"/>
+        </svg>
+      </div>
+
+      <!-- Passenger indicators -->
+      <div class="passenger-indicators"></div>
+    </div>
+
+    <!-- Zone 2: Lever Panel -->
+    <div class="lever-panel">
+      <div class="focus-points-display">
+        <div class="focus-points-label">Focus Points</div>
+        <div class="focus-points-value">20</div>
+      </div>
+      <div class="levers-list">
+        <div class="lever-item" data-lever="positioning">
+          <div class="lever-label">Positioning <span class="lever-value">5</span></div>
+          <input type="range" class="lever-slider" min="1" max="10" value="5">
+        </div>
+        <div class="lever-item" data-lever="informationAsymmetry">
+          <div class="lever-label">Intel <span class="lever-value">5</span></div>
+          <input type="range" class="lever-slider" min="1" max="10" value="5">
+        </div>
+        <div class="lever-item" data-lever="time">
+          <div class="lever-label">Time <span class="lever-value">5</span></div>
+          <input type="range" class="lever-slider" min="1" max="10" value="5">
+        </div>
+        <div class="lever-item" data-lever="capital">
+          <div class="lever-label">Capital <span class="lever-value">5</span></div>
+          <input type="range" class="lever-slider" min="1" max="10" value="5">
+        </div>
+        <div class="lever-item" data-lever="differentiation">
+          <div class="lever-label">Edge <span class="lever-value">5</span></div>
+          <input type="range" class="lever-slider" min="1" max="10" value="5">
+        </div>
+        <div class="lever-item" data-lever="habitDesign">
+          <div class="lever-label">Habit <span class="lever-value">5</span></div>
+          <input type="range" class="lever-slider" min="1" max="10" value="5">
+        </div>
+        <div class="lever-item" data-lever="switchingCosts">
+          <div class="lever-label">Lock-In <span class="lever-value">5</span></div>
+          <input type="range" class="lever-slider" min="1" max="10" value="5">
+        </div>
+      </div>
+    </div>
+
+    <!-- Zone 3: Status Bar -->
+    <div class="status-bar">
+      <div class="stat-readout" data-stat="momentum">
+        <span class="stat-label">Momentum</span>
+        <div class="stat-row">
+          <span class="stat-number">5.0</span>
+          <div class="stat-bar"><div class="stat-bar-fill" style="width:50%"></div></div>
+        </div>
+      </div>
+      <div class="stat-readout" data-stat="resilience">
+        <span class="stat-label">Resilience</span>
+        <div class="stat-row">
+          <span class="stat-number">5.0</span>
+          <div class="stat-bar"><div class="stat-bar-fill" style="width:50%"></div></div>
+        </div>
+      </div>
+      <div class="stat-readout" data-stat="clarity">
+        <span class="stat-label">Clarity</span>
+        <div class="stat-row">
+          <span class="stat-number">5.0</span>
+          <div class="stat-bar"><div class="stat-bar-fill" style="width:50%"></div></div>
+        </div>
+      </div>
+      <div class="diagnosis-line"></div>
+      <button class="go-button" disabled>GO</button>
+    </div>
+
+  </div>
+
+  <script src="/js/levers.js"></script>
+  <script src="/js/threats.js"></script>
+  <script src="/js/ship.js"></script>
+  <script src="/js/analytics.js"></script>
+  <script src="/js/game.js"></script>
+</body>
+</html>

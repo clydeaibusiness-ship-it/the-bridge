@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 60">
+  <!-- Assumption: cracked foundation with fracture lines radiating from center -->
+  <g opacity="0.8" stroke="currentColor" fill="none">
+    <!-- Foundation block -->
+    <rect x="10" y="35" width="40" height="16" rx="1" stroke-width="1.5"/>
+    <!-- Fracture lines radiating upward from crack point -->
+    <line x1="30" y1="35" x2="30" y2="8" stroke-width="1.2"/>
+    <line x1="30" y1="35" x2="16" y2="12" stroke-width="0.8"/>
+    <line x1="30" y1="35" x2="44" y2="12" stroke-width="0.8"/>
+    <line x1="30" y1="35" x2="8" y2="22" stroke-width="0.5"/>
+    <line x1="30" y1="35" x2="52" y2="22" stroke-width="0.5"/>
+    <!-- Crack in foundation -->
+    <path d="M30,35 L28,40 L32,43 L29,51" stroke-width="1.2"/>
+    <!-- Small debris -->
+    <rect x="26" y="30" width="2" height="2" fill="currentColor" opacity="0.4" transform="rotate(15 27 31)"/>
+    <rect x="33" y="28" width="1.5" height="1.5" fill="currentColor" opacity="0.3" transform="rotate(-10 34 29)"/>
+  </g>
+</svg>

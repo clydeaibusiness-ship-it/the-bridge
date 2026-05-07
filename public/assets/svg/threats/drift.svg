@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 60">
+  <!-- Drift: gravitational distortion, concentric warped rings pulling sideways -->
+  <g opacity="0.7" fill="none" stroke="currentColor">
+    <ellipse cx="30" cy="30" rx="24" ry="22" stroke-width="0.5" transform="rotate(8 30 30)"/>
+    <ellipse cx="30" cy="30" rx="18" ry="16" stroke-width="0.7" transform="rotate(12 30 30)"/>
+    <ellipse cx="30" cy="30" rx="12" ry="10" stroke-width="0.9" transform="rotate(18 30 30)"/>
+    <ellipse cx="30" cy="30" rx="6" ry="5" stroke-width="1.2" transform="rotate(25 30 30)"/>
+    <!-- Pull direction indicator -->
+    <line x1="42" y1="30" x2="56" y2="28" stroke-width="0.5" stroke-dasharray="3,2" opacity="0.4"/>
+    <line x1="44" y1="36" x2="56" y2="38" stroke-width="0.5" stroke-dasharray="3,2" opacity="0.3"/>
+  </g>
+</svg>

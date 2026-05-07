@@ -1,0 +1,735 @@
+/* ============================================
+   THE BRIDGE — Game Interface Styles
+   Dark theme: deep space viewport
+   ============================================ */
+
+.game-page {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  grid-template-rows: 1fr 80px;
+  background-color: #0a0a0f;
+  color: #f5f0e8;
+}
+
+/* ---------- Zone 1: Battlefield (center) ---------- */
+.battlefield {
+  grid-column: 1;
+  grid-row: 1;
+  position: relative;
+  overflow: hidden;
+  background-color: #0a0a0f;
+  background-image: url('/assets/svg/stars.svg');
+  background-size: cover;
+  background-position: center;
+}
+
+.destination-marker {
+  position: absolute;
+  top: 5%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 60px;
+  opacity: 0.3;
+}
+
+.destination-label {
+  position: absolute;
+  top: calc(5% + 70px);
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.15em;
+  color: #c8b89a;
+  opacity: 0.5;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* Ship container */
+.ship-container {
+  position: absolute;
+  bottom: 15%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 80px;
+  transition: all 0.5s ease;
+}
+
+.ship-container svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* Ship states */
+.ship-container.high-momentum {
+  transform: translateX(-50%) translateY(-8px);
+}
+
+.ship-container.low-momentum {
+  animation: ship-drift 4s ease-in-out infinite;
+  transform-origin: center;
+}
+
+.ship-container.taking-damage {
+  animation: ship-hit 0.3s ease;
+}
+
+.ship-container.destroyed {
+  opacity: 0;
+  transition: opacity 1.5s ease;
+}
+
+/* Shield ring */
+.shield-ring {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100px;
+  height: 100px;
+  border: 1px solid #f5f0e8;
+  border-radius: 50%;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  pointer-events: none;
+}
+
+.shield-ring.active {
+  opacity: 0.2;
+  animation: shield-pulse 3s ease-in-out infinite;
+}
+
+.shield-ring.threat-near {
+  opacity: 0.4;
+}
+
+/* Engine trail */
+.engine-trail {
+  animation: engine-pulse 2s ease-in-out infinite;
+}
+
+/* Threat elements */
+.threat {
+  position: absolute;
+  width: 50px;
+  height: 50px;
+  top: -60px;
+  left: 50%;
+  transform: translateX(-50%);
+  transition: top 0.1s linear;
+  z-index: 10;
+}
+
+.threat svg {
+  width: 100%;
+  height: 100%;
+}
+
+.threat.paused {
+  /* Visual indicator that threat is waiting */
+}
+
+/* Threat progress line */
+.threat-progress {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 2px;
+  background: #8a4a3a;
+  transition: width 0.1s linear;
+  z-index: 5;
+}
+
+/* Destruction particles */
+.destruction-particle {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  background: #f5f0e8;
+  animation: particle-burst 1s ease-out forwards;
+}
+
+/* Passenger indicators (right edge) */
+.passenger-indicators {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.passenger-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #c8c0b0;
+  opacity: 0.4;
+}
+
+.passenger-dot.active {
+  opacity: 0.8;
+}
+
+/* Connection lines for high network effects */
+.connection-line {
+  position: absolute;
+  height: 1px;
+  background: #c8b89a;
+  opacity: 0;
+  transform-origin: left center;
+  transition: opacity 0.5s ease;
+}
+
+.connection-line.active {
+  opacity: 0.15;
+}
+
+/* Repair drones */
+.repair-drone {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  opacity: 0.3;
+  transition: opacity 0.5s ease;
+}
+
+.repair-drone.active {
+  opacity: 0.7;
+  animation: orbit 6s linear infinite;
+}
+
+@keyframes orbit {
+  from { transform: rotate(0deg) translateX(25px) rotate(0deg); }
+  to { transform: rotate(360deg) translateX(25px) rotate(-360deg); }
+}
+
+/* ---------- Zone 2: Lever Panel (right) ---------- */
+.lever-panel {
+  grid-column: 2;
+  grid-row: 1;
+  background: rgba(26, 26, 38, 0.6);
+  border-left: 1px solid #2a2a3a;
+  backdrop-filter: blur(12px);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.focus-points-display {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #2a2a3a;
+}
+
+.focus-points-label {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #6a6460;
+  margin-bottom: 0.25rem;
+}
+
+.focus-points-value {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xl);
+  font-weight: 700;
+  color: #c8b89a;
+}
+
+.levers-list {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.lever-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.lever-label {
+  font-family: var(--font-primary);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #c8c0b0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.lever-label.highlighted {
+  color: #c8b89a;
+}
+
+.lever-value {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: #c8b89a;
+}
+
+.lever-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 4px;
+  background: #2a2a3a;
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+}
+
+.lever-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  background: #f5f0e8;
+  border-radius: 2px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.lever-slider::-webkit-slider-thumb:hover {
+  background: #c8b89a;
+}
+
+.lever-slider::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  background: #f5f0e8;
+  border-radius: 2px;
+  border: none;
+  cursor: pointer;
+}
+
+/* ---------- Zone 3: Status Bar (bottom) ---------- */
+.status-bar {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  background: rgba(18, 18, 26, 0.95);
+  border-top: 1px solid #2a2a3a;
+  padding: 0 2rem;
+  display: flex;
+  align-items: center;
+  gap: 3rem;
+}
+
+.stat-readout {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 140px;
+}
+
+.stat-label {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #6a6460;
+}
+
+.stat-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.stat-number {
+  font-family: var(--font-mono);
+  font-size: var(--text-lg);
+  font-weight: 700;
+  color: #c8b89a;
+  min-width: 2.5ch;
+}
+
+.stat-bar {
+  flex: 1;
+  height: 3px;
+  background: #2a2a3a;
+  border-radius: 1px;
+  overflow: hidden;
+}
+
+.stat-bar-fill {
+  height: 100%;
+  background: #c8b89a;
+  border-radius: 1px;
+  transition: width 0.5s ease;
+}
+
+.diagnosis-line {
+  flex: 1;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: #c8c0b0;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  text-align: center;
+}
+
+.diagnosis-line.visible {
+  opacity: 1;
+}
+
+.go-button {
+  background: #f5f0e8;
+  color: #0a0a0f;
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  padding: 0.75rem 2.5rem;
+  border: none;
+  border-radius: 2px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.go-button:hover {
+  background: #c8b89a;
+  transform: translateY(-1px);
+}
+
+.go-button:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ---------- Sector display ---------- */
+.sector-display {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.1em;
+  color: #6a6460;
+}
+
+.turn-display {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.1em;
+  color: #6a6460;
+}
+
+/* ---------- Death Screen Overlay ---------- */
+.death-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 10, 15, 0.8);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.death-overlay.active {
+  display: flex;
+}
+
+.death-panel {
+  background: #12121a;
+  border: 1px solid #2a2a3a;
+  border-radius: 2px;
+  padding: 3rem;
+  max-width: 520px;
+  width: 90%;
+  text-align: center;
+}
+
+.death-ship-name {
+  font-family: var(--font-mono);
+  font-size: var(--text-xl);
+  color: #f5f0e8;
+  margin-bottom: 0.5rem;
+}
+
+.death-summary {
+  font-size: var(--text-sm);
+  color: #c8c0b0;
+  margin-bottom: 2rem;
+  line-height: 1.6;
+}
+
+.death-divider {
+  border: none;
+  border-top: 1px solid #2a2a3a;
+  margin: 2rem 0;
+}
+
+.death-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.death-cta-primary {
+  background: #f5f0e8;
+  color: #0a0a0f;
+  font-family: var(--font-primary);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 1rem 2rem;
+  border: none;
+  border-radius: 2px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.death-cta-primary:hover {
+  background: #c8b89a;
+}
+
+.death-cta-secondary {
+  background: transparent;
+  color: #c8c0b0;
+  font-family: var(--font-primary);
+  font-size: var(--text-sm);
+  padding: 1rem 2rem;
+  border: 1px solid #c8b89a;
+  border-radius: 2px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.death-cta-secondary:hover {
+  border-color: #f5f0e8;
+  color: #f5f0e8;
+}
+
+.death-cta-desc {
+  font-size: var(--text-xs);
+  color: #6a6460;
+  margin-top: 0.25rem;
+}
+
+.death-debrief-status {
+  margin-top: 1.5rem;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: #6a6460;
+  display: none;
+}
+
+.death-debrief-status.ready {
+  display: block;
+}
+
+.death-debrief-status a {
+  color: #c8b89a;
+  border-bottom: 1px solid #c8b89a;
+}
+
+/* ---------- Tutorial Overlay ---------- */
+.tutorial-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 10, 15, 0.7);
+  display: none;
+  z-index: 90;
+}
+
+.tutorial-overlay.active {
+  display: block;
+}
+
+.tutorial-spotlight {
+  position: absolute;
+  border: 2px solid #c8b89a;
+  border-radius: 4px;
+  box-shadow: 0 0 0 9999px rgba(10, 10, 15, 0.7);
+  transition: all 0.5s ease;
+}
+
+.tutorial-text-box {
+  position: absolute;
+  background: #12121a;
+  border: 1px solid #2a2a3a;
+  border-radius: 2px;
+  padding: 1.5rem;
+  max-width: 360px;
+  font-size: var(--text-sm);
+  color: #c8c0b0;
+  line-height: 1.6;
+}
+
+.tutorial-step-indicator {
+  margin-top: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.tutorial-dots {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.tutorial-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #2a2a3a;
+}
+
+.tutorial-dot.active {
+  background: #c8b89a;
+}
+
+.tutorial-next {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.1em;
+  color: #c8b89a;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-transform: uppercase;
+}
+
+.tutorial-next:hover {
+  color: #f5f0e8;
+}
+
+/* ---------- Intake Form Overlay ---------- */
+.intake-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 10, 15, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 80;
+}
+
+.intake-form {
+  background: #12121a;
+  border: 1px solid #2a2a3a;
+  border-radius: 2px;
+  padding: 3rem;
+  max-width: 560px;
+  width: 90%;
+  max-height: 85vh;
+  overflow-y: auto;
+}
+
+.intake-title {
+  font-size: var(--text-xl);
+  color: #f5f0e8;
+  margin-bottom: 0.5rem;
+}
+
+.intake-subtitle {
+  font-size: var(--text-sm);
+  color: #6a6460;
+  margin-bottom: 2rem;
+}
+
+.intake-question {
+  margin-bottom: 1.5rem;
+}
+
+.intake-question label {
+  display: block;
+  font-size: var(--text-sm);
+  color: #c8c0b0;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+
+.intake-question select,
+.intake-question input,
+.intake-question textarea {
+  width: 100%;
+  background: #1a1a26;
+  border: 1px solid #2a2a3a;
+  border-radius: 2px;
+  color: #f5f0e8;
+  font-family: var(--font-primary);
+  font-size: var(--text-sm);
+  padding: 0.75rem 1rem;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.intake-question select:focus,
+.intake-question input:focus,
+.intake-question textarea:focus {
+  border-color: #c8b89a;
+}
+
+.intake-question textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.intake-question select {
+  cursor: pointer;
+}
+
+.intake-submit {
+  width: 100%;
+  margin-top: 1rem;
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 900px) {
+  .game-page {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr 200px 80px;
+  }
+
+  .lever-panel {
+    grid-column: 1;
+    grid-row: 2;
+    border-left: none;
+    border-top: 1px solid #2a2a3a;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    overflow-x: auto;
+    padding: 1rem;
+  }
+
+  .levers-list {
+    flex-direction: row;
+    gap: 1rem;
+  }
+
+  .lever-item {
+    min-width: 100px;
+  }
+
+  .status-bar {
+    grid-column: 1;
+    grid-row: 3;
+    gap: 1.5rem;
+    padding: 0 1rem;
+    overflow-x: auto;
+  }
+}

@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Bridge — Sign In</title>
+  <link rel="stylesheet" href="/css/global.css">
+  <style>
+    .login-page {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .login-card {
+      max-width: 400px;
+      width: 90%;
+      border: 1px solid var(--color-border);
+      border-radius: 2px;
+      padding: var(--space-xl);
+      text-align: center;
+    }
+    .login-title {
+      font-size: var(--text-xl);
+      margin-bottom: var(--space-sm);
+    }
+    .login-subtitle {
+      font-size: var(--text-sm);
+      color: var(--color-ink-ghost);
+      margin-bottom: var(--space-xl);
+    }
+    .login-input {
+      width: 100%;
+      padding: 0.875rem 1rem;
+      font-family: var(--font-primary);
+      font-size: var(--text-sm);
+      border: 1px solid var(--color-border);
+      border-radius: 2px;
+      background: var(--color-paper-bright);
+      color: var(--color-ink);
+      outline: none;
+      margin-bottom: var(--space-md);
+    }
+    .login-input:focus {
+      border-color: var(--color-ink-mid);
+    }
+    .login-submit {
+      width: 100%;
+      margin-bottom: var(--space-md);
+    }
+    .login-alt {
+      font-size: var(--text-xs);
+      color: var(--color-ink-ghost);
+    }
+    .login-alt a {
+      color: var(--color-ink-light);
+    }
+    .login-message {
+      margin-top: var(--space-md);
+      font-size: var(--text-sm);
+      color: var(--color-safe);
+      display: none;
+    }
+    .login-message.error {
+      color: var(--color-alert);
+    }
+  </style>
+</head>
+<body>
+  <div class="login-page">
+    <div class="login-card">
+      <h1 class="login-title">Welcome, Captain.</h1>
+      <p class="login-subtitle">Enter your email to sign in or create an account. We'll send you a magic link — no password needed.</p>
+
+      <form id="login-form">
+        <input type="email" class="login-input" id="login-email" placeholder="your@email.com" required>
+        <button type="submit" class="btn-primary login-submit">Send Magic Link</button>
+      </form>
+
+      <p class="login-message" id="login-message"></p>
+
+      <p class="login-alt">
+        Just want to play? <a href="/game">Launch the free Simulator</a>
+      </p>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('login-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('login-email').value.trim();
+      const msgEl = document.getElementById('login-message');
+
+      if (!email) return;
+
+      try {
+        const res = await fetch('/api/auth/magic-link', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email })
+        });
+
+        if (res.ok) {
+          msgEl.textContent = 'Check your email — your magic link is on its way.';
+          msgEl.classList.remove('error');
+          msgEl.style.display = 'block';
+        } else {
+          const data = await res.json();
+          msgEl.textContent = data.error || 'Something went wrong. Try again.';
+          msgEl.classList.add('error');
+          msgEl.style.display = 'block';
+        }
+      } catch (err) {
+        msgEl.textContent = 'Connection failed. Check your internet and try again.';
+        msgEl.classList.add('error');
+        msgEl.style.display = 'block';
+      }
+    });
+  </script>
+</body>
+</html>

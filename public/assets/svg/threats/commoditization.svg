@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 60">
+  <!-- Commoditization: formation of identical small ships approaching -->
+  <g opacity="0.75" fill="currentColor">
+    <!-- Row 1 -->
+    <path d="M20,8 L23,16 L20,14.5 L17,16 Z"/>
+    <path d="M30,6 L33,14 L30,12.5 L27,14 Z"/>
+    <path d="M40,8 L43,16 L40,14.5 L37,16 Z"/>
+    <!-- Row 2 -->
+    <path d="M15,20 L18,28 L15,26.5 L12,28 Z"/>
+    <path d="M25,18 L28,26 L25,24.5 L22,26 Z"/>
+    <path d="M35,18 L38,26 L35,24.5 L32,26 Z"/>
+    <path d="M45,20 L48,28 L45,26.5 L42,28 Z"/>
+    <!-- Row 3 -->
+    <path d="M10,32 L13,40 L10,38.5 L7,40 Z"/>
+    <path d="M20,30 L23,38 L20,36.5 L17,38 Z"/>
+    <path d="M30,30 L33,38 L30,36.5 L27,38 Z"/>
+    <path d="M40,30 L43,38 L40,36.5 L37,38 Z"/>
+    <path d="M50,32 L53,40 L50,38.5 L47,40 Z"/>
+  </g>
+</svg>

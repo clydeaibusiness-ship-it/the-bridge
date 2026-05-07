@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 60">
+  <!-- Churn Wave: passenger-shaped figures drifting away from center -->
+  <g opacity="0.8">
+    <!-- Central mass -->
+    <circle cx="30" cy="30" r="8" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.6"/>
+    <!-- Drifting passengers -->
+    <g fill="currentColor" opacity="0.7">
+      <circle cx="14" cy="18" r="2"/><line x1="14" y1="20" x2="14" y2="26" stroke="currentColor" stroke-width="1"/>
+      <circle cx="46" cy="22" r="2"/><line x1="46" y1="24" x2="46" y2="30" stroke="currentColor" stroke-width="1"/>
+      <circle cx="10" cy="42" r="2"/><line x1="10" y1="44" x2="10" y2="50" stroke="currentColor" stroke-width="1"/>
+      <circle cx="50" cy="44" r="2"/><line x1="50" y1="46" x2="50" y2="52" stroke="currentColor" stroke-width="1"/>
+      <circle cx="22" cy="8" r="2"/><line x1="22" y1="10" x2="22" y2="16" stroke="currentColor" stroke-width="1"/>
+    </g>
+    <!-- Drift lines -->
+    <line x1="22" y1="26" x2="14" y2="18" stroke="currentColor" stroke-width="0.5" stroke-dasharray="2,2" opacity="0.3"/>
+    <line x1="38" y1="26" x2="46" y2="22" stroke="currentColor" stroke-width="0.5" stroke-dasharray="2,2" opacity="0.3"/>
+    <line x1="24" y1="36" x2="10" y2="42" stroke="currentColor" stroke-width="0.5" stroke-dasharray="2,2" opacity="0.3"/>
+    <line x1="36" y1="36" x2="50" y2="44" stroke="currentColor" stroke-width="0.5" stroke-dasharray="2,2" opacity="0.3"/>
+  </g>
+</svg>
