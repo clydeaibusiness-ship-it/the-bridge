@@ -11,13 +11,11 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      padding: 1rem;
     }
     .login-card {
-      max-width: 400px;
-      width: 90%;
-      border: 1px solid var(--color-border);
-      border-radius: 2px;
-      padding: var(--space-xl);
+      max-width: 420px;
+      width: 100%;
       text-align: center;
     }
     .login-title {
@@ -29,40 +27,20 @@
       color: var(--color-ink-ghost);
       margin-bottom: var(--space-xl);
     }
-    .login-input {
-      width: 100%;
-      padding: 0.875rem 1rem;
-      font-family: var(--font-primary);
-      font-size: var(--text-sm);
-      border: 1px solid var(--color-border);
-      border-radius: 2px;
-      background: var(--color-paper-bright);
-      color: var(--color-ink);
-      outline: none;
-      margin-bottom: var(--space-md);
-    }
-    .login-input:focus {
-      border-color: var(--color-ink-mid);
-    }
-    .login-submit {
-      width: 100%;
-      margin-bottom: var(--space-md);
+    /* Clerk component container */
+    #clerk-auth {
+      min-height: 300px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
     .login-alt {
+      margin-top: var(--space-lg);
       font-size: var(--text-xs);
       color: var(--color-ink-ghost);
     }
     .login-alt a {
       color: var(--color-ink-light);
-    }
-    .login-message {
-      margin-top: var(--space-md);
-      font-size: var(--text-sm);
-      color: var(--color-safe);
-      display: none;
-    }
-    .login-message.error {
-      color: var(--color-alert);
     }
   </style>
 </head>
@@ -70,14 +48,9 @@
   <div class="login-page">
     <div class="login-card">
       <h1 class="login-title">Welcome, Captain.</h1>
-      <p class="login-subtitle">Enter your email to sign in or create an account. We'll send you a magic link — no password needed.</p>
+      <p class="login-subtitle">Sign in or create an account to save your progress, access the dashboard, and unlock the Commander.</p>
 
-      <form id="login-form">
-        <input type="email" class="login-input" id="login-email" placeholder="your@email.com" required>
-        <button type="submit" class="btn-primary login-submit">Send Magic Link</button>
-      </form>
-
-      <p class="login-message" id="login-message"></p>
+      <div id="clerk-auth"></div>
 
       <p class="login-alt">
         Just want to play? <a href="/game">Launch the free Simulator</a>
@@ -85,36 +58,32 @@
     </div>
   </div>
 
+  <script
+    async
+    crossorigin="anonymous"
+    data-clerk-publishable-key="pk_test_b2JsaWdpbmctcHl0aG9uLTUuY2xlcmsuYWNjb3VudHMuZGV2JA"
+    src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js"
+    type="text/javascript"
+  ></script>
   <script>
-    document.getElementById('login-form').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const email = document.getElementById('login-email').value.trim();
-      const msgEl = document.getElementById('login-message');
+    window.addEventListener('load', async () => {
+      await window.Clerk.load();
 
-      if (!email) return;
-
-      try {
-        const res = await fetch('/api/auth/magic-link', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email })
-        });
-
-        if (res.ok) {
-          msgEl.textContent = 'Check your email — your magic link is on its way.';
-          msgEl.classList.remove('error');
-          msgEl.style.display = 'block';
-        } else {
-          const data = await res.json();
-          msgEl.textContent = data.error || 'Something went wrong. Try again.';
-          msgEl.classList.add('error');
-          msgEl.style.display = 'block';
-        }
-      } catch (err) {
-        msgEl.textContent = 'Connection failed. Check your internet and try again.';
-        msgEl.classList.add('error');
-        msgEl.style.display = 'block';
+      if (window.Clerk.user) {
+        // Already signed in — redirect to dashboard
+        const params = new URLSearchParams(window.location.search);
+        const returnUrl = params.get('return') || '/dashboard';
+        window.location.href = returnUrl;
+        return;
       }
+
+      // Mount the sign-in component
+      const authDiv = document.getElementById('clerk-auth');
+      window.Clerk.mountSignIn(authDiv, {
+        afterSignInUrl: '/dashboard',
+        afterSignUpUrl: '/dashboard',
+        signUpUrl: '/login',
+      });
     });
   </script>
 </body>

@@ -132,6 +132,27 @@
     </div>
   </div>
 
+  <script
+    async
+    crossorigin="anonymous"
+    data-clerk-publishable-key="pk_test_b2JsaWdpbmctcHl0aG9uLTUuY2xlcmsuYWNjb3VudHMuZGV2JA"
+    src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js"
+    type="text/javascript"
+  ></script>
+  <script>
+    window.addEventListener('load', async () => {
+      await window.Clerk.load();
+      if (!window.Clerk.user) {
+        window.location.href = '/login?return=/dashboard';
+        return;
+      }
+      // Update welcome message
+      const welcome = document.querySelector('.dashboard-welcome');
+      if (welcome && window.Clerk.user.firstName) {
+        welcome.textContent = `Welcome back, Captain ${window.Clerk.user.firstName}.`;
+      }
+    });
+  </script>
   <script src="/js/dashboard.js"></script>
 </body>
 </html>
