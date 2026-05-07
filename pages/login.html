@@ -84,17 +84,60 @@
         });
       } catch (e) {
         console.error('Clerk failed:', e);
-        authDiv.innerHTML = `
-          <div style="border:1px solid var(--color-border);border-radius:2px;padding:2rem;max-width:360px;width:100%;">
-            <p style="margin-bottom:1rem;font-size:14px;color:var(--color-ink-light);">Enter your email to sign in or create an account.</p>
-            <form onsubmit="event.preventDefault();fetch('/api/auth/magic-link',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:this.email.value})}).then(()=>{document.getElementById('login-msg').style.display='block'})">
-              <input name="email" type="email" required placeholder="your@email.com" style="width:100%;padding:0.75rem 1rem;border:1px solid var(--color-border);border-radius:2px;font-family:var(--font-primary);font-size:14px;margin-bottom:0.75rem;background:var(--color-paper-bright);">
-              <button type="submit" class="btn-primary" style="width:100%;text-align:center;">Send Magic Link</button>
-            </form>
-            <p id="login-msg" style="display:none;margin-top:1rem;font-size:13px;color:var(--color-safe);">Check your email for a sign-in link.</p>
-          </div>
-        `;
+        showFallbackForm(authDiv);
       }
+    }
+
+    function showFallbackForm(container) {
+      container.innerHTML = `
+        <div style="border:1px solid var(--color-border);border-radius:2px;padding:2rem;max-width:360px;width:100%;margin:0 auto;">
+          <p style="margin-bottom:1rem;font-size:14px;color:var(--color-ink-light);">Enter your email to sign in or create an account.</p>
+          <form id="magic-form">
+            <input id="magic-email" name="email" type="email" required placeholder="your@email.com" style="width:100%;padding:0.75rem 1rem;border:1px solid var(--color-border);border-radius:2px;font-family:var(--font-primary);font-size:14px;margin-bottom:0.75rem;background:var(--color-paper-bright);color:var(--color-ink);">
+            <button type="submit" class="btn-primary" id="magic-btn" style="width:100%;text-align:center;">Send Sign-In Link</button>
+          </form>
+          <p id="login-msg" style="display:none;margin-top:1rem;font-size:13px;text-align:center;"></p>
+        </div>
+      `;
+
+      document.getElementById('magic-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('magic-email').value.trim();
+        const btn = document.getElementById('magic-btn');
+        const msg = document.getElementById('login-msg');
+        if (!email) return;
+
+        btn.textContent = 'Sending...';
+        btn.disabled = true;
+
+        try {
+          const res = await fetch('/api/auth/magic-link', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email })
+          });
+          const data = await res.json();
+
+          if (res.ok && data.sent) {
+            msg.textContent = '✓ Check your email for a sign-in link.';
+            msg.style.color = 'var(--color-safe)';
+            msg.style.display = 'block';
+            btn.textContent = 'Link Sent';
+          } else {
+            msg.textContent = data.error || 'Something went wrong. Try again.';
+            msg.style.color = 'var(--color-alert)';
+            msg.style.display = 'block';
+            btn.textContent = 'Send Sign-In Link';
+            btn.disabled = false;
+          }
+        } catch (err) {
+          msg.textContent = 'Connection failed. Try again.';
+          msg.style.color = 'var(--color-alert)';
+          msg.style.display = 'block';
+          btn.textContent = 'Send Sign-In Link';
+          btn.disabled = false;
+        }
+      });
     }
 
     initClerk();
