@@ -1,283 +1,86 @@
-/* ============================================
-   THE BRIDGE — Global Design System
-   Two modes: Site (light/paper) and Game (dark/space)
-   ============================================ */
+/* ============================================================
+   THE BRIDGE — GLOBAL DESIGN TOKENS
+   All colors, typography, and base styles live here.
+   Do not hardcode any of these values elsewhere.
+   ============================================================ */
 
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600&family=Space+Mono:wght@400;700&display=swap');
 
-/* ---------- Site Theme (default) — Star chart on paper ---------- */
 :root {
-  /* Paper / cream backgrounds */
-  --color-paper: #f5f0e8;
-  --color-paper-warm: #ede7db;
-  --color-paper-bright: #faf7f2;
+  /* Backgrounds */
+  --void:        #08080f;
+  --deep:        #0f0f1a;
+  --surface:     #16161f;
+  --elevated:    #1e1e2a;
+  --border:      #2a2a3a;
 
-  /* Ink / dark tones */
-  --color-ink: #0a0a0f;
-  --color-ink-mid: #2a2a3a;
-  --color-ink-light: #4a4a5a;
-  --color-ink-ghost: #8a8a96;
+  /* Cream — all interactive and primary elements */
+  --cream:       #f0ebe0;
+  --cream-dim:   #b8b0a0;
+  --cream-ghost: #5a5650;
 
-  /* Accent — warm gold, used sparingly */
-  --color-signal: #c8b89a;
-  --color-signal-strong: #a89060;
-  --color-alert: #8a4a3a;
-  --color-safe: #3a5a4a;
+  /* Signal — used sparingly, critical moments only */
+  --signal:      #c8a96e;
+  --signal-dim:  #7a6840;
 
-  /* Borders and surfaces */
-  --color-border: #d4cfc5;
-  --color-border-strong: #b0a898;
+  /* Damage — threats, hits, critical states */
+  --damage:      #6b2a2a;
+  --damage-dim:  #3a1a1a;
 
-  /* Transparency layers */
-  --color-overlay: rgba(245, 240, 232, 0.92);
-  --color-glass: rgba(245, 240, 232, 0.7);
+  /* Safe — clean counters, positive outcomes */
+  --safe:        #2a4a3a;
 
-  /* SVG element colors (black ink on paper) */
-  --color-wisp: #0a0a0f;
-  --color-wisp-edge: #2a2a3a;
-  --color-star-fill: #0a0a0f;
-  --color-star-dim: #2a2a3a;
-  --color-dust: #4a4a5a;
+  /* Transparency */
+  --glass:       rgba(22, 22, 31, 0.85);
+  --overlay:     rgba(8, 8, 15, 0.92);
 
   /* Typography */
-  --font-primary: 'Space Grotesk', sans-serif;
-  --font-mono: 'Space Mono', monospace;
+  --font-ui:     'Space Grotesk', sans-serif;
+  --font-data:   'Space Mono', monospace;
 
   /* Type scale */
-  --text-xs: 0.75rem;
-  --text-sm: 0.875rem;
-  --text-base: 1rem;
-  --text-lg: 1.125rem;
-  --text-xl: 1.5rem;
-  --text-2xl: 2.25rem;
-  --text-3xl: 3.5rem;
-  --text-hero: clamp(3rem, 8vw, 6rem);
+  --text-xs:     0.6875rem;
+  --text-sm:     0.8125rem;
+  --text-base:   1rem;
+  --text-lg:     1.375rem;
 
-  /* Spacing */
-  --space-xs: 0.25rem;
-  --space-sm: 0.5rem;
-  --space-md: 1rem;
-  --space-lg: 2rem;
-  --space-xl: 4rem;
-  --space-2xl: 8rem;
+  /* Letter spacing */
+  --tracking-ui:   0.06em;
+  --tracking-data: 0.1em;
+
+  /* Animation timing */
+  --ease-quick:  cubic-bezier(0.2, 0, 0.4, 1);
+  --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-drift:  cubic-bezier(0.6, 0, 0.8, 1);
 }
 
-/* ---------- Game Theme — Deep space ---------- */
-.game-theme {
-  --color-paper: #0a0a0f;
-  --color-paper-warm: #12121a;
-  --color-paper-bright: #1a1a26;
-
-  --color-ink: #f5f0e8;
-  --color-ink-mid: #c8c0b0;
-  --color-ink-light: #c8c0b0;
-  --color-ink-ghost: #6a6460;
-
-  --color-border: #2a2a3a;
-  --color-border-strong: #3a3a4e;
-
-  --color-overlay: rgba(10, 10, 15, 0.85);
-  --color-glass: rgba(26, 26, 38, 0.6);
-
-  /* SVG element colors (cream/dim on void) */
-  --color-wisp: #1e1c28;
-  --color-wisp-edge: #2e2a40;
-  --color-star-fill: #2e2a40;
-  --color-star-dim: #1e1c28;
-  --color-dust: #2e2a40;
-}
-
-/* ---------- Reset & Base ---------- */
+/* Base reset */
 *, *::before, *::after {
+  box-sizing: border-box;
   margin: 0;
   padding: 0;
-  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
-html {
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--void);
+  color: var(--cream);
+  font-family: var(--font-ui);
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
 }
 
-body {
-  background-color: var(--color-paper);
-  color: var(--color-ink);
-  font-family: var(--font-primary);
-  font-size: var(--text-base);
-  font-weight: 400;
-  line-height: 1.6;
-  min-height: 100vh;
-}
-
-/* ---------- Typography ---------- */
-h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-primary);
-  font-weight: 600;
-  line-height: 1.2;
-  color: var(--color-ink);
-}
-
-h1 { font-size: var(--text-3xl); }
-h2 { font-size: var(--text-2xl); }
-h3 { font-size: var(--text-xl); }
-h4 { font-size: var(--text-lg); }
-
-p {
-  max-width: 65ch;
-  margin-bottom: var(--space-md);
-}
-
-a {
-  color: var(--color-ink);
-  text-decoration: none;
-  border-bottom: 1px solid var(--color-border-strong);
-  transition: border-color 0.2s ease;
-}
-
-a:hover {
-  border-color: var(--color-signal);
-}
-
-/* ---------- Components ---------- */
-
-/* Panel */
-.panel {
-  background: var(--color-glass);
-  border: 1px solid var(--color-border);
-  border-radius: 2px;
-  backdrop-filter: blur(12px);
-  padding: var(--space-lg);
-}
-
-/* Primary Button */
-.btn-primary {
-  display: inline-block;
-  background: var(--color-ink);
-  color: var(--color-paper);
-  font-family: var(--font-primary);
-  font-size: var(--text-sm);
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  padding: 0.875rem 2rem;
-  border: none;
-  border-radius: 2px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  text-decoration: none;
-}
-
-.btn-primary:hover {
-  background: var(--color-signal-strong);
-  color: var(--color-paper);
-  transform: translateY(-1px);
-  border: none;
-}
-
-/* Ghost Button */
-.btn-ghost {
-  display: inline-block;
-  background: transparent;
-  color: var(--color-ink-light);
-  font-family: var(--font-primary);
-  font-size: var(--text-sm);
-  font-weight: 400;
-  letter-spacing: 0.06em;
-  padding: 0.875rem 2rem;
-  border: 1px solid var(--color-border);
-  border-radius: 2px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  text-decoration: none;
-}
-
-.btn-ghost:hover {
-  border-color: var(--color-ink-mid);
-  color: var(--color-ink);
-}
-
-/* Data Readout */
-.readout {
-  font-family: var(--font-mono);
-  font-size: var(--text-sm);
-  color: var(--color-signal);
-  letter-spacing: 0.1em;
-}
-
-/* Eyebrow Text */
-.eyebrow {
-  font-family: var(--font-mono);
-  font-size: var(--text-xs);
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--color-ink-ghost);
-}
-
-/* Container */
-.container {
+/* Starfield canvas — always behind everything */
+#starfield {
+  position: fixed;
+  top: 0;
+  left: 0;
   width: 100%;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 var(--space-lg);
-}
-
-/* Section spacing */
-.section {
-  padding: var(--space-2xl) 0;
-}
-
-/* ---------- Utility ---------- */
-.text-center { text-align: center; }
-.text-mono { font-family: var(--font-mono); }
-.text-signal { color: var(--color-signal); }
-.text-ghost { color: var(--color-ink-ghost); }
-.text-sm { font-size: var(--text-sm); }
-
-.visually-hidden {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  border: 0;
-}
-
-/* ---------- Ship Animation Keyframes ---------- */
-@keyframes ship-hit {
-  0% { transform: translateX(0); }
-  20% { transform: translateX(-4px); }
-  40% { transform: translateX(4px); }
-  60% { transform: translateX(-3px); }
-  80% { transform: translateX(3px); }
-  100% { transform: translateX(0); }
-}
-
-@keyframes engine-pulse {
-  0%, 100% { opacity: 0.3; }
-  50% { opacity: 0.6; }
-}
-
-@keyframes ship-drift {
-  0%, 100% { transform: translateX(0); }
-  50% { transform: translateX(6px); }
-}
-
-@keyframes shield-pulse {
-  0%, 100% { opacity: 0.2; }
-  50% { opacity: 0.4; }
-}
-
-@keyframes particle-burst {
-  0% { transform: translate(0, 0) scale(1); opacity: 1; }
-  100% { transform: translate(var(--px), var(--py)) scale(0); opacity: 0; }
-}
-
-/* Smooth parallax for backgrounds */
-@media (prefers-reduced-motion: no-preference) {
-  .parallax-bg {
-    background-attachment: fixed;
-  }
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
 }

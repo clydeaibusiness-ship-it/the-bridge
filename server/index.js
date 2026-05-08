@@ -42,6 +42,14 @@ app.use('/system', (req, res) => {
   res.status(403).send('Forbidden');
 });
 
+// Serve config.js from root (needed by frontend modules)
+app.get('/config.js', (req, res) => {
+  res.sendFile(path.join(__dirname, '../config.js'));
+});
+
+// Serve data files
+app.use('/data', express.static(path.join(__dirname, '../public/data')));
+
 // Static files
 app.use(express.static(path.join(__dirname, '../public')));
 
@@ -66,6 +74,10 @@ app.get('/dashboard', (req, res) => {
 
 app.get('/login', (req, res) => {
   res.sendFile(path.join(__dirname, '../pages/login.html'));
+});
+
+app.get('/config-panel', (req, res) => {
+  res.sendFile(path.join(__dirname, '../pages/config-panel.html'));
 });
 
 // Health check
