@@ -31,19 +31,46 @@ router.post('/game/personalize', async (req, res) => {
 
 /**
  * POST /api/game/debrief
- * Run-end debrief — Navigation Chart lite
+ * Run-end debrief — accepts both old format (run_history) and new format (intakeAnswers/runSummary)
  */
 router.post('/game/debrief', async (req, res) => {
   try {
-    const { run_history, intake_answers } = req.body;
-    if (!run_history) return res.status(400).json({ error: 'Run history required' });
+    const { run_history, intake_answers, intakeAnswers, runSummary } = req.body;
 
-    const debriefText = await generateDebrief(run_history, intake_answers);
+    // Support new payload format from redesigned game
+    const history = run_history || runSummary;
+    const intake = intake_answers || intakeAnswers;
 
-    // Save to database if user is authenticated
-    // For now, return the debrief with a generated ID
+    if (!history) return res.status(400).json({ error: 'Run data required' });
+
+    // If new format, build a targeted prompt
+    let debriefText;
+    if (runSummary) {
+      const { callClaude } = require('../services/claude');
+      const prompt = `
+A captain's ship has been destroyed. Based on their run data
+and the Big Book of Strategy framework, produce a concise
+strategic debrief in plain English. Be direct and specific.
+Maximum 150 words. Reference their actual lever allocation.
+
+Run data:
+${JSON.stringify(runSummary, null, 2)}
+
+Intake answers:
+${JSON.stringify(intakeAnswers || {}, null, 2)}
+
+Format:
+What destroyed your ship: [one sentence]
+The pattern: [one sentence]
+The one thing: [one sentence]
+Your next run: [one sentence and a question]
+      `;
+      debriefText = await callClaude(prompt);
+    } else {
+      debriefText = await generateDebrief(history, intake);
+    }
+
     const id = Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
-
     res.json({ id, debrief: debriefText });
   } catch (e) {
     console.error('Debrief error:', e.message);
@@ -68,6 +95,22 @@ router.get('/game/state', async (req, res) => {
 router.post('/game/state', async (req, res) => {
   // TODO: Extract user from Clerk session, save to Supabase
   res.json({ saved: true });
+});
+
+/**
+ * POST /api/game/save
+ * Save game state (new format from redesigned game)
+ */
+router.post('/game/save', async (req, res) => {
+  try {
+    const { stats, mission, passengers, systems } = req.body;
+    // For unauthenticated users, just acknowledge the save
+    // TODO: When auth is wired, save to Supabase game_state table
+    res.json({ success: true });
+  } catch (e) {
+    console.error('Save error:', e.message);
+    res.status(500).json({ error: 'Save failed' });
+  }
 });
 
 // ---- Analytics (no auth) ----

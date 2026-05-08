@@ -1,0 +1,178 @@
+{
+  "templates": [
+    {
+      "id": "competitor_price",
+      "system": "weapons",
+      "strengthRange": [2, 4],
+      "statDamage": "momentum",
+      "threatShape": "precise",
+      "template": "{COMPETITOR} launched at {PERCENT}% below your price.",
+      "variables": {
+        "COMPETITOR": ["A new entrant", "Your closest competitor", "A funded startup", "An overseas provider"],
+        "PERCENT": ["20", "30", "35", "40", "25"]
+      },
+      "diagnosisTemplate": "Price pressure lands harder when Positioning is low. A business that owns its positioning competes on value, not price.",
+      "caseStudyId": "positioning_001"
+    },
+    {
+      "id": "cash_flow",
+      "system": "shields",
+      "strengthRange": [2, 4],
+      "statDamage": "resilience",
+      "threatShape": "direct",
+      "template": "{CLIENT_TYPE} invoice is {DAYS} days overdue.",
+      "variables": {
+        "CLIENT_TYPE": ["A large", "Your biggest", "Three", "Your most reliable"],
+        "DAYS": ["45", "60", "90", "30"]
+      },
+      "diagnosisTemplate": "Cash flow gaps hit hardest when Capital is low. Financial runway changes what is strategically possible.",
+      "caseStudyId": "capital_001"
+    },
+    {
+      "id": "key_employee_quit",
+      "system": "lifesupport",
+      "strengthRange": [3, 5],
+      "statDamage": "resilience",
+      "threatShape": "diffuse",
+      "template": "Your {ROLE} just accepted an offer from {DESTINATION}.",
+      "variables": {
+        "ROLE": ["top performer", "lead salesperson", "most experienced operator", "best customer relationship"],
+        "DESTINATION": ["a competitor", "a larger firm", "a startup offering equity", "a remote-first company"]
+      },
+      "diagnosisTemplate": "Losing a key person exposes how much knowledge lives in heads instead of systems. A documented process survives the person who built it.",
+      "caseStudyId": "people_001"
+    },
+    {
+      "id": "market_shift",
+      "system": "sensors",
+      "strengthRange": [2, 4],
+      "statDamage": "clarity",
+      "threatShape": "diffuse",
+      "template": "Your core customer segment is {CHANGE}.",
+      "variables": {
+        "CHANGE": ["shrinking faster than projected", "shifting to a competitor category", "aging out of your offering", "splitting into two distinct groups"]
+      },
+      "diagnosisTemplate": "Market shifts are invisible until they are obvious. High Information Asymmetry means you see them before your competitors do.",
+      "caseStudyId": "intel_001"
+    },
+    {
+      "id": "viral_negative",
+      "system": "communications",
+      "strengthRange": [3, 5],
+      "statDamage": "momentum",
+      "threatShape": "direct",
+      "template": "A {REVIEW_TYPE} review is spreading across {PLATFORM}.",
+      "variables": {
+        "REVIEW_TYPE": ["1-star", "scathing", "viral negative", "misleading"],
+        "PLATFORM": ["Google", "Yelp", "Reddit", "a local Facebook group", "Glassdoor"]
+      },
+      "diagnosisTemplate": "Negative signals spread faster than positive ones. A strong Communications position means your existing customers defend you before you have to.",
+      "caseStudyId": "comms_001"
+    },
+    {
+      "id": "supplier_price_hike",
+      "system": "shields",
+      "strengthRange": [2, 4],
+      "statDamage": "resilience",
+      "threatShape": "direct",
+      "template": "{SUPPLIER} raises prices {PERCENT}% with {NOTICE} notice.",
+      "variables": {
+        "SUPPLIER": ["Your primary vendor", "Your software provider", "Your logistics partner", "Your key contractor"],
+        "PERCENT": ["15", "22", "30", "40"],
+        "NOTICE": ["30 days", "two weeks", "immediate", "no"]
+      },
+      "diagnosisTemplate": "Cost surprises reveal how thin your margins actually are. Capital reserves are not savings — they are strategic options.",
+      "caseStudyId": "capital_002"
+    },
+    {
+      "id": "copy_competitor",
+      "system": "weapons",
+      "strengthRange": [2, 4],
+      "statDamage": "momentum",
+      "threatShape": "precise",
+      "template": "A competitor just launched {COPY} of your core offering.",
+      "variables": {
+        "COPY": ["a near-identical version", "a cheaper clone", "a rebranded copy", "a direct replica"]
+      },
+      "diagnosisTemplate": "Being copied means you were worth copying. The question is whether your Differentiation runs deep enough that the copy cannot feel the same.",
+      "caseStudyId": "differentiation_001"
+    },
+    {
+      "id": "repeat_rate_drop",
+      "system": "communications",
+      "strengthRange": [2, 3],
+      "statDamage": "momentum",
+      "threatShape": "diffuse",
+      "template": "Repeat purchase rate dropped {PERCENT}% this quarter with no clear cause.",
+      "variables": {
+        "PERCENT": ["18", "25", "30", "22"]
+      },
+      "diagnosisTemplate": "Customers who loved the first experience but did not return were never habituated. The trigger to come back was never built.",
+      "caseStudyId": "habit_001"
+    },
+    {
+      "id": "process_failure",
+      "system": "lifesupport",
+      "strengthRange": [2, 4],
+      "statDamage": "resilience",
+      "threatShape": "diffuse",
+      "template": "Quality dropped {PERCENT}% as volume increased this month.",
+      "variables": {
+        "PERCENT": ["15", "20", "28", "12"]
+      },
+      "diagnosisTemplate": "Quality that depends on the owner's presence cannot scale. A system that delivers the same outcome at any volume is the only thing that can grow.",
+      "caseStudyId": "systems_001"
+    },
+    {
+      "id": "wrong_timing",
+      "system": "sensors",
+      "strengthRange": [3, 5],
+      "statDamage": "clarity",
+      "threatShape": "diffuse",
+      "template": "A competitor moved into your market {TIMING} and captured first-mover advantage.",
+      "variables": {
+        "TIMING": ["three months before you", "while you were still planning", "with a smaller budget but faster execution", "at exactly the right moment"]
+      },
+      "diagnosisTemplate": "Timing is a lever. Too early means educating the market for someone else. Too late means fighting for scraps. Information Asymmetry is what tells you which one you are facing.",
+      "caseStudyId": "intel_002"
+    }
+  ],
+
+  "noiseEvents": [
+    {
+      "id": "inflation_spike",
+      "label": "INFLATION SPIKE",
+      "description": "Operating costs rising across the board.",
+      "shape": "scatter",
+      "approach": "left"
+    },
+    {
+      "id": "interest_hike",
+      "label": "INTEREST RATE HIKE",
+      "description": "Borrowing just got more expensive.",
+      "shape": "scatter",
+      "approach": "right"
+    },
+    {
+      "id": "algorithm_change",
+      "label": "ALGORITHM CHANGE",
+      "description": "Your primary channel just changed the rules.",
+      "shape": "dart",
+      "approach": "random"
+    },
+    {
+      "id": "supply_disruption",
+      "label": "SUPPLY DISRUPTION",
+      "description": "Your supply chain has a new bottleneck.",
+      "shape": "scatter",
+      "approach": "top"
+    },
+    {
+      "id": "market_downturn",
+      "label": "MARKET DOWNTURN",
+      "description": "Customers are pulling back spending.",
+      "shape": "wide",
+      "approach": "top"
+    }
+  ]
+}

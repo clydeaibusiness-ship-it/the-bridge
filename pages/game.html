@@ -135,9 +135,87 @@
   <!-- Screen pulse overlay — for dopamine flash -->
   <div id="screen-pulse"></div>
 
-  <script type="module">
-    import { renderStarfield } from '/js/starfield.js';
-    renderStarfield('starfield');
-  </script>
+  <!-- Intake form — shown before first game -->
+  <div id="intake-overlay" class="hidden">
+    <div class="modal-panel intake-panel">
+      <p class="intake-title">BEFORE YOU TAKE THE HELM</p>
+      <p class="intake-subtitle">
+        Answer these questions and your ship is built around
+        your actual business.
+      </p>
+
+      <div class="intake-field">
+        <label>What does your business sell, and to whom?</label>
+        <textarea id="intake-business" rows="2"
+          placeholder="e.g. I run a landscaping company for commercial properties"></textarea>
+      </div>
+
+      <div class="intake-field">
+        <label>How long have you been operating?</label>
+        <select id="intake-age">
+          <option value="new">Less than 1 year</option>
+          <option value="early">1 to 3 years</option>
+          <option value="established" selected>3 to 7 years</option>
+          <option value="mature">7+ years</option>
+        </select>
+      </div>
+
+      <div class="intake-field">
+        <label>Do customers come back repeatedly or mostly once?</label>
+        <select id="intake-repeat">
+          <option value="high">Mostly repeat — they come back regularly</option>
+          <option value="medium">Mix of both</option>
+          <option value="low">Mostly one-time purchases</option>
+        </select>
+      </div>
+
+      <div class="intake-field">
+        <label>Could a customer leave you tomorrow with no friction?</label>
+        <select id="intake-switching">
+          <option value="low">Yes easily — nothing stops them</option>
+          <option value="medium">Some friction but not much</option>
+          <option value="high">No — they have too much invested</option>
+        </select>
+      </div>
+
+      <div class="intake-field">
+        <label>Is your business documented or does it run on your presence?</label>
+        <select id="intake-systems">
+          <option value="low">It depends on me being there</option>
+          <option value="medium">Partially documented</option>
+          <option value="high">Well documented — others can run it</option>
+        </select>
+      </div>
+
+      <div class="intake-field">
+        <label>Are you currently profitable, breaking even, or burning savings?</label>
+        <select id="intake-capital">
+          <option value="high">Profitable with runway</option>
+          <option value="medium">Breaking even</option>
+          <option value="low">Burning through savings</option>
+        </select>
+      </div>
+
+      <div class="intake-field">
+        <label>
+          What is your biggest uncertainty right now?
+          (one sentence)
+        </label>
+        <textarea id="intake-uncertainty" rows="2"
+          placeholder="e.g. I don't know how to get new customers consistently"></textarea>
+      </div>
+
+      <div class="intake-actions">
+        <button id="intake-submit" class="btn-primary">
+          BUILD MY SHIP →
+        </button>
+        <button id="intake-skip">
+          Skip — use a generic ship
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="/js/game.js"></script>
 </body>
 </html>

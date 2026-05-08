@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>The Bridge — Config Panel</title>
+  <link rel="stylesheet" href="/css/global.css"/>
+  <link rel="stylesheet" href="/css/config-panel.css"/>
+</head>
+<body style="overflow:auto">
+  <canvas id="starfield"></canvas>
+  <div id="config-panel">
+    <div class="cp-header">
+      <h1 class="cp-title">CONFIGURATION PANEL</h1>
+      <p class="cp-subtitle">
+        Adjust values and see changes live in the preview.
+        Copy changed values to config.js to make them permanent.
+      </p>
+      <a href="/game" class="cp-preview-link">
+        → Open Game Preview
+      </a>
+    </div>
+    <div id="cp-sections">
+      <!-- Populated by config-panel.js -->
+    </div>
+  </div>
+  <script type="module">
+    import { renderStarfield } from '/js/starfield.js';
+    renderStarfield('starfield');
+  </script>
+  <script type="module" src="/js/config-panel.js"></script>
+</body>
+</html>

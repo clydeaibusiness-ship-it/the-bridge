@@ -712,6 +712,112 @@
   to   { box-shadow: inset 0 0 60px 20px rgba(107, 42, 42, 0.5); }
 }
 
+/* ── INTAKE FORM ── */
+#intake-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--overlay);
+  z-index: 500;
+  overflow-y: auto;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 20px 12px;
+}
+
+.intake-panel {
+  position: relative;
+  transform: none;
+  top: auto;
+  left: auto;
+  width: 100%;
+  max-width: 420px;
+  max-height: none;
+}
+
+.intake-title {
+  font-family: var(--font-data);
+  font-size: var(--text-sm);
+  color: var(--signal);
+  letter-spacing: var(--tracking-data);
+  margin-bottom: 6px;
+}
+
+.intake-subtitle {
+  font-family: var(--font-ui);
+  font-size: var(--text-xs);
+  color: var(--cream-dim);
+  line-height: 1.5;
+  margin-bottom: 16px;
+}
+
+.intake-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.intake-field label {
+  font-family: var(--font-ui);
+  font-size: var(--text-xs);
+  color: var(--cream-dim);
+}
+
+.intake-field textarea,
+.intake-field select {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  color: var(--cream);
+  font-family: var(--font-ui);
+  font-size: var(--text-xs);
+  padding: 10px 12px;
+  resize: none;
+  width: 100%;
+}
+
+.intake-field select {
+  appearance: none;
+  cursor: pointer;
+}
+
+.intake-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.btn-primary {
+  font-family: var(--font-data);
+  font-size: var(--text-xs);
+  letter-spacing: var(--tracking-data);
+  color: var(--void);
+  background: var(--cream);
+  border: none;
+  border-radius: 2px;
+  padding: 14px 20px;
+  cursor: pointer;
+  text-transform: uppercase;
+  transition: all 0.15s var(--ease-quick);
+}
+
+.btn-primary:active {
+  background: var(--signal);
+}
+
+#intake-skip {
+  font-family: var(--font-ui);
+  font-size: var(--text-xs);
+  color: var(--cream-ghost);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  text-align: center;
+}
+
 /* Ship animations */
 @keyframes ship-idle {
   from { transform: translateY(0px); }

@@ -1,0 +1,119 @@
+#config-panel {
+  position: relative;
+  z-index: 1;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 24px 16px 80px;
+}
+
+.cp-header {
+  margin-bottom: 32px;
+}
+
+.cp-title {
+  font-family: var(--font-data);
+  font-size: var(--text-lg);
+  color: var(--signal);
+  letter-spacing: var(--tracking-data);
+  margin-bottom: 8px;
+}
+
+.cp-subtitle {
+  font-family: var(--font-ui);
+  font-size: var(--text-xs);
+  color: var(--cream-dim);
+  line-height: 1.6;
+  margin-bottom: 12px;
+}
+
+.cp-preview-link {
+  font-family: var(--font-data);
+  font-size: var(--text-xs);
+  color: var(--cream);
+  letter-spacing: var(--tracking-data);
+  text-decoration: none;
+  border: 1px solid var(--border);
+  padding: 8px 16px;
+  border-radius: 2px;
+  display: inline-block;
+}
+
+.cp-section {
+  margin-bottom: 24px;
+  background: var(--glass);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 16px;
+}
+
+.cp-section-title {
+  font-family: var(--font-data);
+  font-size: var(--text-xs);
+  color: var(--signal);
+  letter-spacing: var(--tracking-data);
+  text-transform: uppercase;
+  margin-bottom: 14px;
+}
+
+.cp-row {
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  gap: 10px;
+  align-items: center;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border);
+  position: relative;
+}
+
+.cp-row:last-child {
+  border-bottom: none;
+}
+
+.cp-row.changed {
+  background: rgba(200, 169, 110, 0.05);
+}
+
+.cp-label {
+  font-family: var(--font-data);
+  font-size: var(--text-xs);
+  color: var(--cream-dim);
+  letter-spacing: var(--tracking-data);
+}
+
+.cp-number, .cp-text {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  color: var(--cream);
+  font-family: var(--font-data);
+  font-size: var(--text-xs);
+  padding: 6px 10px;
+  width: 100%;
+}
+
+.cp-color {
+  width: 48px;
+  height: 32px;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  background: none;
+  cursor: pointer;
+  padding: 2px;
+}
+
+.cp-toggle {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  accent-color: var(--signal);
+}
+
+.cp-hint {
+  grid-column: 1 / -1;
+  font-family: var(--font-ui);
+  font-size: 0.6rem;
+  color: var(--signal);
+  padding: 4px 0;
+  line-height: 1.4;
+  word-break: break-all;
+}
