@@ -90,6 +90,10 @@ app.get('/intake', (req, res) => {
   res.sendFile(path.join(__dirname, '../pages/intake.html'));
 });
 
+app.get('/chart', (req, res) => {
+  res.sendFile(path.join(__dirname, '../pages/chart.html'));
+});
+
 app.get('/subscribe', (req, res) => {
   res.sendFile(path.join(__dirname, '../pages/subscribe.html'));
 });

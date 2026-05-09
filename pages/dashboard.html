@@ -91,6 +91,7 @@
             <p class="dash-chart-loading" id="chart-loading">Generating your strategic assessment…</p>
           </div>
           <div class="dash-chart-footer">
+            <a href="/chart" class="dash-btn-primary" style="margin-bottom:8px;">View Navigation Chart</a>
             <a href="/intake?mode=update" class="dash-btn-update">Update your answers</a>
           </div>
         </div>
@@ -206,12 +207,19 @@
     function renderChart(sections) {
       const container = document.getElementById('chart-content');
       container.innerHTML = '';
-      sections.forEach(s => {
+      // Show first section as preview on dashboard
+      if (sections.length > 0) {
         const div = document.createElement('div');
         div.className = 'dash-chart-section';
-        div.innerHTML = `<div class="dash-chart-section-title">${s.title}</div><div class="dash-chart-section-body">${s.body}</div>`;
+        div.innerHTML = `<div class="dash-chart-section-title">${sections[0].title}</div><div class="dash-chart-section-body">${sections[0].body}</div>`;
         container.appendChild(div);
-      });
+        if (sections.length > 1) {
+          const more = document.createElement('p');
+          more.style.cssText = 'font-family:var(--font-data);font-size:10px;letter-spacing:0.08em;color:#7a7570;margin-top:12px;';
+          more.textContent = `+ ${sections.length - 1} more sections`;
+          container.appendChild(more);
+        }
+      }
     }
 
     // ---- Commander ----

@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Bridge — Navigation Chart</title>
+  <link rel="stylesheet" href="/css/global.css">
+  <style>
+    html, body { overflow: visible !important; height: auto !important; background: #f5f0e8 !important; color: #0a0a0f !important; }
+    .chart-page { max-width: 640px; margin: 0 auto; padding: 32px 20px 80px; }
+    .chart-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; }
+    .chart-back {
+      font-family: var(--font-data); font-size: 11px; letter-spacing: 0.08em;
+      color: #3a3530; text-decoration: none; display: flex; align-items: center; gap: 6px;
+    }
+    .chart-back:hover { text-decoration: underline; }
+    .chart-update {
+      font-family: var(--font-data); font-size: 10px; letter-spacing: 0.08em;
+      color: #7a7570; background: transparent; border: 1px solid #c8c0b0;
+      border-radius: 2px; padding: 7px 14px; text-decoration: none; cursor: pointer;
+    }
+    .chart-update:hover { border-color: #3a3530; color: #3a3530; }
+    .chart-heading {
+      font-family: var(--font-data); font-size: 10px; letter-spacing: 0.12em;
+      text-transform: uppercase; color: #7a7570; margin-bottom: 8px;
+    }
+    .chart-business-name {
+      font-family: var(--font-ui); font-size: var(--text-lg); font-weight: 500;
+      color: #0a0a0f; margin-bottom: 32px;
+    }
+    .chart-section { margin-bottom: 28px; }
+    .chart-section:last-child { margin-bottom: 0; }
+    .chart-section-title {
+      font-family: var(--font-data); font-size: 10px; letter-spacing: 0.1em;
+      text-transform: uppercase; color: #7a7570; margin-bottom: 10px;
+      padding-bottom: 8px; border-bottom: 1px solid #c8c0b0;
+    }
+    .chart-section-body {
+      font-family: var(--font-ui); font-size: var(--text-sm); color: #3a3530;
+      line-height: 1.65;
+    }
+    .chart-empty {
+      font-family: var(--font-ui); font-size: var(--text-sm); color: #7a7570;
+      line-height: 1.55; text-align: center; padding: 60px 0;
+    }
+    .chart-loading {
+      font-family: var(--font-data); font-size: var(--text-xs); letter-spacing: 0.1em;
+      text-transform: uppercase; color: #7a7570; text-align: center; padding: 60px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="chart-page">
+    <nav class="chart-nav">
+      <a href="/dashboard" class="chart-back">← Back to Dashboard</a>
+      <a href="/intake?mode=update" class="chart-update">Update your answers</a>
+    </nav>
+
+    <div class="chart-heading">Navigation Chart</div>
+    <div class="chart-business-name" id="chart-name">Your Business</div>
+
+    <div id="chart-body">
+      <p class="chart-loading" id="chart-loading">Loading your Navigation Chart…</p>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      let session = null;
+      try { session = JSON.parse(localStorage.getItem('bridge_session')); } catch (e) {}
+
+      if (!session || !session.completedAt) {
+        document.getElementById('chart-body').innerHTML = '<p class="chart-empty">You haven\'t completed the intake yet.<br><a href="/intake" style="color:#8a6830;">Start the Intake →</a></p>';
+        return;
+      }
+
+      // Business name
+      const name = session.businessName || session.shipName || 'Your Business';
+      document.getElementById('chart-name').textContent = name;
+
+      if (session.chartSections) {
+        renderSections(session.chartSections);
+      } else if (session.businessContext && session.intakeAnswers) {
+        generateAndRender(session);
+      } else {
+        document.getElementById('chart-body').innerHTML = '<p class="chart-empty">Navigation Chart data is missing. Try <a href="/intake?mode=update" style="color:#8a6830;">updating your answers</a>.</p>';
+      }
+
+      function renderSections(sections) {
+        const container = document.getElementById('chart-body');
+        container.innerHTML = '';
+        sections.forEach(s => {
+          const div = document.createElement('div');
+          div.className = 'chart-section';
+          div.innerHTML = `<div class="chart-section-title">${s.title}</div><div class="chart-section-body">${s.body}</div>`;
+          container.appendChild(div);
+        });
+      }
+
+      async function generateAndRender(session) {
+        try {
+          const resp = await fetch('/api/member/chart/generate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              businessContext: session.businessContext,
+              intakeAnswers: session.intakeAnswers,
+              scannedContent: session.scannedContent || null
+            })
+          });
+          if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+          const data = await resp.json();
+          if (data.sections) {
+            session.chartSections = data.sections;
+            localStorage.setItem('bridge_session', JSON.stringify(session));
+            renderSections(data.sections);
+          }
+        } catch (err) {
+          document.getElementById('chart-loading').textContent = 'Failed to generate chart. Please refresh.';
+        }
+      }
+    })();
+  </script>
+</body>
+</html>
