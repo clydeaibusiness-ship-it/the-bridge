@@ -8,20 +8,21 @@
   <link rel="stylesheet" href="/css/global.css">
   <link rel="stylesheet" href="/css/landing.css">
 </head>
-<body>
-  <canvas id="starfield"></canvas>
+<body class="landing-body">
 
   <div class="page">
 
-    <!-- ========== HERO ========== -->
+    <!-- ========== HERO (dark panel with starfield) ========== -->
     <section class="hero">
-      <div class="container">
+      <canvas id="starfield"></canvas>
+      <a href="/login" class="hero-login">Log in</a>
+      <div class="container hero-container">
         <p class="eyebrow">Strategic navigation for small business</p>
         <h1 class="headline">Your business is already in flight.<br>Do you know where it's headed?</h1>
         <p class="hero-body">The Bridge gives established business owners the strategic framework, the AI advisor, and the real-time simulator to double what's working and cut what isn't.</p>
         <div class="hero-buttons">
-          <a href="/simulator" class="btn-primary">Launch the Simulator</a>
-          <a href="#how-it-works" class="btn-ghost">See how it works</a>
+          <a href="/simulator" class="btn-primary-hero">Launch the Simulator</a>
+          <a href="#how-it-works" class="btn-ghost-hero">See how it works</a>
         </div>
       </div>
     </section>
@@ -70,9 +71,10 @@
     <section class="pricing">
       <div class="container">
         <div class="pricing-card">
+          <span class="pricing-tier">ENSIGN TIER</span>
           <div class="pricing-amounts">
-            <span class="pricing-monthly">$97 / month</span>
-            <span class="pricing-annual">$970 / year — save two months</span>
+            <span class="pricing-monthly">$50 / month</span>
+            <span class="pricing-annual">$500 / year — save two months</span>
           </div>
           <ul class="pricing-features">
             <li>Full strategic simulator with saved runs and progression</li>
@@ -80,7 +82,7 @@
             <li>The Commander — AI strategic advisor with your full business context</li>
             <li>Grant Radar — matched government funding opportunities</li>
           </ul>
-          <a href="/login?action=subscribe" class="btn-primary">Become a member</a>
+          <a href="/login?action=subscribe" class="btn-primary-light">Become a member</a>
           <p class="pricing-sub">Or start with the free Simulator — no account required</p>
         </div>
       </div>
@@ -95,6 +97,9 @@
 
   </div>
 
-  <script src="/js/starfield.js" type="module"></script>
+  <script type="module">
+    import { renderStarfield } from '/js/starfield.js';
+    renderStarfield('starfield');
+  </script>
 </body>
 </html>
