@@ -132,14 +132,13 @@
 
       // Load session
       try { sessionData = JSON.parse(localStorage.getItem('bridge_session')); } catch (e) {}
+      console.log('Dashboard session:', sessionData ? 'loaded' : 'empty', sessionData?.completedAt ? 'intake done' : 'no intake');
 
       if (sessionData) {
-        // Business name — use businessName first, then shipName
         const name = sessionData.businessName || sessionData.shipName;
         if (name) document.getElementById('dash-ship-name').textContent = name;
         if (sessionData.destination) document.getElementById('dash-destination').textContent = `→ ${sessionData.destination.toUpperCase()}`;
 
-        // Load simulator resource values if saved
         if (sessionData.simulatorResources) {
           const r = sessionData.simulatorResources;
           if (r.capital !== undefined) document.getElementById('dash-capital').textContent = `$${r.capital.toLocaleString()}`;
@@ -148,9 +147,12 @@
           if (r.switchingCosts !== undefined) document.getElementById('dash-switching').textContent = `${r.switchingCosts}%`;
         }
 
+        // Show chart card if intake was completed
         if (sessionData.completedAt) {
           document.getElementById('chart-prompt').style.display = 'none';
-          document.getElementById('chart-card').style.display = 'block';
+          const chartCard = document.getElementById('chart-card');
+          chartCard.style.display = 'block';
+          chartCard.style.visibility = 'visible';
 
           if (sessionData.chartSections) {
             renderChart(sessionData.chartSections);

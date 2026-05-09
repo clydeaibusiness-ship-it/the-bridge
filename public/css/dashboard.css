@@ -59,6 +59,7 @@
   display: grid;
   grid-template-columns: 260px 1fr 300px;
   gap: 20px;
+  width: 100%;
 }
 
 /* ---- PANELS ---- */
@@ -436,31 +437,68 @@
   }
   .dash-ship {
     grid-column: 1 / -1;
-    display: grid;
-    grid-template-columns: auto 1fr;
-    gap: 20px;
   }
   .dash-ship-display {
-    width: 120px;
-    margin-bottom: 0;
+    width: 80px;
+    aspect-ratio: auto;
+    margin-bottom: 12px;
   }
 }
 @media (max-width: 768px) {
+  .dash-page {
+    padding: 16px 12px 40px;
+  }
   .dash-header {
     flex-direction: column;
-    gap: 12px;
+    gap: 10px;
     align-items: flex-start;
+    padding-bottom: 14px;
+    margin-bottom: 16px;
+  }
+  .dash-welcome {
+    font-size: var(--text-base);
   }
   .dash-grid {
     grid-template-columns: 1fr;
+    gap: 14px;
   }
   .dash-ship {
     grid-template-columns: 1fr;
+  }
+  .dash-ship-display {
+    width: 60px;
+    aspect-ratio: auto;
+    margin: 0 auto 12px;
   }
   .dash-right {
     display: contents;
   }
   .dash-commander {
-    min-height: 400px;
+    min-height: 300px;
+  }
+  .dash-commander-messages {
+    max-height: 240px;
+  }
+  .dash-panel {
+    padding: 14px;
+  }
+  .dash-chart-content {
+    padding: 12px 14px 14px;
+  }
+  .dash-chart-footer {
+    padding: 10px 14px;
+  }
+  .dash-run-list {
+    padding: 12px 14px;
+  }
+  .dash-grant-body {
+    padding: 12px 14px;
+  }
+  .dash-section-title {
+    padding: 12px 14px;
+  }
+  .prompt-pill {
+    font-size: 11px;
+    padding: 6px 12px;
   }
 }
