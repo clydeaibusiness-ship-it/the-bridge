@@ -113,10 +113,9 @@
 
         <!-- Navigation Chart (hidden until generated) -->
         <div class="dash-panel dash-chart-card" id="chart-card" style="display:none;">
-          <div class="dash-section-title">Navigation Chart</div>
-          <div class="dash-chart-content" id="chart-content">
-            <p class="dash-chart-loading" id="chart-loading">Generating your strategic assessment…</p>
-          </div>
+          <h3 class="dash-section-title">Navigation Chart</h3>
+          <p class="dash-chart-summary" id="chart-summary">Your latest strategic assessment is ready.</p>
+          <a href="#" class="dash-btn-primary" id="chart-download">Download PDF</a>
         </div>
 
         <!-- Run History -->
@@ -159,62 +158,21 @@
           if (session.shipName) document.getElementById('dash-ship-name').textContent = session.shipName;
           if (session.destination) document.getElementById('dash-destination').textContent = `→ ${session.destination.toUpperCase()}`;
 
-          // If intake was completed, show chart card and generate content
+          // If intake was completed, show chart card instead of prompt
           if (session.completedAt) {
             document.getElementById('chart-prompt').style.display = 'none';
-            document.getElementById('chart-card').style.display = 'block';
+            const chartCard = document.getElementById('chart-card');
+            chartCard.style.display = 'block';
 
-            // Check if chart was already generated and cached
-            if (session.chartSections) {
-              renderChart(session.chartSections);
-            } else if (session.businessContext && session.intakeAnswers) {
-              generateChart(session);
+            // Build summary from business context
+            if (session.businessContext) {
+              const ctx = session.businessContext;
+              document.getElementById('chart-summary').textContent =
+                `Your intake for ${ctx.businessType} has been received. Your Navigation Chart is being prepared — a full strategic assessment based on the Big Book of Strategy framework, personalized to your operation.`;
             }
           }
         }
       } catch (e) {}
-    }
-
-    // Navigation Chart generation
-    async function generateChart(session) {
-      try {
-        const resp = await fetch('/api/member/chart/generate', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            businessContext: session.businessContext,
-            intakeAnswers: session.intakeAnswers
-          })
-        });
-
-        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-        const data = await resp.json();
-
-        if (data.sections) {
-          // Cache in localStorage so we don't regenerate
-          session.chartSections = data.sections;
-          localStorage.setItem('bridge_session', JSON.stringify(session));
-          renderChart(data.sections);
-        }
-      } catch (err) {
-        console.error('Chart generation failed:', err);
-        document.getElementById('chart-loading').textContent =
-          'Chart generation failed. Refresh to try again.';
-      }
-    }
-
-    function renderChart(sections) {
-      const container = document.getElementById('chart-content');
-      container.innerHTML = '';
-      sections.forEach(section => {
-        const div = document.createElement('div');
-        div.className = 'dash-chart-section';
-        div.innerHTML = `
-          <div class="dash-chart-section-title">${section.title}</div>
-          <div class="dash-chart-section-body">${section.body}</div>
-        `;
-        container.appendChild(div);
-      });
     }
 
     // Commander chat
@@ -228,34 +186,6 @@
       msg.textContent = text;
       commanderMessages.appendChild(msg);
       commanderMessages.scrollTop = commanderMessages.scrollHeight;
-    }
-
-    // Get session context for Commander
-    function getSessionContext() {
-      try {
-        const session = JSON.parse(localStorage.getItem('bridge_session'));
-        if (session && session.businessContext) {
-          const ctx = session.businessContext;
-          const answers = session.intakeAnswers || {};
-          return `This business owner has already completed their intake. Here is their full context — do NOT ask them these questions again.
-
-Business type: ${ctx.businessType}
-Client type: ${ctx.clientType}
-Service: ${ctx.serviceType}
-Critical asset: ${ctx.assetType}
-Competitor threat: ${ctx.competitorThreat}
-Growth constraint: ${ctx.growthConstraint}
-Primary uncertainty: ${ctx.primaryUncertainty}
-Industry: ${answers.industry || 'unknown'}
-Years operating: ${answers.years || 'unknown'}
-Revenue: ${answers.revenue || 'unknown'}
-Employees: ${answers.employees || 'unknown'}
-Biggest challenge: ${answers.challenge || 'unknown'}
-12-month goal: ${answers.goal || 'unknown'}
-Differentiator: ${answers.differentiator || 'unknown'}`;
-        }
-      } catch (e) {}
-      return '';
     }
 
     async function sendCommanderMessage() {
@@ -275,11 +205,10 @@ Differentiator: ${answers.differentiator || 'unknown'}`;
       commanderMessages.scrollTop = commanderMessages.scrollHeight;
 
       try {
-        const sessionContext = getSessionContext();
         const resp = await fetch('/api/member/commander/message', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ message: text, sessionContext })
+          body: JSON.stringify({ message: text })
         });
 
         if (!resp.ok) throw new Error(`HTTP ${resp.status}`);

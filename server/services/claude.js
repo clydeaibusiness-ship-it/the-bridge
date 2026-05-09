@@ -193,21 +193,12 @@ ${JSON.stringify(intakeAnswers, null, 2)}`;
 /**
  * Commander chat — strategic advice with full business context
  */
-async function commanderChat(message, gameState, runHistory, sessionContext) {
-  let context = '';
-
-  // Include the player's full business context if available
-  if (sessionContext) {
-    context += sessionContext + '\n\n';
-  }
-
-  context += `The player's current game state:
+async function commanderChat(message, gameState, runHistory) {
+  const context = `The captain's current ship state:
 ${JSON.stringify(gameState, null, 2)}
 
 Their run history:
-${JSON.stringify(runHistory, null, 2)}
-
-IMPORTANT: The player has already completed their intake. You already have their full business context above. Do NOT ask them what business they are in, what they do, their revenue, team size, or any intake questions. Jump straight into strategic advice using the Big Book of Strategy framework. Address them directly and reference their specific business context in every response.`;
+${JSON.stringify(runHistory, null, 2)}`;
 
   return await callClaude(message, context);
 }

@@ -215,14 +215,16 @@ router.get('/member/commander/sessions', async (req, res) => {
  */
 router.post('/member/commander/message', async (req, res) => {
   try {
-    const { message, sessionContext } = req.body;
+    const { message } = req.body;
     if (!message) return res.status(400).json({ error: 'Message required' });
 
-    const gameState = {};
-    const runHistory = [];
+    // TODO: Auth check, get user, check session limits
+    // TODO: Load game state and run history for context
 
-    // Pass session context as additional context so Commander knows the business
-    const response = await commanderChat(message, gameState, runHistory, sessionContext);
+    const gameState = {}; // placeholder
+    const runHistory = []; // placeholder
+
+    const response = await commanderChat(message, gameState, runHistory);
 
     res.json({ response });
   } catch (e) {
@@ -238,51 +240,6 @@ router.post('/member/commander/message', async (req, res) => {
 router.get('/member/runs', async (req, res) => {
   // TODO: Auth check
   res.json([]);
-});
-
-/**
- * POST /api/member/chart/generate
- * Generate Navigation Chart from intake answers + businessContext
- */
-router.post('/member/chart/generate', async (req, res) => {
-  try {
-    const { businessContext, intakeAnswers } = req.body;
-    if (!businessContext || !intakeAnswers) {
-      return res.status(400).json({ error: 'businessContext and intakeAnswers required' });
-    }
-
-    const { callClaude } = require('../services/claude');
-    const prompt = `Generate a Navigation Chart — a strategic assessment for this business owner. They have completed the intake and you have their full context. Return a JSON object with no other text.
-
-Business context:
-${JSON.stringify(businessContext, null, 2)}
-
-Intake answers:
-${JSON.stringify(intakeAnswers, null, 2)}
-
-Return this exact JSON structure with 5 sections. Each section has a "title" and "body". Write 2-4 sentences per body. Be direct, specific, reference their actual business. Use Big Book of Strategy framework language.
-
-{
-  "sections": [
-    { "title": "Current Position", "body": "Where they stand right now based on what they told you" },
-    { "title": "Primary Lever Gap", "body": "The single biggest strategic weakness based on their answers" },
-    { "title": "Competitive Exposure", "body": "Where competitors can hurt them and why" },
-    { "title": "Growth Sequence", "body": "What to do first, second, third — in order" },
-    { "title": "The One Question", "body": "The single most important question they should be asking themselves right now" }
-  ]
-}`;
-
-    const response = await callClaude(prompt);
-    const jsonMatch = response.match(/\{[\s\S]*\}/);
-    if (jsonMatch) {
-      res.json(JSON.parse(jsonMatch[0]));
-    } else {
-      res.json(JSON.parse(response));
-    }
-  } catch (e) {
-    console.error('Chart generation error:', e.message);
-    res.status(500).json({ error: 'Chart generation failed' });
-  }
 });
 
 /**
