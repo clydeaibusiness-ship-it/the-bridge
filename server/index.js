@@ -3,6 +3,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
+const cookieParser = require('cookie-parser');
 const path = require('path');
 
 const apiRoutes = require('./routes/api');
@@ -29,6 +30,7 @@ app.use(helmet({
 }));
 
 app.use(cors());
+app.use(cookieParser());
 
 // Stripe webhooks need raw body — must come before express.json()
 app.use('/api/payments/webhook', express.raw({ type: 'application/json' }));

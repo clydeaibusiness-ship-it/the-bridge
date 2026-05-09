@@ -125,40 +125,28 @@
   </div>
 
   <script>
-    const CLERK_PK = 'pk_live_Y2xlcmsuY2FwdGFpbnNicmlkZ2UuaW8k';
-    const clerkDomain = atob(CLERK_PK.split('_')[2]).slice(0, -1);
-
-    function loadScript(src) {
-      return new Promise((resolve, reject) => {
-        const s = document.createElement('script');
-        s.src = src;
-        s.async = true;
-        s.crossOrigin = 'anonymous';
-        s.onload = resolve;
-        s.onerror = () => reject(new Error('Failed to load: ' + src));
-        document.head.appendChild(s);
-      });
-    }
-
     async function initDashboard() {
       try {
-        await loadScript(`https://${clerkDomain}/npm/@clerk/clerk-js@latest/dist/clerk.browser.js`);
-        const clerk = new window.Clerk(CLERK_PK);
-        await clerk.load();
-
-        if (!clerk.user) {
+        // Check for Clerk session cookie — if not present, redirect to login
+        const resp = await fetch('/api/auth/me');
+        if (!resp.ok) {
+          window.location.href = '/login?return=/dashboard';
+          return;
+        }
+        const user = await resp.json();
+        if (!user || !user.id) {
           window.location.href = '/login?return=/dashboard';
           return;
         }
 
-        // Update welcome with user's name, keep Captain language
+        // Update welcome with user's name
         const welcome = document.getElementById('dash-welcome');
-        if (clerk.user.firstName) {
-          welcome.textContent = `Welcome back, Captain ${clerk.user.firstName}.`;
+        if (user.firstName) {
+          welcome.textContent = `Welcome back, Captain ${user.firstName}.`;
         }
       } catch (e) {
+        // Don't redirect on error to avoid loops — just show the page
         console.error('Auth check failed:', e);
-        window.location.href = '/login?return=/dashboard';
       }
     }
 

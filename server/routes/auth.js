@@ -15,6 +15,35 @@ try {
 }
 
 /**
+ * GET /api/auth/me
+ * Check if user is authenticated via Clerk session token
+ */
+router.get('/me', async (req, res) => {
+  try {
+    if (!clerkClient) {
+      return res.status(503).json({ error: 'Auth not configured' });
+    }
+
+    // Clerk sets __session cookie or Authorization header
+    const token = req.cookies?.__session || req.headers.authorization?.replace('Bearer ', '');
+    if (!token) {
+      return res.status(401).json({ error: 'Not authenticated' });
+    }
+
+    const { sub } = await clerkClient.verifyToken(token);
+    const user = await clerkClient.users.getUser(sub);
+    res.json({
+      id: user.id,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.emailAddresses?.[0]?.emailAddress
+    });
+  } catch (e) {
+    res.status(401).json({ error: 'Not authenticated' });
+  }
+});
+
+/**
  * POST /api/auth/magic-link
  * Deprecated — all auth goes through Clerk.
  */
