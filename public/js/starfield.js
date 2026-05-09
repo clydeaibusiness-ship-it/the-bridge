@@ -14,7 +14,7 @@ const THEMES = {
     wispCenter: 'rgba(180, 172, 160, 0.38)',
     wispEdge: 'rgba(245, 240, 232, 0)',
     starFill: '#b8b0a0',
-    dustColor: (op) => `rgba(168, 160, 148, ${op * 1.5 + 0.1})`,
+    dustColor: (op) => `rgba(168, 160, 148, ${op})`,
   }
 };
 

@@ -347,8 +347,8 @@ async function nextSituation() {
   if (!generatedSituations[currentSituation] && nextSituationPromise) {
     // Show brief loading only if the promise hasn't resolved yet
     const loadingTimeout = setTimeout(() => {
-      document.getElementById('loading-text').textContent = 'Preparing next situation…';
-      document.getElementById('loading-subtext').textContent = '';
+      document.getElementById('loading-text').textContent = '';
+      document.getElementById('loading-subtext').textContent = 'PREPARING NEXT SITUATION';
       showScreen('screen-loading');
     }, 150);
 
@@ -381,8 +381,8 @@ async function restartGame() {
 
   // Re-generate situation 1
   showScreen('screen-loading');
-  document.getElementById('loading-text').textContent = 'Preparing your situations…';
-  document.getElementById('loading-subtext').textContent = '';
+  document.getElementById('loading-text').textContent = '';
+  document.getElementById('loading-subtext').textContent = 'PREPARING NEXT SITUATION';
 
   try {
     const sit1 = await fetchSituation(1);
@@ -564,7 +564,7 @@ function showOutcome(situation, option, prevResources) {
 
   // Update next button text
   const nextBtn = el('btn-next');
-  if (currentSituation >= situationsData.situations.length - 1) {
+  if (currentSituation >= 4) {
     nextBtn.textContent = 'See my results →';
   } else {
     nextBtn.textContent = 'Next situation →';
@@ -597,7 +597,6 @@ function getCelebrationScale(option) {
 
 function pulseResourceBars(changes, scale) {
   const pulseKeys = [];
-  // Determine which resources improved
   Object.keys(RESOURCE_LABELS).forEach(key => {
     const v = changes[key] || 0;
     if (v > 0) pulseKeys.push(key);
@@ -605,13 +604,19 @@ function pulseResourceBars(changes, scale) {
 
   const pulseCount = Math.min(scale, 3);
   pulseKeys.forEach(key => {
-    const fill = document.getElementById(`fill-${key}`);
-    if (!fill) return;
+    // Pulse both mobile and desktop bars
+    const fills = [
+      document.getElementById(`fill-${key}`),
+      document.getElementById(`fill-${key}-2`)
+    ].filter(Boolean);
+
     let i = 0;
     const doPulse = () => {
-      fill.classList.remove('pulse');
-      void fill.offsetWidth; // reflow
-      fill.classList.add('pulse');
+      fills.forEach(fill => {
+        fill.classList.remove('pulse');
+        void fill.offsetWidth;
+        fill.classList.add('pulse');
+      });
       i++;
       if (i < pulseCount) setTimeout(doPulse, 400);
     };
