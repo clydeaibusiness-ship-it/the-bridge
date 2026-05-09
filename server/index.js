@@ -80,6 +80,10 @@ app.get('/config-panel', (req, res) => {
   res.sendFile(path.join(__dirname, '../pages/config-panel.html'));
 });
 
+app.get('/simulator', (req, res) => {
+  res.sendFile(path.join(__dirname, '../pages/simulator.html'));
+});
+
 // Health check
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });

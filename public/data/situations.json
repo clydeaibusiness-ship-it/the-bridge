@@ -1,0 +1,475 @@
+{
+  "situations": [
+    {
+      "id": 1,
+      "title": "Equipment failure",
+      "turnLabel": "Situation 1 of 5",
+      "body": "Your most-used mower broke down mid-week. You have three commercial jobs scheduled in the next four days. Repair quote came back at $1,200. Renting equivalent equipment for the week runs $680. You could also call in a favor from another operator who charges $45 per hour — cheaper, but it introduces a crew your clients have never met.",
+      "crewComment": "How we handle this in front of clients matters as much as how we handle it behind the scenes.",
+      "options": [
+        {
+          "id": "A",
+          "body": "Pay for the repair. Push the three jobs back two days and call each client personally to explain what happened and when to expect the crew.",
+          "tags": [
+            { "text": "Capital −$1,200", "lever": "capital" },
+            { "text": "Switching Costs +8%", "lever": "switchingCosts" },
+            { "text": "2-day delay" }
+          ],
+          "difficulty": 2,
+          "exceptional": true,
+          "outcomeType": "clean",
+          "outcomeBody": "Clients appreciated the personal call. Two of the three confirmed they would wait for you specifically rather than call another service. That choice — to wait rather than switch — is switching costs working exactly as the framework describes. It is not built through contracts. It is built through accumulated evidence that the relationship has value beyond the transaction.",
+          "caseStudy": {
+            "label": "What the Big Book of Strategy says",
+            "body": "\"Unreasonable Hospitality\" by Will Guidara argues that service is what you do and hospitality is how it makes people feel. The personal call during a setback is hospitality — and it builds something a competitor cannot replicate by arriving on time."
+          },
+          "resourceChanges": { "capital": -1200, "switchingCosts": 8, "positioning": 3 }
+        },
+        {
+          "id": "B",
+          "body": "Rent the equipment. Absorb the cost, keep all three jobs on schedule, and clients never know there was a problem.",
+          "tags": [
+            { "text": "Capital −$680", "lever": "capital" },
+            { "text": "Schedule held" },
+            { "text": "Positioning +5%", "lever": "positioning" }
+          ],
+          "difficulty": 1,
+          "exceptional": false,
+          "outcomeType": "partial",
+          "outcomeBody": "Jobs ran on schedule and clients were satisfied. But the rental equipment left inconsistent results on one property and a client noticed — they didn't complain, but they noticed. Reliability is a positioning lever. This decision held it but didn't build it. There is a difference between avoiding a loss and making a gain.",
+          "caseStudy": {
+            "label": "What the framework says",
+            "body": "From \"Zero to One\" by Peter Thiel — a business that competes by being operationally adequate is always one better competitor away from losing. Positioning is not built by meeting expectations. It is built by exceeding them in ways that feel personal."
+          },
+          "resourceChanges": { "capital": -680, "positioning": 5, "switchingCosts": 2 }
+        },
+        {
+          "id": "C",
+          "body": "Call in the favor from the other operator. Pass the jobs to them at $45/hour. Stay on site yourself to manage the client relationships directly.",
+          "tags": [
+            { "text": "Capital −$320 est.", "lever": "capital" },
+            { "text": "Network Effects +12%", "lever": "networkEffects" },
+            { "text": "Quality uncertain" }
+          ],
+          "difficulty": 1,
+          "exceptional": false,
+          "outcomeType": "partial",
+          "outcomeBody": "The jobs got done for less. But one client asked why a different crew was on site without prior notice. You smoothed it over, but the question planted a seed. Network relationships are an asset — introducing them to clients without context can undermine the switching costs you have been building.",
+          "caseStudy": {
+            "label": "What the framework recommends",
+            "body": "From \"The Lean Startup\" by Eric Ries — validated learning requires that you test assumptions deliberately, not accidentally. Using another operator as a substitute is an assumption about client acceptance that you did not validate before acting on it."
+          },
+          "resourceChanges": { "capital": -320, "networkEffects": 4, "switchingCosts": -4 }
+        },
+        {
+          "id": "D",
+          "body": "Cancel the smallest account this week. Be honest about the equipment failure. Deliver the other two perfectly.",
+          "tags": [
+            { "text": "Capital $0", "lever": "capital" },
+            { "text": "Customer at risk", "lever": "customers" },
+            { "text": "Positioning −8%", "lever": "positioning" }
+          ],
+          "difficulty": 1,
+          "exceptional": false,
+          "outcomeType": "missed",
+          "outcomeBody": "The two jobs you delivered were flawless. But the cancelled account was already uncertain about renewing. They called a competitor the same afternoon. A business that cannot absorb an equipment failure without cancelling a client has not built the capital position that keeps bad weeks from becoming bad months. According to Mohnish Pabrai's \"The Dhandho Investor\" — the asymmetric bet principle applies here in reverse. You accepted a large downside to avoid a small cost.",
+          "caseStudy": {
+            "label": "What the framework says",
+            "body": "Pabrai's framework in \"The Dhandho Investor\" describes the ideal bet as heads I win, tails I don't lose much. Cancelling a client to avoid a repair cost inverts that structure — the potential loss was larger than the cost being avoided."
+          },
+          "resourceChanges": { "customers": -1, "positioning": -8, "switchingCosts": -5 }
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "National competitor arrives",
+      "turnLabel": "Situation 2 of 5",
+      "body": "A national lawn care franchise opened 8 miles away. They are running an introductory campaign — first month free, then a lock-in contract. Three of your commercial accounts have mentioned receiving their flyer. You have not lost anyone yet, but the conversation has started.",
+      "crewComment": "They have the budget. You have the relationship. The question is whether the relationship is deep enough to withstand a free month.",
+      "options": [
+        {
+          "id": "A",
+          "body": "Do nothing different. Trust that your work and relationships are strong enough. Watch what happens over the next 60 days before spending anything.",
+          "tags": [
+            { "text": "Capital $0", "lever": "capital" },
+            { "text": "Positioning −5% risk", "lever": "positioning" },
+            { "text": "Switching Costs tested", "lever": "switchingCosts" }
+          ],
+          "difficulty": 1,
+          "exceptional": false,
+          "outcomeType": "partial",
+          "outcomeBody": "One of the three accounts took the free month trial. They came back — your work was noticeably better than the franchise. But the 30 days they were gone showed you exactly how shallow that relationship was. Switching costs protect you when they are built into the relationship. A competitor's promotion tests whether they actually exist.",
+          "caseStudy": {
+            "label": "Real-world parallel",
+            "body": "According to W. Chan Kim and Renée Mauborgne in \"Blue Ocean Strategy\" — competing in a red ocean means you are always vulnerable to a competitor with deeper pockets running a price promotion. The only durable protection is moving to a space where the comparison is irrelevant."
+          },
+          "resourceChanges": { "positioning": -5, "switchingCosts": -8, "customers": -1 }
+        },
+        {
+          "id": "B",
+          "body": "Call every commercial account personally. Not to sell — to check in, ask about their property, and note anything you have observed that needs attention.",
+          "tags": [
+            { "text": "Capital $0", "lever": "capital" },
+            { "text": "Time 6 hours" },
+            { "text": "Switching Costs +15%", "lever": "switchingCosts" },
+            { "text": "Positioning +6%", "lever": "positioning" }
+          ],
+          "difficulty": 2,
+          "exceptional": true,
+          "outcomeType": "clean",
+          "outcomeBody": "All three accounts that received the flyer confirmed they were not interested in switching. Two mentioned the call specifically as the reason. The franchise's offer was real — but so was the relationship you built. Switching costs are not built through contracts. They are built through accumulated evidence that you see the client as a person, not an account.",
+          "caseStudy": {
+            "label": "What the framework says",
+            "body": "From \"Unreasonable Hospitality\" by Will Guidara — the most powerful retention tool is not a loyalty program. It is the evidence, accumulated over time, that someone genuinely pays attention to you. That evidence cannot be purchased by a competitor offering a free month."
+          },
+          "resourceChanges": { "positioning": 6, "switchingCosts": 15 }
+        },
+        {
+          "id": "C",
+          "body": "Match their introductory offer for existing clients — one month at 50% rate to preemptively lock in renewals before the franchise makes contact.",
+          "tags": [
+            { "text": "Capital −$3,200 est.", "lever": "capital" },
+            { "text": "Positioning −12%", "lever": "positioning" },
+            { "text": "Customers held", "lever": "customers" }
+          ],
+          "difficulty": 1,
+          "exceptional": false,
+          "outcomeType": "missed",
+          "outcomeBody": "Most clients accepted the discount. But three have now started asking whether your regular pricing is negotiable. When you compete on price, price becomes the conversation. You have told the market that your value can be discounted — which is a positioning problem harder to close than the competitor was to beat.",
+          "caseStudy": {
+            "label": "What the framework warns against",
+            "body": "From \"Blue Ocean Strategy\" by Kim and Mauborgne — competing on price in a red ocean is a race to the bottom. The business that discounts first signals to the market that price, not value, is the basis of the relationship. That signal is extremely difficult to unsend."
+          },
+          "resourceChanges": { "capital": -3200, "positioning": -12, "switchingCosts": 3 }
+        },
+        {
+          "id": "D",
+          "body": "Raise prices 15% for all new accounts starting next month. Use the announcement to reinforce that you specialize in commercial properties — not residential, not both.",
+          "tags": [
+            { "text": "Capital +$800/mo projected", "lever": "capital" },
+            { "text": "Positioning +18%", "lever": "positioning" },
+            { "text": "New account pace slower" }
+          ],
+          "difficulty": 2,
+          "exceptional": false,
+          "outcomeType": "clean",
+          "outcomeBody": "Three existing clients asked about the increase for their own renewals. Two accepted. One pushed back but ultimately renewed after you walked through your documented results. The franchise is winning on price. You are winning on everything else. The price increase made that choice visible and deliberate — which is exactly what positioning is supposed to do.",
+          "caseStudy": {
+            "label": "What the framework recommends",
+            "body": "From \"Zero to One\" by Peter Thiel — monopoly-like positioning is not about being the only option. It is about being so clearly differentiated that comparison becomes difficult. A price increase that holds is evidence that the differentiation is working."
+          },
+          "resourceChanges": { "capital": 800, "positioning": 18, "switchingCosts": 6 }
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Hitting your growth ceiling",
+      "turnLabel": "Situation 3 of 5",
+      "body": "You have 24 accounts. Your operation can realistically serve 40 before quality begins to degrade. At your current acquisition pace you will hit capacity in about 5 months. You could grow faster — but something has to give. Either quality, your own hours, or your pricing structure.",
+      "crewComment": "Most businesses never ask this question until after they have hit the wall. Asking it now is already an advantage.",
+      "options": [
+        {
+          "id": "A",
+          "body": "Hire a part-time crew lead at $22 per hour, 25 hours per week. Train them over 6 weeks on your standards before adding any new accounts.",
+          "tags": [
+            { "text": "Capital −$2,860/mo", "lever": "capital" },
+            { "text": "Capacity +20 accounts" },
+            { "text": "Systems +22%", "lever": "systems" },
+            { "text": "Positioning +8%", "lever": "positioning" }
+          ],
+          "difficulty": 2,
+          "exceptional": true,
+          "outcomeType": "clean",
+          "outcomeBody": "The 6-week training investment paid off in unexpected ways. Documenting your standards for someone else forced you to articulate things you had only ever done instinctively. The crew lead now runs 8 accounts independently to your standard. That is a system — not a person. Systems survive turnover. Instincts do not.",
+          "caseStudy": {
+            "label": "What the framework says",
+            "body": "From \"The E-Myth Revisited\" by Michael Gerber — the fatal assumption of most small businesses is that the owner's skills are the product. The durable business is built on documented systems that can be executed by anyone trained to the standard, not on the owner being present for every decision."
+          },
+          "resourceChanges": { "capital": -2860, "customers": 6, "positioning": 8, "switchingCosts": 5 }
+        },
+        {
+          "id": "B",
+          "body": "Raise prices 20% for all new accounts only. Slower growth but higher margin per customer. Existing clients keep current rates.",
+          "tags": [
+            { "text": "Capital +$640/mo projected", "lever": "capital" },
+            { "text": "Positioning +14%", "lever": "positioning" },
+            { "text": "New accounts −30% pace" }
+          ],
+          "difficulty": 2,
+          "exceptional": false,
+          "outcomeType": "clean",
+          "outcomeBody": "New account acquisition slowed by about a third. But the accounts you closed at the new rate were a different caliber — larger properties, better contracts, less price sensitivity. Three months in, your average revenue per account increased enough to offset the slower pace. The ceiling moved without requiring additional labor.",
+          "caseStudy": {
+            "label": "What the framework recommends",
+            "body": "From \"Blue Ocean Strategy\" by Kim and Mauborgne — value innovation means delivering a meaningful leap in value while simultaneously reducing cost or effort. Raising prices for new clients while maintaining quality does both — it signals differentiation and improves the economics of every new relationship."
+          },
+          "resourceChanges": { "capital": 640, "customers": 2, "positioning": 14, "switchingCosts": 5 }
+        },
+        {
+          "id": "C",
+          "body": "Keep growing at current pace. Push through to 40 accounts then hire. Handle quality issues as they come up.",
+          "tags": [
+            { "text": "Capital +$1,200/mo short-term", "lever": "capital" },
+            { "text": "Positioning −18%", "lever": "positioning" },
+            { "text": "Switching Costs −12%", "lever": "switchingCosts" }
+          ],
+          "difficulty": 1,
+          "exceptional": false,
+          "outcomeType": "missed",
+          "outcomeBody": "You hit 38 accounts before the first client complaint. Then three came in the same week. Two were minor. One was not — a commercial property manager who oversees four of your accounts. Quality degradation does not announce itself. It compounds quietly until a single bad week makes it visible to everyone simultaneously.",
+          "caseStudy": {
+            "label": "What the framework warns",
+            "body": "From \"The E-Myth Revisited\" by Michael Gerber — growth without systems is the most reliable way to destroy the reputation that made the growth possible. The business that scales its volume without scaling its operational documentation is not growing. It is accumulating debt it has not yet been asked to repay."
+          },
+          "resourceChanges": { "capital": 1200, "customers": 6, "positioning": -18, "switchingCosts": -12 }
+        },
+        {
+          "id": "D",
+          "body": "Stop taking new accounts for 90 days. Use the time to document every process and build a training system before the next growth phase.",
+          "tags": [
+            { "text": "Capital unchanged" },
+            { "text": "New accounts paused" },
+            { "text": "Systems +35%", "lever": "systems" },
+            { "text": "Positioning +10%", "lever": "positioning" }
+          ],
+          "difficulty": 1,
+          "exceptional": false,
+          "outcomeType": "partial",
+          "outcomeBody": "The pause produced something real — a documented operations manual and a service standard any new hire could follow. But two prospects who reached out during the pause went to competitors. Growth paused and the foundation strengthened. A partial outcome because timing has a cost that compounds in competitive markets.",
+          "caseStudy": {
+            "label": "What the framework says",
+            "body": "From \"The Toyota Way\" by Jeffrey Liker — Toyota pauses the entire production line when a defect is detected, without exception. The principle is called jidoka. The short-term cost of stopping is always less than the long-term cost of building on a flawed foundation. This is the same logic applied to a service business."
+          },
+          "resourceChanges": { "positioning": 10, "switchingCosts": 8 }
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "The vanishing client",
+      "turnLabel": "Situation 4 of 5",
+      "body": "Your second-largest account — a 6-property commercial complex you have serviced for 3 years — stopped returning calls two weeks ago. No complaint on record. No notice. Their last invoice was paid on time. Something shifted and you do not know what.",
+      "crewComment": "The silence is the signal. The question is whether you find out what happened or wait to find out when the replacement vendor shows up.",
+      "options": [
+        {
+          "id": "A",
+          "body": "Drive to the property unannounced. Find whoever manages the grounds and have a direct conversation. Ask what changed.",
+          "tags": [
+            { "text": "Capital $0", "lever": "capital" },
+            { "text": "Time 2 hours" },
+            { "text": "Information Asymmetry +25%", "lever": "informationAsymmetry" }
+          ],
+          "difficulty": 2,
+          "exceptional": true,
+          "outcomeType": "clean",
+          "outcomeBody": "The property manager had been fielding calls from a competitor offering bundled snow removal alongside lawn care — something you have never offered. They had not left yet. They were in conversations. The direct visit surfaced information that would have cost you a 3-year account if you had waited another week. Information asymmetry is not a passive advantage. You have to go get it.",
+          "caseStudy": {
+            "label": "What the framework says",
+            "body": "From \"The Toyota Way\" by Jeffrey Liker — the principle of genchi genbutsu means go and see for yourself. Management by reports and data alone consistently misses what direct observation reveals. Every major operational failure has an element of someone knew but the information never reached the decision-maker. Going to the source eliminates that gap."
+          },
+          "resourceChanges": { "informationAsymmetry": 8, "positioning": 5, "switchingCosts": 10 }
+        },
+        {
+          "id": "B",
+          "body": "Send a handwritten note to the property manager acknowledging the silence, noting that you value the relationship, and offering a complimentary property assessment at their convenience.",
+          "tags": [
+            { "text": "Capital −$15", "lever": "capital" },
+            { "text": "Switching Costs +8%", "lever": "switchingCosts" },
+            { "text": "Positioning +5%", "lever": "positioning" }
+          ],
+          "difficulty": 1,
+          "exceptional": false,
+          "outcomeType": "partial",
+          "outcomeBody": "The note received a brief email response — they had been evaluating vendor relationships. Professional, not warm. The assessment offer was declined. The relationship is not over but the distance is real. A handwritten note is a genuine gesture — but it cannot substitute for the direct conversation that would tell you what actually changed.",
+          "caseStudy": {
+            "label": "What the framework says",
+            "body": "From \"Unreasonable Hospitality\" by Will Guidara — service is what you do. Hospitality is how it makes people feel. A handwritten note is service. Driving to the property and asking a direct question is hospitality. The distinction matters when a relationship is at risk."
+          },
+          "resourceChanges": { "capital": -15, "positioning": 5, "switchingCosts": 8 }
+        },
+        {
+          "id": "C",
+          "body": "Offer to extend their contract at a 10% rate reduction for a two-year commitment. Lock in the revenue before you lose it.",
+          "tags": [
+            { "text": "Capital −$4,800/yr", "lever": "capital" },
+            { "text": "Positioning −10%", "lever": "positioning" },
+            { "text": "Short-term retention risk" }
+          ],
+          "difficulty": 1,
+          "exceptional": false,
+          "outcomeType": "missed",
+          "outcomeBody": "The offer was accepted. But you made it without knowing why they went quiet — which means you solved for a problem you invented. The actual issue was a competitor's bundled offering, which a discount does not address. You have now locked into a below-market rate with a client who knows you will reduce price under pressure. According to Bain and Company's customer loyalty research, clients who stay because of price reductions have lower retention rates in subsequent periods than clients retained through relationship investment.",
+          "caseStudy": {
+            "label": "What the framework warns",
+            "body": "From \"Hooked\" by Nir Eyal — customer retention built on price incentives does not create habit. It creates conditional behavior that persists only as long as the incentive does. The switching cost you needed to build was relational. A discount built the opposite."
+          },
+          "resourceChanges": { "capital": -4800, "positioning": -10, "switchingCosts": -8 }
+        },
+        {
+          "id": "D",
+          "body": "Accept the likely churn. Begin immediate outreach to two prospective accounts of similar size to fill the revenue gap before it arrives.",
+          "tags": [
+            { "text": "Capital −$200 est.", "lever": "capital" },
+            { "text": "2 new prospects opened" },
+            { "text": "Information Asymmetry −15%", "lever": "informationAsymmetry" }
+          ],
+          "difficulty": 1,
+          "exceptional": false,
+          "outcomeType": "partial",
+          "outcomeBody": "One prospect looks likely to close within 30 days. But three weeks later a termination notice arrived from the original account. The replacement revenue will cover the gap. But you forfeited three years of relationship data, renewal probability, and referral potential. Replacement is more expensive than retention. You protected forward momentum but lost information you cannot recover.",
+          "caseStudy": {
+            "label": "What Bain and Company found",
+            "body": "According to Bain and Company's research on customer loyalty — a 5% increase in customer retention produces a 25% to 95% increase in profit depending on the industry. The cost of acquiring a replacement customer is typically 5 to 7 times the cost of retaining an existing one. The math consistently favors the conversation over the replacement."
+          },
+          "resourceChanges": { "capital": -200, "customers": 1, "switchingCosts": -10 }
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "The proposal that changes your pricing",
+      "turnLabel": "Situation 5 of 5",
+      "body": "A commercial property management company that oversees 14 properties in your area sent you a request for proposal. It would be your largest account by a factor of three. But they have shared that a competitor submitted a bid 22% below your standard rate. They are asking if you can match it. If you win this at your current rates, your pricing structure becomes the regional standard. If you match their number, it does too.",
+      "crewComment": "Whatever you decide here, the market is watching. Your next ten proposals will be priced against this one.",
+      "options": [
+        {
+          "id": "A",
+          "body": "Hold your pricing. Submit the proposal at your standard rate with a detailed breakdown of what differentiates your service — documented results, consistent crews, commercial-only specialization.",
+          "tags": [
+            { "text": "Capital +$0 now", "lever": "capital" },
+            { "text": "Positioning +20%", "lever": "positioning" },
+            { "text": "New account uncertain" }
+          ],
+          "difficulty": 2,
+          "exceptional": true,
+          "outcomeType": "clean",
+          "outcomeBody": "They awarded the contract to the lower bid. But two weeks later the property manager called — the winning vendor missed a scheduled visit on the second property. They asked if you were still available at your rate. You were. The contract started the following month at your full price. Positioning did not close this deal on the first attempt. It closed it on the second — when the alternative failed. That is what high positioning is worth. It wins the deals that matter, not just the ones that were easy.",
+          "caseStudy": {
+            "label": "What the framework says",
+            "body": "From \"Zero to One\" by Peter Thiel — a business with genuine monopoly characteristics does not need to compete on price because the comparison is genuinely difficult. Holding your rate under pressure is only possible when differentiation is real enough that clients can feel the difference. When it is not, price is all that is left."
+          },
+          "resourceChanges": { "positioning": 20, "switchingCosts": 8 }
+        },
+        {
+          "id": "B",
+          "body": "Submit the proposal at a one-time project rate 10% below standard — not matching the competitor's number but meeting them partway. Frame it as an introductory arrangement for a portfolio account.",
+          "tags": [
+            { "text": "Capital +$4,800/mo projected", "lever": "capital" },
+            { "text": "Positioning −8%", "lever": "positioning" },
+            { "text": "Pricing precedent risk" }
+          ],
+          "difficulty": 1,
+          "exceptional": false,
+          "outcomeType": "partial",
+          "outcomeBody": "The contract was awarded. Revenue increased significantly. But within 60 days the property management company asked about applying the introductory rate to the renewal. The discount you framed as temporary is now their expected normal. A pricing concession made to win a contract almost always becomes the floor for every subsequent negotiation with that client.",
+          "caseStudy": {
+            "label": "What the framework warns",
+            "body": "From \"Blue Ocean Strategy\" by Kim and Mauborgne — value innovation requires delivering a meaningful leap in value. When you discount to win, you are not innovating on value — you are competing on price in a market where someone else has more capacity to absorb that competition than you do."
+          },
+          "resourceChanges": { "capital": 4800, "customers": 4, "positioning": -8, "switchingCosts": 3 }
+        },
+        {
+          "id": "C",
+          "body": "Match the competitor's price exactly. Secure the account, build the relationship, and raise rates at renewal in 12 months once you have demonstrated your quality.",
+          "tags": [
+            { "text": "Capital +$3,200/mo", "lever": "capital" },
+            { "text": "Positioning −18%", "lever": "positioning" },
+            { "text": "Customers +4", "lever": "customers" },
+            { "text": "Pricing reset risk" }
+          ],
+          "difficulty": 1,
+          "exceptional": false,
+          "outcomeType": "missed",
+          "outcomeBody": "The contract was awarded and the revenue was real. But every other commercial prospect in the area learned within 60 days that your rate was negotiable — three of them referenced this account in their own proposals. You did not just discount for one client. You reset the market's understanding of what your services cost. Recovering a pricing position once the market has absorbed a lower number requires years of consistent behavior to reverse.",
+          "caseStudy": {
+            "label": "What the framework warns",
+            "body": "From \"Positioning\" referenced in \"Alchemy\" by Rory Sutherland — the price you charge is not just an economic signal. It is a psychological one. A lower price does not just reduce your margin. It changes what clients believe your service is worth, which changes how they use it, how they evaluate it, and how loyal they are to it."
+          },
+          "resourceChanges": { "capital": 3200, "customers": 4, "positioning": -18, "switchingCosts": -5 }
+        },
+        {
+          "id": "D",
+          "body": "Decline to submit a proposal at all. Send a brief note explaining that you are at capacity for new accounts at this time and would be glad to revisit in 6 months.",
+          "tags": [
+            { "text": "Capital $0", "lever": "capital" },
+            { "text": "Positioning +12%", "lever": "positioning" },
+            { "text": "Information Asymmetry +10%", "lever": "informationAsymmetry" }
+          ],
+          "difficulty": 2,
+          "exceptional": false,
+          "outcomeType": "clean",
+          "outcomeBody": "Three things happened. The property management company responded asking to be kept on your waitlist — which is a switching cost you created without spending anything. Two of their properties sent you direct inquiries the following month, having heard your name from the group. And your existing clients noticed you were turning work away, which is the most powerful positioning signal a service business can send. Scarcity, when it is real, is a stronger differentiator than any marketing spend.",
+          "caseStudy": {
+            "label": "What the framework says",
+            "body": "From \"The Dhandho Investor\" by Mohnish Pabrai — the best bets are the ones where the downside is genuinely limited and the upside is asymmetric. Declining a low-margin contract that would damage your pricing position has limited downside — you did not have the revenue before — and meaningful upside in the positioning signal it sends to the market."
+          },
+          "resourceChanges": { "positioning": 12, "switchingCosts": 10, "informationAsymmetry": 5 }
+        }
+      ]
+    }
+  ],
+  "leverTooltips": {
+    "capital": "Capital is your financial runway — the buffer between a bad month and a strategic crisis. A stronger capital position means you can respond to problems from strength rather than desperation.",
+    "customers": "Your active client base is the engine of the business. More customers means more passive revenue each turn — but there is a ceiling before quality degrades and you need to either hire or raise prices.",
+    "positioning": "Positioning measures how clearly your business stands apart from alternatives in your market. High positioning means clients choose you on value, not price — which protects your margins and makes competitive threats less dangerous.",
+    "switchingCosts": "Switching costs measure how invested your clients are in staying with you. High switching costs means clients have too much to lose by leaving — history, trust, documented results. Low switching costs means a competitor's discount is a genuine threat.",
+    "informationAsymmetry": "Information asymmetry is the advantage of knowing something your competitors don't — about your customers, your market, or your category. Acting on that knowledge before the market prices it in is where durable competitive edges come from.",
+    "networkEffects": "Network effects describe whether each new customer makes the next one more likely. A business with strong network effects compounds — every satisfied client generates referrals, reputation, and reach without additional cost.",
+    "systems": "Systems measure whether your operation runs without depending on your personal presence. A documented, replicable process survives turnover, scales with growth, and protects quality as volume increases.",
+    "habitDesign": "Habit design measures whether customers return automatically or have to consciously decide to come back. A business with strong habit design is embedded in the client's routine — not one of several options they reconsider each time."
+  },
+  "mentorLines": {
+    "scale1": [
+      "That's the move.",
+      "Exactly right.",
+      "The framework agrees.",
+      "Sharp call.",
+      "This is what the data supports."
+    ],
+    "scale2": [
+      "Most operators miss that one.",
+      "That's positioning working.",
+      "This is what the framework recommends.",
+      "You just made the business harder to compete with.",
+      "That decision compounds."
+    ],
+    "scale3": [
+      "That's the kind of decision that builds a durable business.",
+      "You just bought the business more options.",
+      "According to Bain's research on retention, this is exactly the move.",
+      "The framework was built for moments like this one.",
+      "That's not just a good call — it's the right structure."
+    ],
+    "missed": [
+      "That one cost more than it had to. The framework explains why.",
+      "Most businesses make this trade-off. Fewer understand the full cost of it.",
+      "The resources reflect what happened. The case study explains the pattern.",
+      "That's a hard lesson. It's also a precise one."
+    ],
+    "partial": [
+      "Good instinct, incomplete execution. The full picture is in the outcome.",
+      "The right direction. The cost was higher than it needed to be.",
+      "Partial progress. The framework shows what the gap was."
+    ]
+  },
+  "resultPatterns": {
+    "capitalFocused": {
+      "condition": "capital > 20000",
+      "body": "Your decisions consistently protected financial runway above other considerations. That instinct is sound — capital is what preserves strategic options. The full Bridge analysis would examine whether that protection came at the cost of positioning or switching cost investment, and what the compounding effect of that trade-off looks like over 12 months."
+    },
+    "relationshipFocused": {
+      "condition": "switchingCosts > 60",
+      "body": "Your decisions consistently invested in client relationships over short-term capital protection. That builds a durable business — customers who are deeply invested in staying are the most valuable asset on your balance sheet. The full Bridge analysis would examine whether your positioning is strong enough to support the pricing power that relationship investment deserves."
+    },
+    "positioningFocused": {
+      "condition": "positioning > 75",
+      "body": "Your decisions consistently reinforced differentiation over cost absorption. That is the foundation of a business that competes on value rather than price. The full Bridge analysis would examine whether your switching costs are deep enough to lock in the clients your positioning is attracting — and where the next growth lever should come from."
+    },
+    "mixed": {
+      "condition": "default",
+      "body": "Your decisions reflected the genuine difficulty of running a real business — every situation required a trade-off and some of them cost more than expected. That is not a failure. That is information. The full Bridge analysis translates that pattern into a specific prioritized sequence: what to address first, what to measure, and what success looks like at each step before moving to the next."
+    }
+  }
+}
