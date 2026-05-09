@@ -4,6 +4,37 @@ const { updateMembershipTier, updateStripeCustomerId, getUserByClerkId } = requi
 const { sendSubscriptionConfirmation } = require('../services/email');
 
 /**
+ * GET /api/payments/checkout-redirect
+ * Simple redirect to Stripe Checkout — no JS required
+ */
+router.get('/checkout-redirect', async (req, res) => {
+  try {
+    if (!process.env.STRIPE_SECRET_KEY || !process.env.STRIPE_ENSIGN_MONTHLY_PRICE_ID) {
+      return res.status(503).send('Payments not configured');
+    }
+
+    const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+
+    const session = await stripe.checkout.sessions.create({
+      mode: 'subscription',
+      payment_method_types: ['card'],
+      allow_promotion_codes: true,
+      line_items: [{
+        price: process.env.STRIPE_ENSIGN_MONTHLY_PRICE_ID,
+        quantity: 1
+      }],
+      success_url: `${process.env.BASE_URL || 'https://the-bridge-app-production.up.railway.app'}/dashboard?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${process.env.BASE_URL || 'https://the-bridge-app-production.up.railway.app'}/#pricing`
+    });
+
+    res.redirect(303, session.url);
+  } catch (e) {
+    console.error('Checkout redirect error:', e.message);
+    res.status(500).send('Failed to start checkout. Please try again.');
+  }
+});
+
+/**
  * POST /api/payments/create-checkout
  * Create Stripe Checkout Session
  */
