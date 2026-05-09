@@ -9,7 +9,8 @@
     // No JS loading, no UI bundles, no CSP issues — just redirect.
     const params = new URLSearchParams(window.location.search);
     const returnTo = params.get('return') || '/dashboard';
-    const base = 'https://accounts.captainsbridge.io/sign-in';
+    // Clerk's sign-up page also has a sign-in link — one page handles both
+    const base = 'https://accounts.captainsbridge.io/sign-up';
     window.location.replace(base + '?redirect_url=' + encodeURIComponent('https://captainsbridge.io' + returnTo));
   </script>
 </head>
