@@ -146,26 +146,27 @@
     </div>
   </div>
 
+  <script
+    async
+    crossorigin="anonymous"
+    data-clerk-publishable-key="pk_live_Y2xlcmsuY2FwdGFpbnNicmlkZ2UuaW8k"
+    src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js"
+    type="text/javascript"
+  ></script>
   <script>
-    const CLERK_PK = 'pk_live_Y2xlcmsuY2FwdGFpbnNicmlkZ2UuaW8k';
-
-    async function initClerk() {
+    window.addEventListener('load', async () => {
       const authDiv = document.getElementById('clerk-auth');
-
       try {
-        const { Clerk } = await import('https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/+esm');
-        const clerk = new Clerk(CLERK_PK);
-        await clerk.load();
-        console.log('Clerk loaded successfully, user:', clerk.user);
+        await window.Clerk.load();
 
-        if (clerk.user) {
+        if (window.Clerk.user) {
           const params = new URLSearchParams(window.location.search);
           const returnUrl = params.get('return') || '/dashboard';
           window.location.href = returnUrl;
           return;
         }
 
-        clerk.mountSignIn(authDiv, {
+        window.Clerk.mountSignIn(authDiv, {
           afterSignInUrl: '/dashboard',
           afterSignUpUrl: '/dashboard',
           appearance: {
@@ -183,23 +184,11 @@
         authDiv.innerHTML = `
           <div class="fallback-card">
             <p>Sign-in failed to load: ${e.message}</p>
-            <p style="font-size:11px;color:rgba(8,8,15,0.3);margin-top:12px;word-break:break-all;">${e.stack || ''}</p>
             <a href="/" class="fallback-btn" style="display:block;text-align:center;text-decoration:none;margin-top:16px;">Back to The Bridge</a>
           </div>
         `;
       }
-    }
-
-    function showFallbackForm(container) {
-      container.innerHTML = `
-        <div class="fallback-card">
-          <p>Sign-in is temporarily unavailable. Please try again in a moment.</p>
-          <a href="/" class="fallback-btn" style="display:block;text-align:center;text-decoration:none;">Back to The Bridge</a>
-        </div>
-      `;
-    }
-
-    initClerk();
+    });
   </script>
 </body>
 </html>
