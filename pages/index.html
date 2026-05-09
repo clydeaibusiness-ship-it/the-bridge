@@ -32,10 +32,10 @@
       <span class="site-nav-sep">|</span>
       <a href="/login">Log In</a>
     </div>
-    <button class="site-nav-hamburger" onclick="document.getElementById('mobile-menu').classList.toggle('open')" aria-label="Menu">
+    <button class="site-nav-hamburger" aria-label="Menu">
       <span></span><span></span><span></span>
     </button>
-    <div class="site-nav-mobile" id="mobile-menu"><button class="site-nav-mobile-close" onclick="document.getElementById('mobile-menu').classList.remove('open')" aria-label="Close">✕</button>
+    <div class="site-nav-mobile" id="mobile-menu"><button class="site-nav-mobile-close" aria-label="Close">✕</button>
       <a href="/simulator">Simulator</a>
       <a href="/navigation-chart">Navigation Chart</a>
       <a href="/dashboard">Dashboard</a>
@@ -134,5 +134,6 @@
     renderStarfield('starfield', { theme: 'light' });
   </script>
 
+<script src="/js/nav.js"></script>
 </body>
 </html>

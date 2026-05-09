@@ -116,6 +116,9 @@
     display: none;
   }
   .site-nav-hamburger {
-    display: flex;
+    display: flex !important;
   }
 }
+
+/* Wire hamburger via JS fallback */
+
