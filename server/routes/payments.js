@@ -22,7 +22,7 @@ router.post('/create-checkout', async (req, res) => {
       payment_method_types: ['card'],
       allow_promotion_codes: true,
       line_items: [{
-        price: priceId || process.env.STRIPE_ENSIGN_MONTHLY_PRICE_ID,
+        price: priceId || process.env.STRIPE_ENSIGN_MONTHLY_PRICE_ID || 'price_1TV2mfIeiH9jvG6A8IV8YjsZ',
         quantity: 1
       }],
       success_url: `${process.env.BASE_URL || 'https://the-bridge-app-production.up.railway.app'}/dashboard?session_id={CHECKOUT_SESSION_ID}`,
