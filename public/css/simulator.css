@@ -1,15 +1,38 @@
 /* ============================================================
    THE BRIDGE — SIMULATOR STYLES
-   All colors from global.css tokens. No hardcoded values.
+   All colors from CSS variables. No hardcoded values.
    Mobile-first. No horizontal scroll. 44px min tap targets.
    ============================================================ */
+
+/* --- SIMULATOR LIGHT THEME OVERRIDES --- */
+:root {
+  --void:        #f5f0e8;    /* page background — warm cream */
+  --deep:        #f0ebe0;
+  --surface:     #e8e3d8;    /* option cards, outcome panels */
+  --elevated:    #ece7dc;    /* resource bar, card backgrounds */
+  --border:      #c8c0b0;    /* all borders — warm grey */
+
+  --cream:       #0a0a0f;    /* primary text — off black */
+  --cream-dim:   #3a3530;    /* secondary text — dark warm grey */
+  --cream-ghost: #7a7570;    /* tertiary text — medium warm grey */
+
+  --signal:      #8a6830;    /* accent — warm dark gold */
+  --signal-dim:  #6a5020;
+
+  --overlay:     rgba(236, 231, 220, 0.92);
+  --glass:       rgba(232, 227, 216, 0.85);
+
+  --scrollbar-thumb:       #c8c0b0;
+  --scrollbar-thumb-hover: #a8a098;
+}
 
 /* --- SCREENS --- */
 .screen {
   position: fixed;
   top: 0; left: 0;
-  width: 100%; height: 100%;
+  width: 100%; height: 100dvh;
   z-index: 1;
+  overflow: hidden;
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.4s var(--ease-smooth);
@@ -262,10 +285,16 @@
   max-width: 520px;
   padding: 0 16px 32px;
   overflow-y: auto;
+  overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
   flex: 1;
 }
-.situation-scroll { padding-top: 120px; }
+.situation-scroll {
+  padding-top: 120px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
 .confirm-scroll { padding-top: 120px; }
 .outcome-scroll { padding-top: 120px; }
 .results-scroll {
@@ -324,6 +353,11 @@
   flex-direction: column;
   gap: 12px;
   padding-bottom: 32px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  flex: 1;
+  min-height: 0;
 }
 .option-card {
   background: var(--surface);
@@ -691,6 +725,36 @@
   100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(0.3); }
 }
 
+/* --- CUSTOM SCROLLBARS --- */
+.options-container::-webkit-scrollbar,
+.outcome-scroll::-webkit-scrollbar {
+  width: 3px;
+}
+.options-container::-webkit-scrollbar-track,
+.outcome-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.options-container::-webkit-scrollbar-thumb,
+.outcome-scroll::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 2px;
+}
+.options-container::-webkit-scrollbar-thumb:hover,
+.outcome-scroll::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
+}
+/* Firefox */
+.options-container,
+.outcome-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) transparent;
+}
+
+/* Kill all horizontal scroll */
+html, body {
+  overflow-x: hidden;
+}
+
 /* --- RESPONSIVE --- */
 @media (min-width: 600px) {
   .resource-bar {
@@ -708,10 +772,12 @@
 }
 
 /* Screen body scroll allowance */
-.situation-scroll,
 .confirm-scroll,
 .outcome-scroll,
 .results-scroll {
+  height: 100%;
+}
+.situation-scroll {
   height: 100%;
 }
 

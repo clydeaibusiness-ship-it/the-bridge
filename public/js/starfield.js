@@ -12,8 +12,8 @@ export function renderStarfield(canvasId) {
   const W = canvas.width;
   const H = canvas.height;
 
-  // Base void
-  ctx.fillStyle = '#08080f';
+  // Base fill — warm cream to match simulator background
+  ctx.fillStyle = '#f5f0e8';
   ctx.fillRect(0, 0, W, H);
 
   // Wisp formations
@@ -33,8 +33,8 @@ export function renderStarfield(canvasId) {
       w.x / scaleX, w.y / scaleY, 0,
       w.x / scaleX, w.y / scaleY, maxR
     );
-    grad.addColorStop(0, 'rgba(46, 42, 64, 0.5)');
-    grad.addColorStop(1, 'rgba(8, 8, 15, 0)');
+    grad.addColorStop(0, 'rgba(180, 172, 160, 0.38)');
+    grad.addColorStop(1, 'rgba(245, 240, 232, 0)');
     ctx.fillStyle = grad;
     ctx.beginPath();
     ctx.arc(w.x / scaleX, w.y / scaleY, maxR, 0, Math.PI * 2);
@@ -46,7 +46,7 @@ export function renderStarfield(canvasId) {
   function drawStar(x, y, size, opacity) {
     ctx.save();
     ctx.globalAlpha = opacity;
-    ctx.fillStyle = '#2e2a40';
+    ctx.fillStyle = '#b8b0a0';
     ctx.beginPath();
     ctx.moveTo(x,          y - size);
     ctx.lineTo(x + size * 0.15, y - size * 0.15);
@@ -73,10 +73,10 @@ export function renderStarfield(canvasId) {
     const x  = Math.random() * W;
     const y  = Math.random() * H;
     const r  = Math.random() * 1.2 + 0.3;
-    const op = Math.random() * 0.4 + 0.1;
+    const op = Math.random() * 0.3 + 0.2;
     ctx.beginPath();
     ctx.arc(x, y, r, 0, Math.PI * 2);
-    ctx.fillStyle = `rgba(46, 42, 64, ${op})`;
+    ctx.fillStyle = `rgba(168, 160, 148, ${op * 1.5 + 0.1})`;
     ctx.fill();
   }
 }
