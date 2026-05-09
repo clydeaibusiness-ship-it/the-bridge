@@ -46,6 +46,31 @@ async function init() {
     return;
   }
 
+  // Load session state from localStorage
+  try {
+    const session = JSON.parse(localStorage.getItem('bridge_session'));
+    if (session) {
+      // Load business context for situation generation
+      if (session.businessContext) businessContext = session.businessContext;
+
+      // Show business name on intro screen
+      const name = session.businessName || session.shipName;
+      if (name) {
+        const titleEl = document.querySelector('.intro-title');
+        if (titleEl) titleEl.textContent = name;
+      }
+
+      // Load previous simulator resource state if saved
+      if (session.simulatorResources) {
+        const r = session.simulatorResources;
+        if (r.capital !== undefined) resources.capital = r.capital;
+        if (r.customers !== undefined) resources.customers = r.customers;
+        if (r.positioning !== undefined) resources.positioning = r.positioning;
+        if (r.switchingCosts !== undefined) resources.switchingCosts = r.switchingCosts;
+      }
+    }
+  } catch (e) {}
+
   bindEvents();
   updateResourceDisplay();
 }
@@ -675,6 +700,13 @@ function getMentorLine(outcomeType, scale) {
 // ============================================================
 function showResults() {
   document.getElementById('resource-bar').classList.add('hidden');
+
+  // Save final resource state to localStorage for dashboard
+  try {
+    const session = JSON.parse(localStorage.getItem('bridge_session')) || {};
+    session.simulatorResources = { ...resources };
+    localStorage.setItem('bridge_session', JSON.stringify(session));
+  } catch (e) {}
 
   const grid = document.getElementById('results-grid');
   grid.innerHTML = '';

@@ -53,6 +53,8 @@ async function personalizeIntake(intakeAnswers) {
    - "growthConstraint": what limits their growth (e.g. "crew capacity", "kitchen capacity", "engineering bandwidth")
    - "primaryUncertainty": pulled directly from their challenge/uncertainty answer
 
+If the player provided a "businessName" field in their answers, use that exact name as the "ship_name" instead of generating one.
+
 Player answers:
 ${JSON.stringify(intakeAnswers, null, 2)}`;
 
@@ -212,7 +214,17 @@ IMPORTANT: The player has already completed their intake. You have their full bu
 /**
  * Generate Navigation Chart from intake answers + businessContext
  */
-async function generateChart(businessContext, intakeAnswers) {
+async function generateChart(businessContext, intakeAnswers, scannedContent) {
+  let additionalContext = '';
+  if (scannedContent) {
+    if (scannedContent.websiteContent) {
+      additionalContext += `\n\nContent scraped from the player's website:\n${scannedContent.websiteContent}`;
+    }
+    if (scannedContent.facebookContent) {
+      additionalContext += `\n\nContent scraped from the player's Facebook page:\n${scannedContent.facebookContent}`;
+    }
+  }
+
   const prompt = `Generate a Navigation Chart — a strategic assessment for this business owner. Return ONLY a JSON object with no other text.
 
 Business context:
@@ -220,16 +232,18 @@ ${JSON.stringify(businessContext, null, 2)}
 
 Intake answers:
 ${JSON.stringify(intakeAnswers, null, 2)}
+${additionalContext ? '\nAdditional context scraped from the player\'s own public web presence — use this to make the personalization more specific and accurate:' + additionalContext : ''}
 
-Return this exact JSON structure with 5 sections. Each section has a "title" and "body". Write 2-4 sentences per body. Be direct, specific, reference their actual business. Use Big Book of Strategy framework language.
+Return this exact JSON structure with 6 sections. Each section has a "title" and "body". Write 3-5 sentences per body. Be direct, specific, reference their actual business. Use Big Book of Strategy framework language.
 
 {
   "sections": [
-    { "title": "Current Position", "body": "Where they stand right now based on what they told you" },
-    { "title": "Primary Lever Gap", "body": "The single biggest strategic weakness based on their answers" },
-    { "title": "Competitive Exposure", "body": "Where competitors can hurt them and why" },
-    { "title": "Growth Sequence", "body": "What to do first, second, third — in order" },
-    { "title": "The One Question", "body": "The single most important question they should be asking themselves right now" }
+    { "title": "Ship Status", "body": "Current state of the business based on everything they told you" },
+    { "title": "Kill Risk", "body": "The single most dangerous vulnerability that could destroy this business in the next 12 months" },
+    { "title": "Lever Map", "body": "Which of the 8 strategic levers are strong, which are weak, and which are missing entirely" },
+    { "title": "Leverage Sequence", "body": "The specific order in which they should address their lever gaps" },
+    { "title": "What to Stop", "body": "What they are currently doing that is actively hurting their strategic position" },
+    { "title": "90-Day Focus", "body": "Exactly one thing to focus on for the next 90 days and what measurable outcome to target" }
   ]
 }`;
 

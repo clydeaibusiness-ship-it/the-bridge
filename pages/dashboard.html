@@ -6,17 +6,11 @@
   <title>The Bridge — Dashboard</title>
   <link rel="stylesheet" href="/css/global.css">
   <link rel="stylesheet" href="/css/dashboard.css">
-  <style>
-    html, body {
-      overflow: visible !important;
-      height: auto !important;
-    }
-  </style>
+  <style>html, body { overflow: visible !important; height: auto !important; }</style>
 </head>
 <body class="dash-body">
   <div class="dash-page">
 
-    <!-- HEADER -->
     <header class="dash-header">
       <h1 class="dash-welcome" id="dash-welcome">Welcome back.</h1>
       <nav class="dash-nav">
@@ -28,16 +22,14 @@
       </nav>
     </header>
 
-    <!-- GRID -->
     <div class="dash-grid">
 
       <!-- LEFT: Ship Status -->
       <div class="dash-panel dash-ship">
         <div class="dash-ship-header">
-          <div class="dash-ship-name" id="dash-ship-name">The Venture</div>
-          <div class="dash-ship-dest" id="dash-destination">→ NORTH STAR</div>
+          <div class="dash-ship-name" id="dash-ship-name">Your Business</div>
+          <div class="dash-ship-dest" id="dash-destination"></div>
         </div>
-
         <div class="dash-ship-display">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 80" width="60" height="80">
             <defs>
@@ -51,7 +43,6 @@
             <ellipse cx="30" cy="28" rx="5" ry="7" fill="#1a1a26" stroke="#c8b89a" stroke-width="1"/>
           </svg>
         </div>
-
         <div class="dash-stats">
           <div class="dash-stat-row"><span class="dash-stat-label">Capital</span><span class="dash-stat-value" id="dash-capital">—</span></div>
           <div class="dash-stat-bar"><div class="dash-stat-fill" id="dash-capital-bar" style="width:0%"></div></div>
@@ -62,7 +53,6 @@
           <div class="dash-stat-row"><span class="dash-stat-label">Switching Costs</span><span class="dash-stat-value" id="dash-switching">—</span></div>
           <div class="dash-stat-bar"><div class="dash-stat-fill" id="dash-switching-bar" style="width:0%"></div></div>
         </div>
-
         <a href="/simulator" class="dash-btn-ghost">Resume Simulator</a>
       </div>
 
@@ -71,11 +61,7 @@
         <div class="dash-commander-header">
           <h2 class="dash-commander-title">The Commander</h2>
         </div>
-        <div class="dash-commander-messages" id="commander-messages">
-          <div class="dash-msg dash-msg-commander">
-            Welcome back. I've reviewed your latest run data. What would you like to work on?
-          </div>
-        </div>
+        <div class="dash-commander-messages" id="commander-messages"></div>
         <div class="dash-commander-sessions" id="commander-sessions">20 of 20 sessions remaining this month</div>
         <div class="dash-commander-input">
           <input type="text" id="commander-input" placeholder="Ask the Commander anything about your business...">
@@ -83,16 +69,16 @@
         </div>
       </div>
 
-      <!-- RIGHT: Chart + History -->
+      <!-- RIGHT -->
       <div class="dash-right">
 
-        <!-- Navigation Chart prompt (shown when no intake completed) -->
+        <!-- Chart prompt (no intake yet) -->
         <div class="dash-panel dash-chart-prompt" id="chart-prompt">
           <p>You haven't generated a Navigation Chart yet. Complete the full intake to receive your personalized strategic assessment.</p>
           <a href="/intake" class="dash-btn-primary">Start the Intake</a>
         </div>
 
-        <!-- Navigation Chart (shown after intake) -->
+        <!-- Chart card (after intake) -->
         <div class="dash-panel dash-chart-card" id="chart-card" style="display:none;">
           <div class="dash-section-title">Navigation Chart</div>
           <div class="dash-chart-content" id="chart-content">
@@ -118,15 +104,15 @@
             <p>Automated government grant search is coming soon. Grant Radar will scan federal, state, and local government sources for free funding available to businesses exactly like yours. Check back soon.</p>
           </div>
         </div>
-
       </div>
     </div>
   </div>
 
   <script>
-    // ---- Init ----
+    let sessionData = null;
+
     async function initDashboard() {
-      // Auth check
+      // Auth
       try {
         const resp = await fetch('/api/auth/me');
         if (resp.ok) {
@@ -138,47 +124,71 @@
       } catch (e) {}
 
       // Load session
-      try {
-        const session = JSON.parse(localStorage.getItem('bridge_session'));
-        if (session) {
-          if (session.shipName) document.getElementById('dash-ship-name').textContent = session.shipName;
-          if (session.destination) document.getElementById('dash-destination').textContent = `→ ${session.destination.toUpperCase()}`;
+      try { sessionData = JSON.parse(localStorage.getItem('bridge_session')); } catch (e) {}
 
-          if (session.completedAt) {
-            document.getElementById('chart-prompt').style.display = 'none';
-            document.getElementById('chart-card').style.display = 'block';
+      if (sessionData) {
+        // Business name — use businessName first, then shipName
+        const name = sessionData.businessName || sessionData.shipName;
+        if (name) document.getElementById('dash-ship-name').textContent = name;
+        if (sessionData.destination) document.getElementById('dash-destination').textContent = `→ ${sessionData.destination.toUpperCase()}`;
 
-            // Show cached chart or generate new one
-            if (session.chartSections) {
-              renderChart(session.chartSections);
-            } else if (session.businessContext && session.intakeAnswers) {
-              generateChart(session);
-            }
+        // Load simulator resource values if saved
+        if (sessionData.simulatorResources) {
+          const r = sessionData.simulatorResources;
+          if (r.capital !== undefined) document.getElementById('dash-capital').textContent = `$${r.capital.toLocaleString()}`;
+          if (r.customers !== undefined) document.getElementById('dash-customers').textContent = `${r.customers} / 40`;
+          if (r.positioning !== undefined) document.getElementById('dash-positioning').textContent = `${r.positioning}%`;
+          if (r.switchingCosts !== undefined) document.getElementById('dash-switching').textContent = `${r.switchingCosts}%`;
+        }
+
+        if (sessionData.completedAt) {
+          document.getElementById('chart-prompt').style.display = 'none';
+          document.getElementById('chart-card').style.display = 'block';
+
+          if (sessionData.chartSections) {
+            renderChart(sessionData.chartSections);
+          } else if (sessionData.businessContext && sessionData.intakeAnswers) {
+            generateChart();
           }
         }
-      } catch (e) {}
+      }
+
+      // Set Commander welcome message based on session state
+      setCommanderWelcome();
+    }
+
+    // ---- Commander welcome ----
+    function setCommanderWelcome() {
+      const el = document.getElementById('commander-messages');
+      if (sessionData && sessionData.businessContext) {
+        const ctx = sessionData.businessContext;
+        const a = sessionData.intakeAnswers || {};
+        const name = sessionData.businessName || 'your business';
+        addMessage(`Welcome back. Based on your intake, I can see you're running ${ctx.businessType} and your most pressing challenge is ${ctx.primaryUncertainty || a.uncertainty || 'growth'}. What would you like to work on?`, 'commander');
+      } else {
+        addMessage("I don't have your intake data loaded — can you complete the intake form first so I have your full context?", 'commander');
+      }
     }
 
     // ---- Navigation Chart ----
-    async function generateChart(session) {
+    async function generateChart() {
       const loadingEl = document.getElementById('chart-loading');
       if (loadingEl) loadingEl.textContent = 'Generating your strategic assessment…';
-
       try {
         const resp = await fetch('/api/member/chart/generate', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            businessContext: session.businessContext,
-            intakeAnswers: session.intakeAnswers
+            businessContext: sessionData.businessContext,
+            intakeAnswers: sessionData.intakeAnswers,
+            scannedContent: sessionData.scannedContent || null
           })
         });
         if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
         const data = await resp.json();
-
         if (data.sections) {
-          session.chartSections = data.sections;
-          localStorage.setItem('bridge_session', JSON.stringify(session));
+          sessionData.chartSections = data.sections;
+          localStorage.setItem('bridge_session', JSON.stringify(sessionData));
           renderChart(data.sections);
         }
       } catch (err) {
@@ -190,13 +200,10 @@
     function renderChart(sections) {
       const container = document.getElementById('chart-content');
       container.innerHTML = '';
-      sections.forEach(section => {
+      sections.forEach(s => {
         const div = document.createElement('div');
         div.className = 'dash-chart-section';
-        div.innerHTML = `
-          <div class="dash-chart-section-title">${section.title}</div>
-          <div class="dash-chart-section-body">${section.body}</div>
-        `;
+        div.innerHTML = `<div class="dash-chart-section-title">${s.title}</div><div class="dash-chart-section-body">${s.body}</div>`;
         container.appendChild(div);
       });
     }
@@ -207,13 +214,15 @@
     const commanderMessages = document.getElementById('commander-messages');
 
     function getSessionContext() {
-      try {
-        const session = JSON.parse(localStorage.getItem('bridge_session'));
-        if (session && session.businessContext) {
-          const ctx = session.businessContext;
-          const a = session.intakeAnswers || {};
-          return `This business owner has already completed their intake. Here is their full context — do NOT ask them these questions again.
+      if (!sessionData || !sessionData.businessContext) return '';
+      const ctx = sessionData.businessContext;
+      const a = sessionData.intakeAnswers || {};
+      const sc = sessionData.scannedContent || {};
+      const chart = sessionData.chartSections || [];
 
+      let context = `This business owner has already completed their intake. Here is their full context — do NOT ask them these questions again.
+
+Business name: ${sessionData.businessName || 'unknown'}
 Business type: ${ctx.businessType}
 Client type: ${ctx.clientType}
 Service: ${ctx.serviceType}
@@ -221,16 +230,31 @@ Critical asset: ${ctx.assetType}
 Competitor threat: ${ctx.competitorThreat}
 Growth constraint: ${ctx.growthConstraint}
 Primary uncertainty: ${ctx.primaryUncertainty}
-Industry: ${a.industry || 'unknown'}
+Description: ${a.description || 'unknown'}
 Years operating: ${a.years || 'unknown'}
 Revenue: ${a.revenue || 'unknown'}
 Employees: ${a.employees || 'unknown'}
-Biggest challenge: ${a.challenge || 'unknown'}
-12-month goal: ${a.goal || 'unknown'}
-Differentiator: ${a.differentiator || 'unknown'}`;
-        }
-      } catch (e) {}
-      return '';
+Customer base: ${a.customerType || 'unknown'}
+Switching costs: ${a.switchingCosts || 'unknown'}
+Systems: ${a.systems || 'unknown'}
+Financial state: ${a.financialState || 'unknown'}
+Biggest uncertainty: ${a.uncertainty || 'unknown'}
+12-month goal: ${a.goal || 'unknown'}`;
+
+      if (chart.length) {
+        context += '\n\nNavigation Chart results:';
+        chart.forEach(s => { context += `\n${s.title}: ${s.body}`; });
+      }
+
+      if (sc.websiteContent) context += `\n\nWebsite content:\n${sc.websiteContent}`;
+      if (sc.facebookContent) context += `\n\nFacebook page content:\n${sc.facebookContent}`;
+
+      if (sessionData.simulatorResources) {
+        const r = sessionData.simulatorResources;
+        context += `\n\nLatest simulator resources: Capital $${r.capital}, Customers ${r.customers}/40, Positioning ${r.positioning}%, Switching Costs ${r.switchingCosts}%`;
+      }
+
+      return context;
     }
 
     function addMessage(text, type) {
@@ -244,7 +268,6 @@ Differentiator: ${a.differentiator || 'unknown'}`;
     async function sendCommanderMessage() {
       const text = commanderInput.value.trim();
       if (!text) return;
-
       commanderInput.value = '';
       commanderSend.disabled = true;
       addMessage(text, 'user');
@@ -264,7 +287,6 @@ Differentiator: ${a.differentiator || 'unknown'}`;
         });
         if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
         const data = await resp.json();
-
         commanderMessages.removeChild(loadingMsg);
         addMessage(data.response, 'commander');
       } catch (err) {
@@ -275,9 +297,7 @@ Differentiator: ${a.differentiator || 'unknown'}`;
     }
 
     commanderSend.addEventListener('click', sendCommanderMessage);
-    commanderInput.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') sendCommanderMessage();
-    });
+    commanderInput.addEventListener('keydown', e => { if (e.key === 'Enter') sendCommanderMessage(); });
 
     initDashboard();
   </script>

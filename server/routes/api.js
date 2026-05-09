@@ -248,12 +248,54 @@ router.post('/member/chart/generate', async (req, res) => {
     if (!businessContext || !intakeAnswers) {
       return res.status(400).json({ error: 'businessContext and intakeAnswers required' });
     }
-    const chart = await generateChart(businessContext, intakeAnswers);
+    const chart = await generateChart(businessContext, intakeAnswers, req.body.scannedContent);
     res.json(chart);
   } catch (e) {
     console.error('Chart generation error:', e.message);
     res.status(500).json({ error: 'Chart generation failed' });
   }
+});
+
+/**
+ * POST /api/intake/scan-urls
+ * Fetch and extract text from website and Facebook URLs
+ */
+router.post('/intake/scan-urls', async (req, res) => {
+  const { websiteUrl, facebookUrl } = req.body;
+  const results = { websiteContent: '', facebookContent: '' };
+
+  async function fetchAndExtract(url) {
+    if (!url || !url.trim()) return '';
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 5000);
+      const resp = await fetch(url.trim(), {
+        signal: controller.signal,
+        headers: { 'User-Agent': 'Mozilla/5.0 (compatible; TheBridge/1.0)' }
+      });
+      clearTimeout(timeout);
+      if (!resp.ok) return '';
+      const html = await resp.text();
+      const text = html.replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
+        .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+        .replace(/<[^>]+>/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+      return text.substring(0, 3000);
+    } catch (e) {
+      console.log(`URL scan failed for ${url}: ${e.message}`);
+      return '';
+    }
+  }
+
+  const [website, facebook] = await Promise.all([
+    fetchAndExtract(websiteUrl),
+    fetchAndExtract(facebookUrl)
+  ]);
+
+  results.websiteContent = website;
+  results.facebookContent = facebook;
+  res.json(results);
 });
 
 module.exports = router;

@@ -6,255 +6,228 @@
   <title>The Bridge — Business Intake</title>
   <link rel="stylesheet" href="/css/global.css">
   <style>
-    html, body {
-      overflow: visible !important;
-      height: auto !important;
-      background: #f5f0e8 !important;
-      color: #0a0a0f !important;
+    html, body { overflow: visible !important; height: auto !important; background: #f5f0e8 !important; color: #0a0a0f !important; }
+    .intake-page { max-width: 520px; margin: 0 auto; padding: 48px 20px 80px; }
+    .intake-heading { font-family: var(--font-ui); font-size: var(--text-lg); font-weight: 500; color: #0a0a0f; margin-bottom: 8px; }
+    .intake-sub { font-family: var(--font-ui); font-size: var(--text-sm); color: #7a7570; line-height: 1.55; margin-bottom: 32px; }
+    .intake-form { display: flex; flex-direction: column; gap: 20px; }
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    .field label { font-family: var(--font-ui); font-size: var(--text-sm); color: #0a0a0f; font-weight: 400; }
+    .field input, .field select, .field textarea {
+      font-family: var(--font-ui); font-size: var(--text-base); color: #0a0a0f;
+      background: #ece7dc; border: 1px solid #c8c0b0; border-radius: 6px;
+      padding: 12px 14px; min-height: 48px; outline: none; transition: border-color 0.2s; -webkit-appearance: none;
     }
-    .intake-page {
-      max-width: 520px;
-      margin: 0 auto;
-      padding: 48px 20px 80px;
-    }
-    .intake-heading {
-      font-family: var(--font-ui);
-      font-size: var(--text-lg);
-      font-weight: 500;
-      color: #0a0a0f;
-      margin-bottom: 8px;
-    }
-    .intake-sub {
-      font-family: var(--font-ui);
-      font-size: var(--text-sm);
-      color: #7a7570;
-      line-height: 1.55;
-      margin-bottom: 32px;
-    }
-    .intake-form {
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-    }
-    .field {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-    .field label {
-      font-family: var(--font-ui);
-      font-size: var(--text-sm);
-      color: #0a0a0f;
-      font-weight: 400;
-    }
-    .field input,
-    .field select,
-    .field textarea {
-      font-family: var(--font-ui);
-      font-size: var(--text-base);
-      color: #0a0a0f;
-      background: #ece7dc;
-      border: 1px solid #c8c0b0;
-      border-radius: 6px;
-      padding: 12px 14px;
-      min-height: 48px;
-      outline: none;
-      transition: border-color 0.2s;
-      -webkit-appearance: none;
-    }
-    .field input::placeholder,
-    .field textarea::placeholder {
-      color: #7a7570;
-    }
-    .field input:focus,
-    .field select:focus,
-    .field textarea:focus {
-      border-color: #3a3530;
-    }
-    .field textarea {
-      resize: vertical;
-      min-height: 80px;
-    }
+    .field input::placeholder, .field textarea::placeholder { color: #7a7570; }
+    .field input:focus, .field select:focus, .field textarea:focus { border-color: #3a3530; }
+    .field textarea { resize: vertical; min-height: 72px; }
     .btn-submit {
-      font-family: var(--font-ui);
-      font-size: var(--text-base);
-      font-weight: 500;
-      letter-spacing: 0.06em;
-      color: #f0ebe0;
-      background: #0a0a0f;
-      border: none;
-      border-radius: 6px;
-      padding: 14px 32px;
-      min-height: 48px;
-      cursor: pointer;
-      width: 100%;
-      margin-top: 8px;
+      font-family: var(--font-ui); font-size: var(--text-base); font-weight: 500; letter-spacing: 0.06em;
+      color: #f0ebe0; background: #0a0a0f; border: none; border-radius: 6px;
+      padding: 14px 32px; min-height: 48px; cursor: pointer; width: 100%; margin-top: 8px;
       transition: background 0.2s, transform 0.1s;
     }
-    .btn-submit:active {
-      transform: scale(0.97);
-      background: #1e1e2a;
-    }
-    .btn-submit:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-    .loading-msg {
-      font-family: var(--font-data);
-      font-size: var(--text-xs);
-      letter-spacing: 0.1em;
-      color: #7a7570;
-      text-transform: uppercase;
-      text-align: center;
-      margin-top: 12px;
-      display: none;
-    }
-    .loading-msg.visible {
-      display: block;
-    }
+    .btn-submit:active { transform: scale(0.97); background: #1e1e2a; }
+    .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+    .loading-msg { font-family: var(--font-data); font-size: var(--text-xs); letter-spacing: 0.1em; color: #7a7570; text-transform: uppercase; text-align: center; margin-top: 12px; display: none; }
+    .loading-msg.visible { display: block; }
   </style>
 </head>
 <body>
   <div class="intake-page">
-    <h1 class="intake-heading">Tell us about your business</h1>
-    <p class="intake-sub">Your answers shape the Navigation Chart — a personalized strategic assessment built for your specific operation. Be specific.</p>
+    <h1 class="intake-heading" id="heading">Tell us about your business</h1>
+    <p class="intake-sub" id="subheading">Your answers shape the Navigation Chart — a personalized strategic assessment built for your specific operation. Be specific.</p>
 
     <form id="intake-form" class="intake-form">
+      <!-- Q1: Business Name -->
       <div class="field">
-        <label for="intake-industry">What industry is your business in?</label>
-        <input type="text" id="intake-industry" placeholder="e.g. Lawn care, consulting, plumbing" required>
+        <label for="f-businessName">What is the name of your business?</label>
+        <input type="text" id="f-businessName" placeholder="e.g. Greenline Landscaping" required>
       </div>
+      <!-- Q2: Website URL -->
       <div class="field">
-        <label for="intake-years">How long have you been operating?</label>
-        <select id="intake-years" required>
+        <label for="f-websiteUrl">Do you have a business website? If so, paste the URL here.</label>
+        <input type="url" id="f-websiteUrl" placeholder="https://yourbusiness.com">
+      </div>
+      <!-- Q3: Facebook URL -->
+      <div class="field">
+        <label for="f-facebookUrl">Do you have a Facebook business page? If so, paste the URL here.</label>
+        <input type="url" id="f-facebookUrl" placeholder="https://facebook.com/yourbusinesspage">
+      </div>
+      <!-- Q4: What you do -->
+      <div class="field">
+        <label for="f-description">Describe your business in one or two sentences — what you do and exactly who you do it for.</label>
+        <textarea id="f-description" rows="2" required></textarea>
+      </div>
+      <!-- Q5: Years operating -->
+      <div class="field">
+        <label for="f-years">How long have you been operating?</label>
+        <select id="f-years" required>
           <option value="" disabled selected>Select</option>
           <option value="under_1">Less than 1 year</option>
-          <option value="1_3">1–3 years</option>
-          <option value="3_7">3–7 years</option>
-          <option value="7_plus">7+ years</option>
+          <option value="1_3">1 to 3 years</option>
+          <option value="3_7">3 to 7 years</option>
+          <option value="7_plus">7 or more years</option>
         </select>
       </div>
+      <!-- Q6: Revenue -->
       <div class="field">
-        <label for="intake-revenue">Approximate annual revenue?</label>
-        <select id="intake-revenue" required>
+        <label for="f-revenue">Current annual revenue range?</label>
+        <select id="f-revenue" required>
           <option value="" disabled selected>Select</option>
           <option value="under_50k">Under $50K</option>
-          <option value="50_100k">$50K – $100K</option>
-          <option value="100_250k">$100K – $250K</option>
-          <option value="250_500k">$250K – $500K</option>
+          <option value="50_150k">$50K to $150K</option>
+          <option value="150_300k">$150K to $300K</option>
+          <option value="300_500k">$300K to $500K</option>
           <option value="over_500k">Over $500K</option>
         </select>
       </div>
+      <!-- Q7: Team size -->
       <div class="field">
-        <label for="intake-employees">How many people work in the business?</label>
-        <select id="intake-employees" required>
+        <label for="f-employees">How many people work in the business?</label>
+        <select id="f-employees" required>
           <option value="" disabled selected>Select</option>
           <option value="just_me">Just me</option>
-          <option value="2_5">2–5 people</option>
-          <option value="6_15">6–15 people</option>
-          <option value="15_plus">15+</option>
+          <option value="2_5">2 to 5 people</option>
+          <option value="6_15">6 to 15 people</option>
+          <option value="15_plus">More than 15 people</option>
         </select>
       </div>
+      <!-- Q8: Repeat vs new -->
       <div class="field">
-        <label for="intake-challenge">What is the single biggest challenge your business faces right now?</label>
-        <textarea id="intake-challenge" rows="3" placeholder="Be specific — the more detail, the better the analysis" required></textarea>
+        <label for="f-customerType">How would you describe your customer base?</label>
+        <select id="f-customerType" required>
+          <option value="" disabled selected>Select</option>
+          <option value="mostly_repeat">Mostly repeat — they come back regularly</option>
+          <option value="mix">Mix of both</option>
+          <option value="mostly_new">Mostly one-time — acquisition is constant</option>
+        </select>
       </div>
+      <!-- Q9: Switching costs -->
       <div class="field">
-        <label for="intake-goal">Where do you want the business to be in 12 months?</label>
-        <textarea id="intake-goal" rows="3" placeholder="Revenue target, team size, market position — whatever matters most" required></textarea>
+        <label for="f-switchingCosts">How easy is it for a customer to leave you for a competitor?</label>
+        <select id="f-switchingCosts" required>
+          <option value="" disabled selected>Select</option>
+          <option value="easy">Easy — nothing stops them from leaving</option>
+          <option value="some_friction">Some friction</option>
+          <option value="very_hard">Very hard — they have too much invested</option>
+        </select>
       </div>
+      <!-- Q10: Systems -->
       <div class="field">
-        <label for="intake-differentiator">What makes your business different from competitors?</label>
-        <textarea id="intake-differentiator" rows="3" placeholder="What do clients choose you for?" required></textarea>
+        <label for="f-systems">How dependent is the business on you personally?</label>
+        <select id="f-systems" required>
+          <option value="" disabled selected>Select</option>
+          <option value="depends_on_me">It depends on me being there</option>
+          <option value="partially_documented">Partially documented</option>
+          <option value="well_documented">Well documented — others can run it</option>
+        </select>
       </div>
+      <!-- Q11: Financial state -->
       <div class="field">
-        <label for="intake-uncertainty">What is the one thing you're most uncertain about in the next 6 months?</label>
-        <textarea id="intake-uncertainty" rows="3" placeholder="What keeps you up at night?" required></textarea>
+        <label for="f-financialState">What best describes your current financial state?</label>
+        <select id="f-financialState" required>
+          <option value="" disabled selected>Select</option>
+          <option value="profitable">Profitable with healthy runway</option>
+          <option value="breaking_even">Breaking even</option>
+          <option value="tight">Tight — watching every dollar</option>
+        </select>
       </div>
+      <!-- Q12: Biggest uncertainty -->
+      <div class="field">
+        <label for="f-uncertainty">What is your single biggest business uncertainty right now?</label>
+        <textarea id="f-uncertainty" rows="2" required></textarea>
+      </div>
+      <!-- Q13: Success in one year -->
+      <div class="field">
+        <label for="f-goal">What does success look like for your business in one year — specifically?</label>
+        <textarea id="f-goal" rows="2" required></textarea>
+      </div>
+
       <button type="submit" class="btn-submit" id="btn-submit">Generate my Navigation Chart →</button>
       <div class="loading-msg" id="loading-msg">Analyzing your business…</div>
     </form>
   </div>
 
   <script>
-    // Check if this is an update (pre-populate fields)
+    const FIELDS = ['businessName','websiteUrl','facebookUrl','description','years','revenue','employees','customerType','switchingCosts','systems','financialState','uncertainty','goal'];
+
+    // Update mode: pre-populate
     const isUpdate = new URLSearchParams(window.location.search).get('mode') === 'update';
     if (isUpdate) {
       document.getElementById('btn-submit').textContent = 'Update my profile →';
-      document.querySelector('.intake-heading').textContent = 'Update your answers';
-      document.querySelector('.intake-sub').textContent = 'Change any answers that have shifted. Your Navigation Chart will regenerate with the new information.';
-
+      document.getElementById('heading').textContent = 'Update your answers';
+      document.getElementById('subheading').textContent = 'Change any answers that have shifted. Your Navigation Chart will regenerate with the new information.';
       try {
         const session = JSON.parse(localStorage.getItem('bridge_session'));
         if (session && session.intakeAnswers) {
           const a = session.intakeAnswers;
-          if (a.industry) document.getElementById('intake-industry').value = a.industry;
-          if (a.years) document.getElementById('intake-years').value = a.years;
-          if (a.revenue) document.getElementById('intake-revenue').value = a.revenue;
-          if (a.employees) document.getElementById('intake-employees').value = a.employees;
-          if (a.challenge) document.getElementById('intake-challenge').value = a.challenge;
-          if (a.goal) document.getElementById('intake-goal').value = a.goal;
-          if (a.differentiator) document.getElementById('intake-differentiator').value = a.differentiator;
-          if (a.uncertainty) document.getElementById('intake-uncertainty').value = a.uncertainty;
+          FIELDS.forEach(f => {
+            const el = document.getElementById('f-' + f);
+            if (el && a[f]) el.value = a[f];
+          });
         }
       } catch (e) {}
     }
 
     document.getElementById('intake-form').addEventListener('submit', async (e) => {
       e.preventDefault();
-
       const btn = document.getElementById('btn-submit');
       const loading = document.getElementById('loading-msg');
       btn.disabled = true;
       loading.textContent = isUpdate ? 'Updating your profile…' : 'Analyzing your business…';
       loading.classList.add('visible');
 
-      const answers = {
-        industry: document.getElementById('intake-industry').value,
-        years: document.getElementById('intake-years').value,
-        revenue: document.getElementById('intake-revenue').value,
-        employees: document.getElementById('intake-employees').value,
-        challenge: document.getElementById('intake-challenge').value,
-        goal: document.getElementById('intake-goal').value,
-        differentiator: document.getElementById('intake-differentiator').value,
-        uncertainty: document.getElementById('intake-uncertainty').value
-      };
+      // Collect answers
+      const answers = {};
+      FIELDS.forEach(f => { answers[f] = document.getElementById('f-' + f).value; });
+
+      // Scan URLs in parallel with intake API call
+      const scanPromise = (answers.websiteUrl || answers.facebookUrl)
+        ? fetch('/api/intake/scan-urls', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ websiteUrl: answers.websiteUrl, facebookUrl: answers.facebookUrl })
+          }).then(r => r.ok ? r.json() : { websiteContent: '', facebookContent: '' })
+            .catch(() => ({ websiteContent: '', facebookContent: '' }))
+        : Promise.resolve({ websiteContent: '', facebookContent: '' });
 
       try {
-        const resp = await fetch('/api/game/intake', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ answers })
-        });
+        // Run intake + scan in parallel
+        const [intakeResp, scannedContent] = await Promise.all([
+          fetch('/api/game/intake', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ answers })
+          }),
+          scanPromise
+        ]);
 
-        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-        const result = await resp.json();
+        if (!intakeResp.ok) throw new Error(`HTTP ${intakeResp.status}`);
+        const result = await intakeResp.json();
 
-        // Merge with existing session data (preserve run history, etc.)
+        // Merge with existing session (preserve run history, simulator state)
         let existing = {};
         try { existing = JSON.parse(localStorage.getItem('bridge_session')) || {}; } catch (e) {}
-
-        // Clear cached chart so dashboard regenerates it
-        delete existing.chartSections;
+        delete existing.chartSections; // force chart regeneration
 
         localStorage.setItem('bridge_session', JSON.stringify({
           ...existing,
-          shipName: result.ship_name,
+          businessName: answers.businessName,
+          shipName: answers.businessName || result.ship_name,
           destination: result.destination_name,
           industryKey: result.industry_key,
           businessContext: result.businessContext,
           intakeAnswers: answers,
+          scannedContent: scannedContent,
           completedAt: new Date().toISOString()
         }));
 
-        // Redirect to dashboard
         window.location.href = '/dashboard';
       } catch (err) {
         console.error('Intake failed:', err);
         btn.disabled = false;
-        loading.classList.remove('visible');
         loading.textContent = 'Something went wrong. Please try again.';
-        loading.classList.add('visible');
       }
     });
   </script>
