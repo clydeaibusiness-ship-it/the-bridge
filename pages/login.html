@@ -150,25 +150,29 @@
     const CLERK_PK = 'pk_live_Y2xlcmsuY2FwdGFpbnNicmlkZ2UuaW8k';
     const clerkDomain = atob(CLERK_PK.split('_')[2]).slice(0, -1);
 
+    function loadScript(src) {
+      return new Promise((resolve, reject) => {
+        const s = document.createElement('script');
+        s.src = src;
+        s.async = true;
+        s.crossOrigin = 'anonymous';
+        s.onload = resolve;
+        s.onerror = () => reject(new Error('Failed to load: ' + src));
+        document.head.appendChild(s);
+      });
+    }
+
     async function initClerk() {
       const authDiv = document.getElementById('clerk-auth');
       try {
-        // 1. Load Clerk core
-        const { Clerk } = await import(`https://${clerkDomain}/npm/@clerk/clerk-js@latest/dist/clerk.browser.js`);
-        
-        // 2. Load UI bundle (required for mountSignIn)
-        await new Promise((resolve, reject) => {
-          const script = document.createElement('script');
-          script.src = `https://${clerkDomain}/npm/@clerk/ui@1/dist/ui.browser.js`;
-          script.async = true;
-          script.crossOrigin = 'anonymous';
-          script.onload = resolve;
-          script.onerror = () => reject(new Error('Failed to load Clerk UI'));
-          document.head.appendChild(script);
-        });
+        // Load Clerk core as a script tag (not ESM import)
+        await loadScript(`https://${clerkDomain}/npm/@clerk/clerk-js@latest/dist/clerk.browser.js`);
 
-        // 3. Initialize with UI
-        const clerk = new Clerk(CLERK_PK);
+        // Load UI bundle
+        await loadScript(`https://${clerkDomain}/npm/@clerk/ui@1/dist/ui.browser.js`);
+
+        // Initialize
+        const clerk = new window.Clerk(CLERK_PK);
         await clerk.load({
           ui: { ClerkUI: window.__internal_ClerkUICtor }
         });
