@@ -7,7 +7,7 @@
 /* ---- PAGE BODY — cream background ---- */
 .landing-body {
   background: #f0ebe0 !important;
-  color: #08080f !important;
+  color: #08080f;
   overflow-x: hidden;
   overflow-y: auto;
   height: auto;
@@ -26,10 +26,11 @@
   padding: 0 20px;
 }
 
-/* ---- HERO — dark panel ---- */
+/* ---- HERO — dark panel, ALL text cream ---- */
 .hero {
   position: relative;
   background: #08080f;
+  color: #f0ebe0;
   padding: 120px 0 80px;
   text-align: center;
   overflow: hidden;
@@ -48,7 +49,7 @@
   z-index: 1;
 }
 
-/* Log in button — top right of hero */
+/* Log in link — top right of hero, cream text, Space Mono */
 .hero-login {
   position: absolute;
   top: 24px;
@@ -57,7 +58,7 @@
   font-family: var(--font-data);
   font-size: 11px;
   letter-spacing: 0.08em;
-  color: #f0ebe0;
+  color: #f0ebe0 !important;
   background: transparent;
   border: 1px solid rgba(240, 235, 224, 0.4);
   border-radius: 2px;
@@ -73,7 +74,7 @@
   font-family: var(--font-data);
   font-size: var(--text-xs);
   letter-spacing: var(--tracking-data);
-  color: rgba(240, 235, 224, 0.5);
+  color: rgba(240, 235, 224, 0.5) !important;
   text-transform: uppercase;
   margin-bottom: 20px;
 }
@@ -81,14 +82,14 @@
   font-family: var(--font-ui);
   font-size: 2.25rem;
   font-weight: 500;
-  color: #f0ebe0;
+  color: #f0ebe0 !important;
   line-height: 1.25;
   margin-bottom: 24px;
 }
 .hero-body {
   font-family: var(--font-ui);
   font-size: var(--text-base);
-  color: #b8b0a0;
+  color: #b8b0a0 !important;
   line-height: 1.65;
   max-width: 560px;
   margin: 0 auto 36px;
@@ -100,13 +101,13 @@
   flex-wrap: wrap;
 }
 
-/* Hero buttons — cream on dark */
+/* Hero buttons */
 .btn-primary-hero {
   font-family: var(--font-ui);
   font-size: var(--text-base);
   font-weight: 500;
   letter-spacing: var(--tracking-ui);
-  color: #08080f;
+  color: #08080f !important;
   background: #f0ebe0;
   border: none;
   border-radius: 8px;
@@ -121,14 +122,14 @@
 }
 .btn-primary-hero:active {
   transform: scale(0.97);
-  background: var(--cream-dim);
+  background: #b8b0a0;
 }
 .btn-ghost-hero {
   font-family: var(--font-ui);
   font-size: var(--text-base);
   font-weight: 500;
   letter-spacing: var(--tracking-ui);
-  color: #f0ebe0;
+  color: #f0ebe0 !important;
   background: transparent;
   border: 1px solid rgba(240, 235, 224, 0.5);
   border-radius: 8px;

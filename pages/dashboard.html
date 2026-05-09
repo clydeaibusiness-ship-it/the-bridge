@@ -6,6 +6,12 @@
   <title>The Bridge — Dashboard</title>
   <link rel="stylesheet" href="/css/global.css">
   <link rel="stylesheet" href="/css/dashboard.css">
+  <style>
+    html, body {
+      overflow: visible !important;
+      height: auto !important;
+    }
+  </style>
 </head>
 <body class="dash-body">
   <div class="dash-page">
@@ -151,6 +157,20 @@
         if (session) {
           if (session.shipName) document.getElementById('dash-ship-name').textContent = session.shipName;
           if (session.destination) document.getElementById('dash-destination').textContent = `→ ${session.destination.toUpperCase()}`;
+
+          // If intake was completed, show chart card instead of prompt
+          if (session.completedAt) {
+            document.getElementById('chart-prompt').style.display = 'none';
+            const chartCard = document.getElementById('chart-card');
+            chartCard.style.display = 'block';
+
+            // Build summary from business context
+            if (session.businessContext) {
+              const ctx = session.businessContext;
+              document.getElementById('chart-summary').textContent =
+                `Your intake for ${ctx.businessType} has been received. Your Navigation Chart is being prepared — a full strategic assessment based on the Big Book of Strategy framework, personalized to your operation.`;
+            }
+          }
         }
       } catch (e) {}
     }
