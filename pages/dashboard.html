@@ -12,7 +12,7 @@
 
     <!-- HEADER -->
     <header class="dash-header">
-      <h1 class="dash-welcome" id="dash-welcome">Welcome back, Captain.</h1>
+      <h1 class="dash-welcome" id="dash-welcome">Welcome back.</h1>
       <nav class="dash-nav">
         <a href="/simulator">Launch Simulator</a>
         <span class="dash-nav-sep">|</span>
@@ -39,7 +39,7 @@
               <linearGradient id="det" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#c8b89a" stop-opacity="0.6"/><stop offset="100%" stop-color="#c8b89a" stop-opacity="0"/></linearGradient>
             </defs>
             <rect x="22" y="60" width="16" height="30" fill="url(#det)" opacity="0.4"/>
-            <path d="M30,4 L48,60 L30,52 L12,60 Z" fill="#f5f0e8" filter="url(#dsg)"/>
+            <path d="M30,4 L48,60 L30,52 L12,60 Z" fill="#e8e3d8" stroke="#c8c0b0" stroke-width="0.5" filter="url(#dsg)"/>
             <path d="M12,60 L2,72 L18,64 Z" fill="#c8c0b0"/>
             <path d="M48,60 L58,72 L42,64 Z" fill="#c8c0b0"/>
             <ellipse cx="30" cy="28" rx="5" ry="7" fill="#1a1a26" stroke="#c8b89a" stroke-width="1"/>
@@ -84,7 +84,7 @@
 
         <div class="dash-commander-messages" id="commander-messages">
           <div class="dash-msg dash-msg-commander">
-            Welcome back, Captain. I've reviewed your latest run data. What would you like to work on?
+            Welcome back. I've reviewed your latest run data. What would you like to work on?
           </div>
         </div>
 
@@ -102,7 +102,7 @@
         <!-- Navigation Chart prompt -->
         <div class="dash-panel dash-chart-prompt" id="chart-prompt">
           <p>You haven't generated a Navigation Chart yet. Complete the full intake to receive your personalized strategic assessment.</p>
-          <a href="/simulator" class="dash-btn-primary">Start the Intake</a>
+          <a href="/intake" class="dash-btn-primary">Start the Intake</a>
         </div>
 
         <!-- Navigation Chart (hidden until generated) -->
@@ -120,24 +120,94 @@
           </div>
         </div>
 
+        <!-- Grant Radar -->
+        <div class="dash-panel dash-grant-radar">
+          <div class="dash-section-title">Grant Radar</div>
+          <div class="dash-grant-body">
+            <p>Automated government grant search is coming soon. Grant Radar will scan federal, state, and local government sources for free funding available to businesses exactly like yours. Check back soon.</p>
+          </div>
+        </div>
+
       </div>
     </div>
   </div>
 
   <script>
     async function initDashboard() {
+      // Auth check
       try {
         const resp = await fetch('/api/auth/me');
         if (resp.ok) {
           const user = await resp.json();
           if (user && user.firstName) {
-            document.getElementById('dash-welcome').textContent = `Welcome back, Captain ${user.firstName}.`;
+            document.getElementById('dash-welcome').textContent = `Welcome back, ${user.firstName}.`;
           }
         }
-      } catch (e) {
-        // Auth check failed silently — page still works
-      }
+      } catch (e) {}
+
+      // Load session data from localStorage
+      try {
+        const session = JSON.parse(localStorage.getItem('bridge_session'));
+        if (session) {
+          if (session.shipName) document.getElementById('dash-ship-name').textContent = session.shipName;
+          if (session.destination) document.getElementById('dash-destination').textContent = `→ ${session.destination.toUpperCase()}`;
+        }
+      } catch (e) {}
     }
+
+    // Commander chat
+    const commanderInput = document.getElementById('commander-input');
+    const commanderSend = document.getElementById('commander-send');
+    const commanderMessages = document.getElementById('commander-messages');
+
+    function addMessage(text, type) {
+      const msg = document.createElement('div');
+      msg.className = `dash-msg dash-msg-${type}`;
+      msg.textContent = text;
+      commanderMessages.appendChild(msg);
+      commanderMessages.scrollTop = commanderMessages.scrollHeight;
+    }
+
+    async function sendCommanderMessage() {
+      const text = commanderInput.value.trim();
+      if (!text) return;
+
+      commanderInput.value = '';
+      commanderSend.disabled = true;
+      addMessage(text, 'user');
+
+      // Show loading
+      const loadingMsg = document.createElement('div');
+      loadingMsg.className = 'dash-msg dash-msg-commander';
+      loadingMsg.textContent = 'Thinking…';
+      loadingMsg.style.opacity = '0.5';
+      commanderMessages.appendChild(loadingMsg);
+      commanderMessages.scrollTop = commanderMessages.scrollHeight;
+
+      try {
+        const resp = await fetch('/api/member/commander/message', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: text })
+        });
+
+        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+        const data = await resp.json();
+
+        commanderMessages.removeChild(loadingMsg);
+        addMessage(data.response, 'commander');
+      } catch (err) {
+        commanderMessages.removeChild(loadingMsg);
+        addMessage('The Commander is temporarily unavailable. Please try again.', 'commander');
+      }
+
+      commanderSend.disabled = false;
+    }
+
+    commanderSend.addEventListener('click', sendCommanderMessage);
+    commanderInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') sendCommanderMessage();
+    });
 
     initDashboard();
   </script>

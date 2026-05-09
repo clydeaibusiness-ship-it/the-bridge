@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Bridge — Business Intake</title>
+  <link rel="stylesheet" href="/css/global.css">
+  <style>
+    html, body {
+      overflow: visible !important;
+      height: auto !important;
+      background: #f5f0e8 !important;
+      color: #0a0a0f !important;
+    }
+    .intake-page {
+      max-width: 520px;
+      margin: 0 auto;
+      padding: 48px 20px 80px;
+    }
+    .intake-heading {
+      font-family: var(--font-ui);
+      font-size: var(--text-lg);
+      font-weight: 500;
+      color: #0a0a0f;
+      margin-bottom: 8px;
+    }
+    .intake-sub {
+      font-family: var(--font-ui);
+      font-size: var(--text-sm);
+      color: #7a7570;
+      line-height: 1.55;
+      margin-bottom: 32px;
+    }
+    .intake-form {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .field label {
+      font-family: var(--font-ui);
+      font-size: var(--text-sm);
+      color: #0a0a0f;
+      font-weight: 400;
+    }
+    .field input,
+    .field select,
+    .field textarea {
+      font-family: var(--font-ui);
+      font-size: var(--text-base);
+      color: #0a0a0f;
+      background: #ece7dc;
+      border: 1px solid #c8c0b0;
+      border-radius: 6px;
+      padding: 12px 14px;
+      min-height: 48px;
+      outline: none;
+      transition: border-color 0.2s;
+      -webkit-appearance: none;
+    }
+    .field input::placeholder,
+    .field textarea::placeholder {
+      color: #7a7570;
+    }
+    .field input:focus,
+    .field select:focus,
+    .field textarea:focus {
+      border-color: #3a3530;
+    }
+    .field textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+    .btn-submit {
+      font-family: var(--font-ui);
+      font-size: var(--text-base);
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      color: #f0ebe0;
+      background: #0a0a0f;
+      border: none;
+      border-radius: 6px;
+      padding: 14px 32px;
+      min-height: 48px;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 8px;
+      transition: background 0.2s, transform 0.1s;
+    }
+    .btn-submit:active {
+      transform: scale(0.97);
+      background: #1e1e2a;
+    }
+    .btn-submit:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    .loading-msg {
+      font-family: var(--font-data);
+      font-size: var(--text-xs);
+      letter-spacing: 0.1em;
+      color: #7a7570;
+      text-transform: uppercase;
+      text-align: center;
+      margin-top: 12px;
+      display: none;
+    }
+    .loading-msg.visible {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <div class="intake-page">
+    <h1 class="intake-heading">Tell us about your business</h1>
+    <p class="intake-sub">Your answers shape the Navigation Chart — a personalized strategic assessment built for your specific operation. Be specific.</p>
+
+    <form id="intake-form" class="intake-form">
+      <div class="field">
+        <label for="intake-industry">What industry is your business in?</label>
+        <input type="text" id="intake-industry" placeholder="e.g. Lawn care, consulting, plumbing" required>
+      </div>
+      <div class="field">
+        <label for="intake-years">How long have you been operating?</label>
+        <select id="intake-years" required>
+          <option value="" disabled selected>Select</option>
+          <option value="under_1">Less than 1 year</option>
+          <option value="1_3">1–3 years</option>
+          <option value="3_7">3–7 years</option>
+          <option value="7_plus">7+ years</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="intake-revenue">Approximate annual revenue?</label>
+        <select id="intake-revenue" required>
+          <option value="" disabled selected>Select</option>
+          <option value="under_50k">Under $50K</option>
+          <option value="50_100k">$50K – $100K</option>
+          <option value="100_250k">$100K – $250K</option>
+          <option value="250_500k">$250K – $500K</option>
+          <option value="over_500k">Over $500K</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="intake-employees">How many people work in the business?</label>
+        <select id="intake-employees" required>
+          <option value="" disabled selected>Select</option>
+          <option value="just_me">Just me</option>
+          <option value="2_5">2–5 people</option>
+          <option value="6_15">6–15 people</option>
+          <option value="15_plus">15+</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="intake-challenge">What is the single biggest challenge your business faces right now?</label>
+        <textarea id="intake-challenge" rows="3" placeholder="Be specific — the more detail, the better the analysis" required></textarea>
+      </div>
+      <div class="field">
+        <label for="intake-goal">Where do you want the business to be in 12 months?</label>
+        <textarea id="intake-goal" rows="3" placeholder="Revenue target, team size, market position — whatever matters most" required></textarea>
+      </div>
+      <div class="field">
+        <label for="intake-differentiator">What makes your business different from competitors?</label>
+        <textarea id="intake-differentiator" rows="3" placeholder="What do clients choose you for?" required></textarea>
+      </div>
+      <div class="field">
+        <label for="intake-uncertainty">What is the one thing you're most uncertain about in the next 6 months?</label>
+        <textarea id="intake-uncertainty" rows="3" placeholder="What keeps you up at night?" required></textarea>
+      </div>
+      <button type="submit" class="btn-submit" id="btn-submit">Generate my Navigation Chart →</button>
+      <div class="loading-msg" id="loading-msg">Analyzing your business…</div>
+    </form>
+  </div>
+
+  <script>
+    document.getElementById('intake-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const btn = document.getElementById('btn-submit');
+      const loading = document.getElementById('loading-msg');
+      btn.disabled = true;
+      loading.classList.add('visible');
+
+      const answers = {
+        industry: document.getElementById('intake-industry').value,
+        years: document.getElementById('intake-years').value,
+        revenue: document.getElementById('intake-revenue').value,
+        employees: document.getElementById('intake-employees').value,
+        challenge: document.getElementById('intake-challenge').value,
+        goal: document.getElementById('intake-goal').value,
+        differentiator: document.getElementById('intake-differentiator').value,
+        uncertainty: document.getElementById('intake-uncertainty').value
+      };
+
+      try {
+        const resp = await fetch('/api/game/intake', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ answers })
+        });
+
+        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+        const result = await resp.json();
+
+        // Store in localStorage
+        localStorage.setItem('bridge_session', JSON.stringify({
+          shipName: result.ship_name,
+          destination: result.destination_name,
+          industryKey: result.industry_key,
+          businessContext: result.businessContext,
+          intakeAnswers: answers,
+          completedAt: new Date().toISOString()
+        }));
+
+        // Redirect to dashboard
+        window.location.href = '/dashboard';
+      } catch (err) {
+        console.error('Intake failed:', err);
+        btn.disabled = false;
+        loading.classList.remove('visible');
+        loading.textContent = 'Something went wrong. Please try again.';
+        loading.classList.add('visible');
+      }
+    });
+  </script>
+</body>
+</html>

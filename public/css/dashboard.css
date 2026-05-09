@@ -59,7 +59,6 @@
   display: grid;
   grid-template-columns: 260px 1fr 300px;
   gap: 20px;
-  min-height: calc(100vh - 140px);
 }
 
 /* ---- PANELS ---- */
@@ -91,7 +90,7 @@
 .dash-ship-display {
   width: 100%;
   aspect-ratio: 3 / 4;
-  background: #0a0a0f;
+  background: transparent;
   border-radius: 2px;
   display: flex;
   align-items: center;
@@ -337,6 +336,20 @@
   border-bottom: none;
 }
 
+/* ---- GRANT RADAR ---- */
+.dash-grant-radar {
+  padding: 0;
+}
+.dash-grant-body {
+  padding: 14px 20px;
+}
+.dash-grant-body p {
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  color: #7a7570;
+  line-height: 1.55;
+}
+
 /* ---- RESPONSIVE ---- */
 @media (max-width: 1024px) {
   .dash-grid {
@@ -354,11 +367,19 @@
   }
 }
 @media (max-width: 768px) {
+  .dash-header {
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-start;
+  }
   .dash-grid {
     grid-template-columns: 1fr;
   }
   .dash-ship {
     grid-template-columns: 1fr;
+  }
+  .dash-right {
+    display: contents;
   }
   .dash-commander {
     min-height: 400px;

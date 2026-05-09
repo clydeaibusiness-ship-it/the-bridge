@@ -190,7 +190,10 @@
   <!-- ====== CONFETTI CONTAINER ====== -->
   <div id="confetti-container" class="confetti-container"></div>
 
-  <script src="/js/starfield.js" type="module"></script>
+  <script type="module">
+    import { renderStarfield } from '/js/starfield.js';
+    renderStarfield('starfield', { theme: 'light' });
+  </script>
   <script src="/js/audio.js" type="module"></script>
   <script src="/js/simulator.js" type="module"></script>
 </body>

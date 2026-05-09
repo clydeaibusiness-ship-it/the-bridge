@@ -1,19 +1,44 @@
 import { CONFIG } from '/config.js';
 
-export function renderStarfield(canvasId) {
+// Color presets
+const THEMES = {
+  dark: {
+    bg: '#08080f',
+    wispCenter: 'rgba(46, 42, 64, 0.5)',
+    wispEdge: 'rgba(8, 8, 15, 0)',
+    starFill: '#2e2a40',
+    dustColor: (op) => `rgba(46, 42, 64, ${op})`,
+  },
+  light: {
+    bg: '#f5f0e8',
+    wispCenter: 'rgba(180, 172, 160, 0.38)',
+    wispEdge: 'rgba(245, 240, 232, 0)',
+    starFill: '#b8b0a0',
+    dustColor: (op) => `rgba(168, 160, 148, ${op * 1.5 + 0.1})`,
+  }
+};
+
+/**
+ * @param {string} canvasId
+ * @param {object} [opts]
+ * @param {'dark'|'light'} [opts.theme='dark']
+ */
+export function renderStarfield(canvasId, opts = {}) {
   const canvas = document.getElementById(canvasId);
   if (!canvas) return;
 
-  // Size canvas to full screen
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
+  const theme = THEMES[opts.theme] || THEMES.dark;
+
+  // Size canvas to parent or full screen
+  canvas.width = canvas.parentElement?.offsetWidth || window.innerWidth;
+  canvas.height = canvas.parentElement?.offsetHeight || window.innerHeight;
 
   const ctx = canvas.getContext('2d');
   const W = canvas.width;
   const H = canvas.height;
 
-  // Base fill — warm cream to match simulator background
-  ctx.fillStyle = '#f5f0e8';
+  // Base fill
+  ctx.fillStyle = theme.bg;
   ctx.fillRect(0, 0, W, H);
 
   // Wisp formations
@@ -33,8 +58,8 @@ export function renderStarfield(canvasId) {
       w.x / scaleX, w.y / scaleY, 0,
       w.x / scaleX, w.y / scaleY, maxR
     );
-    grad.addColorStop(0, 'rgba(180, 172, 160, 0.38)');
-    grad.addColorStop(1, 'rgba(245, 240, 232, 0)');
+    grad.addColorStop(0, theme.wispCenter);
+    grad.addColorStop(1, theme.wispEdge);
     ctx.fillStyle = grad;
     ctx.beginPath();
     ctx.arc(w.x / scaleX, w.y / scaleY, maxR, 0, Math.PI * 2);
@@ -46,7 +71,7 @@ export function renderStarfield(canvasId) {
   function drawStar(x, y, size, opacity) {
     ctx.save();
     ctx.globalAlpha = opacity;
-    ctx.fillStyle = '#b8b0a0';
+    ctx.fillStyle = theme.starFill;
     ctx.beginPath();
     ctx.moveTo(x,          y - size);
     ctx.lineTo(x + size * 0.15, y - size * 0.15);
@@ -76,7 +101,7 @@ export function renderStarfield(canvasId) {
     const op = Math.random() * 0.3 + 0.2;
     ctx.beginPath();
     ctx.arc(x, y, r, 0, Math.PI * 2);
-    ctx.fillStyle = `rgba(168, 160, 148, ${op * 1.5 + 0.1})`;
+    ctx.fillStyle = theme.dustColor(op);
     ctx.fill();
   }
 }
