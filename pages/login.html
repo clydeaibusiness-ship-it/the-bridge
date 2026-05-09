@@ -6,6 +6,12 @@
   <title>The Bridge — Sign In</title>
   <link rel="stylesheet" href="/css/global.css">
   <style>
+    html, body {
+      overflow: visible !important;
+      height: auto !important;
+      background: #f0ebe0 !important;
+      color: #08080f !important;
+    }
     .login-page {
       min-height: 100vh;
       display: flex;
@@ -19,54 +25,134 @@
       text-align: center;
     }
     .login-title {
-      font-size: var(--text-xl);
-      margin-bottom: var(--space-sm);
+      font-family: var(--font-ui);
+      font-size: var(--text-lg);
+      font-weight: 500;
+      color: #08080f;
+      margin-bottom: 8px;
     }
     .login-subtitle {
+      font-family: var(--font-ui);
       font-size: var(--text-sm);
-      color: var(--color-ink-ghost);
-      margin-bottom: var(--space-xl);
+      color: rgba(8, 8, 15, 0.5);
+      margin-bottom: 32px;
+      line-height: 1.5;
     }
-    /* Clerk component container */
     #clerk-auth {
       min-height: 300px;
       display: flex;
       align-items: center;
       justify-content: center;
     }
+    /* Style Clerk's embedded component for light background */
+    #clerk-auth .cl-rootBox {
+      --clerk-font-family: 'Space Grotesk', sans-serif;
+    }
     .login-alt {
-      margin-top: var(--space-lg);
-      font-size: var(--text-xs);
-      color: var(--color-ink-ghost);
+      margin-top: 24px;
+      font-family: var(--font-ui);
+      font-size: var(--text-sm);
+      color: rgba(8, 8, 15, 0.4);
     }
     .login-alt a {
-      color: var(--color-ink-light);
+      color: #08080f;
+      text-decoration: underline;
+    }
+    .login-back {
+      position: absolute;
+      top: 24px;
+      left: 24px;
+      font-family: var(--font-data);
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      color: rgba(8, 8, 15, 0.5);
+      text-decoration: none;
+    }
+    .login-back:hover {
+      color: #08080f;
+    }
+    /* Fallback form styling */
+    .fallback-card {
+      border: 1px solid rgba(8, 8, 15, 0.1);
+      border-radius: 8px;
+      padding: 28px 24px;
+      max-width: 360px;
+      width: 100%;
+      margin: 0 auto;
+      text-align: left;
+    }
+    .fallback-card p {
+      font-family: var(--font-ui);
+      font-size: var(--text-sm);
+      color: rgba(8, 8, 15, 0.6);
+      margin-bottom: 16px;
+    }
+    .fallback-card input {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid rgba(8, 8, 15, 0.15);
+      border-radius: 8px;
+      font-family: var(--font-ui);
+      font-size: var(--text-base);
+      background: #fff;
+      color: #08080f;
+      margin-bottom: 12px;
+      outline: none;
+    }
+    .fallback-card input:focus {
+      border-color: rgba(8, 8, 15, 0.4);
+    }
+    .fallback-card input::placeholder {
+      color: rgba(8, 8, 15, 0.3);
+    }
+    .fallback-btn {
+      width: 100%;
+      font-family: var(--font-ui);
+      font-size: var(--text-base);
+      font-weight: 500;
+      letter-spacing: var(--tracking-ui);
+      color: #f0ebe0;
+      background: #08080f;
+      border: none;
+      border-radius: 8px;
+      padding: 14px 32px;
+      min-height: 48px;
+      cursor: pointer;
+      text-align: center;
+    }
+    .fallback-btn:active { background: #1e1e2a; }
+    .fallback-btn:disabled { opacity: 0.5; cursor: default; }
+    .fallback-msg {
+      display: none;
+      margin-top: 14px;
+      font-family: var(--font-ui);
+      font-size: var(--text-sm);
+      text-align: center;
     }
   </style>
 </head>
 <body>
+  <a href="/" class="login-back">← Back</a>
   <div class="login-page">
     <div class="login-card">
-      <h1 class="login-title">Welcome, Captain.</h1>
+      <h1 class="login-title">Sign in to The Bridge</h1>
       <p class="login-subtitle">Sign in or create an account to save your progress, access the dashboard, and unlock the Commander.</p>
 
       <div id="clerk-auth"></div>
 
       <p class="login-alt">
-        Just want to play? <a href="/game">Launch the free Simulator</a>
+        Just want to explore? <a href="/simulator">Launch the free Simulator</a>
       </p>
     </div>
   </div>
 
   <script>
-    // Load Clerk dynamically
     const CLERK_PK = 'pk_test_b2JsaWdpbmctcHl0aG9uLTUuY2xlcmsuYWNjb3VudHMuZGV2JA';
 
     async function initClerk() {
       const authDiv = document.getElementById('clerk-auth');
 
       try {
-        // Import Clerk from their official CDN
         const { Clerk } = await import('https://cdn.jsdelivr.net/npm/@clerk/clerk-js/+esm');
         const clerk = new Clerk(CLERK_PK);
         await clerk.load();
@@ -81,6 +167,15 @@
         clerk.mountSignIn(authDiv, {
           afterSignInUrl: '/dashboard',
           afterSignUpUrl: '/dashboard',
+          appearance: {
+            variables: {
+              colorPrimary: '#08080f',
+              colorText: '#08080f',
+              colorBackground: '#f0ebe0',
+              fontFamily: "'Space Grotesk', sans-serif",
+              borderRadius: '8px'
+            }
+          }
         });
       } catch (e) {
         console.error('Clerk failed:', e);
@@ -90,13 +185,13 @@
 
     function showFallbackForm(container) {
       container.innerHTML = `
-        <div style="border:1px solid var(--color-border);border-radius:2px;padding:2rem;max-width:360px;width:100%;margin:0 auto;">
-          <p style="margin-bottom:1rem;font-size:14px;color:var(--color-ink-light);">Enter your email to sign in or create an account.</p>
+        <div class="fallback-card">
+          <p>Enter your email to sign in or create an account.</p>
           <form id="magic-form">
-            <input id="magic-email" name="email" type="email" required placeholder="your@email.com" style="width:100%;padding:0.75rem 1rem;border:1px solid var(--color-border);border-radius:2px;font-family:var(--font-primary);font-size:14px;margin-bottom:0.75rem;background:var(--color-paper-bright);color:var(--color-ink);">
-            <button type="submit" class="btn-primary" id="magic-btn" style="width:100%;text-align:center;">Send Sign-In Link</button>
+            <input id="magic-email" name="email" type="email" required placeholder="your@email.com">
+            <button type="submit" class="fallback-btn" id="magic-btn">Send sign-in link</button>
           </form>
-          <p id="login-msg" style="display:none;margin-top:1rem;font-size:13px;text-align:center;"></p>
+          <p id="login-msg" class="fallback-msg"></p>
         </div>
       `;
 
@@ -119,22 +214,22 @@
           const data = await res.json();
 
           if (res.ok && data.sent) {
-            msg.textContent = '✓ Check your email for a sign-in link.';
-            msg.style.color = 'var(--color-safe)';
+            msg.textContent = 'Check your email for a sign-in link.';
+            msg.style.color = '#2a6a3a';
             msg.style.display = 'block';
-            btn.textContent = 'Link Sent';
+            btn.textContent = 'Link sent';
           } else {
             msg.textContent = data.error || 'Something went wrong. Try again.';
-            msg.style.color = 'var(--color-alert)';
+            msg.style.color = '#6b2a2a';
             msg.style.display = 'block';
-            btn.textContent = 'Send Sign-In Link';
+            btn.textContent = 'Send sign-in link';
             btn.disabled = false;
           }
         } catch (err) {
           msg.textContent = 'Connection failed. Try again.';
-          msg.style.color = 'var(--color-alert)';
+          msg.style.color = '#6b2a2a';
           msg.style.display = 'block';
-          btn.textContent = 'Send Sign-In Link';
+          btn.textContent = 'Send sign-in link';
           btn.disabled = false;
         }
       });

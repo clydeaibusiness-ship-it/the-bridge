@@ -16,6 +16,7 @@
 .page {
   position: relative;
   width: 100%;
+  overflow: visible;
 }
 
 .container {
@@ -34,7 +35,7 @@
   overflow: hidden;
 }
 .hero #starfield {
-  position: absolute;
+  position: absolute !important;
   top: 0;
   left: 0;
   width: 100%;
