@@ -73,7 +73,7 @@ function bindEvents() {
 async function checkAuth() {
   try {
     const { Clerk } = await import('https://cdn.jsdelivr.net/npm/@clerk/clerk-js/+esm');
-    const clerk = new Clerk('pk_test_b2JsaWdpbmctcHl0aG9uLTUuY2xlcmsuYWNjb3VudHMuZGV2JA');
+    const clerk = new Clerk('pk_live_Y2xlcmsuY2FwdGFpbnNicmlkZ2UuaW8k');
     await clerk.load();
     isLoggedIn = !!clerk.user;
   } catch (e) {
