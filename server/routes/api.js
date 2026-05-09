@@ -208,4 +208,15 @@ router.get('/member/chart', async (req, res) => {
   res.json(null);
 });
 
+// Temporary debug — remove after confirming env vars
+router.get('/debug/env-check', (req, res) => {
+  res.json({
+    stripe_key_set: !!process.env.STRIPE_SECRET_KEY,
+    stripe_key_prefix: (process.env.STRIPE_SECRET_KEY || '').substring(0, 10),
+    price_id_set: !!process.env.STRIPE_ENSIGN_MONTHLY_PRICE_ID,
+    price_id_value: process.env.STRIPE_ENSIGN_MONTHLY_PRICE_ID || '(empty)',
+    base_url: process.env.BASE_URL || '(empty)'
+  });
+});
+
 module.exports = router;
