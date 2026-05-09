@@ -127,26 +127,15 @@
   <script>
     async function initDashboard() {
       try {
-        // Check for Clerk session cookie — if not present, redirect to login
         const resp = await fetch('/api/auth/me');
-        if (!resp.ok) {
-          window.location.href = '/login?return=/dashboard';
-          return;
-        }
-        const user = await resp.json();
-        if (!user || !user.id) {
-          window.location.href = '/login?return=/dashboard';
-          return;
-        }
-
-        // Update welcome with user's name
-        const welcome = document.getElementById('dash-welcome');
-        if (user.firstName) {
-          welcome.textContent = `Welcome back, Captain ${user.firstName}.`;
+        if (resp.ok) {
+          const user = await resp.json();
+          if (user && user.firstName) {
+            document.getElementById('dash-welcome').textContent = `Welcome back, Captain ${user.firstName}.`;
+          }
         }
       } catch (e) {
-        // Don't redirect on error to avoid loops — just show the page
-        console.error('Auth check failed:', e);
+        // Auth check failed silently — page still works
       }
     }
 
