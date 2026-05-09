@@ -186,53 +186,10 @@
     function showFallbackForm(container) {
       container.innerHTML = `
         <div class="fallback-card">
-          <p>Enter your email to sign in or create an account.</p>
-          <form id="magic-form">
-            <input id="magic-email" name="email" type="email" required placeholder="your@email.com">
-            <button type="submit" class="fallback-btn" id="magic-btn">Send sign-in link</button>
-          </form>
-          <p id="login-msg" class="fallback-msg"></p>
+          <p>Sign-in is temporarily unavailable. Please try again in a moment.</p>
+          <a href="/" class="fallback-btn" style="display:block;text-align:center;text-decoration:none;">Back to The Bridge</a>
         </div>
       `;
-
-      document.getElementById('magic-form').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const email = document.getElementById('magic-email').value.trim();
-        const btn = document.getElementById('magic-btn');
-        const msg = document.getElementById('login-msg');
-        if (!email) return;
-
-        btn.textContent = 'Sending...';
-        btn.disabled = true;
-
-        try {
-          const res = await fetch('/api/auth/magic-link', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email })
-          });
-          const data = await res.json();
-
-          if (res.ok && data.sent) {
-            msg.textContent = 'Check your email for a sign-in link.';
-            msg.style.color = '#2a6a3a';
-            msg.style.display = 'block';
-            btn.textContent = 'Link sent';
-          } else {
-            msg.textContent = data.error || 'Something went wrong. Try again.';
-            msg.style.color = '#6b2a2a';
-            msg.style.display = 'block';
-            btn.textContent = 'Send sign-in link';
-            btn.disabled = false;
-          }
-        } catch (err) {
-          msg.textContent = 'Connection failed. Try again.';
-          msg.style.color = '#6b2a2a';
-          msg.style.display = 'block';
-          btn.textContent = 'Send sign-in link';
-          btn.disabled = false;
-        }
-      });
     }
 
     initClerk();

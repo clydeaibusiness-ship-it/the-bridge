@@ -612,11 +612,22 @@
   text-align: center;
   max-width: 400px;
 }
-#btn-play-again {
-  margin-bottom: 12px;
-}
-#btn-full-analysis {
+.results-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  max-width: 400px;
+  align-items: center;
   margin-bottom: 40px;
+}
+.results-actions.hidden {
+  display: none;
+}
+.results-actions .btn-primary,
+.results-actions .btn-secondary {
+  text-decoration: none;
+  text-align: center;
 }
 
 /* --- TOOLTIP OVERLAY --- */

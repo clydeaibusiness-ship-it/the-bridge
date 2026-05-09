@@ -46,19 +46,39 @@ async function init() {
   updateResourceDisplay();
 }
 
+let isLoggedIn = false;
+
 function bindEvents() {
   document.getElementById('btn-start').addEventListener('click', showIntake);
   document.getElementById('intake-form').addEventListener('submit', submitIntake);
   document.getElementById('btn-go-back').addEventListener('click', goBackToSituation);
   document.getElementById('btn-confirm').addEventListener('click', confirmChoice);
   document.getElementById('btn-next').addEventListener('click', nextSituation);
-  document.getElementById('btn-play-again').addEventListener('click', restartGame);
-  document.getElementById('btn-full-analysis').addEventListener('click', getFullAnalysis);
+
+  const playAgainBtn = document.getElementById('btn-play-again');
+  if (playAgainBtn) playAgainBtn.addEventListener('click', restartGame);
+
+  const fullAnalysisBtn = document.getElementById('btn-full-analysis');
+  if (fullAnalysisBtn) fullAnalysisBtn.addEventListener('click', getFullAnalysis);
 
   // Tooltip overlay dismiss
   document.getElementById('tooltip-overlay').addEventListener('click', (e) => {
     if (e.target === e.currentTarget) closeTooltip();
   });
+
+  // Check Clerk auth state
+  checkAuth();
+}
+
+async function checkAuth() {
+  try {
+    const { Clerk } = await import('https://cdn.jsdelivr.net/npm/@clerk/clerk-js/+esm');
+    const clerk = new Clerk('pk_test_b2JsaWdpbmctcHl0aG9uLTUuY2xlcmsuYWNjb3VudHMuZGV2JA');
+    await clerk.load();
+    isLoggedIn = !!clerk.user;
+  } catch (e) {
+    isLoggedIn = false;
+  }
 }
 
 // ============================================================
@@ -557,6 +577,18 @@ function showResults() {
   }
 
   document.getElementById('results-analysis').textContent = analysis;
+
+  // Show appropriate CTAs based on auth state
+  const loggedInActions = document.getElementById('results-actions-logged-in');
+  const anonActions = document.getElementById('results-actions-anonymous');
+  if (isLoggedIn) {
+    loggedInActions.classList.remove('hidden');
+    anonActions.classList.add('hidden');
+  } else {
+    loggedInActions.classList.add('hidden');
+    anonActions.classList.remove('hidden');
+  }
+
   showScreen('screen-results');
 }
 

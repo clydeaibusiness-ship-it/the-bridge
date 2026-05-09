@@ -168,8 +168,14 @@
       <h2 class="results-title">Your business — after 5 decisions</h2>
       <div class="results-grid" id="results-grid"></div>
       <p class="results-analysis" id="results-analysis"></p>
-      <button id="btn-play-again" class="btn-primary">Continue playing →</button>
-      <button id="btn-full-analysis" class="btn-secondary">Get the full analysis →</button>
+      <div id="results-actions-logged-in" class="results-actions hidden">
+        <button id="btn-play-again" class="btn-primary">Continue playing →</button>
+        <button id="btn-full-analysis" class="btn-secondary">Get the full analysis →</button>
+      </div>
+      <div id="results-actions-anonymous" class="results-actions">
+        <a href="/login?return=/simulator" id="btn-login-save" class="btn-primary">Log in to save progress</a>
+        <a href="/login?action=subscribe" id="btn-become-member" class="btn-secondary">Become a member to keep playing</a>
+      </div>
     </div>
   </div>
 
