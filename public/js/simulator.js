@@ -3,10 +3,14 @@
 // All game logic: resources, situations, outcomes, celebrations
 // ============================================================
 
-let situationsData = null;
+let situationsData = null;       // static fallback data
 let currentSituation = 0;
 let selectedOption = null;
-let intakeProfile = null; // personalized profile from API
+let intakeProfile = null;          // personalized profile from API
+let generatedSituations = [];      // API-generated situations stored here
+let nextSituationPromise = null;   // pre-fetch promise for next situation
+let coveredThemes = [];            // themes already used
+let businessContext = null;        // from intake API
 
 // Resources
 const resources = {
@@ -115,18 +119,19 @@ async function submitIntake(e) {
   // Show loading screen
   showScreen('screen-loading');
 
-  // Race: API call vs 4s timeout
+  // Race: API call vs 6s timeout (intake now also generates businessContext)
   const fallback = {
     ship_name: 'ISV Greenline',
     destination_name: 'Growth Horizon',
     industry_key: 'lawn_care',
-    flavor_text: 'Your business is waiting. The decisions ahead are yours to make.'
+    flavor_text: 'Your business is waiting. The decisions ahead are yours to make.',
+    businessContext: null
   };
 
   try {
     const result = await Promise.race([
       fetchIntake(answers),
-      new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 4000))
+      new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 6000))
     ]);
     intakeProfile = result;
   } catch (err) {
@@ -134,8 +139,34 @@ async function submitIntake(e) {
     intakeProfile = fallback;
   }
 
-  // Store answers for later use (debrief, etc.)
+  // Store answers and businessContext
   intakeProfile._answers = answers;
+  businessContext = intakeProfile.businessContext || null;
+
+  // Save to localStorage
+  try {
+    localStorage.setItem('bridge_session', JSON.stringify({
+      shipName: intakeProfile.ship_name,
+      destination: intakeProfile.destination_name,
+      industryKey: intakeProfile.industry_key,
+      businessContext: businessContext
+    }));
+  } catch (e) { /* localStorage unavailable */ }
+
+  // Reset state
+  generatedSituations = [];
+  coveredThemes = [];
+  nextSituationPromise = null;
+
+  // Pre-generate situation 1 before starting the game
+  try {
+    const sit1 = await fetchSituation(1);
+    generatedSituations[0] = sit1;
+    if (sit1.theme) coveredThemes.push(sit1.theme);
+  } catch (err) {
+    console.warn('Situation 1 generation failed, using static fallback:', err.message);
+    generatedSituations[0] = situationsData.situations[0];
+  }
 
   startGame();
 }
@@ -150,15 +181,48 @@ async function fetchIntake(answers) {
   return await resp.json();
 }
 
+async function fetchSituation(num) {
+  if (!businessContext) throw new Error('No businessContext');
+  const resp = await fetch('/api/game/situation', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      businessContext,
+      situationNumber: num,
+      previousThemes: coveredThemes
+    })
+  });
+  if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+  return await resp.json();
+}
+
+function prefetchNextSituation(num) {
+  if (num > 5 || !businessContext) return;
+  nextSituationPromise = fetchSituation(num)
+    .then(sit => {
+      generatedSituations[num - 1] = sit;
+      if (sit.theme) coveredThemes.push(sit.theme);
+      return sit;
+    })
+    .catch(err => {
+      console.warn(`Background fetch for situation ${num} failed:`, err.message);
+      // Will fall back to static in nextSituation()
+      return null;
+    });
+}
+
 function startGame() {
   document.getElementById('resource-bar').classList.remove('hidden');
   currentSituation = 0;
   updateResourceDisplay();
   showSituation(0);
+
+  // Pre-generate situation 2 in background
+  prefetchNextSituation(2);
 }
 
 function showSituation(index) {
-  const sit = situationsData.situations[index];
+  const sit = generatedSituations[index] || situationsData.situations[index];
   if (!sit) {
     showResults();
     return;
@@ -230,7 +294,7 @@ function goBackToSituation() {
 }
 
 function confirmChoice() {
-  const sit = situationsData.situations[currentSituation];
+  const sit = generatedSituations[currentSituation] || situationsData.situations[currentSituation];
   const opt = sit.options[selectedOption];
 
   // Store pre-change values
@@ -255,25 +319,74 @@ function confirmChoice() {
 
   // Show outcome
   showOutcome(sit, opt, prev);
-}
 
-function nextSituation() {
-  currentSituation++;
-  if (currentSituation >= situationsData.situations.length) {
-    showResults();
-  } else {
-    showSituation(currentSituation);
+  // Pre-generate next situation while player reads the outcome
+  // Only start if we don't already have one in-flight or stored
+  const nextIdx = currentSituation + 1;
+  if (nextIdx < 5 && !generatedSituations[nextIdx] && !nextSituationPromise) {
+    prefetchNextSituation(nextIdx + 1); // +1 because situationNumber is 1-based
   }
 }
 
-function restartGame() {
+async function nextSituation() {
+  currentSituation++;
+  if (currentSituation >= 5) {
+    showResults();
+    return;
+  }
+
+  // If we have a pre-fetched situation, await it
+  if (!generatedSituations[currentSituation] && nextSituationPromise) {
+    // Show brief loading only if the promise hasn't resolved yet
+    const loadingTimeout = setTimeout(() => {
+      document.getElementById('loading-text').textContent = 'Preparing next situation…';
+      document.getElementById('loading-subtext').textContent = '';
+      showScreen('screen-loading');
+    }, 150);
+
+    try {
+      const sit = await nextSituationPromise;
+      if (sit) generatedSituations[currentSituation] = sit;
+    } catch (err) {
+      console.warn(`Pre-fetch for situation ${currentSituation + 1} failed, using static:`, err.message);
+    }
+    clearTimeout(loadingTimeout);
+  }
+
+  // Safety net: fall back to static
+  if (!generatedSituations[currentSituation]) {
+    generatedSituations[currentSituation] = situationsData.situations[currentSituation];
+  }
+
+  showSituation(currentSituation);
+}
+
+async function restartGame() {
   resources.capital = 18400;
   resources.customers = 24;
   resources.positioning = 62;
   resources.switchingCosts = 38;
   currentSituation = 0;
+  generatedSituations = [];
+  coveredThemes = [];
+  nextSituationPromise = null;
+
+  // Re-generate situation 1
+  showScreen('screen-loading');
+  document.getElementById('loading-text').textContent = 'Preparing your situations…';
+  document.getElementById('loading-subtext').textContent = '';
+
+  try {
+    const sit1 = await fetchSituation(1);
+    generatedSituations[0] = sit1;
+    if (sit1.theme) coveredThemes.push(sit1.theme);
+  } catch (err) {
+    generatedSituations[0] = situationsData.situations[0];
+  }
+
   updateResourceDisplay();
   showSituation(0);
+  prefetchNextSituation(2);
 }
 
 function getFullAnalysis() {

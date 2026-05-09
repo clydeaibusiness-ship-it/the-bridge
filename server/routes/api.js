@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { personalizeIntake, generateDebrief, commanderChat } = require('../services/claude');
+const { personalizeIntake, generateSituation, generateDebrief, commanderChat } = require('../services/claude');
 const { 
   saveGameState, getGameState, saveRunHistory, getRunHistory,
   upsertAnonymousEvent, getCommanderUsage, incrementCommanderUsage
@@ -52,6 +52,49 @@ router.post('/game/intake', async (req, res) => {
       industry_key: 'lawn_care',
       flavor_text: 'Your business is waiting. The decisions ahead are yours to make.'
     });
+  }
+});
+
+/**
+ * POST /api/game/situation
+ * Generate a single personalized situation using Claude API
+ * Receives: businessContext, situationNumber, previousThemes
+ * Falls back to static situations.json on failure
+ */
+router.post('/game/situation', async (req, res) => {
+  const { businessContext, situationNumber, previousThemes } = req.body;
+
+  if (!businessContext || !situationNumber) {
+    return res.status(400).json({ error: 'businessContext and situationNumber required' });
+  }
+
+  try {
+    const situation = await generateSituation(
+      businessContext,
+      situationNumber,
+      previousThemes || []
+    );
+    res.json(situation);
+  } catch (e) {
+    console.error(`Situation ${situationNumber} generation failed:`, e.message);
+    // Fall back to static situation
+    try {
+      const fs = require('fs');
+      const path = require('path');
+      const staticData = JSON.parse(
+        fs.readFileSync(path.join(__dirname, '../../public/data/situations.json'), 'utf8')
+      );
+      const fallback = staticData.situations[situationNumber - 1];
+      if (fallback) {
+        console.log(`Falling back to static situation ${situationNumber}`);
+        res.json(fallback);
+      } else {
+        res.status(500).json({ error: 'No fallback available' });
+      }
+    } catch (fallbackErr) {
+      console.error('Static fallback also failed:', fallbackErr.message);
+      res.status(500).json({ error: 'Generation failed' });
+    }
   }
 });
 
