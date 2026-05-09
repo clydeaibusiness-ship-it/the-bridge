@@ -63,6 +63,12 @@
         </div>
         <div class="dash-commander-messages" id="commander-messages"></div>
         <div class="dash-commander-sessions" id="commander-sessions">20 of 20 sessions remaining this month</div>
+        <div class="dash-commander-prompts" id="commander-prompts">
+          <button class="prompt-pill" data-prompt="Walk me through the strategic levers from the Big Book of Strategy — what each one is and how they work together. Use questions to help me understand which ones are most relevant to my business right now.">Teach me the strategic levers</button>
+          <button class="prompt-pill" data-prompt="Based on what you know about my business, what is the single move I could make right now that would save me the most money? Ask me whatever you need to know first.">What is the one move that saves me money?</button>
+          <button class="prompt-pill" data-prompt="Based on what you know about my business, what is the single move I could make right now that would generate the most new revenue? Ask me whatever you need to know first.">What is the one move that generates money?</button>
+          <button class="prompt-pill" data-prompt="What do you think is the biggest unvalidated assumption currently baked into my business strategy? Ask me questions until you are confident enough to name it.">What is my biggest assumption?</button>
+        </div>
         <div class="dash-commander-input">
           <input type="text" id="commander-input" placeholder="Ask the Commander anything about your business...">
           <button class="dash-btn-send" id="commander-send">Send</button>
@@ -298,6 +304,14 @@ Biggest uncertainty: ${a.uncertainty || 'unknown'}
 
     commanderSend.addEventListener('click', sendCommanderMessage);
     commanderInput.addEventListener('keydown', e => { if (e.key === 'Enter') sendCommanderMessage(); });
+
+    // Quick prompt buttons
+    document.querySelectorAll('.prompt-pill').forEach(btn => {
+      btn.addEventListener('click', () => {
+        commanderInput.value = btn.dataset.prompt;
+        sendCommanderMessage();
+      });
+    });
 
     initDashboard();
   </script>
