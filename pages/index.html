@@ -4,196 +4,97 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>The Bridge — Strategic Navigation for Small Business</title>
-  <meta name="description" content="Your business is already in flight. The Bridge gives established business owners the strategic framework, AI advisor, and real-time simulator to double what's working and cut what isn't.">
+  <meta name="description" content="The Bridge gives established business owners the strategic framework, AI advisor, and real-time simulator to double what's working and cut what isn't.">
   <link rel="stylesheet" href="/css/global.css">
   <link rel="stylesheet" href="/css/landing.css">
 </head>
 <body>
-  <!-- Background decoration: hand-drawn stars and wisps -->
-  <div class="site-bg" aria-hidden="true">
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" style="color: var(--color-ink);">
-      <defs>
-        <path id="s-lg" d="M0,-24 L3,-3 L24,0 L3,3 L0,24 L-3,3 L-24,0 L-3,-3 Z"/>
-        <path id="s-md" d="M0,-14 L2,-2 L14,0 L2,2 L0,14 L-2,2 L-14,0 L-2,-2 Z"/>
-        <path id="s-sm" d="M0,-6 L1,-1 L6,0 L1,1 L0,6 L-1,1 L-6,0 L-1,-1 Z"/>
-        <radialGradient id="wf" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stop-color="currentColor" stop-opacity="0.35"/>
-          <stop offset="100%" stop-color="currentColor" stop-opacity="0"/>
-        </radialGradient>
-      </defs>
-      <ellipse cx="200" cy="150" rx="300" ry="80" fill="url(#wf)" transform="rotate(-15 200 150)"/>
-      <ellipse cx="900" cy="600" rx="350" ry="100" fill="url(#wf)" transform="rotate(20 900 600)"/>
-      <ellipse cx="600" cy="400" rx="200" ry="60" fill="url(#wf)" transform="rotate(5 600 400)"/>
-      <use href="#s-lg" transform="translate(95, 105)" fill="currentColor" opacity="0.8"/>
-      <use href="#s-lg" transform="translate(1080, 650)" fill="currentColor" opacity="0.7"/>
-      <use href="#s-md" transform="translate(480, 360)" fill="currentColor" opacity="0.6"/>
-      <use href="#s-md" transform="translate(180, 200)" fill="currentColor" opacity="0.6"/>
-      <use href="#s-md" transform="translate(850, 550)" fill="currentColor" opacity="0.55"/>
-      <use href="#s-sm" transform="translate(320, 130)" fill="currentColor" opacity="0.7"/>
-      <use href="#s-sm" transform="translate(750, 620)" fill="currentColor" opacity="0.6"/>
-      <use href="#s-sm" transform="translate(150, 300)" fill="currentColor" opacity="0.5"/>
-      <use href="#s-sm" transform="translate(1000, 500)" fill="currentColor" opacity="0.6"/>
-      <circle cx="60" cy="80" r="1.5" fill="currentColor" opacity="0.5"/>
-      <circle cx="420" cy="200" r="1" fill="currentColor" opacity="0.55"/>
-      <circle cx="720" cy="160" r="1.5" fill="currentColor" opacity="0.5"/>
-      <circle cx="340" cy="480" r="1.5" fill="currentColor" opacity="0.5"/>
-      <circle cx="680" cy="440" r="1" fill="currentColor" opacity="0.55"/>
-      <circle cx="960" cy="460" r="1" fill="currentColor" opacity="0.5"/>
-      <circle cx="260" cy="700" r="1.5" fill="currentColor" opacity="0.45"/>
-      <circle cx="800" cy="700" r="1.5" fill="currentColor" opacity="0.5"/>
-    </svg>
-  </div>
+  <canvas id="starfield"></canvas>
 
-  <div class="site-content">
+  <div class="page">
 
-    <!-- ========== SECTION 1: HERO ========== -->
-    <section class="hero section">
+    <!-- ========== HERO ========== -->
+    <section class="hero">
       <div class="container">
-        <div class="hero-grid">
-          <div class="hero-left">
-            <p class="eyebrow">Strategic Navigation for Small Business</p>
-            <h1 class="hero-headline">Your business is already in flight. Do you know where it's headed?</h1>
-            <p class="hero-sub">The Bridge gives established business owners the strategic framework, the AI advisor, and the real-time simulator to double what's working and cut what isn't.</p>
-            <div class="hero-actions">
-              <a href="/simulator" class="btn-primary">Launch the Simulator</a>
-              <a href="#how-it-works" class="btn-ghost">See How It Works</a>
-            </div>
-          </div>
-          <div class="hero-right">
-            <div class="hero-preview" id="game-preview">
-              <!-- Ship preview with star background -->
-              <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;position:relative;background:url('/assets/svg/stars.svg') center/cover no-repeat;">
-                <img src="/assets/svg/ship.svg" alt="Your ship" style="width:60px;height:80px;filter:drop-shadow(0 0 8px rgba(200,184,154,0.4));">
-                <div style="position:absolute;top:12%;left:50%;transform:translateX(-50%);">
-                  <svg width="40" height="40" viewBox="0 0 60 60"><path d="M30,2 L33,27 L58,30 L33,33 L30,58 L27,33 L2,30 L27,27 Z" fill="#c8b89a" opacity="0.3"/></svg>
-                </div>
-              </div>
-            </div>
-            <p class="hero-preview-label">This is your ship. Click to take the helm.</p>
-          </div>
+        <p class="eyebrow">Strategic navigation for small business</p>
+        <h1 class="headline">Your business is already in flight.<br>Do you know where it's headed?</h1>
+        <p class="hero-body">The Bridge gives established business owners the strategic framework, the AI advisor, and the real-time simulator to double what's working and cut what isn't.</p>
+        <div class="hero-buttons">
+          <a href="/simulator" class="btn-primary">Launch the Simulator</a>
+          <a href="#how-it-works" class="btn-ghost">See how it works</a>
         </div>
       </div>
     </section>
 
-    <!-- ========== SECTION 2: THE PROBLEM ========== -->
-    <section class="problem section">
-      <div class="container text-center">
-        <h2>Most small business owners are flying blind.</h2>
-        <div class="problem-grid">
-          <div class="problem-stat">
-            <span class="stat-number">80%</span>
-            <span class="stat-desc">of effort goes toward the 20% of work that produces almost nothing</span>
-          </div>
-          <div class="problem-stat">
-            <span class="stat-number">&lt; 3%</span>
-            <span class="stat-desc">of available government grants are ever claimed by eligible businesses</span>
-          </div>
-          <div class="problem-stat">
-            <span class="stat-number">1 in 5</span>
-            <span class="stat-desc">small businesses fail not from bad products but from bad strategic sequencing</span>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ========== SECTION 3: PRODUCT EXPLANATION ========== -->
-    <section class="section" id="how-it-works">
+    <!-- ========== THE PROBLEM ========== -->
+    <section class="problem">
       <div class="container">
-        <div class="product-grid">
-
-          <div class="product-card">
-            <div class="product-card-icon">
-              <!-- Ship icon -->
-              <svg viewBox="0 0 48 48"><path d="M24 4l16 36-16-6-16 6z" stroke-linejoin="round"/></svg>
-            </div>
-            <h3>Fly your actual business</h3>
-            <p>Input your business. The Simulator builds your ship around it — your real levers, your real vulnerabilities, your real threats. Play to learn. Come back because it's real.</p>
+        <div class="problem-row">
+          <div class="problem-item">
+            <span class="problem-number">80%</span>
+            <span class="problem-text">of effort produces 20% of results — most owners are pulling the wrong levers</span>
           </div>
-
-          <div class="product-card">
-            <div class="product-card-icon">
-              <!-- Compass / four-pointed star -->
-              <svg viewBox="0 0 48 48"><path d="M24 2l3 19 19 3-19 3-3 19-3-19-19-3 19-3z"/></svg>
-            </div>
-            <h3>Know exactly where to start</h3>
-            <p>Answer 13 questions. Receive a six-page strategic assessment that tells you what to stop, what to prioritize, and what to build in the next 90 days. Specific to your business. Not a template.</p>
+          <div class="problem-item">
+            <span class="problem-number">&lt; 3%</span>
+            <span class="problem-text">of available government grants are ever claimed by eligible businesses</span>
           </div>
-
-          <div class="product-card">
-            <div class="product-card-icon">
-              <!-- Signal wave -->
-              <svg viewBox="0 0 48 48"><path d="M4 24c4-8 8-12 12-12s8 8 12 8 8-12 12-12" fill="none" stroke-linecap="round"/><circle cx="40" cy="20" r="3"/></svg>
-            </div>
-            <h3>A strategic advisor who already knows your ship</h3>
-            <p>Every conversation starts with your full business context already loaded. Ask anything. Get a direct answer grounded in the same framework that built your Navigation Chart.</p>
+          <div class="problem-item">
+            <span class="problem-number">1 in 5</span>
+            <span class="problem-text">small businesses fail not from bad products but from bad strategic sequencing</span>
           </div>
-
         </div>
       </div>
     </section>
 
-    <!-- ========== SECTION 4: WHO THIS IS FOR ========== -->
-    <section class="section">
+    <!-- ========== THREE PRODUCTS ========== -->
+    <section class="products" id="how-it-works">
       <div class="container">
-        <div class="audience-grid">
-
-          <div class="audience-col for-you">
-            <h3>This is for you if</h3>
-            <ul>
-              <li>You're an established business owner doing $50K to $500K annually</li>
-              <li>You know your product works but aren't sure what to do next</li>
-              <li>You're working in the business and need to start working on it</li>
-              <li>You've read business books but haven't had a framework to apply them</li>
-            </ul>
+        <div class="products-row">
+          <div class="product-card">
+            <h3 class="product-title">The Simulator</h3>
+            <p class="product-body">Run your business through real situations. See which decisions build it and which ones bleed it.</p>
           </div>
-
-          <div class="audience-col not-for">
-            <h3>This is not for you if</h3>
-            <ul>
-              <li>You're pre-revenue and looking for idea validation</li>
-              <li>You want a coach who tells you exactly what to do</li>
-              <li>You're not willing to answer hard questions about your own operation</li>
-            </ul>
+          <div class="product-card">
+            <h3 class="product-title">The Navigation Chart</h3>
+            <p class="product-body">Answer 13 questions. Receive a six-page strategic assessment specific to your business. Not a template.</p>
           </div>
-
+          <div class="product-card">
+            <h3 class="product-title">The Commander</h3>
+            <p class="product-body">An AI advisor built on the best business books ever written. Every conversation starts with your full business context already loaded.</p>
+          </div>
         </div>
       </div>
     </section>
 
-    <!-- ========== SECTION 5: PRICING ========== -->
-    <section class="section" id="pricing">
+    <!-- ========== PRICING ========== -->
+    <section class="pricing">
       <div class="container">
         <div class="pricing-card">
-          <p class="pricing-tier">Ensign</p>
-          <p class="pricing-amount">$40 / month</p>
-          <p class="pricing-annual">$400 / year — save two months</p>
+          <div class="pricing-amounts">
+            <span class="pricing-monthly">$97 / month</span>
+            <span class="pricing-annual">$970 / year — save two months</span>
+          </div>
           <ul class="pricing-features">
             <li>Full strategic simulator with saved runs and progression</li>
-            <li>Navigation Chart — your personalized 6-page strategic assessment</li>
+            <li>Navigation Chart — your personalized six-page strategic assessment</li>
             <li>The Commander — AI strategic advisor with your full business context</li>
-            <li>Grant Radar — matched government funding opportunities (coming soon)</li>
+            <li>Grant Radar — matched government funding opportunities</li>
           </ul>
-          <a href="/login?action=subscribe" class="btn-primary" style="width:100%;text-align:center;">Become a Member</a>
-          <p class="pricing-ghost-text">Or start with the free Simulator — no account required</p>
+          <a href="/login?action=subscribe" class="btn-primary">Become a member</a>
+          <p class="pricing-sub">Or start with the free Simulator — no account required</p>
         </div>
       </div>
     </section>
 
-    <!-- ========== SECTION 6: FOOTER ========== -->
+    <!-- ========== FOOTER ========== -->
     <footer class="site-footer">
       <div class="container">
-        <div class="footer-row">
-          <a href="/" class="footer-logo">The Bridge</a>
-          <div class="footer-links">
-            <a href="/privacy">Privacy</a>
-            <a href="/terms">Terms</a>
-            <a href="mailto:captain@captainsbridge.io">Contact</a>
-          </div>
-        </div>
-        <p class="footer-tagline">The Bridge is built for captains who take their ship seriously.</p>
+        <p class="footer-line">The Bridge is built for business owners who take their operation seriously.</p>
       </div>
     </footer>
 
   </div>
+
+  <script src="/js/starfield.js" type="module"></script>
 </body>
 </html>
