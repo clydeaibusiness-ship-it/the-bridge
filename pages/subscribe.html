@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Bridge — Subscribe</title>
+  <link rel="stylesheet" href="/css/global.css">
+  <style>
+    html, body {
+      overflow: visible !important;
+      height: auto !important;
+      background: #f0ebe0 !important;
+      color: #08080f !important;
+    }
+    .subscribe-page {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+    .subscribe-card {
+      max-width: 420px;
+      width: 100%;
+      text-align: center;
+    }
+    .subscribe-title {
+      font-family: var(--font-ui);
+      font-size: var(--text-lg);
+      font-weight: 500;
+      color: #08080f;
+      margin-bottom: 8px;
+    }
+    .subscribe-desc {
+      font-family: var(--font-ui);
+      font-size: var(--text-sm);
+      color: rgba(8, 8, 15, 0.5);
+      margin-bottom: 32px;
+      line-height: 1.5;
+    }
+    .subscribe-price {
+      font-family: var(--font-ui);
+      font-size: 2rem;
+      font-weight: 500;
+      color: #08080f;
+      margin-bottom: 4px;
+    }
+    .subscribe-interval {
+      font-family: var(--font-data);
+      font-size: var(--text-xs);
+      color: rgba(8, 8, 15, 0.4);
+      letter-spacing: var(--tracking-data);
+      margin-bottom: 28px;
+    }
+    .subscribe-features {
+      list-style: none;
+      text-align: left;
+      margin-bottom: 32px;
+    }
+    .subscribe-features li {
+      font-family: var(--font-ui);
+      font-size: var(--text-sm);
+      color: rgba(8, 8, 15, 0.65);
+      line-height: 1.55;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(8, 8, 15, 0.08);
+    }
+    .subscribe-features li:last-child { border-bottom: none; }
+    .subscribe-btn {
+      width: 100%;
+      font-family: var(--font-ui);
+      font-size: var(--text-base);
+      font-weight: 500;
+      letter-spacing: var(--tracking-ui);
+      color: #f0ebe0;
+      background: #08080f;
+      border: none;
+      border-radius: 8px;
+      padding: 14px 32px;
+      min-height: 48px;
+      cursor: pointer;
+      margin-bottom: 16px;
+    }
+    .subscribe-btn:disabled {
+      opacity: 0.5;
+      cursor: default;
+    }
+    .subscribe-btn:active:not(:disabled) {
+      background: #1e1e2a;
+    }
+    .subscribe-status {
+      font-family: var(--font-ui);
+      font-size: var(--text-sm);
+      color: rgba(8, 8, 15, 0.4);
+      min-height: 1.5em;
+    }
+    .subscribe-back {
+      position: absolute;
+      top: 24px;
+      left: 24px;
+      font-family: var(--font-data);
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      color: rgba(8, 8, 15, 0.5);
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+  <a href="/" class="subscribe-back">← Back</a>
+  <div class="subscribe-page">
+    <div class="subscribe-card">
+      <div class="subscribe-price">$50 / month</div>
+      <div class="subscribe-interval">ENSIGN TIER</div>
+      <ul class="subscribe-features">
+        <li>Full strategic simulator with saved runs and progression</li>
+        <li>Navigation Chart — your personalized six-page strategic assessment</li>
+        <li>The Commander — AI strategic advisor with your full business context</li>
+        <li>Grant Radar — matched government funding opportunities</li>
+      </ul>
+      <button class="subscribe-btn" id="btn-subscribe">Subscribe — $50/month</button>
+      <p class="subscribe-status" id="subscribe-status"></p>
+    </div>
+  </div>
+
+  <script>
+    const CLERK_PK = 'pk_test_b2JsaWdpbmctcHl0aG9uLTUuY2xlcmsuYWNjb3VudHMuZGV2JA';
+    let clerk = null;
+
+    async function init() {
+      try {
+        const { Clerk } = await import('https://cdn.jsdelivr.net/npm/@clerk/clerk-js/+esm');
+        clerk = new Clerk(CLERK_PK);
+        await clerk.load();
+
+        if (!clerk.user) {
+          // Not logged in — redirect to login with return
+          window.location.href = '/login?return=/subscribe';
+          return;
+        }
+
+        document.getElementById('btn-subscribe').addEventListener('click', startCheckout);
+      } catch (e) {
+        document.getElementById('subscribe-status').textContent = 'Unable to verify your account. Please try again.';
+      }
+    }
+
+    async function startCheckout() {
+      const btn = document.getElementById('btn-subscribe');
+      const status = document.getElementById('subscribe-status');
+
+      btn.disabled = true;
+      btn.textContent = 'Redirecting to checkout...';
+      status.textContent = '';
+
+      try {
+        const res = await fetch('/api/payments/create-checkout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: clerk.user.primaryEmailAddress?.emailAddress,
+            clerkId: clerk.user.id
+          })
+        });
+
+        const data = await res.json();
+
+        if (data.url) {
+          window.location.href = data.url;
+        } else {
+          status.textContent = data.error || 'Something went wrong. Please try again.';
+          btn.disabled = false;
+          btn.textContent = 'Subscribe — $50/month';
+        }
+      } catch (e) {
+        status.textContent = 'Connection failed. Please try again.';
+        btn.disabled = false;
+        btn.textContent = 'Subscribe — $50/month';
+      }
+    }
+
+    init();
+  </script>
+</body>
+</html>
