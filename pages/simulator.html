@@ -6,8 +6,32 @@
   <title>The Bridge — Simulator</title>
   <link rel="stylesheet" href="/css/global.css">
   <link rel="stylesheet" href="/css/simulator.css">
+  <link rel="stylesheet" href="/css/nav.css">
 </head>
 <body>
+  <!-- NAV -->
+  <nav class="site-nav" style="position:relative;z-index:50;">
+    <a href="/" class="site-nav-brand">The Bridge</a>
+    <div class="site-nav-links">
+      <a href="/simulator" class="nav-active">Simulator</a>
+      <span class="site-nav-sep">|</span>
+      <a href="/navigation-chart">Navigation Chart</a>
+      <span class="site-nav-sep">|</span>
+      <a href="/dashboard">Dashboard</a>
+      <span class="site-nav-sep">|</span>
+      <a href="/api/auth/logout">Sign Out</a>
+    </div>
+    <button class="site-nav-hamburger" onclick="document.getElementById('mobile-menu').classList.toggle('open')" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="site-nav-mobile" id="mobile-menu">
+      <a href="/simulator" class="nav-active">Simulator</a>
+      <a href="/navigation-chart">Navigation Chart</a>
+      <a href="/dashboard">Dashboard</a>
+      <a href="/api/auth/logout">Sign Out</a>
+    </div>
+  </nav>
+
   <!-- STARFIELD BACKGROUND -->
   <canvas id="starfield"></canvas>
 

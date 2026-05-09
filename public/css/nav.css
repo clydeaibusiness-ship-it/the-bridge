@@ -1,0 +1,107 @@
+/* ============================================================
+   THE BRIDGE — SHARED NAVIGATION BAR
+   Included on every page. Cream background, dark text.
+   ============================================================ */
+
+.site-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.875rem 1.5rem;
+  background: #f5f0e8;
+  border-bottom: 1px solid #c8c0b0;
+  position: relative;
+  z-index: 50;
+}
+.site-nav-brand {
+  font-family: var(--font-ui);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #0a0a0f;
+  text-decoration: none;
+  letter-spacing: 0.04em;
+}
+.site-nav-links {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+.site-nav-links a {
+  font-family: var(--font-data);
+  font-size: 0.6875rem;
+  letter-spacing: 0.08em;
+  color: #3a3530;
+  text-decoration: none;
+}
+.site-nav-links a:hover {
+  text-decoration: underline;
+}
+.site-nav-links a.nav-active {
+  color: #0a0a0f;
+  font-weight: 500;
+}
+.site-nav-sep {
+  font-family: var(--font-data);
+  font-size: 0.6875rem;
+  color: #c8c0b0;
+  user-select: none;
+}
+
+/* Hamburger (mobile only) */
+.site-nav-hamburger {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.25rem;
+  flex-direction: column;
+  gap: 4px;
+}
+.site-nav-hamburger span {
+  display: block;
+  width: 20px;
+  height: 2px;
+  background: #3a3530;
+  border-radius: 1px;
+}
+
+/* Mobile dropdown */
+.site-nav-mobile {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: #f5f0e8;
+  border-bottom: 1px solid #c8c0b0;
+  z-index: 49;
+  flex-direction: column;
+}
+.site-nav-mobile.open {
+  display: flex;
+}
+.site-nav-mobile a {
+  font-family: var(--font-data);
+  font-size: 0.8125rem;
+  letter-spacing: 0.06em;
+  color: #3a3530;
+  text-decoration: none;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #c8c0b0;
+}
+.site-nav-mobile a:last-child {
+  border-bottom: none;
+}
+.site-nav-mobile a.nav-active {
+  color: #0a0a0f;
+  font-weight: 500;
+}
+
+@media (max-width: 48em) {
+  .site-nav-links {
+    display: none;
+  }
+  .site-nav-hamburger {
+    display: flex;
+  }
+}

@@ -742,7 +742,7 @@ html.sim-active, .sim-active body {
    Left: 340px fixed column with resources + situation
    Right: remaining width, options scroll independently
    ============================================================ */
-@media (min-width: 769px) {
+@media (min-width: 48em) {
   /* Hide mobile floating resource bar on desktop */
   .resource-bar {
     display: none !important;
@@ -824,7 +824,7 @@ html.sim-active, .sim-active body {
 }
 
 /* Large desktop: max-width and center */
-@media (min-width: 1200px) {
+@media (min-width: 75em) {
   .sim-layout {
     max-width: 1100px;
     margin: 0 auto;

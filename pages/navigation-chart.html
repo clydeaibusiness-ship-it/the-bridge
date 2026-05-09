@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Bridge — Navigation Chart</title>
+  <link rel="stylesheet" href="/css/global.css">
+  <link rel="stylesheet" href="/css/nav.css">
+  <style>
+    html, body { overflow: visible !important; height: auto !important; background: #f5f0e8 !important; color: #0a0a0f !important; }
+    .nc-page { max-width: 75em; margin: 0 auto; padding: 2rem 1.5rem 5rem; }
+    .nc-heading { font-family: var(--font-data); font-size: 0.625rem; letter-spacing: 0.12em; text-transform: uppercase; color: #7a7570; margin-bottom: 0.5rem; }
+    .nc-business { font-family: var(--font-ui); font-size: 1.375rem; font-weight: 500; color: #0a0a0f; margin-bottom: 2rem; }
+    .nc-empty { font-family: var(--font-ui); font-size: 0.8125rem; color: #7a7570; line-height: 1.55; text-align: center; padding: 4rem 1rem; }
+    .nc-empty a { color: #8a6830; }
+    .nc-loading { font-family: var(--font-data); font-size: 0.6875rem; letter-spacing: 0.1em; text-transform: uppercase; color: #7a7570; text-align: center; padding: 4rem 0; }
+    .nc-section { margin-bottom: 2rem; padding-bottom: 1.5rem; border-bottom: 1px solid #c8c0b0; }
+    .nc-section:last-of-type { border-bottom: none; }
+    .nc-section-title { font-family: var(--font-data); font-size: 0.625rem; letter-spacing: 0.1em; text-transform: uppercase; color: #7a7570; margin-bottom: 0.75rem; }
+    .nc-section-body { font-family: var(--font-ui); font-size: 0.8125rem; color: #3a3530; line-height: 1.7; }
+    .nc-actions { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-top: 2rem; }
+    .nc-btn-primary {
+      font-family: var(--font-data); font-size: 0.6875rem; letter-spacing: 0.1em; text-transform: uppercase;
+      color: #f0ebe0; background: #0a0a0f; border: none; border-radius: 2px;
+      padding: 0.625rem 1.25rem; text-decoration: none; cursor: pointer;
+    }
+    .nc-btn-primary:hover { background: #1e1e2a; }
+    .nc-btn-ghost {
+      font-family: var(--font-data); font-size: 0.6875rem; letter-spacing: 0.1em; text-transform: uppercase;
+      color: #3a3530; background: transparent; border: 1px solid #c8c0b0; border-radius: 2px;
+      padding: 0.625rem 1.25rem; text-decoration: none; cursor: pointer;
+    }
+    .nc-btn-ghost:hover { border-color: #3a3530; }
+    .nc-meta { font-family: var(--font-data); font-size: 0.5625rem; letter-spacing: 0.08em; color: #7a7570; margin-top: 2rem; }
+  </style>
+</head>
+<body>
+  <!-- NAV -->
+  <nav class="site-nav">
+    <a href="/" class="site-nav-brand">The Bridge</a>
+    <div class="site-nav-links">
+      <a href="/simulator">Simulator</a>
+      <span class="site-nav-sep">|</span>
+      <a href="/navigation-chart" class="nav-active">Navigation Chart</a>
+      <span class="site-nav-sep">|</span>
+      <a href="/dashboard">Dashboard</a>
+      <span class="site-nav-sep">|</span>
+      <a href="/api/auth/logout" id="nav-auth">Sign Out</a>
+    </div>
+    <button class="site-nav-hamburger" id="hamburger" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="site-nav-mobile" id="mobile-menu">
+      <a href="/simulator">Simulator</a>
+      <a href="/navigation-chart" class="nav-active">Navigation Chart</a>
+      <a href="/dashboard">Dashboard</a>
+      <a href="/api/auth/logout" id="nav-auth-mobile">Sign Out</a>
+    </div>
+  </nav>
+
+  <div class="nc-page">
+    <div class="nc-heading">Your Navigation Chart</div>
+    <div class="nc-business" id="nc-name">Your Business</div>
+
+    <div id="nc-body">
+      <p class="nc-loading" id="nc-loading">Loading your Navigation Chart…</p>
+    </div>
+
+    <div id="nc-actions" style="display:none;" class="nc-actions">
+      <a href="/intake?mode=update" class="nc-btn-primary">Update Your Answers</a>
+      <button class="nc-btn-ghost" id="btn-pdf" disabled>Download as PDF</button>
+    </div>
+    <div id="nc-meta" style="display:none;" class="nc-meta"></div>
+  </div>
+
+  <script>
+    // Hamburger
+    document.getElementById('hamburger').addEventListener('click', () => {
+      document.getElementById('mobile-menu').classList.toggle('open');
+    });
+
+    (function() {
+      let session = null;
+      try { session = JSON.parse(localStorage.getItem('bridge_session')); } catch (e) {}
+
+      if (!session || !session.completedAt) {
+        document.getElementById('nc-body').innerHTML = '<p class="nc-empty">You have not generated your Navigation Chart yet. Complete the intake to receive your personalized six-page strategic assessment.<br><br><a href="/intake">Start the Intake →</a></p>';
+        return;
+      }
+
+      const name = session.businessName || session.shipName || 'Your Business';
+      document.getElementById('nc-name').textContent = name;
+
+      if (session.chartSections) {
+        renderSections(session.chartSections);
+        showMeta(session);
+      } else if (session.businessContext && session.intakeAnswers) {
+        generateAndRender(session);
+      } else {
+        document.getElementById('nc-body').innerHTML = '<p class="nc-empty">Navigation Chart data is missing. Try <a href="/intake?mode=update">updating your answers</a>.</p>';
+      }
+
+      function renderSections(sections) {
+        const container = document.getElementById('nc-body');
+        container.innerHTML = '';
+        sections.forEach(s => {
+          const div = document.createElement('div');
+          div.className = 'nc-section';
+          div.innerHTML = '<div class="nc-section-title">' + s.title + '</div><div class="nc-section-body">' + s.body + '</div>';
+          container.appendChild(div);
+        });
+        document.getElementById('nc-actions').style.display = 'flex';
+      }
+
+      function showMeta(session) {
+        if (session.completedAt) {
+          const d = new Date(session.completedAt);
+          const dateStr = d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+          const el = document.getElementById('nc-meta');
+          el.textContent = 'Your Navigation Chart was last generated on ' + dateStr + '. Update your answers any time to regenerate it.';
+          el.style.display = 'block';
+        }
+      }
+
+      async function generateAndRender(session) {
+        try {
+          const resp = await fetch('/api/member/chart/generate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              businessContext: session.businessContext,
+              intakeAnswers: session.intakeAnswers,
+              scannedContent: session.scannedContent || null
+            })
+          });
+          if (!resp.ok) throw new Error('HTTP ' + resp.status);
+          const data = await resp.json();
+          if (data.sections) {
+            session.chartSections = data.sections;
+            localStorage.setItem('bridge_session', JSON.stringify(session));
+            renderSections(data.sections);
+            showMeta(session);
+          }
+        } catch (err) {
+          document.getElementById('nc-loading').textContent = 'Failed to generate chart. Please refresh.';
+        }
+      }
+    })();
+  </script>
+</body>
+</html>

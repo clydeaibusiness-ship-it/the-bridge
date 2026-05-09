@@ -7,6 +7,7 @@
   <meta name="description" content="The Bridge gives established business owners the strategic framework, AI advisor, and real-time simulator to double what's working and cut what isn't.">
   <link rel="stylesheet" href="/css/global.css">
   <link rel="stylesheet" href="/css/landing.css">
+  <link rel="stylesheet" href="/css/nav.css">
   <style>
     /* Override global.css html/body lock for landing page */
     html, body {
@@ -19,12 +20,34 @@
 </head>
 <body class="landing-body">
 
+  <!-- NAV -->
+  <nav class="site-nav">
+    <a href="/" class="site-nav-brand">The Bridge</a>
+    <div class="site-nav-links">
+      <a href="/simulator">Simulator</a>
+      <span class="site-nav-sep">|</span>
+      <a href="/navigation-chart">Navigation Chart</a>
+      <span class="site-nav-sep">|</span>
+      <a href="/dashboard">Dashboard</a>
+      <span class="site-nav-sep">|</span>
+      <a href="/login">Log In</a>
+    </div>
+    <button class="site-nav-hamburger" onclick="document.getElementById('mobile-menu').classList.toggle('open')" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="site-nav-mobile" id="mobile-menu">
+      <a href="/simulator">Simulator</a>
+      <a href="/navigation-chart">Navigation Chart</a>
+      <a href="/dashboard">Dashboard</a>
+      <a href="/login">Log In</a>
+    </div>
+  </nav>
+
   <div class="page">
 
-    <!-- ========== HERO (dark panel with starfield) ========== -->
+    <!-- ========== HERO (cream panel with starfield) ========== -->
     <section class="hero">
       <canvas id="starfield"></canvas>
-      <a href="/login" class="hero-login">Log in</a>
       <div class="container hero-container">
         <p class="eyebrow">Strategic navigation for small business</p>
         <h1 class="headline">Your business is already in flight.<br>Do you know where it's headed?</h1>

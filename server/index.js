@@ -91,7 +91,11 @@ app.get('/intake', (req, res) => {
 });
 
 app.get('/chart', (req, res) => {
-  res.sendFile(path.join(__dirname, '../pages/chart.html'));
+  res.sendFile(path.join(__dirname, '../pages/navigation-chart.html'));
+});
+
+app.get('/navigation-chart', (req, res) => {
+  res.sendFile(path.join(__dirname, '../pages/navigation-chart.html'));
 });
 
 app.get('/subscribe', (req, res) => {
