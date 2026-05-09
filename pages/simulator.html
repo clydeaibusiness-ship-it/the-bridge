@@ -114,15 +114,41 @@
 
   <!-- ====== SCREEN: SITUATION ====== -->
   <div id="screen-situation" class="screen">
-    <div class="situation-scroll">
-      <div class="turn-label" id="turn-label"></div>
-      <h2 class="situation-title" id="situation-title"></h2>
-      <p class="situation-body" id="situation-body"></p>
-      <div class="crew-comment" id="crew-comment">
-        <span class="crew-icon">💬</span>
-        <span id="crew-comment-text"></span>
+    <div class="sim-layout">
+      <div class="sim-left">
+        <div class="sim-resources">
+          <div class="resource-item" data-resource="capital">
+            <div class="resource-label">Capital</div>
+            <div class="resource-value" id="val-capital-2">$18,400</div>
+            <div class="resource-track"><div class="resource-fill" id="fill-capital-2"></div></div>
+          </div>
+          <div class="resource-item" data-resource="customers">
+            <div class="resource-label">Customers</div>
+            <div class="resource-value" id="val-customers-2">24 / 40</div>
+            <div class="resource-track"><div class="resource-fill" id="fill-customers-2"></div></div>
+          </div>
+          <div class="resource-item" data-resource="positioning">
+            <div class="resource-label">Positioning</div>
+            <div class="resource-value" id="val-positioning-2">62%</div>
+            <div class="resource-track"><div class="resource-fill" id="fill-positioning-2"></div></div>
+          </div>
+          <div class="resource-item" data-resource="switchingCosts">
+            <div class="resource-label">Switching Costs</div>
+            <div class="resource-value" id="val-switchingCosts-2">38%</div>
+            <div class="resource-track"><div class="resource-fill" id="fill-switchingCosts-2"></div></div>
+          </div>
+        </div>
+        <div class="turn-label" id="turn-label"></div>
+        <h2 class="situation-title" id="situation-title"></h2>
+        <p class="situation-body" id="situation-body"></p>
+        <div class="crew-comment" id="crew-comment">
+          <span class="crew-icon">💬</span>
+          <span id="crew-comment-text"></span>
+        </div>
       </div>
-      <div class="options-container" id="options-container"></div>
+      <div class="sim-right">
+        <div class="options-container" id="options-container"></div>
+      </div>
     </div>
   </div>
 

@@ -91,9 +91,17 @@ async function checkAuth() {
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
-  // Scroll to top on screen change
-  const scrollEl = document.querySelector(`#${id} .situation-scroll, #${id} .confirm-scroll, #${id} .outcome-scroll, #${id} .results-scroll`);
-  if (scrollEl) scrollEl.scrollTop = 0;
+
+  // Toggle sim-active class on html for scroll behavior
+  const gameScreens = ['screen-situation', 'screen-confirm', 'screen-outcome', 'screen-results'];
+  if (gameScreens.includes(id)) {
+    document.documentElement.classList.add('sim-active');
+  } else {
+    document.documentElement.classList.remove('sim-active');
+  }
+
+  // Scroll page to top on screen change
+  window.scrollTo(0, 0);
 }
 
 // ============================================================
@@ -275,7 +283,7 @@ function showSituation(index) {
 
 function selectOption(index) {
   selectedOption = index;
-  const sit = situationsData.situations[currentSituation];
+  const sit = generatedSituations[currentSituation] || situationsData.situations[currentSituation];
   const opt = sit.options[index];
 
   // Update confirm screen
@@ -426,21 +434,26 @@ function clampResources() {
 }
 
 function updateResourceDisplay() {
-  // Capital
-  document.getElementById('val-capital').textContent = `$${resources.capital.toLocaleString()}`;
-  document.getElementById('fill-capital').style.width = `${(resources.capital / CAPS.capital) * 100}%`;
+  const data = [
+    { key: 'capital', text: `$${resources.capital.toLocaleString()}`, pct: (resources.capital / CAPS.capital) * 100 },
+    { key: 'customers', text: `${resources.customers} / ${CAPS.customers}`, pct: (resources.customers / CAPS.customers) * 100 },
+    { key: 'positioning', text: `${resources.positioning}%`, pct: resources.positioning },
+    { key: 'switchingCosts', text: `${resources.switchingCosts}%`, pct: resources.switchingCosts }
+  ];
 
-  // Customers
-  document.getElementById('val-customers').textContent = `${resources.customers} / ${CAPS.customers}`;
-  document.getElementById('fill-customers').style.width = `${(resources.customers / CAPS.customers) * 100}%`;
+  data.forEach(({ key, text, pct }) => {
+    // Mobile floating bar
+    const valEl = document.getElementById(`val-${key}`);
+    const fillEl = document.getElementById(`fill-${key}`);
+    if (valEl) valEl.textContent = text;
+    if (fillEl) fillEl.style.width = `${pct}%`;
 
-  // Positioning
-  document.getElementById('val-positioning').textContent = `${resources.positioning}%`;
-  document.getElementById('fill-positioning').style.width = `${resources.positioning}%`;
-
-  // Switching Costs
-  document.getElementById('val-switchingCosts').textContent = `${resources.switchingCosts}%`;
-  document.getElementById('fill-switchingCosts').style.width = `${resources.switchingCosts}%`;
+    // Desktop inline bar (inside sim-left)
+    const valEl2 = document.getElementById(`val-${key}-2`);
+    const fillEl2 = document.getElementById(`fill-${key}-2`);
+    if (valEl2) valEl2.textContent = text;
+    if (fillEl2) fillEl2.style.width = `${pct}%`;
+  });
 }
 
 // ============================================================

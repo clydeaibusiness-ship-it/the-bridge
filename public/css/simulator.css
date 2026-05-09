@@ -1,22 +1,22 @@
 /* ============================================================
    THE BRIDGE — SIMULATOR STYLES
    All colors from CSS variables. No hardcoded values.
-   Mobile-first. No horizontal scroll. 44px min tap targets.
+   Mobile-first. Scrollable page. 44px min tap targets.
    ============================================================ */
 
 /* --- SIMULATOR LIGHT THEME OVERRIDES --- */
 :root {
-  --void:        #f5f0e8;    /* page background — warm cream */
+  --void:        #f5f0e8;
   --deep:        #f0ebe0;
-  --surface:     #e8e3d8;    /* option cards, outcome panels */
-  --elevated:    #ece7dc;    /* resource bar, card backgrounds */
-  --border:      #c8c0b0;    /* all borders — warm grey */
+  --surface:     #e8e3d8;
+  --elevated:    #ece7dc;
+  --border:      #c8c0b0;
 
-  --cream:       #0a0a0f;    /* primary text — off black */
-  --cream-dim:   #3a3530;    /* secondary text — dark warm grey */
-  --cream-ghost: #7a7570;    /* tertiary text — medium warm grey */
+  --cream:       #0a0a0f;
+  --cream-dim:   #3a3530;
+  --cream-ghost: #7a7570;
 
-  --signal:      #8a6830;    /* accent — warm dark gold */
+  --signal:      #8a6830;
   --signal-dim:  #6a5020;
 
   --overlay:     rgba(236, 231, 220, 0.92);
@@ -26,23 +26,30 @@
   --scrollbar-thumb-hover: #a8a098;
 }
 
+/* --- BASE — allow page scroll --- */
+html.sim-active, .sim-active body {
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  height: auto !important;
+  background: var(--void) !important;
+}
+
 /* --- SCREENS --- */
 .screen {
-  position: fixed;
-  top: 0; left: 0;
-  width: 100%; height: 100dvh;
-  z-index: 1;
-  overflow: hidden;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.4s var(--ease-smooth);
+  display: none;
+  width: 100%;
+  min-height: 100dvh;
+}
+.screen.active {
   display: flex;
   flex-direction: column;
   align-items: center;
 }
-.screen.active {
-  opacity: 1;
-  pointer-events: auto;
+
+/* Screens that should be centered (intro, loading) */
+#screen-intro, #screen-loading {
+  justify-content: center;
+  min-height: 100dvh;
 }
 
 /* --- INTRO --- */
@@ -51,10 +58,10 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 100%;
   padding: 2rem 1.5rem;
   text-align: center;
   max-width: 480px;
+  min-height: 100dvh;
 }
 .intro-title {
   font-family: var(--font-ui);
@@ -119,7 +126,7 @@
   border-color: var(--cream-ghost);
 }
 
-/* --- RESOURCE BAR --- */
+/* --- RESOURCE BAR (mobile floating version) --- */
 .resource-bar {
   position: fixed;
   top: 0; left: 0;
@@ -181,6 +188,11 @@
   100% { filter: brightness(1); }
 }
 
+/* Desktop inline resources (inside sim-left) */
+.sim-resources {
+  display: none; /* hidden on mobile, shown on desktop */
+}
+
 /* --- INTAKE FORM --- */
 .intake-scroll {
   width: 100%;
@@ -189,7 +201,6 @@
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   flex: 1;
-  height: 100%;
 }
 .intake-form {
   display: flex;
@@ -246,9 +257,9 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 100%;
   padding: 2rem;
   text-align: center;
+  min-height: 100dvh;
 }
 .loading-spinner {
   width: 36px;
@@ -276,34 +287,26 @@
   text-transform: uppercase;
 }
 
-/* --- SITUATION SCREEN --- */
-.situation-scroll,
-.confirm-scroll,
-.outcome-scroll,
-.results-scroll {
+/* ============================================================
+   SITUATION SCREEN — TWO-COLUMN LAYOUT
+   Mobile: single column, full page scroll
+   Desktop: left (situation) fixed, right (options) scrolls
+   ============================================================ */
+
+/* --- MOBILE LAYOUT (default) --- */
+.sim-layout {
   width: 100%;
   max-width: 520px;
-  padding: 0 16px 32px;
-  overflow-y: auto;
-  overflow-x: hidden;
-  -webkit-overflow-scrolling: touch;
-  flex: 1;
+  padding: 24px 16px 100px; /* 100px bottom for fixed confirm btn */
 }
-.situation-scroll {
-  padding-top: 120px;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
+.sim-left {
+  margin-bottom: 24px;
 }
-.confirm-scroll { padding-top: 120px; }
-.outcome-scroll { padding-top: 120px; }
-.results-scroll {
-  padding-top: 40px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+.sim-right {
+  /* options flow naturally */
 }
 
+/* --- SITUATION TEXT --- */
 .turn-label {
   font-family: var(--font-data);
   font-size: var(--text-xs);
@@ -332,7 +335,7 @@
   padding: 12px 14px;
   background: var(--elevated);
   border-radius: 8px;
-  margin-bottom: 24px;
+  margin-bottom: 0;
   align-items: flex-start;
 }
 .crew-icon {
@@ -352,12 +355,6 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
-  padding-bottom: 32px;
-  overflow-y: auto;
-  overflow-x: hidden;
-  -webkit-overflow-scrolling: touch;
-  flex: 1;
-  min-height: 0;
 }
 .option-card {
   background: var(--surface);
@@ -425,6 +422,20 @@
   background: var(--cream-ghost);
 }
 
+/* --- OTHER SCREENS (confirm, outcome, results) --- */
+.confirm-scroll,
+.outcome-scroll,
+.results-scroll {
+  width: 100%;
+  max-width: 520px;
+  padding: 24px 16px 32px;
+}
+.results-scroll {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
 /* --- CONFIRM SCREEN --- */
 .confirm-card {
   background: var(--surface);
@@ -470,7 +481,6 @@
 .outcome-label.partial { color: var(--signal); }
 .outcome-label.missed { color: #9a5a5a; }
 
-/* Celebration scale animations */
 .outcome-label.celebrate-1 {
   animation: celebrateFlash 0.3s var(--ease-quick);
 }
@@ -725,38 +735,83 @@
   100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(0.3); }
 }
 
-/* --- CUSTOM SCROLLBARS --- */
-.options-container::-webkit-scrollbar,
-.outcome-scroll::-webkit-scrollbar {
-  width: 3px;
-}
-.options-container::-webkit-scrollbar-track,
-.outcome-scroll::-webkit-scrollbar-track {
-  background: transparent;
-}
-.options-container::-webkit-scrollbar-thumb,
-.outcome-scroll::-webkit-scrollbar-thumb {
-  background: var(--scrollbar-thumb);
-  border-radius: 2px;
-}
-.options-container::-webkit-scrollbar-thumb:hover,
-.outcome-scroll::-webkit-scrollbar-thumb:hover {
-  background: var(--scrollbar-thumb-hover);
-}
-/* Firefox */
-.options-container,
-.outcome-scroll {
-  scrollbar-width: thin;
-  scrollbar-color: var(--scrollbar-thumb) transparent;
-}
+/* ============================================================
+   DESKTOP LAYOUT (min-width: 769px)
+   Left: 340px fixed column with resources + situation
+   Right: remaining width, options scroll independently
+   ============================================================ */
+@media (min-width: 769px) {
+  /* Hide mobile floating resource bar on desktop */
+  .resource-bar {
+    display: none !important;
+  }
 
-/* Kill all horizontal scroll */
-html, body {
-  overflow-x: hidden;
-}
+  /* Show inline resources in sim-left */
+  .sim-resources {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    padding: 0 0 20px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+  }
 
-/* --- RESPONSIVE --- */
-@media (min-width: 600px) {
+  .sim-layout {
+    display: grid;
+    grid-template-columns: 340px 1fr;
+    gap: 32px;
+    max-width: 100%;
+    padding: 32px 24px 32px;
+    min-height: 100dvh;
+  }
+
+  .sim-left {
+    position: sticky;
+    top: 32px;
+    align-self: start;
+    margin-bottom: 0;
+  }
+
+  .sim-right {
+    overflow-y: auto;
+    max-height: calc(100dvh - 64px);
+    padding-right: 4px;
+  }
+
+  /* Styled scrollbar only on right options column */
+  .sim-right::-webkit-scrollbar {
+    width: 3px;
+  }
+  .sim-right::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .sim-right::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb);
+    border-radius: 2px;
+  }
+  .sim-right::-webkit-scrollbar-thumb:hover {
+    background: var(--scrollbar-thumb-hover);
+  }
+  .sim-right {
+    scrollbar-width: thin;
+    scrollbar-color: var(--scrollbar-thumb) transparent;
+  }
+
+  /* Hide page-level scrollbar on desktop */
+  html.sim-active::-webkit-scrollbar {
+    display: none;
+  }
+  html.sim-active {
+    scrollbar-width: none;
+  }
+
+  /* Widen other screens too */
+  .confirm-scroll,
+  .outcome-scroll,
+  .results-scroll {
+    max-width: 640px;
+  }
+
   .resource-bar {
     grid-template-columns: repeat(4, 1fr);
     max-width: 600px;
@@ -764,21 +819,19 @@ html, body {
     transform: translateX(-50%);
     border-radius: 0 0 10px 10px;
   }
-  .situation-scroll,
-  .confirm-scroll,
-  .outcome-scroll {
-    padding-top: 100px;
-  }
 }
 
-/* Screen body scroll allowance */
-.confirm-scroll,
-.outcome-scroll,
-.results-scroll {
-  height: 100%;
-}
-.situation-scroll {
-  height: 100%;
+/* Large desktop: max-width and center */
+@media (min-width: 1200px) {
+  .sim-layout {
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+  .confirm-scroll,
+  .outcome-scroll,
+  .results-scroll {
+    max-width: 720px;
+  }
 }
 
 /* Grayed out option when capital insufficient */
