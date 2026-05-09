@@ -153,9 +153,10 @@
       const authDiv = document.getElementById('clerk-auth');
 
       try {
-        const { Clerk } = await import('https://cdn.jsdelivr.net/npm/@clerk/clerk-js/+esm');
+        const { Clerk } = await import('https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/+esm');
         const clerk = new Clerk(CLERK_PK);
         await clerk.load();
+        console.log('Clerk loaded successfully, user:', clerk.user);
 
         if (clerk.user) {
           const params = new URLSearchParams(window.location.search);
@@ -179,7 +180,13 @@
         });
       } catch (e) {
         console.error('Clerk failed:', e);
-        showFallbackForm(authDiv);
+        authDiv.innerHTML = `
+          <div class="fallback-card">
+            <p>Sign-in failed to load: ${e.message}</p>
+            <p style="font-size:11px;color:rgba(8,8,15,0.3);margin-top:12px;word-break:break-all;">${e.stack || ''}</p>
+            <a href="/" class="fallback-btn" style="display:block;text-align:center;text-decoration:none;margin-top:16px;">Back to The Bridge</a>
+          </div>
+        `;
       }
     }
 
