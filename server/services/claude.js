@@ -193,14 +193,50 @@ ${JSON.stringify(intakeAnswers, null, 2)}`;
 /**
  * Commander chat — strategic advice with full business context
  */
-async function commanderChat(message, gameState, runHistory) {
-  const context = `The captain's current ship state:
+async function commanderChat(message, gameState, runHistory, sessionContext) {
+  let context = '';
+  if (sessionContext) {
+    context += sessionContext + '\n\n';
+  }
+  context += `The player's current game state:
 ${JSON.stringify(gameState, null, 2)}
 
 Their run history:
-${JSON.stringify(runHistory, null, 2)}`;
+${JSON.stringify(runHistory, null, 2)}
+
+IMPORTANT: The player has already completed their intake. You have their full business context above. Do NOT ask them what business they are in, what they do, their revenue, team size, or any intake questions. Jump straight into strategic advice using the Big Book of Strategy framework. Address them directly and reference their specific business context in every response.`;
 
   return await callClaude(message, context);
+}
+
+/**
+ * Generate Navigation Chart from intake answers + businessContext
+ */
+async function generateChart(businessContext, intakeAnswers) {
+  const prompt = `Generate a Navigation Chart — a strategic assessment for this business owner. Return ONLY a JSON object with no other text.
+
+Business context:
+${JSON.stringify(businessContext, null, 2)}
+
+Intake answers:
+${JSON.stringify(intakeAnswers, null, 2)}
+
+Return this exact JSON structure with 5 sections. Each section has a "title" and "body". Write 2-4 sentences per body. Be direct, specific, reference their actual business. Use Big Book of Strategy framework language.
+
+{
+  "sections": [
+    { "title": "Current Position", "body": "Where they stand right now based on what they told you" },
+    { "title": "Primary Lever Gap", "body": "The single biggest strategic weakness based on their answers" },
+    { "title": "Competitive Exposure", "body": "Where competitors can hurt them and why" },
+    { "title": "Growth Sequence", "body": "What to do first, second, third — in order" },
+    { "title": "The One Question", "body": "The single most important question they should be asking themselves right now" }
+  ]
+}`;
+
+  const response = await callClaude(prompt);
+  const jsonMatch = response.match(/\{[\s\S]*\}/);
+  if (jsonMatch) return JSON.parse(jsonMatch[0]);
+  return JSON.parse(response);
 }
 
 module.exports = {
@@ -208,5 +244,6 @@ module.exports = {
   personalizeIntake,
   generateSituation,
   generateDebrief,
-  commanderChat
+  commanderChat,
+  generateChart
 };

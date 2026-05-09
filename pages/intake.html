@@ -177,12 +177,36 @@
   </div>
 
   <script>
+    // Check if this is an update (pre-populate fields)
+    const isUpdate = new URLSearchParams(window.location.search).get('mode') === 'update';
+    if (isUpdate) {
+      document.getElementById('btn-submit').textContent = 'Update my profile →';
+      document.querySelector('.intake-heading').textContent = 'Update your answers';
+      document.querySelector('.intake-sub').textContent = 'Change any answers that have shifted. Your Navigation Chart will regenerate with the new information.';
+
+      try {
+        const session = JSON.parse(localStorage.getItem('bridge_session'));
+        if (session && session.intakeAnswers) {
+          const a = session.intakeAnswers;
+          if (a.industry) document.getElementById('intake-industry').value = a.industry;
+          if (a.years) document.getElementById('intake-years').value = a.years;
+          if (a.revenue) document.getElementById('intake-revenue').value = a.revenue;
+          if (a.employees) document.getElementById('intake-employees').value = a.employees;
+          if (a.challenge) document.getElementById('intake-challenge').value = a.challenge;
+          if (a.goal) document.getElementById('intake-goal').value = a.goal;
+          if (a.differentiator) document.getElementById('intake-differentiator').value = a.differentiator;
+          if (a.uncertainty) document.getElementById('intake-uncertainty').value = a.uncertainty;
+        }
+      } catch (e) {}
+    }
+
     document.getElementById('intake-form').addEventListener('submit', async (e) => {
       e.preventDefault();
 
       const btn = document.getElementById('btn-submit');
       const loading = document.getElementById('loading-msg');
       btn.disabled = true;
+      loading.textContent = isUpdate ? 'Updating your profile…' : 'Analyzing your business…';
       loading.classList.add('visible');
 
       const answers = {
@@ -206,8 +230,15 @@
         if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
         const result = await resp.json();
 
-        // Store in localStorage
+        // Merge with existing session data (preserve run history, etc.)
+        let existing = {};
+        try { existing = JSON.parse(localStorage.getItem('bridge_session')) || {}; } catch (e) {}
+
+        // Clear cached chart so dashboard regenerates it
+        delete existing.chartSections;
+
         localStorage.setItem('bridge_session', JSON.stringify({
+          ...existing,
           shipName: result.ship_name,
           destination: result.destination_name,
           industryKey: result.industry_key,

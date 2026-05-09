@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { personalizeIntake, generateSituation, generateDebrief, commanderChat } = require('../services/claude');
+const { personalizeIntake, generateSituation, generateDebrief, commanderChat, generateChart } = require('../services/claude');
 const { 
   saveGameState, getGameState, saveRunHistory, getRunHistory,
   upsertAnonymousEvent, getCommanderUsage, incrementCommanderUsage
@@ -215,16 +215,12 @@ router.get('/member/commander/sessions', async (req, res) => {
  */
 router.post('/member/commander/message', async (req, res) => {
   try {
-    const { message } = req.body;
+    const { message, sessionContext } = req.body;
     if (!message) return res.status(400).json({ error: 'Message required' });
 
-    // TODO: Auth check, get user, check session limits
-    // TODO: Load game state and run history for context
-
-    const gameState = {}; // placeholder
-    const runHistory = []; // placeholder
-
-    const response = await commanderChat(message, gameState, runHistory);
+    const gameState = {};
+    const runHistory = [];
+    const response = await commanderChat(message, gameState, runHistory, sessionContext);
 
     res.json({ response });
   } catch (e) {
@@ -243,12 +239,21 @@ router.get('/member/runs', async (req, res) => {
 });
 
 /**
- * GET /api/member/chart
- * Get latest Navigation Chart
+ * POST /api/member/chart/generate
+ * Generate Navigation Chart from businessContext + intakeAnswers
  */
-router.get('/member/chart', async (req, res) => {
-  // TODO: Auth check, return latest chart
-  res.json(null);
+router.post('/member/chart/generate', async (req, res) => {
+  try {
+    const { businessContext, intakeAnswers } = req.body;
+    if (!businessContext || !intakeAnswers) {
+      return res.status(400).json({ error: 'businessContext and intakeAnswers required' });
+    }
+    const chart = await generateChart(businessContext, intakeAnswers);
+    res.json(chart);
+  } catch (e) {
+    console.error('Chart generation error:', e.message);
+    res.status(500).json({ error: 'Chart generation failed' });
+  }
 });
 
 module.exports = router;
