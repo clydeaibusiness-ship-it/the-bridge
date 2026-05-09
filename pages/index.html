@@ -91,7 +91,7 @@
             <li>The Commander — AI strategic advisor with your full business context</li>
             <li>Grant Radar — matched government funding opportunities</li>
           </ul>
-          <a href="/subscribe" class="btn-primary-light">Become a member</a>
+          <button onclick="startCheckout()" class="btn-primary-light" id="btn-become-member">Become a member</button>
           <p class="pricing-sub">Or start with the free Simulator — no account required</p>
         </div>
       </div>
@@ -109,6 +109,30 @@
   <script type="module">
     import { renderStarfield } from '/js/starfield.js';
     renderStarfield('starfield');
+  </script>
+  <script>
+    async function startCheckout() {
+      const btn = document.getElementById('btn-become-member');
+      btn.textContent = 'Redirecting...';
+      btn.disabled = true;
+      try {
+        const res = await fetch('/api/payments/create-checkout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({})
+        });
+        const data = await res.json();
+        if (data.url) {
+          window.location.href = data.url;
+        } else {
+          btn.textContent = 'Become a member';
+          btn.disabled = false;
+        }
+      } catch (e) {
+        btn.textContent = 'Become a member';
+        btn.disabled = false;
+      }
+    }
   </script>
 </body>
 </html>

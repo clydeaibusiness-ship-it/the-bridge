@@ -648,6 +648,32 @@ function closeTooltip() {
 }
 
 // ============================================================
+// CHECKOUT (inline, no separate page)
+// ============================================================
+window.__startCheckout = async function() {
+  const btn = document.getElementById('btn-become-member');
+  if (btn) {
+    btn.textContent = 'Redirecting...';
+    btn.disabled = true;
+  }
+  try {
+    const res = await fetch('/api/payments/create-checkout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({})
+    });
+    const data = await res.json();
+    if (data.url) {
+      window.location.href = data.url;
+    } else {
+      if (btn) { btn.textContent = 'Become a member to keep playing'; btn.disabled = false; }
+    }
+  } catch (e) {
+    if (btn) { btn.textContent = 'Become a member to keep playing'; btn.disabled = false; }
+  }
+};
+
+// ============================================================
 // BOOT
 // ============================================================
 document.addEventListener('DOMContentLoaded', init);

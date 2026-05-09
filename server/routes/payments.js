@@ -17,20 +17,24 @@ router.post('/create-checkout', async (req, res) => {
 
     const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
-    const session = await stripe.checkout.sessions.create({
+    const sessionParams = {
       mode: 'subscription',
       payment_method_types: ['card'],
-      customer_email: email,
+      allow_promotion_codes: true,
       line_items: [{
         price: priceId || process.env.STRIPE_ENSIGN_MONTHLY_PRICE_ID,
         quantity: 1
       }],
       success_url: `${process.env.BASE_URL || 'https://the-bridge-app-production.up.railway.app'}/dashboard?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${process.env.BASE_URL || 'https://the-bridge-app-production.up.railway.app'}/#pricing`,
-      metadata: {
-        clerk_id: clerkId
-      }
-    });
+      metadata: {}
+    };
+
+    // Add email if provided, otherwise Stripe collects it
+    if (email) sessionParams.customer_email = email;
+    if (clerkId) sessionParams.metadata.clerk_id = clerkId;
+
+    const session = await stripe.checkout.sessions.create(sessionParams);
 
     res.json({ url: session.url });
   } catch (e) {
