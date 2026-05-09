@@ -30,6 +30,32 @@ router.post('/game/personalize', async (req, res) => {
 });
 
 /**
+ * POST /api/game/intake
+ * Intake personalization — reads Big Book of Strategy, returns
+ * personalized ship name, destination, and industry key.
+ * Falls back to lawn care defaults on failure.
+ */
+router.post('/game/intake', async (req, res) => {
+  try {
+    const { answers } = req.body;
+    if (!answers) return res.status(400).json({ error: 'Intake answers required' });
+
+    const result = await personalizeIntake(answers);
+    // Ensure industry_key is present
+    if (!result.industry_key) result.industry_key = 'lawn_care';
+    res.json(result);
+  } catch (e) {
+    console.error('Intake error:', e.message);
+    res.status(500).json({
+      ship_name: 'ISV Greenline',
+      destination_name: 'Growth Horizon',
+      industry_key: 'lawn_care',
+      flavor_text: 'Your business is waiting. The decisions ahead are yours to make.'
+    });
+  }
+});
+
+/**
  * POST /api/game/debrief
  * Run-end debrief — accepts both old format (run_history) and new format (intakeAnswers/runSummary)
  */

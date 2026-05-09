@@ -16,8 +16,75 @@
     <div class="intro-content">
       <h1 class="intro-title">The Bridge</h1>
       <p class="intro-subtitle">Five situations. Four resources. Every decision teaches something.</p>
-      <p class="intro-desc">You are a commercial lawn care operator with 24 accounts, a solid reputation, and a business that depends on the decisions you make next.</p>
+      <p class="intro-desc">Tell us about your business. The situations ahead will be built around real decisions operators like you face every week.</p>
       <button id="btn-start" class="btn-primary">Begin →</button>
+    </div>
+  </div>
+
+  <!-- ====== SCREEN: INTAKE ====== -->
+  <div id="screen-intake" class="screen">
+    <div class="intake-scroll">
+      <div class="turn-label">Before we begin</div>
+      <h2 class="situation-title">Tell us about your business</h2>
+      <form id="intake-form" class="intake-form">
+        <div class="intake-field">
+          <label for="intake-industry">What industry is your business in?</label>
+          <input type="text" id="intake-industry" placeholder="e.g. Lawn care, consulting, plumbing" required>
+        </div>
+        <div class="intake-field">
+          <label for="intake-years">How long have you been operating?</label>
+          <select id="intake-years" required>
+            <option value="" disabled selected>Select</option>
+            <option value="under_1">Less than 1 year</option>
+            <option value="1_3">1–3 years</option>
+            <option value="3_7">3–7 years</option>
+            <option value="7_plus">7+ years</option>
+          </select>
+        </div>
+        <div class="intake-field">
+          <label for="intake-revenue">Approximate annual revenue?</label>
+          <select id="intake-revenue" required>
+            <option value="" disabled selected>Select</option>
+            <option value="under_50k">Under $50K</option>
+            <option value="50_100k">$50K – $100K</option>
+            <option value="100_250k">$100K – $250K</option>
+            <option value="250_500k">$250K – $500K</option>
+            <option value="over_500k">Over $500K</option>
+          </select>
+        </div>
+        <div class="intake-field">
+          <label for="intake-employees">How many people work in the business?</label>
+          <select id="intake-employees" required>
+            <option value="" disabled selected>Select</option>
+            <option value="just_me">Just me</option>
+            <option value="2_5">2–5 people</option>
+            <option value="6_15">6–15 people</option>
+            <option value="15_plus">15+</option>
+          </select>
+        </div>
+        <div class="intake-field">
+          <label for="intake-challenge">What is the single biggest challenge your business faces right now?</label>
+          <textarea id="intake-challenge" rows="3" placeholder="Be specific — the more detail, the better the analysis" required></textarea>
+        </div>
+        <div class="intake-field">
+          <label for="intake-goal">Where do you want the business to be in 12 months?</label>
+          <textarea id="intake-goal" rows="3" placeholder="Revenue target, team size, market position — whatever matters most" required></textarea>
+        </div>
+        <div class="intake-field">
+          <label for="intake-differentiator">What makes your business different from competitors?</label>
+          <textarea id="intake-differentiator" rows="3" placeholder="What do clients choose you for?" required></textarea>
+        </div>
+        <button type="submit" class="btn-primary">Start the simulator →</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ====== SCREEN: LOADING ====== -->
+  <div id="screen-loading" class="screen">
+    <div class="loading-content">
+      <div class="loading-spinner"></div>
+      <p class="loading-text">Reading your business profile…</p>
+      <p class="loading-subtext">Building your scenario</p>
     </div>
   </div>
 

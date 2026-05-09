@@ -6,6 +6,7 @@
 let situationsData = null;
 let currentSituation = 0;
 let selectedOption = null;
+let intakeProfile = null; // personalized profile from API
 
 // Resources
 const resources = {
@@ -46,7 +47,8 @@ async function init() {
 }
 
 function bindEvents() {
-  document.getElementById('btn-start').addEventListener('click', startGame);
+  document.getElementById('btn-start').addEventListener('click', showIntake);
+  document.getElementById('intake-form').addEventListener('submit', submitIntake);
   document.getElementById('btn-go-back').addEventListener('click', goBackToSituation);
   document.getElementById('btn-confirm').addEventListener('click', confirmChoice);
   document.getElementById('btn-next').addEventListener('click', nextSituation);
@@ -73,6 +75,61 @@ function showScreen(id) {
 // ============================================================
 // GAME FLOW
 // ============================================================
+function showIntake() {
+  showScreen('screen-intake');
+}
+
+async function submitIntake(e) {
+  e.preventDefault();
+
+  const answers = {
+    industry: document.getElementById('intake-industry').value,
+    years: document.getElementById('intake-years').value,
+    revenue: document.getElementById('intake-revenue').value,
+    employees: document.getElementById('intake-employees').value,
+    challenge: document.getElementById('intake-challenge').value,
+    goal: document.getElementById('intake-goal').value,
+    differentiator: document.getElementById('intake-differentiator').value
+  };
+
+  // Show loading screen
+  showScreen('screen-loading');
+
+  // Race: API call vs 4s timeout
+  const fallback = {
+    ship_name: 'ISV Greenline',
+    destination_name: 'Growth Horizon',
+    industry_key: 'lawn_care',
+    flavor_text: 'Your business is waiting. The decisions ahead are yours to make.'
+  };
+
+  try {
+    const result = await Promise.race([
+      fetchIntake(answers),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 4000))
+    ]);
+    intakeProfile = result;
+  } catch (err) {
+    console.warn('Intake API failed or timed out, using fallback:', err.message);
+    intakeProfile = fallback;
+  }
+
+  // Store answers for later use (debrief, etc.)
+  intakeProfile._answers = answers;
+
+  startGame();
+}
+
+async function fetchIntake(answers) {
+  const resp = await fetch('/api/game/intake', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ answers })
+  });
+  if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+  return await resp.json();
+}
+
 function startGame() {
   document.getElementById('resource-bar').classList.remove('hidden');
   currentSituation = 0;

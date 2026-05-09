@@ -38,10 +38,11 @@ async function callClaude(userContent, additionalContext = '') {
  * Intake personalization — generates ship name, destination, flavor text
  */
 async function personalizeIntake(intakeAnswers) {
-  const prompt = `A player has completed the game intake form. Based on their answers below and the Big Book of Strategy framework, generate exactly three things in JSON format with no other text:
-1. "ship_name": A name for their business ship that reflects their industry and ambition. Two words maximum. Should feel like a vessel name.
-2. "destination_name": A name for their destination — the success state they described. Three words maximum. Should feel like a place on a star map.
-3. "flavor_text": Two sentences maximum. Address the captain directly. Acknowledge their specific situation. Make them feel seen. Do not give advice yet. Do not mention the framework by name.
+  const prompt = `A player has completed the business intake form. Based on their answers below and the Big Book of Strategy framework, generate exactly four things in JSON format with no other text:
+1. "ship_name": A name for their business that reflects their industry and ambition. Two words maximum. Should feel distinctive.
+2. "destination_name": A name for their destination — the success state they described. Three words maximum. Should feel like a milestone.
+3. "industry_key": A snake_case key identifying their industry (e.g. "lawn_care", "consulting", "real_estate", "trades", "retail", "food_service", "professional_services", "construction"). Pick the closest match.
+4. "flavor_text": Two sentences maximum. Address the business owner directly. Acknowledge their specific situation. Make them feel seen. Do not give advice yet. Do not mention the framework by name.
 
 Player answers:
 ${JSON.stringify(intakeAnswers, null, 2)}`;
