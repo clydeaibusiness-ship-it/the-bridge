@@ -10,7 +10,8 @@
   padding: 0.875rem 1.5rem;
   background: #f5f0e8;
   border-bottom: 1px solid #c8c0b0;
-  position: relative;
+  position: sticky;
+  top: 0;
   z-index: 50;
 }
 .site-nav-brand {
@@ -68,17 +69,30 @@
 /* Mobile dropdown */
 .site-nav-mobile {
   display: none;
-  position: absolute;
-  top: 100%;
+  position: fixed;
+  top: 0;
   left: 0;
   right: 0;
+  bottom: 0;
   background: #f5f0e8;
-  border-bottom: 1px solid #c8c0b0;
-  z-index: 49;
+  z-index: 999;
   flex-direction: column;
+  padding-top: 3.5rem;
 }
 .site-nav-mobile.open {
   display: flex;
+}
+.site-nav-mobile-close {
+  position: absolute;
+  top: 0.875rem;
+  right: 1.5rem;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: #3a3530;
+  cursor: pointer;
+  padding: 0.25rem;
+  line-height: 1;
 }
 .site-nav-mobile a {
   font-family: var(--font-data);
