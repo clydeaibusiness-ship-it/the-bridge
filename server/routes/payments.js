@@ -25,8 +25,8 @@ router.post('/create-checkout', async (req, res) => {
         price: priceId || process.env.STRIPE_ENSIGN_MONTHLY_PRICE_ID,
         quantity: 1
       }],
-      success_url: `${process.env.BASE_URL}/dashboard?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.BASE_URL}/#pricing`,
+      success_url: `${process.env.BASE_URL || 'https://the-bridge-app-production.up.railway.app'}/dashboard?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${process.env.BASE_URL || 'https://the-bridge-app-production.up.railway.app'}/#pricing`,
       metadata: {
         clerk_id: clerkId
       }
@@ -34,8 +34,8 @@ router.post('/create-checkout', async (req, res) => {
 
     res.json({ url: session.url });
   } catch (e) {
-    console.error('Checkout error:', e.message);
-    res.status(500).json({ error: 'Failed to create checkout session' });
+    console.error('Checkout error:', e.message, e.type || '');
+    res.status(500).json({ error: 'Failed to create checkout session', detail: e.message });
   }
 });
 
