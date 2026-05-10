@@ -129,7 +129,8 @@ router.post('/intake', requireAuth, async (req, res) => {
 
     const { error } = await db
       .from('user_intake')
-      .update({
+      .upsert({
+        user_id: req.dbUser.id,
         city,
         state,
         legal_entity: legalEntity,
@@ -140,8 +141,7 @@ router.post('/intake', requireAuth, async (req, res) => {
         naics_code: naicsCode || null,
         grant_intake_complete: true,
         updated_at: new Date().toISOString()
-      })
-      .eq('user_id', req.dbUser.id);
+      }, { onConflict: 'user_id' });
 
     if (error) throw error;
     res.json({ saved: true });
