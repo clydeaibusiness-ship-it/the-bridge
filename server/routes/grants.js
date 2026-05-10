@@ -57,6 +57,17 @@ function verifyToken(token) {
   }
 }
 
+// ---- Debug: test intake save (TEMPORARY — remove after testing) ----
+router.get('/debug-auth', async (req, res) => {
+  res.json({
+    hasDbUser: !!req.dbUser,
+    userId: req.dbUser?.id || null,
+    hasCookie: !!req.cookies?.__session,
+    hasAuthHeader: !!req.headers.authorization,
+    clerkUserId: req.userId || null
+  });
+});
+
 // ---- Community Total (PUBLIC — no auth) ----
 
 let cachedTotal = null;
@@ -120,12 +131,22 @@ router.get('/intake-status', requireAuth, async (req, res) => {
 
 // ---- Save Grant Radar Intake ----
 
-router.post('/intake', requireAuth, async (req, res) => {
+router.post('/intake', async (req, res) => {
+  // Log auth state for debugging
+  console.log('Grant intake POST - dbUser:', req.dbUser?.id || 'NONE', 'userId:', req.userId || 'NONE');
+  
+  if (!req.dbUser) {
+    console.error('Grant intake: No authenticated user. Cookie:', !!req.cookies?.__session, 'Auth header:', !!req.headers.authorization);
+    return res.status(401).json({ error: 'Authentication required' });
+  }
+
   try {
     const { city, state, legalEntity, granularRevenue, ownerDemographics, grantFundUse, samRegistration, naicsCode } = req.body;
 
     const db = getClient();
     if (!db) return res.status(503).json({ error: 'Database not configured' });
+
+    console.log('Grant intake: saving for user', req.dbUser.id);
 
     const { error } = await db
       .from('user_intake')
@@ -143,7 +164,11 @@ router.post('/intake', requireAuth, async (req, res) => {
         updated_at: new Date().toISOString()
       }, { onConflict: 'user_id' });
 
-    if (error) throw error;
+    if (error) {
+      console.error('Grant intake: Supabase error:', error.message, error.code);
+      throw error;
+    }
+    console.log('Grant intake: saved successfully');
     res.json({ saved: true });
   } catch (e) {
     console.error('Grant intake save error:', e.message);
