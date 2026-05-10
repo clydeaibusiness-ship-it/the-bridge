@@ -101,8 +101,8 @@ function bindEvents() {
 
 async function checkAuth() {
   try {
-    const { Clerk } = await import('https://cdn.jsdelivr.net/npm/@clerk/clerk-js/+esm');
-    const clerk = new Clerk('pk_live_Y2xlcmsuY2FwdGFpbnNicmlkZ2UuaW8k');
+    // Use Clerk from the page <head> script (already loaded)
+    const clerk = new window.Clerk('pk_live_Y2xlcmsuY2FwdGFpbnNicmlkZ2UuaW8k');
     await clerk.load();
     isLoggedIn = !!clerk.user;
   } catch (e) {

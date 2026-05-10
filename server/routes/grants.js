@@ -472,7 +472,7 @@ router.post('/claim', requireAuth, async (req, res) => {
 
 // ---- Admin Verify/Reject (from email link) ----
 
-router.get('/admin/grant-verify', async (req, res) => {
+router.get('/grant-verify', async (req, res) => {
   // Redirect GET to a simple confirmation page
   const { token } = req.query;
   if (!token) return res.status(400).send('Invalid link');
@@ -499,7 +499,7 @@ router.get('/admin/grant-verify', async (req, res) => {
   `);
 });
 
-router.post('/admin/grant-verify', express.urlencoded({ extended: false }), async (req, res) => {
+router.post('/grant-verify', express.urlencoded({ extended: false }), async (req, res) => {
   try {
     const { token } = req.body || req.query;
     if (!token) return res.status(400).send('Missing token');
