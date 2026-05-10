@@ -202,18 +202,23 @@
 
   <script src="/js/nav.js"></script>
   <script>
-    // Initialize Clerk before grant-radar.js runs — NEVER redirect from here
-    // window.Clerk is already an instance created by the CDN with the publishable key set above
+    // Initialize Clerk + tier gate
     window.__grClerkReady = (async function() {
       try {
         var clerk = window.Clerk;
         if (!clerk) return null;
         if (!clerk.loaded) await clerk.load();
-        if (clerk.user) {
-          window.__grClerk = clerk;
-          return clerk;
-        }
-        return null;
+        if (!clerk.user) { window.location.href = '/login'; return null; }
+        // Tier gate
+        try {
+          var tierResp = await fetch('/api/auth/me');
+          if (tierResp.ok) {
+            var tierData = await tierResp.json();
+            if (tierData.membershipTier === 'free') { window.location.href = '/subscribe'; return null; }
+          }
+        } catch(e) {}
+        window.__grClerk = clerk;
+        return clerk;
       } catch(e) {
         console.error('Clerk init:', e);
         return null;

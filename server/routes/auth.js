@@ -2,45 +2,26 @@ const express = require('express');
 const router = express.Router();
 const { createUser, getUserByClerkId } = require('../services/supabase');
 const { sendWelcomeEmail } = require('../services/email');
+const { extractUser } = require('../middleware/auth');
 
-// Clerk client - try the new SDK, fall back gracefully
-let clerkClient = null;
-try {
-  const { createClerkClient } = require('@clerk/backend');
-  if (process.env.CLERK_SECRET_KEY) {
-    clerkClient = createClerkClient({ secretKey: process.env.CLERK_SECRET_KEY });
-  }
-} catch (e) {
-  console.log('Clerk backend SDK not available, using email-only auth');
-}
+// Apply auth extraction
+router.use(extractUser);
 
 /**
  * GET /api/auth/me
- * Check if user is authenticated via Clerk session token
+ * Check if user is authenticated — uses the fixed auth middleware
  */
 router.get('/me', async (req, res) => {
-  try {
-    if (!clerkClient) {
-      return res.status(503).json({ error: 'Auth not configured' });
-    }
-
-    // Clerk sets __session cookie or Authorization header
-    const token = req.cookies?.__session || req.headers.authorization?.replace('Bearer ', '');
-    if (!token) {
-      return res.status(401).json({ error: 'Not authenticated' });
-    }
-
-    const { sub } = await clerkClient.verifyToken(token);
-    const user = await clerkClient.users.getUser(sub);
-    res.json({
-      id: user.id,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      email: user.emailAddresses?.[0]?.emailAddress
-    });
-  } catch (e) {
-    res.status(401).json({ error: 'Not authenticated' });
+  if (!req.dbUser) {
+    return res.status(401).json({ error: 'Not authenticated' });
   }
+
+  res.json({
+    id: req.dbUser.clerk_id,
+    email: req.dbUser.email,
+    membershipTier: req.dbUser.membership_tier || 'free',
+    supabaseId: req.dbUser.id
+  });
 });
 
 /**
@@ -82,7 +63,6 @@ router.post('/webhook', async (req, res) => {
  * Clear session and redirect
  */
 router.get('/logout', (req, res) => {
-  // TODO: Clerk session invalidation
   res.redirect('/');
 });
 

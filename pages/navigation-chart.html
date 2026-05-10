@@ -90,7 +90,17 @@
       try {
         const clerk = window.Clerk;
         if (clerk && !clerk.loaded) await clerk.load();
-      } catch (e) { console.log('Clerk init:', e.message); }
+        if (!clerk || !clerk.user) { window.location.href = '/login'; return; }
+      } catch (e) { window.location.href = '/login'; return; }
+
+      // Tier gate
+      try {
+        const tierResp = await fetch('/api/auth/me');
+        if (tierResp.ok) {
+          const tierData = await tierResp.json();
+          if (tierData.membershipTier === 'free') { window.location.href = '/subscribe'; return; }
+        }
+      } catch (e) {}
 
       let session = await BridgeSession.load();
 

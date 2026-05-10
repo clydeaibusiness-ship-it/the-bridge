@@ -154,28 +154,27 @@
         if (clerk && clerk.user) {
           document.getElementById('dash-welcome').textContent = `Welcome back, ${clerk.user.firstName || ''}.`;
         } else {
-          // Not logged in — redirect to login
           window.location.href = '/login';
           return;
         }
       } catch (e) {
         console.error('Clerk init failed:', e);
-        // Fallback: try /api/auth/me
-        try {
-          const resp = await fetch('/api/auth/me');
-          if (resp.ok) {
-            const user = await resp.json();
-            if (user && user.firstName) {
-              document.getElementById('dash-welcome').textContent = `Welcome back, ${user.firstName}.`;
-            }
-          } else {
-            window.location.href = '/login';
+        window.location.href = '/login';
+        return;
+      }
+
+      // TIER GATE: check membership tier — free users go to subscribe
+      try {
+        const tierResp = await fetch('/api/auth/me');
+        if (tierResp.ok) {
+          const tierData = await tierResp.json();
+          if (tierData.membershipTier === 'free') {
+            window.location.href = '/subscribe';
             return;
           }
-        } catch (e2) {
-          window.location.href = '/login';
-          return;
         }
+      } catch (e) {
+        console.error('Tier check failed:', e);
       }
 
       // Load session — Supabase is source of truth, localStorage is cache
