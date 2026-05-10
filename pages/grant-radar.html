@@ -195,20 +195,18 @@
 
   <script src="/js/nav.js"></script>
   <script>
-    // Initialize Clerk before grant-radar.js runs
+    // Initialize Clerk before grant-radar.js runs — NEVER redirect from here
     window.__grClerkReady = (async function() {
       try {
-        var clerk = new Clerk('pk_live_Y2xlcmsuY2FwdGFpbnNicmlkZ2UuaW8k');
+        var clerk = new window.Clerk('pk_live_Y2xlcmsuY2FwdGFpbnNicmlkZ2UuaW8k');
         await clerk.load();
-        if (!clerk.user) {
-          window.location.href = '/login';
-          return null;
+        if (clerk.user) {
+          window.__grClerk = clerk;
+          return clerk;
         }
-        window.__grClerk = clerk;
-        return clerk;
+        return null;
       } catch(e) {
-        console.error('Clerk init failed:', e);
-        // Don't redirect — try cookie auth
+        console.error('Clerk init:', e);
         return null;
       }
     })();

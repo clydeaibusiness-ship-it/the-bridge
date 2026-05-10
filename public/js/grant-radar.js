@@ -35,28 +35,51 @@
   var clerkInstance = null;
 
   async function initAuth() {
-    // Wait for Clerk initialized in the page <script>
+    // Strategy 1: Use Clerk from inline page script
     try {
       if (window.__grClerkReady) {
         clerkInstance = await window.__grClerkReady;
       }
       if (clerkInstance && clerkInstance.session) {
         clerkToken = await clerkInstance.session.getToken();
+        console.log('Auth: Clerk token obtained');
         return true;
       }
-      // Fallback: check if session cookie works
+    } catch (e) {
+      console.error('Clerk auth failed:', e);
+    }
+
+    // Strategy 2: Try creating Clerk fresh (in case inline script raced)
+    try {
+      if (window.Clerk && !clerkInstance) {
+        clerkInstance = new window.Clerk('pk_live_Y2xlcmsuY2FwdGFpbnNicmlkZ2UuaW8k');
+        await clerkInstance.load();
+        if (clerkInstance.user && clerkInstance.session) {
+          clerkToken = await clerkInstance.session.getToken();
+          console.log('Auth: Clerk token obtained (retry)');
+          return true;
+        }
+      }
+    } catch (e) {
+      console.error('Clerk retry failed:', e);
+    }
+
+    // Strategy 3: Cookie-based auth (Clerk __session cookie may exist)
+    try {
       var resp = await fetch('/api/auth/me');
       if (resp.ok) {
+        console.log('Auth: cookie fallback succeeded');
         clerkToken = null;
         return true;
       }
-      window.location.href = '/login';
-      return false;
     } catch (e) {
-      console.error('Auth init failed:', e);
-      window.location.href = '/login';
-      return false;
+      console.error('Cookie auth failed:', e);
     }
+
+    // All strategies failed
+    console.error('All auth strategies failed — redirecting to login');
+    window.location.href = '/login';
+    return false;
   }
 
   function authHeaders() {
