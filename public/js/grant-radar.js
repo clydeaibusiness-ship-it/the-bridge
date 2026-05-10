@@ -35,26 +35,25 @@
   var clerkInstance = null;
 
   async function initAuth() {
+    // Wait for Clerk initialized in the page <script>
     try {
-      clerkInstance = new window.Clerk('pk_live_Y2xlcmsuY2FwdGFpbnNicmlkZ2UuaW8k');
-      await clerkInstance.load();
-      if (!clerkInstance.user) {
-        window.location.href = '/login';
-        return false;
+      if (window.__grClerkReady) {
+        clerkInstance = await window.__grClerkReady;
       }
-      clerkToken = await clerkInstance.session.getToken();
-      return true;
+      if (clerkInstance && clerkInstance.session) {
+        clerkToken = await clerkInstance.session.getToken();
+        return true;
+      }
+      // Fallback: check if session cookie works
+      var resp = await fetch('/api/auth/me');
+      if (resp.ok) {
+        clerkToken = null;
+        return true;
+      }
+      window.location.href = '/login';
+      return false;
     } catch (e) {
-      console.error('Clerk init failed:', e);
-      // Fallback: check if session cookie exists
-      try {
-        var resp = await fetch('/api/auth/me');
-        if (resp.ok) {
-          // Session cookie is set, API calls will work
-          clerkToken = null; // Will use cookie auth
-          return true;
-        }
-      } catch (e2) {}
+      console.error('Auth init failed:', e);
       window.location.href = '/login';
       return false;
     }

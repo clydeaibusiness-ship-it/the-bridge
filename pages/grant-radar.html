@@ -194,6 +194,25 @@
   </div>
 
   <script src="/js/nav.js"></script>
+  <script>
+    // Initialize Clerk before grant-radar.js runs
+    window.__grClerkReady = (async function() {
+      try {
+        var clerk = new Clerk('pk_live_Y2xlcmsuY2FwdGFpbnNicmlkZ2UuaW8k');
+        await clerk.load();
+        if (!clerk.user) {
+          window.location.href = '/login';
+          return null;
+        }
+        window.__grClerk = clerk;
+        return clerk;
+      } catch(e) {
+        console.error('Clerk init failed:', e);
+        // Don't redirect — try cookie auth
+        return null;
+      }
+    })();
+  </script>
   <script src="/js/grant-radar.js"></script>
 </body>
 </html>
