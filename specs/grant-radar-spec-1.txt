@@ -1,0 +1,285 @@
+GRANT RADAR — COMPLETE BUILD SPEC FOR CLYDE
+
+Read this entire document before writing a single line of code. Grant Radar is a standalone page on the Bridge platform. It lives at /grant-radar and is accessible from the dashboard via a button and from the top navigation bar on every page. It does not interfere with the simulator, Commander, or Navigation Chart pages.
+
+——
+
+WHAT GRANT RADAR IS
+
+Grant Radar is an automated grant matching tool that takes everything known about the member's business and searches federal, state, and local government grant databases to surface only the opportunities they actually qualify for. It shows results organized by jurisdiction, with a match percentage, a dollar amount, a direct link to the application, and a plain-English explanation of what they would need to change or add to reach 100% eligibility.
+
+It runs automatically when the member first visits the page. It runs again automatically every 30 days. Members can also trigger a manual rescan at any time with one button.
+
+——
+
+THE GRANT RADAR INTAKE QUESTIONS
+
+These questions supplement the existing intake form. They are asked only on the Grant Radar page the first time a member visits. They are stored in the same unified intake table in Supabase. They are passed to every Commander API call alongside all other intake data so the Commander has full context without asking redundant questions.
+
+Before showing the questions, check the unified intake table for existing answers. Pre-populate any fields that match existing intake data. The member should only need to answer fields they have not already provided.
+
+The questions in order:
+
+QUESTION 1 — Business city and state (REQUIRED)
+"What city and state is your business located in?"
+Two fields: City (text input) and State (dropdown of all 50 US states plus DC).
+This is the single most important field for grant matching since most state and local grants require physical presence in a specific jurisdiction.
+
+QUESTION 2 — Legal entity type (REQUIRED)
+"How is your business legally structured?"
+Dropdown:
+- Sole proprietorship
+- Partnership
+- LLC (Limited Liability Company)
+- S-Corporation
+- C-Corporation
+- Nonprofit — 501(c)(3)
+- Nonprofit — other
+- Not yet registered
+This determines eligibility for entire categories of grants. 501(c)(3) selection unlocks a separate set of nonprofit-specific grant results alongside or instead of for-profit results.
+
+QUESTION 3 — Annual revenue (MORE GRANULAR THAN EXISTING)
+"What was your business's total revenue last year?"
+Dropdown with granular ranges:
+- $0 — Pre-revenue
+- $1 to $10,000
+- $10,001 to $25,000
+- $25,001 to $50,000
+- $50,001 to $100,000
+- $100,001 to $150,000
+- $150,001 to $300,000
+- $300,001 to $500,000
+- $500,001 to $1,000,000
+- $1,000,001 to $5,000,000
+- Over $5,000,000
+Replace the existing coarse revenue dropdown across the entire intake system with this granular version. Many grants have specific revenue caps like under $1M or under $5M that the coarse existing ranges cannot distinguish.
+
+QUESTION 4 — Owner demographics (REQUIRED — unlocks significant grant categories)
+"Which of the following apply to you or your business? Select all that apply."
+Checkboxes (multi-select):
+- Woman-owned (51% or more owned by a woman)
+- Minority-owned (51% or more owned by a person of color)
+- Veteran-owned (51% or more owned by a US military veteran)
+- Service-disabled veteran-owned
+- Located in a rural area (town of fewer than 50,000 people)
+- Located in an economically distressed area or opportunity zone
+- LGBTQ+-owned
+- None of the above
+Each selection unlocks a substantial category of dedicated grant programs. This is one of the highest-leverage questions in the entire intake.
+
+QUESTION 5 — Primary use of grant funds
+"If you received a grant, what would you primarily use it for?"
+Dropdown:
+- Hiring employees or expanding my team
+- Purchasing equipment or technology
+- Research and development
+- Opening or expanding a physical location
+- Marketing and customer acquisition
+- Export or international trade
+- Workforce training and development
+- Community or social impact programs
+- General operating costs and stability
+- I am not sure yet
+This maps directly to how grants categorize eligible uses of funds.
+
+QUESTION 6 — SAM.gov registration
+"Is your business registered on SAM.gov (required for most federal grants)?"
+Radio buttons: Yes / No / What is SAM.gov?
+If they select "What is SAM.gov?" show a small expandable explanation: "SAM.gov is the federal government's official vendor and grant recipient registration system. Most federal grants require registration before you can apply. It is free and takes about 30 minutes. We will flag any grant results that require it."
+
+QUESTION 7 — Industry NAICS code (optional but valuable)
+"Do you know your business's NAICS code? This is the federal industry classification code used by most government grant programs."
+Text input, optional. Placeholder: "e.g. 561730 for Landscaping Services"
+Below the field: a small link that says "Look up your NAICS code →" linking to https://www.census.gov/naics/
+If they do not know it, the system will estimate it from their business description. Their estimate is stored and shown to them so they can correct it.
+
+——
+
+THE GRANT RADAR PAGE — LAYOUT AND DESIGN
+
+URL: /grant-radar
+Accessible from: top navigation bar on all pages, dashboard button in the Grant Radar panel
+
+Follow all responsiveness rules from the responsiveness document. Single column on mobile. Two-column layout on desktop — narrow left sidebar for filters, wide right column for results.
+
+PAGE HEADER:
+"GRANT RADAR"
+Space Mono, 10px, color #7a7570, letter-spacing 0.15em, uppercase.
+
+Below that:
+"Scanning federal, state, and local grant databases for opportunities matched to your business."
+Space Grotesk, 1rem, color #3a3530, line-height 1.6.
+
+Last scan timestamp:
+"Last scanned: [date and time]" Space Mono, 10px, color #7a7570.
+"Next automatic scan: [date 30 days from last scan]" Space Mono, 10px, color #7a7570.
+
+Rescan button: ghost style, Space Mono, 11px, uppercase, "Run new scan →"
+This button triggers a fresh Claude API call and refreshes all results. Disabled for 7 days after a manual scan to prevent API abuse, with a tooltip explaining when the next manual scan is available.
+
+——
+
+THE INTAKE SECTION (shown first-time visitors and when profile is incomplete)
+
+If the Grant Radar supplemental intake questions have not been answered yet, show them in a clean form before showing any results. Label it:
+"Before we scan, tell us a bit more about your business."
+Space Grotesk, 1rem, color #0a0a0f.
+
+Small note below: "These answers supplement your existing profile. You will only see fields you have not already answered."
+
+Submit button: primary style, "Start scanning →"
+
+——
+
+THE RESULTS
+
+Results appear below the intake form once submitted, or immediately on return visits. They are organized into three sections:
+
+SECTION 1: FEDERAL GRANTS
+Header: "FEDERAL" Space Mono, 11px, uppercase, letter-spacing 0.12em, color #7a7570.
+
+SECTION 2: STATE GRANTS
+Header: "[THEIR STATE NAME] STATE GRANTS" — e.g. "OKLAHOMA STATE GRANTS"
+Same style.
+
+SECTION 3: LOCAL GRANTS
+Header: "[THEIR CITY NAME] AND [THEIR COUNTY NAME] LOCAL GRANTS" — e.g. "TULSA AND TULSA COUNTY LOCAL GRANTS"
+Same style.
+
+If no results exist in a section, show: "No active grants found in this category matching your current profile. Check back after your next scan or update your profile to expand eligibility."
+
+——
+
+EACH GRANT RESULT CARD
+
+Each grant appears as a card. Background #ece7dc, border 1px solid #c8c0b0, border-radius 4px, padding 1.25rem 1.5rem, margin-bottom 10px.
+
+Inside each card from top to bottom:
+
+ROW 1 — Title and dollar amount chip side by side:
+Grant name: Space Grotesk, 0.9375rem, font-weight 500, color #0a0a0f. This is a clickable link that opens the official grant application page in a new tab.
+Dollar amount chip: pill-shaped tag, background #0a1a10, color #5a8a6a, Space Mono, 10px, border-radius 20px, padding 3px 10px. Shows the available funding amount — e.g. "$10,000" or "Up to $500,000" or "Varies."
+
+ROW 2 — Short description:
+Two sentences maximum. Plain English. What the grant is for and who it primarily serves.
+Space Grotesk, 0.875rem, color #3a3530, line-height 1.6.
+
+ROW 3 — Match percentage and status chips:
+Match chip: pill-shaped, color and background based on match percentage:
+- 90-100%: background #0a1a10, color #5a8a6a — "92% match"
+- 80-89%: background #1a1a0a, color #a8a040 — "84% match"
+Below the match chip, one of these status chips:
+- "Open now" — background #0a1a10, color #5a8a6a
+- "Deadline: [date]" — background #1a100a, color #c87a4e
+- "Rolling applications" — background #16161f, color #b8b0a0
+- "Closed — check back [month]" — background #16161f, color #5a5650
+All chips: Space Mono, 9px, pill-shaped, border-radius 20px, padding 3px 10px.
+
+ROW 4 — What to shift to reach 100% (only shown if match is below 100%):
+Small expandable section. Collapsed by default. Label: "What would bring this to 100% →" Space Mono, 10px, color #8a6830, cursor pointer.
+When expanded, shows a brief plain-English list of what the business currently lacks to fully qualify. Examples:
+- "SAM.gov registration required — takes about 30 minutes and is free."
+- "This grant requires at least 2 years in operation. You currently show 1 year."
+- "Revenue cap is $1M. Your current revenue range overlaps — confirm exact figure when applying."
+Never discourages — always frames as achievable steps. Never shows gaps that are demographic or structural and cannot be changed.
+
+ROW 5 — Apply button:
+"View application →" linked to the official grant page, opens in new tab.
+Ghost button style, full width on mobile, auto width on desktop.
+
+——
+
+THE MATCHING LOGIC — HOW TO IMPLEMENT
+
+The matching is done by a Claude API call using the Big Book of Strategy system prompt plus the member's full intake data plus a grant matching instruction block.
+
+Create a new server route: POST /api/grant-radar/scan
+
+This route does the following in order:
+
+STEP 1 — Compile the member's full profile
+Gather all intake fields from Supabase for this user: business description, city, state, legal entity, revenue range, team size, years operating, demographics, NAICS code estimate, fund use intent, SAM.gov status, and website and Facebook content if scanned.
+
+STEP 2 — Call the Claude API with a grant search prompt
+The prompt instructs Claude to:
+- Act as a grant research specialist who knows the current landscape of federal, state, and local small business grants
+- Use the member's profile to identify grants with an 80% match or higher only
+- Return results organized by Federal, State (using their actual state), and Local (using their actual city and county)
+- For each grant return: the grant name, the official URL, the funding amount, a two-sentence description, the match percentage, the key eligibility requirements, what the business currently meets, and what gaps exist
+- Only include grants that are currently open or have rolling applications or have a known reopening date within 6 months
+- Flag any grant that requires SAM.gov registration
+- Include nonprofit-specific grants if the legal entity is 501(c)(3)
+- Return results as a JSON array with no markdown, no backticks, no prose outside the JSON
+
+The prompt explicitly tells Claude to use its knowledge of the current grant landscape including Grants.gov programs, SBA programs, USDA programs, state economic development agencies, and local programs. Claude's knowledge of these programs is extensive and current enough to return genuinely useful results, though the member should always click through to confirm the grant is currently open before investing time in an application.
+
+STEP 3 — Parse and store results
+Parse the JSON array. Store results in a grant_radar_results table in Supabase with: user_id, scan_date, results_json. Display results immediately on the page.
+
+STEP 4 — Schedule next scan
+Store the next_scan_date as 30 days from now in the user's profile.
+
+——
+
+THE MONTHLY AUTOMATIC RESCAN
+
+Yes — monthly scan is the right call. Grants update daily according to the major grant databases, and application windows open and close continuously. A monthly scan ensures members never miss a new opportunity that opened since their last visit.
+
+Implementation: on each page load of /grant-radar, check the next_scan_date from the user's profile. If today is on or after that date, automatically trigger a new scan in the background and update the results. Show the member a small banner: "Your Grant Radar refreshed today with new results." Space Mono, 10px, color #5a8a6a.
+
+Members can always trigger a manual rescan with the rescan button. After a manual scan, the next automatic scan resets to 30 days from the manual scan date.
+
+——
+
+COMMANDER CONTEXT UPDATE
+
+Pass all Grant Radar intake answers to every Commander API call as part of the context block. The Commander should know:
+- The member's city and state
+- Their legal entity type
+- Their granular revenue range
+- Their owner demographics
+- Their SAM.gov status
+- Their grant fund use intent
+- Their estimated NAICS code
+
+The Commander can then reference this context without asking. For example if a member asks the Commander about funding options, the Commander already knows they are a woman-owned LLC in Oklahoma with $80K revenue and no SAM.gov registration, and can give specific rather than generic guidance.
+
+——
+
+DASHBOARD INTEGRATION
+
+On the dashboard, the Grant Radar panel shows:
+- "GRANT RADAR" heading
+- If no scan has been run: "Run your first scan to see grants matched to your business." with a button "Launch Grant Radar →" linking to /grant-radar
+- If a scan has been run: a summary — "Your last scan found [N] matched grants. [X] are currently open." with a button "View all results →" linking to /grant-radar and a small timestamp "Last scanned [date]"
+
+The top navigation bar on every page includes: Simulator | Navigator | Grant Radar | Dashboard | Sign Out
+Grant Radar links to /grant-radar.
+
+——
+
+WHAT NOT TO TOUCH
+
+Do not modify: simulator.js, situations.js, situations.json, game.js, levers.js, the Commander API route, the Navigation Chart generation, the landing page. This is a new standalone page and route. It connects to the existing intake data and the existing Commander context system. Nothing else changes.
+
+——
+
+AFTER BUILDING
+
+Test the following:
+
+Visit /grant-radar as a new member with no Grant Radar intake completed. Confirm the supplemental intake questions appear with any existing profile data pre-populated.
+
+Submit the Grant Radar intake. Confirm a scan runs and results appear within 10 seconds.
+
+Confirm results are organized under Federal, State (showing actual state name), and Local (showing actual city and county name) headers.
+
+Confirm each result card shows: grant name as a clickable link, dollar amount chip, description, match percentage chip, open/deadline status chip, and the expandable "what would bring this to 100%" section.
+
+Confirm clicking "View application →" opens the correct official grant URL in a new tab.
+
+Return to /grant-radar 30 days later (simulate by manually setting next_scan_date to yesterday in Supabase). Confirm the scan runs automatically and the banner appears.
+
+Open the Commander and ask: "What grants should I be looking at for my business?" Confirm the Commander references the member's city, state, legal entity, and demographics without asking for them again.
+
+Confirm the Grant Radar button and link appear on the dashboard and in the top navigation bar on every page.

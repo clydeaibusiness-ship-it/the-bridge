@@ -9,6 +9,7 @@ const path = require('path');
 const apiRoutes = require('./routes/api');
 const authRoutes = require('./routes/auth');
 const paymentRoutes = require('./routes/payments');
+const grantRoutes = require('./routes/grants');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -59,6 +60,8 @@ app.use(express.static(path.join(__dirname, '../public')));
 app.use('/api', apiRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/payments', paymentRoutes);
+app.use('/api/grant-radar', grantRoutes);
+app.use('/api/admin', grantRoutes);
 
 // Page routes
 app.get('/', (req, res) => {
@@ -100,6 +103,10 @@ app.get('/navigation-chart', (req, res) => {
 
 app.get('/subscribe', (req, res) => {
   res.sendFile(path.join(__dirname, '../pages/subscribe.html'));
+});
+
+app.get('/grant-radar', (req, res) => {
+  res.sendFile(path.join(__dirname, '../pages/grant-radar.html'));
 });
 
 // Health check

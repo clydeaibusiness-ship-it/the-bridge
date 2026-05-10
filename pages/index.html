@@ -6,6 +6,7 @@
   <title>The Bridge — Strategic Navigation for Small Business</title>
   <link rel="stylesheet" href="/css/global.css">
   <link rel="stylesheet" href="/css/landing.css">
+  <link rel="stylesheet" href="/css/grant-radar.css">
 </head>
 <body class="landing-body">
 
@@ -122,6 +123,16 @@
     </div>
 
     <div class="problem-closing">None of this is your fault. You were handed a ship and told to sail it. Nobody gave you the bridge.</div>
+  </div>
+</section>
+
+<!-- ====== GRANT MONEY COUNTER ====== -->
+<section class="grant-counter-section" id="grant-counter">
+  <div class="grant-counter-inner">
+    <div class="grant-counter-label">GRANT MONEY SECURED BY THE BRIDGE COMMUNITY</div>
+    <div class="grant-counter-number" id="grant-counter-number">$0</div>
+    <div class="grant-counter-desc">In free government grant money that Bridge members found, applied for, and won.</div>
+    <div class="grant-counter-verified">Verified. Real. Theirs to keep.</div>
   </div>
 </section>
 
@@ -501,6 +512,52 @@
       }
     });
   }
+</script>
+<script>
+(function() {
+  // Fetch community total and animate counter
+  var counterEl = document.getElementById('grant-counter-number');
+  if (!counterEl) return;
+
+  fetch('/api/grant-radar/community-total')
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      var total = data.total || 0;
+      if (total === 0) {
+        counterEl.textContent = '$0';
+        return;
+      }
+
+      // Animate on scroll into view
+      var animated = false;
+      var observer = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+          if (entry.isIntersecting && !animated) {
+            animated = true;
+            animateCounter(counterEl, total);
+            observer.disconnect();
+          }
+        });
+      }, { threshold: 0.3 });
+      observer.observe(document.getElementById('grant-counter'));
+    })
+    .catch(function() {});
+
+  function animateCounter(el, target) {
+    var duration = 2000;
+    var start = performance.now();
+    function step(now) {
+      var elapsed = now - start;
+      var progress = Math.min(elapsed / duration, 1);
+      // Ease out
+      var eased = 1 - Math.pow(1 - progress, 3);
+      var current = Math.round(target * eased);
+      el.textContent = '$' + current.toLocaleString();
+      if (progress < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+})();
 </script>
 </body>
 </html>

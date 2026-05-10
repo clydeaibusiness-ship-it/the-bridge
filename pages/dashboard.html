@@ -19,7 +19,9 @@
       <div class="site-nav-links">
         <a href="/simulator">Simulator</a>
         <span class="site-nav-sep">|</span>
-        <a href="/navigation-chart">Navigation Chart</a>
+        <a href="/navigation-chart">Navigator</a>
+        <span class="site-nav-sep">|</span>
+        <a href="/grant-radar">Grant Radar</a>
         <span class="site-nav-sep">|</span>
         <a href="/dashboard" class="nav-active">Dashboard</a>
         <span class="site-nav-sep">|</span>
@@ -30,7 +32,8 @@
       </button>
       <div class="site-nav-mobile" id="mobile-menu"><button class="site-nav-mobile-close" aria-label="Close">✕</button>
         <a href="/simulator">Simulator</a>
-        <a href="/navigation-chart">Navigation Chart</a>
+        <a href="/navigation-chart">Navigator</a>
+        <a href="/grant-radar">Grant Radar</a>
         <a href="/dashboard" class="nav-active">Dashboard</a>
         <a href="/api/auth/logout">Sign Out</a>
       </div>
@@ -127,9 +130,10 @@
           </div>
         </div>
         <div class="dash-panel dash-grant-radar">
-          <div class="dash-section-title">Grant Radar</div>
-          <div class="dash-grant-body">
-            <p>Automated government grant search is coming soon. Grant Radar will scan federal, state, and local government sources for free funding available to businesses exactly like yours. Check back soon.</p>
+          <div class="dash-section-title">GRANT RADAR</div>
+          <div class="dash-grant-body" id="dash-grant-body">
+            <p id="dash-grant-text">Run your first scan to see grants matched to your business.</p>
+            <a href="/grant-radar" class="dash-btn-ghost" id="dash-grant-btn">Launch Grant Radar →</a>
           </div>
         </div>
       </div>
@@ -475,6 +479,33 @@ Biggest uncertainty: ${a.uncertainty || 'unknown'}
 
       commanderMessages.scrollTop = commanderMessages.scrollHeight;
     }
+
+    // ---- Grant Radar Status ----
+    async function loadGrantRadarStatus() {
+      try {
+        const res = await fetch('/api/grant-radar/results');
+        if (!res.ok) return;
+        const data = await res.json();
+        const textEl = document.getElementById('dash-grant-text');
+        const btnEl = document.getElementById('dash-grant-btn');
+        if (data.results) {
+          const federal = (data.results.federal || []).length;
+          const state = (data.results.state || []).length;
+          const local = (data.results.local || []).length;
+          const total = federal + state + local;
+          const open = [...(data.results.federal || []), ...(data.results.state || []), ...(data.results.local || [])].filter(function(g) { return g.status && g.status.toLowerCase().indexOf('open') >= 0 || g.status && g.status.toLowerCase().indexOf('rolling') >= 0; }).length;
+          textEl.textContent = 'Your last scan found ' + total + ' matched grants. ' + open + ' are currently open.';
+          btnEl.textContent = 'View all results \u2192';
+          if (data.scanDate) {
+            var dateNote = document.createElement('div');
+            dateNote.style.cssText = 'font-family:var(--font-data);font-size:10px;color:#7a7570;margin-top:6px;';
+            dateNote.textContent = 'Last scanned ' + new Date(data.scanDate).toLocaleDateString();
+            document.getElementById('dash-grant-body').appendChild(dateNote);
+          }
+        }
+      } catch (e) {}
+    }
+    loadGrantRadarStatus();
 
     initDashboard();
   </script>

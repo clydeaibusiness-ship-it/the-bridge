@@ -114,9 +114,79 @@ async function sendWeeklyDigest(emailList, digestContent) {
   }
 }
 
+async function sendAdminVerificationEmail({ adminEmail, businessName, grantName, amountClaimed, documentUrl, approveUrl, rejectUrl }) {
+  const client = getClient();
+  if (!client) return;
+
+  await client.emails.send({
+    from: FROM,
+    to: adminEmail,
+    subject: `Grant Win Verification — ${businessName}`,
+    html: `
+      <div style="font-family: 'Space Grotesk', sans-serif; max-width: 560px; margin: 0 auto; padding: 40px 20px; color: #0a0a0f;">
+        <p style="font-size: 10px; font-family: 'Space Mono', monospace; color: #7a7570; letter-spacing: 0.15em; text-transform: uppercase;">GRANT WIN VERIFICATION</p>
+        <p style="font-size: 16px; line-height: 1.6;"><strong>${businessName}</strong> claims to have received a grant and submitted it for verification.</p>
+        <div style="background: #ece7dc; padding: 16px 20px; border-radius: 4px; margin: 20px 0;">
+          <p style="font-size: 14px; margin: 0 0 8px;"><strong>Grant:</strong> ${grantName}</p>
+          <p style="font-size: 14px; margin: 0 0 8px;"><strong>Amount claimed:</strong> $${Number(amountClaimed).toLocaleString()}</p>
+        </div>
+        <p style="font-size: 14px;"><a href="${documentUrl}" style="color: #0a0a0f;">View uploaded document →</a></p>
+        <div style="margin: 32px 0; display: flex; gap: 12px;">
+          <a href="${approveUrl}" style="display: inline-block; background: #0a1a10; color: #5a8a6a; padding: 14px 32px; text-decoration: none; font-size: 14px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; border-radius: 2px;">Approve this win</a>
+          <a href="${rejectUrl}" style="display: inline-block; background: #1a0a0a; color: #8a5a5a; padding: 14px 32px; text-decoration: none; font-size: 14px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; border-radius: 2px;">Reject this submission</a>
+        </div>
+        <p style="font-size: 11px; color: #7a7570;">These links expire in 72 hours.</p>
+      </div>
+    `
+  });
+}
+
+async function sendWinVerifiedEmail(email) {
+  const client = getClient();
+  if (!client) return;
+
+  await client.emails.send({
+    from: FROM,
+    to: email,
+    subject: 'Your grant win has been verified.',
+    html: `
+      <div style="font-family: 'Space Grotesk', sans-serif; max-width: 560px; margin: 0 auto; padding: 40px 20px; color: #0a0a0f;">
+        <p style="font-size: 16px; line-height: 1.6;">Your grant win has been verified. Your contribution has been added to The Bridge community total.</p>
+        <p style="font-size: 16px; line-height: 1.6;">Thank you for sharing your win — it helps other captains know what is possible.</p>
+        <div style="margin: 32px 0;">
+          <a href="https://captainsbridge.io/grant-radar" style="display: inline-block; background: #0a0a0f; color: #f5f0e8; padding: 14px 32px; text-decoration: none; font-size: 14px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; border-radius: 2px;">View Grant Radar</a>
+        </div>
+      </div>
+    `
+  });
+}
+
+async function sendWinRejectedEmail(email) {
+  const client = getClient();
+  if (!client) return;
+
+  await client.emails.send({
+    from: FROM,
+    to: email,
+    subject: 'Grant verification update',
+    html: `
+      <div style="font-family: 'Space Grotesk', sans-serif; max-width: 560px; margin: 0 auto; padding: 40px 20px; color: #0a0a0f;">
+        <p style="font-size: 16px; line-height: 1.6;">We were not able to verify your grant win from the document provided. This could be a formatting issue or an incomplete document.</p>
+        <p style="font-size: 16px; line-height: 1.6;">You are welcome to resubmit with a different document — award letters, grant agreements, or bank confirmation statements work best.</p>
+        <div style="margin: 32px 0;">
+          <a href="https://captainsbridge.io/grant-radar" style="display: inline-block; background: #0a0a0f; color: #f5f0e8; padding: 14px 32px; text-decoration: none; font-size: 14px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; border-radius: 2px;">Go to Grant Radar</a>
+        </div>
+      </div>
+    `
+  });
+}
+
 module.exports = {
   sendWelcomeEmail,
   sendDebriefEmail,
   sendSubscriptionConfirmation,
-  sendWeeklyDigest
+  sendWeeklyDigest,
+  sendAdminVerificationEmail,
+  sendWinVerifiedEmail,
+  sendWinRejectedEmail
 };
