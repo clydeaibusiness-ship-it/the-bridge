@@ -29,7 +29,17 @@
 
 <!-- ====== SECTION 2: HERO ====== -->
 <section class="hero" id="hero">
-  <canvas id="starfield"></canvas>
+  <!-- Floating stars -->
+  <div class="stars-field">
+    <div class="star star--sm star--drift1" style="top:12%;left:8%"></div>
+    <div class="star star--md star--drift2" style="top:30%;left:85%"></div>
+    <div class="star star--sm star--drift3" style="top:65%;left:18%"></div>
+    <div class="star star--lg star--drift1" style="top:80%;left:72%"></div>
+    <div class="star star--sm star--drift2" style="top:45%;left:55%"></div>
+    <div class="star star--md star--drift3" style="top:20%;left:42%"></div>
+    <div class="star star--sm star--drift1" style="top:75%;left:92%"></div>
+    <div class="star star--md star--drift1" style="top:55%;left:35%"></div>
+  </div>
   <div class="hero-inner">
     <div class="hero-text">
       <div class="hero-eyebrow">STRATEGIC NAVIGATION FOR SMALL BUSINESS</div>
@@ -44,37 +54,37 @@
       </div>
     </div>
     <div class="hero-graphic">
-      <!-- Bridge console SVG — abstract, constellation-style -->
+      <!-- Bridge console SVG — dark/gold strokes on cream -->
       <svg viewBox="0 0 280 320" fill="none" xmlns="http://www.w3.org/2000/svg" width="100%">
         <!-- Horizon line -->
-        <line x1="20" y1="160" x2="260" y2="160" stroke="#b8b0a0" stroke-width="0.5" opacity="0.4"/>
+        <line x1="20" y1="160" x2="260" y2="160" stroke="#c8c0b0" stroke-width="0.5" opacity="0.5"/>
         <!-- Console base -->
-        <path d="M60 280 L80 200 L200 200 L220 280" stroke="#f0ebe0" stroke-width="1" opacity="0.6"/>
-        <line x1="50" y1="280" x2="230" y2="280" stroke="#f0ebe0" stroke-width="1" opacity="0.6"/>
+        <path d="M60 280 L80 200 L200 200 L220 280" stroke="#0a0a0f" stroke-width="1" opacity="0.25"/>
+        <line x1="50" y1="280" x2="230" y2="280" stroke="#0a0a0f" stroke-width="1" opacity="0.25"/>
         <!-- Helm circle -->
         <g class="helm-circle">
-          <circle cx="140" cy="140" r="50" stroke="#f0ebe0" stroke-width="1" opacity="0.5"/>
+          <circle cx="140" cy="140" r="50" stroke="#0a0a0f" stroke-width="1" opacity="0.2"/>
           <circle cx="140" cy="140" r="3" fill="#c8a96e" opacity="0.8"/>
           <!-- Helm spokes -->
-          <line x1="140" y1="90" x2="140" y2="100" stroke="#f0ebe0" stroke-width="1" opacity="0.4"/>
-          <line x1="140" y1="180" x2="140" y2="190" stroke="#f0ebe0" stroke-width="1" opacity="0.4"/>
-          <line x1="90" y1="140" x2="100" y2="140" stroke="#f0ebe0" stroke-width="1" opacity="0.4"/>
-          <line x1="180" y1="140" x2="190" y2="140" stroke="#f0ebe0" stroke-width="1" opacity="0.4"/>
+          <line x1="140" y1="90" x2="140" y2="100" stroke="#0a0a0f" stroke-width="1" opacity="0.2"/>
+          <line x1="140" y1="180" x2="140" y2="190" stroke="#0a0a0f" stroke-width="1" opacity="0.2"/>
+          <line x1="90" y1="140" x2="100" y2="140" stroke="#0a0a0f" stroke-width="1" opacity="0.2"/>
+          <line x1="180" y1="140" x2="190" y2="140" stroke="#0a0a0f" stroke-width="1" opacity="0.2"/>
         </g>
         <!-- Lever shapes -->
-        <rect x="90" y="220" width="4" height="30" rx="2" fill="#f0ebe0" opacity="0.3"/>
-        <rect x="110" y="215" width="4" height="35" rx="2" fill="#f0ebe0" opacity="0.4"/>
-        <rect x="166" y="218" width="4" height="32" rx="2" fill="#f0ebe0" opacity="0.35"/>
-        <rect x="186" y="222" width="4" height="28" rx="2" fill="#f0ebe0" opacity="0.3"/>
+        <rect x="90" y="220" width="4" height="30" rx="2" fill="#0a0a0f" opacity="0.12"/>
+        <rect x="110" y="215" width="4" height="35" rx="2" fill="#0a0a0f" opacity="0.15"/>
+        <rect x="166" y="218" width="4" height="32" rx="2" fill="#0a0a0f" opacity="0.13"/>
+        <rect x="186" y="222" width="4" height="28" rx="2" fill="#0a0a0f" opacity="0.12"/>
         <!-- Display dots — constellation style -->
         <circle cx="80" cy="100" r="1.5" fill="#c8a96e" opacity="0.6"/>
         <circle cx="200" cy="100" r="1.5" fill="#c8a96e" opacity="0.6"/>
         <circle cx="140" cy="60" r="1.5" fill="#c8a96e" opacity="0.5"/>
-        <line x1="80" y1="100" x2="140" y2="60" stroke="#c8a96e" stroke-width="0.5" opacity="0.2"/>
-        <line x1="140" y1="60" x2="200" y2="100" stroke="#c8a96e" stroke-width="0.5" opacity="0.2"/>
+        <line x1="80" y1="100" x2="140" y2="60" stroke="#c8a96e" stroke-width="0.5" opacity="0.25"/>
+        <line x1="140" y1="60" x2="200" y2="100" stroke="#c8a96e" stroke-width="0.5" opacity="0.25"/>
         <!-- Readout lines -->
-        <line x1="75" y1="240" x2="135" y2="240" stroke="#f0ebe0" stroke-width="0.5" opacity="0.2"/>
-        <line x1="145" y1="240" x2="205" y2="240" stroke="#f0ebe0" stroke-width="0.5" opacity="0.2"/>
+        <line x1="75" y1="240" x2="135" y2="240" stroke="#0a0a0f" stroke-width="0.5" opacity="0.1"/>
+        <line x1="145" y1="240" x2="205" y2="240" stroke="#0a0a0f" stroke-width="0.5" opacity="0.1"/>
       </svg>
     </div>
   </div>
@@ -82,6 +92,13 @@
 
 <!-- ====== SECTION 3: THE PROBLEM ====== -->
 <section class="problem" id="problem">
+  <div class="stars-field">
+    <div class="star star--sm star--drift2" style="top:10%;left:5%"></div>
+    <div class="star star--md star--drift1" style="top:35%;left:90%"></div>
+    <div class="star star--sm star--drift3" style="top:70%;left:15%"></div>
+    <div class="star star--lg star--drift2" style="top:55%;left:78%"></div>
+    <div class="star star--sm star--drift1" style="top:85%;left:45%"></div>
+  </div>
   <div class="landing-container">
     <div class="problem-label">THE PROBLEM WITH RUNNING A BUSINESS ALONE</div>
     <div class="problem-opening">You know more about your industry than most people will ever know. You have outworked, outlearned, and out-sacrificed people twice your age. And yet — on a Tuesday afternoon when it is quiet enough to actually think — you sit there with the same question you cannot shake:<br><br><strong>Am I doing this right?</strong></div>
@@ -110,6 +127,14 @@
 
 <!-- ====== SECTION 4: THE SOLUTION ====== -->
 <section class="solution" id="solution">
+  <div class="stars-field">
+    <div class="star star--md star--drift3" style="top:8%;left:12%"></div>
+    <div class="star star--sm star--drift1" style="top:25%;left:88%"></div>
+    <div class="star star--lg star--drift2" style="top:60%;left:6%"></div>
+    <div class="star star--sm star--drift3" style="top:45%;left:50%"></div>
+    <div class="star star--sm star--drift1" style="top:80%;left:75%"></div>
+    <div class="star star--md star--drift2" style="top:90%;left:30%"></div>
+  </div>
   <div class="landing-container">
     <div class="solution-label">THE BRIDGE</div>
     <h2 class="solution-headline">Your business has always deserved a Commander.</h2>
@@ -119,9 +144,9 @@
       <!-- Card 1: The Simulator -->
       <div class="solution-card">
         <div class="solution-card-icon">
-          <svg width="40" height="40" viewBox="0 0 40 40" fill="none" stroke="#f0ebe0" stroke-width="1.5">
-            <circle cx="20" cy="20" r="14"/>
-            <line x1="20" y1="20" x2="20" y2="8" stroke-linecap="round"/>
+          <svg width="40" height="40" viewBox="0 0 40 40" fill="none" stroke="#0a0a0f" stroke-width="1.5">
+            <circle cx="20" cy="20" r="14" opacity="0.3"/>
+            <line x1="20" y1="20" x2="20" y2="8" stroke-linecap="round" opacity="0.4"/>
             <circle cx="20" cy="20" r="2" fill="#c8a96e" stroke="none"/>
           </svg>
         </div>
@@ -133,8 +158,8 @@
       <!-- Card 2: The Commander (featured) -->
       <div class="solution-card featured">
         <div class="solution-card-icon">
-          <svg width="40" height="40" viewBox="0 0 40 40" fill="none" stroke="#f0ebe0" stroke-width="1.5">
-            <path d="M8 28 L8 16 Q8 8 20 8 Q32 8 32 16 L32 28 L20 24 Z" stroke-linejoin="round"/>
+          <svg width="40" height="40" viewBox="0 0 40 40" fill="none" stroke="#0a0a0f" stroke-width="1.5">
+            <path d="M8 28 L8 16 Q8 8 20 8 Q32 8 32 16 L32 28 L20 24 Z" stroke-linejoin="round" opacity="0.3"/>
             <path d="M18 16 L20 12 L22 16 L20 14 Z" fill="#c8a96e" stroke="none"/>
           </svg>
         </div>
@@ -146,10 +171,10 @@
       <!-- Card 3: Grant Radar -->
       <div class="solution-card">
         <div class="solution-card-icon">
-          <svg width="40" height="40" viewBox="0 0 40 40" fill="none" stroke="#f0ebe0" stroke-width="1.5">
-            <circle cx="20" cy="20" r="14"/>
-            <circle cx="20" cy="20" r="7" opacity="0.5"/>
-            <line x1="20" y1="20" x2="30" y2="10" stroke-linecap="round"/>
+          <svg width="40" height="40" viewBox="0 0 40 40" fill="none" stroke="#0a0a0f" stroke-width="1.5">
+            <circle cx="20" cy="20" r="14" opacity="0.3"/>
+            <circle cx="20" cy="20" r="7" opacity="0.2"/>
+            <line x1="20" y1="20" x2="30" y2="10" stroke-linecap="round" opacity="0.4"/>
             <circle cx="20" cy="20" r="2" fill="#c8a96e" stroke="none"/>
           </svg>
         </div>
@@ -163,6 +188,12 @@
 
 <!-- ====== SECTION 5: SIMULATOR SPOTLIGHT ====== -->
 <section class="spotlight" id="spotlight">
+  <div class="stars-field">
+    <div class="star star--sm star--drift1" style="top:15%;left:92%"></div>
+    <div class="star star--md star--drift3" style="top:50%;left:3%"></div>
+    <div class="star star--sm star--drift2" style="top:80%;left:60%"></div>
+    <div class="star star--lg star--drift1" style="top:30%;left:48%"></div>
+  </div>
   <div class="landing-container">
     <div class="spotlight-grid">
       <div class="spotlight-text">
@@ -236,6 +267,13 @@
 
 <!-- ====== SECTION 6: WHO THIS IS FOR ====== -->
 <section class="captains" id="captains">
+  <div class="stars-field">
+    <div class="star star--sm star--drift3" style="top:12%;left:88%"></div>
+    <div class="star star--md star--drift1" style="top:40%;left:5%"></div>
+    <div class="star star--sm star--drift2" style="top:75%;left:70%"></div>
+    <div class="star star--lg star--drift3" style="top:60%;left:35%"></div>
+    <div class="star star--sm star--drift1" style="top:90%;left:15%"></div>
+  </div>
   <div class="landing-container">
     <div class="captains-label">THE CAPTAINS WE SERVE</div>
     <h2 class="captains-headline">You do not have to be in tech. You just have to be serious.</h2>
@@ -310,6 +348,13 @@
 
 <!-- ====== SECTION 7: PRICING ====== -->
 <section class="pricing" id="pricing">
+  <div class="stars-field">
+    <div class="star star--sm star--drift2" style="top:10%;left:10%"></div>
+    <div class="star star--md star--drift1" style="top:35%;left:85%"></div>
+    <div class="star star--sm star--drift3" style="top:70%;left:22%"></div>
+    <div class="star star--lg star--drift2" style="top:55%;left:65%"></div>
+    <div class="star star--sm star--drift1" style="top:85%;left:50%"></div>
+  </div>
   <div class="landing-container">
     <div class="pricing-label">THE MEMBERSHIP</div>
     <h2 class="pricing-headline">Less than a dinner out. More useful than most consultants.</h2>
@@ -349,6 +394,12 @@
 
 <!-- ====== SECTION 8: FOOTER ====== -->
 <footer class="landing-footer" id="footer">
+  <div class="stars-field">
+    <div class="star star--sm star--drift1" style="top:15%;left:80%"></div>
+    <div class="star star--md star--drift3" style="top:45%;left:8%"></div>
+    <div class="star star--sm star--drift2" style="top:70%;left:90%"></div>
+    <div class="star star--lg star--drift1" style="top:30%;left:40%"></div>
+  </div>
   <div class="landing-container">
     <div class="footer-story">
       <p>Here is the truth about every business owner we have ever met.</p>
@@ -377,10 +428,7 @@
 </footer>
 
 <!-- ====== SCRIPTS ====== -->
-<script type="module">
-  import { renderStarfield } from '/js/starfield.js';
-  renderStarfield('starfield', { theme: 'dark' });
-</script>
+<!-- Starfield canvas removed — cream background throughout, floating CSS stars instead -->
 <script>
   // Mobile menu toggle
   document.getElementById('landing-hamburger').addEventListener('click', () => {
