@@ -387,6 +387,17 @@ async function upsertIntake(userId, answers) {
     updated_at: new Date().toISOString()
   };
 
+  // Include session fields if provided
+  if (answers._shipName) record.ship_name = answers._shipName;
+  if (answers._destinationName) record.destination_name = answers._destinationName;
+  if (answers._industryKey) record.industry_key = answers._industryKey;
+  if (answers._flavorText) record.flavor_text = answers._flavorText;
+  if (answers._businessContext) record.business_context = answers._businessContext;
+  if (answers._chartSections) record.chart_sections = answers._chartSections;
+  if (answers._scannedContent) record.scanned_content = answers._scannedContent;
+  if (answers._intakeCompletedAt) record.intake_completed_at = answers._intakeCompletedAt;
+  if (answers._simulatorResources) record.simulator_resources = answers._simulatorResources;
+
   const { data, error } = await db
     .from('user_intake')
     .upsert(record, { onConflict: 'user_id' })

@@ -46,9 +46,9 @@ async function init() {
     return;
   }
 
-  // Load session state from localStorage
+  // Load session state — Supabase is source of truth, cache fallback
   try {
-    const session = JSON.parse(localStorage.getItem('bridge_session'));
+    const session = window.BridgeSession ? await window.BridgeSession.load() : null;
     if (session) {
       // Load business context for situation generation
       if (session.businessContext) businessContext = session.businessContext;
@@ -69,7 +69,7 @@ async function init() {
         if (r.switchingCosts !== undefined) resources.switchingCosts = r.switchingCosts;
       }
     }
-  } catch (e) {}
+  } catch (e) { console.error('Session load:', e); }
 
   bindEvents();
   updateResourceDisplay();
@@ -154,44 +154,22 @@ async function prefillSimulatorIntake() {
     differentiator: 'intake-differentiator'
   };
 
-  // 1. Try server-side unified intake
+  // Load from BridgeSession (Supabase first, cache fallback)
   try {
-    const resp = await fetch('/api/intake/data');
-    if (resp.ok) {
-      const data = await resp.json();
-      if (data.intake) {
-        const a = data.intake;
-        // Map fields
-        if (a.industry) setVal('intake-industry', a.industry);
-        else if (a.description) setVal('intake-industry', a.description);
-        if (a.years) setVal('intake-years', a.years);
-        if (a.revenue) setVal('intake-revenue', a.revenue);
-        if (a.employees) setVal('intake-employees', a.employees);
-        if (a.challenge || a.uncertainty) setVal('intake-challenge', a.challenge || a.uncertainty);
-        if (a.goal) setVal('intake-goal', a.goal);
-        if (a.differentiator) setVal('intake-differentiator', a.differentiator);
-        prefilled = true;
-      }
+    const session = window.BridgeSession ? await window.BridgeSession.load() : null;
+    if (session && session.intakeAnswers) {
+      const a = session.intakeAnswers;
+      if (a.industry) setVal('intake-industry', a.industry);
+      else if (a.description) setVal('intake-industry', a.description);
+      if (a.years) setVal('intake-years', a.years);
+      if (a.revenue) setVal('intake-revenue', a.revenue);
+      if (a.employees) setVal('intake-employees', a.employees);
+      if (a.challenge || a.uncertainty) setVal('intake-challenge', a.challenge || a.uncertainty);
+      if (a.goal) setVal('intake-goal', a.goal);
+      if (a.differentiator) setVal('intake-differentiator', a.differentiator);
+      prefilled = true;
     }
-  } catch (e) {}
-
-  // 2. Fallback: localStorage
-  if (!prefilled) {
-    try {
-      const session = JSON.parse(localStorage.getItem('bridge_session'));
-      if (session && session.intakeAnswers) {
-        const a = session.intakeAnswers;
-        if (a.description) setVal('intake-industry', a.description);
-        if (a.years) setVal('intake-years', a.years);
-        if (a.revenue) setVal('intake-revenue', a.revenue);
-        if (a.employees) setVal('intake-employees', a.employees);
-        if (a.uncertainty) setVal('intake-challenge', a.uncertainty);
-        if (a.goal) setVal('intake-goal', a.goal);
-        if (a.differentiator) setVal('intake-differentiator', a.differentiator);
-        prefilled = true;
-      }
-    } catch (e) {}
-  }
+  } catch (e) { console.error('Prefill load failed:', e); }
 
   if (prefilled) {
     const notice = document.getElementById('sim-prefill-notice');
@@ -244,34 +222,24 @@ async function submitIntake(e) {
   intakeProfile._answers = answers;
   businessContext = intakeProfile.businessContext || null;
 
-  // Save to localStorage
-  try {
-    localStorage.setItem('bridge_session', JSON.stringify({
+  // Save to Supabase (source of truth) + cache
+  if (window.BridgeSession) {
+    BridgeSession.save({
       shipName: intakeProfile.ship_name,
       destination: intakeProfile.destination_name,
       industryKey: intakeProfile.industry_key,
-      businessContext: businessContext
-    }));
-  } catch (e) { /* localStorage unavailable */ }
-
-  // Issue 3: Save simulator intake answers to server for sharing with Navigation Chart
-  try {
-    fetch('/api/intake/save', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        answers: {
-          industry: answers.industry,
-          challenge: answers.challenge,
-          goal: answers.goal,
-          differentiator: answers.differentiator,
-          years: answers.years,
-          revenue: answers.revenue,
-          employees: answers.employees
-        }
-      })
-    }).catch(() => {}); // non-critical
-  } catch (e) {}
+      businessContext: businessContext,
+      intakeAnswers: {
+        industry: answers.industry,
+        challenge: answers.challenge,
+        goal: answers.goal,
+        differentiator: answers.differentiator,
+        years: answers.years,
+        revenue: answers.revenue,
+        employees: answers.employees
+      }
+    }).catch(() => {});
+  }
 
   // Reset state
   generatedSituations = [];
@@ -437,13 +405,10 @@ function confirmChoice() {
   // 5. Update display
   updateResourceDisplay();
 
-  // Save resource state to localStorage after every decision (so dashboard shows progress)
-  try {
-    const session = JSON.parse(localStorage.getItem('bridge_session')) || {};
-    session.simulatorResources = { ...resources };
-    session.simulatorProgress = { currentSituation: currentSituation + 1, totalSituations: 5 };
-    localStorage.setItem('bridge_session', JSON.stringify(session));
-  } catch (e) {}
+  // Save resource state to cache after every decision (fast, no network)
+  if (window.BridgeSession) {
+    BridgeSession.saveLocal({ simulatorResources: { ...resources } });
+  }
 
   // Show outcome
   showOutcome(sit, opt, prev);
@@ -796,12 +761,10 @@ function getMentorLine(outcomeType, scale) {
 function showResults() {
   document.getElementById('resource-bar').classList.add('hidden');
 
-  // Save final resource state to localStorage for dashboard
-  try {
-    const session = JSON.parse(localStorage.getItem('bridge_session')) || {};
-    session.simulatorResources = { ...resources };
-    localStorage.setItem('bridge_session', JSON.stringify(session));
-  } catch (e) {}
+  // Save final resource state to Supabase + cache
+  if (window.BridgeSession) {
+    BridgeSession.save({ simulatorResources: { ...resources } }).catch(() => {});
+  }
 
   const grid = document.getElementById('results-grid');
   grid.innerHTML = '';

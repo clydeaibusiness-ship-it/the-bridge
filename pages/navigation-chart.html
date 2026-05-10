@@ -90,8 +90,7 @@
         await clerk.load();
       } catch (e) { console.log('Clerk init:', e.message); }
 
-      let session = null;
-      try { session = JSON.parse(localStorage.getItem('bridge_session')); } catch (e) {}
+      let session = await BridgeSession.load();
 
       if (!session || !session.completedAt) {
         document.getElementById('nc-body').innerHTML = '<p class="nc-empty">You have not generated your Navigation Chart yet. Complete the intake to receive your personalized six-page strategic assessment.<br><br><a href="/intake">Start the Intake →</a></p>';
@@ -147,7 +146,7 @@
           const data = await resp.json();
           if (data.sections) {
             session.chartSections = data.sections;
-            localStorage.setItem('bridge_session', JSON.stringify(session));
+            await BridgeSession.save({ chartSections: data.sections });
             renderSections(data.sections);
             showMeta(session);
           }
@@ -157,6 +156,7 @@
       }
     })();
   </script>
+<script src="/js/session.js"></script>
 <script src="/js/nav.js"></script>
 </body>
 </html>

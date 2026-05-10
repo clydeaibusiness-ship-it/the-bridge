@@ -65,9 +65,8 @@
   </div>
 
   <script>
-    (function() {
-      let session = null;
-      try { session = JSON.parse(localStorage.getItem('bridge_session')); } catch (e) {}
+    (async function() {
+      let session = await BridgeSession.load();
 
       if (!session || !session.completedAt) {
         document.getElementById('chart-body').innerHTML = '<p class="chart-empty">You haven\'t completed the intake yet.<br><a href="/intake" style="color:#8a6830;">Start the Intake →</a></p>';
@@ -112,7 +111,7 @@
           const data = await resp.json();
           if (data.sections) {
             session.chartSections = data.sections;
-            localStorage.setItem('bridge_session', JSON.stringify(session));
+            await BridgeSession.save({ chartSections: data.sections });
             renderSections(data.sections);
           }
         } catch (err) {
@@ -121,5 +120,6 @@
       }
     })();
   </script>
+<script src="/js/session.js"></script>
 </body>
 </html>

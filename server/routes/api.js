@@ -438,6 +438,36 @@ router.get('/intake/data', async (req, res) => {
         challenge: intake.challenge,
         updatedAt: intake.updated_at
       },
+      // Full session state for cross-device sync
+      session: {
+        shipName: intake.ship_name || intake.business_name,
+        businessName: intake.business_name,
+        destination: intake.destination_name,
+        industryKey: intake.industry_key,
+        businessContext: intake.business_context,
+        chartSections: intake.chart_sections,
+        scannedContent: intake.scanned_content,
+        completedAt: intake.intake_completed_at,
+        simulatorResources: intake.simulator_resources,
+        intakeAnswers: {
+          businessName: intake.business_name,
+          websiteUrl: intake.website_url,
+          facebookUrl: intake.facebook_url,
+          description: intake.business_description,
+          years: intake.years_operating,
+          revenue: intake.revenue_range,
+          employees: intake.team_size,
+          customerType: intake.repeat_vs_new,
+          switchingCosts: intake.switching_costs,
+          systems: intake.systems_dependency,
+          financialState: intake.financial_state,
+          uncertainty: intake.biggest_uncertainty,
+          goal: intake.success_in_one_year,
+          industry: intake.industry,
+          differentiator: intake.differentiator,
+          challenge: intake.challenge
+        }
+      },
       source: 'database'
     });
   } catch (e) {
@@ -470,6 +500,75 @@ router.post('/intake/save', async (req, res) => {
     res.json({ saved: true });
   } catch (e) {
     console.error('Save intake error:', e.message);
+    res.status(500).json({ error: 'Save failed' });
+  }
+});
+
+/**
+ * POST /api/session/save
+ * Save full session state (intake + personalization + chart + simulator)
+ * This is the single source of truth — replaces localStorage dependency
+ */
+router.post('/session/save', async (req, res) => {
+  if (!req.dbUser) {
+    return res.status(401).json({ error: 'Authentication required' });
+  }
+
+  try {
+    const { session } = req.body;
+    if (!session) return res.status(400).json({ error: 'Session data required' });
+
+    const db = require('../services/supabase').getClient();
+    if (!db) return res.status(503).json({ error: 'Database not configured' });
+
+    const update = { updated_at: new Date().toISOString() };
+
+    // Map session fields to DB columns
+    if (session.shipName !== undefined) update.ship_name = session.shipName;
+    if (session.businessName !== undefined) update.business_name = session.businessName;
+    if (session.destination !== undefined) update.destination_name = session.destination;
+    if (session.industryKey !== undefined) update.industry_key = session.industryKey;
+    if (session.businessContext !== undefined) update.business_context = session.businessContext;
+    if (session.chartSections !== undefined) update.chart_sections = session.chartSections;
+    if (session.simulatorResources !== undefined) update.simulator_resources = session.simulatorResources;
+    if (session.completedAt !== undefined) update.intake_completed_at = session.completedAt;
+
+    if (session.scannedContent !== undefined) {
+      update.scanned_content = session.scannedContent;
+      if (session.scannedContent) {
+        update.website_content = session.scannedContent.websiteContent || null;
+        update.facebook_content = session.scannedContent.facebookContent || null;
+      }
+    }
+
+    if (session.intakeAnswers) {
+      const a = session.intakeAnswers;
+      if (a.businessName) update.business_name = a.businessName;
+      if (a.websiteUrl) update.website_url = a.websiteUrl;
+      if (a.facebookUrl) update.facebook_url = a.facebookUrl;
+      if (a.description) update.business_description = a.description;
+      if (a.years) update.years_operating = a.years;
+      if (a.revenue) update.revenue_range = a.revenue;
+      if (a.employees) update.team_size = a.employees;
+      if (a.customerType) update.repeat_vs_new = a.customerType;
+      if (a.switchingCosts) update.switching_costs = a.switchingCosts;
+      if (a.systems) update.systems_dependency = a.systems;
+      if (a.financialState) update.financial_state = a.financialState;
+      if (a.uncertainty) update.biggest_uncertainty = a.uncertainty;
+      if (a.goal) update.success_in_one_year = a.goal;
+      if (a.industry) update.industry = a.industry;
+      if (a.differentiator) update.differentiator = a.differentiator;
+      if (a.challenge) update.challenge = a.challenge;
+    }
+
+    const { error } = await db
+      .from('user_intake')
+      .upsert({ user_id: req.dbUser.id, ...update }, { onConflict: 'user_id' });
+
+    if (error) throw error;
+    res.json({ saved: true });
+  } catch (e) {
+    console.error('Session save error:', e.message);
     res.status(500).json({ error: 'Save failed' });
   }
 });

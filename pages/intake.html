@@ -184,42 +184,22 @@
       } catch (e) { console.log('Clerk init:', e.message); }
     })();
 
-    // Pre-populate from existing data (shared intake)
+    // Pre-populate from existing data — Supabase is source of truth
     async function prefillIntake() {
       let prefilled = false;
-      let source = null;
 
-      // 1. Try server-side unified intake (database)
+      // Load from BridgeSession (Supabase first, cache fallback)
       try {
-        const resp = await fetch('/api/intake/data');
-        if (resp.ok) {
-          const data = await resp.json();
-          if (data.intake) {
-            FIELDS.forEach(f => {
-              const el = document.getElementById('f-' + f);
-              if (el && data.intake[f]) el.value = data.intake[f];
-            });
-            prefilled = true;
-            source = 'database';
-          }
+        const session = await BridgeSession.load();
+        if (session && session.intakeAnswers) {
+          const a = session.intakeAnswers;
+          FIELDS.forEach(f => {
+            const el = document.getElementById('f-' + f);
+            if (el && a[f]) el.value = a[f];
+          });
+          prefilled = true;
         }
-      } catch (e) {}
-
-      // 2. Fallback: try localStorage
-      if (!prefilled) {
-        try {
-          const session = JSON.parse(localStorage.getItem('bridge_session'));
-          if (session && session.intakeAnswers) {
-            const a = session.intakeAnswers;
-            FIELDS.forEach(f => {
-              const el = document.getElementById('f-' + f);
-              if (el && a[f]) el.value = a[f];
-            });
-            prefilled = true;
-            source = 'localStorage';
-          }
-        } catch (e) {}
-      }
+      } catch (e) { console.error('Prefill failed:', e); }
 
       if (prefilled) {
         const notice = document.getElementById('prefill-notice');
@@ -273,21 +253,8 @@
         if (!intakeResp.ok) throw new Error(`HTTP ${intakeResp.status}`);
         const result = await intakeResp.json();
 
-        // Save intake to server (for logged-in users)
-        try {
-          await fetch('/api/intake/save', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ answers, scannedContent })
-          });
-        } catch (e) { /* non-critical — localStorage still works */ }
-
-        let existing = {};
-        try { existing = JSON.parse(localStorage.getItem('bridge_session')) || {}; } catch (e) {}
-        delete existing.chartSections;
-
-        localStorage.setItem('bridge_session', JSON.stringify({
-          ...existing,
+        // Save full session to Supabase (source of truth) + cache
+        const sessionData = {
           businessName: answers.businessName,
           shipName: answers.businessName || result.ship_name,
           destination: result.destination_name,
@@ -296,7 +263,9 @@
           intakeAnswers: answers,
           scannedContent: scannedContent,
           completedAt: new Date().toISOString()
-        }));
+        };
+
+        await BridgeSession.save(sessionData);
 
         window.location.href = '/dashboard';
       } catch (err) {
@@ -306,6 +275,7 @@
       }
     });
   </script>
+<script src="/js/session.js"></script>
 <script src="/js/nav.js"></script>
 </body>
 </html>

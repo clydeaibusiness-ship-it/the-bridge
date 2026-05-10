@@ -169,45 +169,8 @@
         } catch (e2) {}
       }
 
-      // Load session — try localStorage first, fall back to Supabase
-      try { sessionData = JSON.parse(localStorage.getItem('bridge_session')); } catch (e) {}
-
-      // If no localStorage data, try loading from database
-      if (!sessionData || !sessionData.intakeAnswers) {
-        try {
-          const intakeResp = await fetch('/api/intake/data');
-          if (intakeResp.ok) {
-            const intakeData = await intakeResp.json();
-            if (intakeData.intake && intakeData.intake.businessName) {
-              // Rebuild session from database
-              const dbAnswers = intakeData.intake;
-              if (!sessionData) sessionData = {};
-              sessionData.intakeAnswers = dbAnswers;
-              sessionData.businessName = dbAnswers.businessName || sessionData.businessName;
-              sessionData.shipName = dbAnswers.businessName || sessionData.shipName;
-              sessionData.completedAt = dbAnswers.updatedAt || sessionData.completedAt;
-              // Re-personalize to get businessContext if missing
-              if (!sessionData.businessContext) {
-                try {
-                  const personalizeResp = await fetch('/api/game/intake', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ answers: dbAnswers })
-                  });
-                  if (personalizeResp.ok) {
-                    const result = await personalizeResp.json();
-                    sessionData.destination = result.destination_name;
-                    sessionData.industryKey = result.industry_key;
-                    sessionData.businessContext = result.businessContext;
-                  }
-                } catch (e) { console.error('Personalize failed:', e); }
-              }
-              // Cache to localStorage for future visits
-              localStorage.setItem('bridge_session', JSON.stringify(sessionData));
-            }
-          }
-        } catch (e) { console.error('DB session load failed:', e); }
-      }
+      // Load session — Supabase is source of truth, localStorage is cache
+      sessionData = await BridgeSession.load();
 
       if (sessionData) {
         const name = sessionData.businessName || sessionData.shipName;
@@ -319,7 +282,7 @@
         const data = await resp.json();
         if (data.sections) {
           sessionData.chartSections = data.sections;
-          localStorage.setItem('bridge_session', JSON.stringify(sessionData));
+          await BridgeSession.save({ chartSections: data.sections });
           renderChart(data.sections);
         }
       } catch (err) {
@@ -546,6 +509,7 @@ Biggest uncertainty: ${a.uncertainty || 'unknown'}
 
     initDashboard();
   </script>
+<script src="/js/session.js"></script>
 <script src="/js/nav.js"></script>
 </body>
 </html>
