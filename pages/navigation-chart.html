@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>The Bridge — Navigation Chart</title>
+  <script src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@5/dist/clerk.browser.js"></script>
   <link rel="stylesheet" href="/css/global.css">
   <link rel="stylesheet" href="/css/nav.css">
   <style>
@@ -79,7 +80,13 @@
       document.getElementById('mobile-menu').classList.toggle('open');
     });
 
-    (function() {
+    (async function() {
+      // Initialize Clerk so __session cookie is set for API auth
+      try {
+        const clerk = new Clerk('pk_live_Y2xlcmsuY2FwdGFpbnNicmlkZ2UuaW8k');
+        await clerk.load();
+      } catch (e) { console.log('Clerk init:', e.message); }
+
       let session = null;
       try { session = JSON.parse(localStorage.getItem('bridge_session')); } catch (e) {}
 

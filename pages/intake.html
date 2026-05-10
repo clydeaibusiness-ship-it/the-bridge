@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>The Bridge — Business Intake</title>
+  <script src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@5/dist/clerk.browser.js"></script>
   <link rel="stylesheet" href="/css/global.css">
   <link rel="stylesheet" href="/css/nav.css">
   <style>
@@ -172,7 +173,15 @@
 
     const isUpdate = new URLSearchParams(window.location.search).get('mode') === 'update';
 
-    // Pre-populate from existing data (Issue 3: shared intake)
+    // Initialize Clerk so __session cookie is set for API auth
+    (async () => {
+      try {
+        const clerk = new Clerk('pk_live_Y2xlcmsuY2FwdGFpbnNicmlkZ2UuaW8k');
+        await clerk.load();
+      } catch (e) { console.log('Clerk init:', e.message); }
+    })();
+
+    // Pre-populate from existing data (shared intake)
     async function prefillIntake() {
       let prefilled = false;
       let source = null;

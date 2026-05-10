@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="/css/dashboard.css">
   <link rel="stylesheet" href="/css/nav.css">
   <style>html, body { overflow: visible !important; height: auto !important; background: #f5f0e8 !important; color: #0a0a0f !important; }</style>
+  <script src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@5/dist/clerk.browser.js"></script>
 </head>
 <body class="dash-body">
   <div class="dash-page">
@@ -140,16 +141,29 @@
     let isFullscreen = false;
 
     async function initDashboard() {
-      // Auth
+      // Initialize Clerk — this sets __session cookie for API auth
       try {
-        const resp = await fetch('/api/auth/me');
-        if (resp.ok) {
-          const user = await resp.json();
-          if (user && user.firstName) {
-            document.getElementById('dash-welcome').textContent = `Welcome back, ${user.firstName}.`;
-          }
+        const clerk = new Clerk('pk_live_Y2xlcmsuY2FwdGFpbnNicmlkZ2UuaW8k');
+        await clerk.load();
+        if (!clerk.user) {
+          // Not logged in — redirect to login
+          window.location.href = '/login';
+          return;
         }
-      } catch (e) {}
+        document.getElementById('dash-welcome').textContent = `Welcome back, ${clerk.user.firstName || ''}.`;
+      } catch (e) {
+        console.error('Clerk init failed:', e);
+        // Fallback: try /api/auth/me
+        try {
+          const resp = await fetch('/api/auth/me');
+          if (resp.ok) {
+            const user = await resp.json();
+            if (user && user.firstName) {
+              document.getElementById('dash-welcome').textContent = `Welcome back, ${user.firstName}.`;
+            }
+          }
+        } catch (e2) {}
+      }
 
       // Load session
       try { sessionData = JSON.parse(localStorage.getItem('bridge_session')); } catch (e) {}
