@@ -32,12 +32,15 @@ window.BridgeSession = (function () {
    * Returns the session object or null if nothing exists
    */
   async function load() {
+    var serverHasData = false;
+
     // 1. Try Supabase (the source of truth)
     try {
       var resp = await fetch('/api/intake/data');
       if (resp.ok) {
         var data = await resp.json();
         if (data.session && (data.session.businessName || data.session.completedAt)) {
+          serverHasData = true;
           // Merge with intake answers
           var session = data.session;
           // Ensure intakeAnswers is populated
@@ -54,7 +57,24 @@ window.BridgeSession = (function () {
     }
 
     // 2. Fall back to cache
-    return getCache();
+    var cached = getCache();
+
+    // 3. If cache has data but server doesn't, sync UP to server
+    if (cached && !serverHasData && (cached.businessName || cached.intakeAnswers || cached.completedAt)) {
+      console.log('Syncing local session data up to server...');
+      try {
+        await fetch('/api/session/save', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ session: cached })
+        });
+        console.log('Session synced to server successfully');
+      } catch (e) {
+        console.warn('Session sync to server failed:', e.message);
+      }
+    }
+
+    return cached;
   }
 
   /**
