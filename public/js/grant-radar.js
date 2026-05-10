@@ -502,11 +502,12 @@
 
     card.appendChild(chips);
 
-    // Row 4: What to shift
+    // Row 4: What to shift (expandable inline — does NOT navigate)
     if (grant.gaps && grant.gaps.length > 0 && grant.matchPercent < 100) {
       var trigger = document.createElement('button');
       trigger.className = 'gr-expand-trigger';
-      trigger.textContent = 'What would bring this to 100% →';
+      trigger.type = 'button';
+      trigger.textContent = 'What would bring this to 100%? ▸';
       var content = document.createElement('div');
       content.className = 'gr-expand-content';
       var ul = document.createElement('ul');
@@ -516,11 +517,13 @@
         ul.appendChild(li);
       });
       content.appendChild(ul);
-      trigger.addEventListener('click', function () {
+      trigger.addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
         content.classList.toggle('open');
         trigger.textContent = content.classList.contains('open')
-          ? 'What would bring this to 100% ↓'
-          : 'What would bring this to 100% →';
+          ? 'What would bring this to 100%? ▾'
+          : 'What would bring this to 100%? ▸';
       });
       card.appendChild(trigger);
       card.appendChild(content);
