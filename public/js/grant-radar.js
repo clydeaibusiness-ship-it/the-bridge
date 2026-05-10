@@ -49,19 +49,19 @@
       console.error('Clerk auth failed:', e);
     }
 
-    // Strategy 2: Try creating Clerk fresh (in case inline script raced)
+    // Strategy 2: Use existing window.Clerk instance (CDN creates it)
     try {
       if (window.Clerk && !clerkInstance) {
-        clerkInstance = new window.Clerk('pk_live_Y2xlcmsuY2FwdGFpbnNicmlkZ2UuaW8k');
-        await clerkInstance.load();
+        clerkInstance = window.Clerk;
+        if (!clerkInstance.loaded) await clerkInstance.load();
         if (clerkInstance.user && clerkInstance.session) {
           clerkToken = await clerkInstance.session.getToken();
-          console.log('Auth: Clerk token obtained (retry)');
+          console.log('Auth: Clerk token obtained (existing instance)');
           return true;
         }
       }
     } catch (e) {
-      console.error('Clerk retry failed:', e);
+      console.error('Clerk instance auth failed:', e);
     }
 
     // Strategy 3: Cookie-based auth (Clerk __session cookie may exist)

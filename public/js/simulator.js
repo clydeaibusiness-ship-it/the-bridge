@@ -101,10 +101,10 @@ function bindEvents() {
 
 async function checkAuth() {
   try {
-    // Use Clerk from the page <head> script (already loaded)
-    const clerk = new window.Clerk('pk_live_Y2xlcmsuY2FwdGFpbnNicmlkZ2UuaW8k');
-    await clerk.load();
-    isLoggedIn = !!clerk.user;
+    // Use existing Clerk instance from CDN
+    const clerk = window.Clerk;
+    if (clerk && !clerk.loaded) await clerk.load();
+    isLoggedIn = !!(clerk && clerk.user);
   } catch (e) {
     isLoggedIn = false;
   }

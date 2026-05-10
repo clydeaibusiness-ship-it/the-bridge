@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="/css/grant-radar.css">
   <link rel="stylesheet" href="/css/nav.css">
   <style>html, body { overflow: visible !important; height: auto !important; background: #f5f0e8 !important; color: #0a0a0f !important; }</style>
+  <script>window.__clerk_publishable_key = 'pk_live_Y2xlcmsuY2FwdGFpbnNicmlkZ2UuaW8k';</script>
   <script src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@5/dist/clerk.browser.js"></script>
 </head>
 <body class="gr-body">
@@ -196,10 +197,12 @@
   <script src="/js/nav.js"></script>
   <script>
     // Initialize Clerk before grant-radar.js runs — NEVER redirect from here
+    // window.Clerk is already an instance created by the CDN with the publishable key set above
     window.__grClerkReady = (async function() {
       try {
-        var clerk = new window.Clerk('pk_live_Y2xlcmsuY2FwdGFpbnNicmlkZ2UuaW8k');
-        await clerk.load();
+        var clerk = window.Clerk;
+        if (!clerk) return null;
+        if (!clerk.loaded) await clerk.load();
         if (clerk.user) {
           window.__grClerk = clerk;
           return clerk;
