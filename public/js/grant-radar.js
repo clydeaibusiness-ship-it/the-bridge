@@ -32,31 +32,38 @@
   };
 
   // ---- Auth ----
+  var clerkInstance = null;
+
   async function initAuth() {
     try {
-      const Clerk = window.Clerk;
-      if (!Clerk) {
-        await window.clerk?.load?.();
-        if (!window.Clerk) { window.location.href = '/login'; return false; }
+      clerkInstance = new window.Clerk('pk_live_Y2xlcmsuY2FwdGFpbnNicmlkZ2UuaW8k');
+      await clerkInstance.load();
+      if (!clerkInstance.user) {
+        window.location.href = '/login';
+        return false;
       }
-      const clerk = window.Clerk;
-      if (!clerk.user) {
-        await clerk.load();
-        if (!clerk.user) { window.location.href = '/login'; return false; }
-      }
-      clerkToken = await clerk.session.getToken();
+      clerkToken = await clerkInstance.session.getToken();
       return true;
-    } catch {
+    } catch (e) {
+      console.error('Clerk init failed:', e);
+      // Fallback: check if session cookie exists
+      try {
+        var resp = await fetch('/api/auth/me');
+        if (resp.ok) {
+          // Session cookie is set, API calls will work
+          clerkToken = null; // Will use cookie auth
+          return true;
+        }
+      } catch (e2) {}
       window.location.href = '/login';
       return false;
     }
   }
 
   function authHeaders() {
-    return {
-      'Authorization': 'Bearer ' + clerkToken,
-      'Content-Type': 'application/json'
-    };
+    var h = { 'Content-Type': 'application/json' };
+    if (clerkToken) h['Authorization'] = 'Bearer ' + clerkToken;
+    return h;
   }
 
   // ---- Helpers ----
@@ -695,13 +702,21 @@
 
       try {
         // Upload file first
+        // Refresh token before upload
+        if (clerkInstance && clerkInstance.session) {
+          clerkToken = await clerkInstance.session.getToken();
+        }
+
         var formData = new FormData();
         formData.append('document', fileInput.files[0]);
         formData.append('applicationId', application.id);
 
+        var uploadHeaders = {};
+        if (clerkToken) uploadHeaders['Authorization'] = 'Bearer ' + clerkToken;
+
         var uploadRes = await fetch('/api/grant-radar/upload', {
           method: 'POST',
-          headers: { 'Authorization': 'Bearer ' + clerkToken },
+          headers: uploadHeaders,
           body: formData
         });
         if (!uploadRes.ok) throw new Error('Upload failed');
