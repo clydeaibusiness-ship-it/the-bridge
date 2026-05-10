@@ -134,10 +134,21 @@
         await clerk.load();
 
         if (!clerk.user) {
-          // Not logged in — redirect to login with return
           window.location.href = '/login?return=/subscribe';
           return;
         }
+
+        // If already paid, skip straight to dashboard
+        try {
+          const tierResp = await fetch('/api/auth/me');
+          if (tierResp.ok) {
+            const tierData = await tierResp.json();
+            if (tierData.membershipTier === 'ensign') {
+              window.location.href = '/dashboard';
+              return;
+            }
+          }
+        } catch(e) {}
 
         document.getElementById('btn-subscribe').addEventListener('click', startCheckout);
       } catch (e) {
