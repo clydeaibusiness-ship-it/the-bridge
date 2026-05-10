@@ -4,136 +4,455 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>The Bridge — Strategic Navigation for Small Business</title>
-  <meta name="description" content="The Bridge gives established business owners the strategic framework, AI advisor, and real-time simulator to double what's working and cut what isn't.">
   <link rel="stylesheet" href="/css/global.css">
   <link rel="stylesheet" href="/css/landing.css">
-  <link rel="stylesheet" href="/css/nav.css">
-  <style>
-    /* Override global.css html/body lock for landing page */
-    html, body {
-      overflow: visible !important;
-      height: auto !important;
-      background: #f0ebe0 !important;
-      color: #08080f;
-    }
-  </style>
 </head>
 <body class="landing-body">
 
-  <!-- NAV -->
-  <nav class="site-nav">
-    <a href="/" class="site-nav-brand">The Bridge</a>
-    <div class="site-nav-links">
-      <a href="/simulator">Simulator</a>
-      <span class="site-nav-sep">|</span>
-      <a href="/navigation-chart">Navigation Chart</a>
-      <span class="site-nav-sep">|</span>
-      <a href="/dashboard">Dashboard</a>
-      <span class="site-nav-sep">|</span>
-      <a href="/login">Log In</a>
+<!-- ====== SECTION 1: NAVIGATION BAR ====== -->
+<nav class="landing-nav">
+  <div class="landing-nav-inner">
+    <a href="/" class="landing-nav-wordmark">THE BRIDGE</a>
+    <div class="landing-nav-links">
+      <a href="/login" class="landing-nav-login">Log In</a>
+      <a href="/login?action=subscribe" class="landing-nav-cta">Become a Captain</a>
     </div>
-    <button class="site-nav-hamburger" aria-label="Menu">
+    <button class="landing-hamburger" id="landing-hamburger" aria-label="Menu">
       <span></span><span></span><span></span>
     </button>
-    <div class="site-nav-mobile" id="mobile-menu"><button class="site-nav-mobile-close" aria-label="Close">✕</button>
-      <a href="/simulator">Simulator</a>
-      <a href="/navigation-chart">Navigation Chart</a>
-      <a href="/dashboard">Dashboard</a>
-      <a href="/login">Log In</a>
-    </div>
-  </nav>
-
-  <div class="page">
-
-    <!-- ========== HERO (cream panel with starfield) ========== -->
-    <section class="hero">
-      <canvas id="starfield"></canvas>
-      <div class="container hero-container">
-        <p class="eyebrow">Strategic navigation for small business</p>
-        <h1 class="headline">Your business is already in flight.<br>Do you know where it's headed?</h1>
-        <p class="hero-body">The Bridge gives established business owners the strategic framework, the AI advisor, and the real-time simulator to double what's working and cut what isn't.</p>
-        <div class="hero-buttons">
-          <a href="/simulator" class="btn-primary-hero">Launch the Simulator</a>
-          <a href="#how-it-works" class="btn-ghost-hero">See how it works</a>
-        </div>
-      </div>
-    </section>
-
-    <!-- ========== THE PROBLEM ========== -->
-    <section class="problem">
-      <div class="container">
-        <div class="problem-row">
-          <div class="problem-item">
-            <span class="problem-number">80%</span>
-            <span class="problem-text">of effort produces 20% of results — most owners are pulling the wrong levers</span>
-          </div>
-          <div class="problem-item">
-            <span class="problem-number">&lt; 3%</span>
-            <span class="problem-text">of available government grants are ever claimed by eligible businesses</span>
-          </div>
-          <div class="problem-item">
-            <span class="problem-number">1 in 5</span>
-            <span class="problem-text">small businesses fail not from bad products but from bad strategic sequencing</span>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ========== THREE PRODUCTS ========== -->
-    <section class="products" id="how-it-works">
-      <div class="container">
-        <div class="products-row">
-          <div class="product-card">
-            <h3 class="product-title">The Simulator</h3>
-            <p class="product-body">Run your business through real situations. See which decisions build it and which ones bleed it.</p>
-          </div>
-          <div class="product-card">
-            <h3 class="product-title">The Navigation Chart</h3>
-            <p class="product-body">Answer 13 questions. Receive a six-page strategic assessment specific to your business. Not a template.</p>
-          </div>
-          <div class="product-card">
-            <h3 class="product-title">The Commander</h3>
-            <p class="product-body">An AI advisor built on the best business books ever written. Every conversation starts with your full business context already loaded.</p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ========== PRICING ========== -->
-    <section class="pricing">
-      <div class="container">
-        <div class="pricing-card">
-          <span class="pricing-tier">ENSIGN TIER</span>
-          <div class="pricing-amounts">
-            <span class="pricing-monthly">$50 / month</span>
-            <span class="pricing-annual">$500 / year — save two months</span>
-          </div>
-          <ul class="pricing-features">
-            <li>Full strategic simulator with saved runs and progression</li>
-            <li>Navigation Chart — your personalized six-page strategic assessment</li>
-            <li>The Commander — AI strategic advisor with your full business context</li>
-            <li>Grant Radar — matched government funding opportunities</li>
-          </ul>
-          <a href="/login?return=/api/payments/checkout-redirect" class="btn-primary-light" id="btn-become-member">Become a member</a>
-          <p class="pricing-sub">Or start with the free Simulator — no account required</p>
-        </div>
-      </div>
-    </section>
-
-    <!-- ========== FOOTER ========== -->
-    <footer class="site-footer">
-      <div class="container">
-        <p class="footer-line">The Bridge is built for business owners who take their operation seriously.</p>
-      </div>
-    </footer>
-
   </div>
+  <div class="landing-mobile-menu" id="landing-mobile-menu">
+    <a href="/login">Log In</a>
+    <a href="/login?action=subscribe">Become a Captain</a>
+  </div>
+</nav>
 
-  <script type="module">
-    import { renderStarfield } from '/js/starfield.js';
-    renderStarfield('starfield', { theme: 'light' });
-  </script>
+<!-- ====== SECTION 2: HERO ====== -->
+<section class="hero" id="hero">
+  <canvas id="starfield"></canvas>
+  <div class="hero-inner">
+    <div class="hero-text">
+      <div class="hero-eyebrow">STRATEGIC NAVIGATION FOR SMALL BUSINESS</div>
+      <h1 class="hero-headline">
+        <span class="line1">You built something real.</span>
+        <span class="line2">Now let's make sure it goes somewhere.</span>
+      </h1>
+      <p class="hero-sub">Most business owners are working harder than anyone they know — and still feel like they are one bad month away from it all unraveling. Not because they lack talent. Not because the product is wrong. Because no one ever handed them the map.</p>
+      <div class="hero-buttons">
+        <a href="/simulator" class="btn-hero-primary">Role-play your business — free</a>
+        <a href="#problem" class="btn-hero-ghost">See how it works</a>
+      </div>
+    </div>
+    <div class="hero-graphic">
+      <!-- Bridge console SVG — abstract, constellation-style -->
+      <svg viewBox="0 0 280 320" fill="none" xmlns="http://www.w3.org/2000/svg" width="100%">
+        <!-- Horizon line -->
+        <line x1="20" y1="160" x2="260" y2="160" stroke="#b8b0a0" stroke-width="0.5" opacity="0.4"/>
+        <!-- Console base -->
+        <path d="M60 280 L80 200 L200 200 L220 280" stroke="#f0ebe0" stroke-width="1" opacity="0.6"/>
+        <line x1="50" y1="280" x2="230" y2="280" stroke="#f0ebe0" stroke-width="1" opacity="0.6"/>
+        <!-- Helm circle -->
+        <g class="helm-circle">
+          <circle cx="140" cy="140" r="50" stroke="#f0ebe0" stroke-width="1" opacity="0.5"/>
+          <circle cx="140" cy="140" r="3" fill="#c8a96e" opacity="0.8"/>
+          <!-- Helm spokes -->
+          <line x1="140" y1="90" x2="140" y2="100" stroke="#f0ebe0" stroke-width="1" opacity="0.4"/>
+          <line x1="140" y1="180" x2="140" y2="190" stroke="#f0ebe0" stroke-width="1" opacity="0.4"/>
+          <line x1="90" y1="140" x2="100" y2="140" stroke="#f0ebe0" stroke-width="1" opacity="0.4"/>
+          <line x1="180" y1="140" x2="190" y2="140" stroke="#f0ebe0" stroke-width="1" opacity="0.4"/>
+        </g>
+        <!-- Lever shapes -->
+        <rect x="90" y="220" width="4" height="30" rx="2" fill="#f0ebe0" opacity="0.3"/>
+        <rect x="110" y="215" width="4" height="35" rx="2" fill="#f0ebe0" opacity="0.4"/>
+        <rect x="166" y="218" width="4" height="32" rx="2" fill="#f0ebe0" opacity="0.35"/>
+        <rect x="186" y="222" width="4" height="28" rx="2" fill="#f0ebe0" opacity="0.3"/>
+        <!-- Display dots — constellation style -->
+        <circle cx="80" cy="100" r="1.5" fill="#c8a96e" opacity="0.6"/>
+        <circle cx="200" cy="100" r="1.5" fill="#c8a96e" opacity="0.6"/>
+        <circle cx="140" cy="60" r="1.5" fill="#c8a96e" opacity="0.5"/>
+        <line x1="80" y1="100" x2="140" y2="60" stroke="#c8a96e" stroke-width="0.5" opacity="0.2"/>
+        <line x1="140" y1="60" x2="200" y2="100" stroke="#c8a96e" stroke-width="0.5" opacity="0.2"/>
+        <!-- Readout lines -->
+        <line x1="75" y1="240" x2="135" y2="240" stroke="#f0ebe0" stroke-width="0.5" opacity="0.2"/>
+        <line x1="145" y1="240" x2="205" y2="240" stroke="#f0ebe0" stroke-width="0.5" opacity="0.2"/>
+      </svg>
+    </div>
+  </div>
+</section>
 
-<script src="/js/nav.js"></script>
+<!-- ====== SECTION 3: THE PROBLEM ====== -->
+<section class="problem" id="problem">
+  <div class="landing-container">
+    <div class="problem-label">THE PROBLEM WITH RUNNING A BUSINESS ALONE</div>
+    <div class="problem-opening">You know more about your industry than most people will ever know. You have outworked, outlearned, and out-sacrificed people twice your age. And yet — on a Tuesday afternoon when it is quiet enough to actually think — you sit there with the same question you cannot shake:<br><br><strong>Am I doing this right?</strong></div>
+
+    <div class="problem-grid">
+      <div class="problem-item fade-in">
+        <div class="problem-number">01</div>
+        <div class="problem-headline">You are the best at what you do and somehow still losing sleep.</div>
+        <div class="problem-body">The problem has never been your craft. It has been the forty decisions between you and the next level that nobody ever taught you how to make.</div>
+      </div>
+      <div class="problem-item fade-in">
+        <div class="problem-number">02</div>
+        <div class="problem-headline">You have read the books. Listened to the podcasts. Hired the coach.</div>
+        <div class="problem-body">And every one of them gave you frameworks that sounded brilliant in a hotel conference room and disappeared by the time you got back to the shop.</div>
+      </div>
+      <div class="problem-item fade-in">
+        <div class="problem-number">03</div>
+        <div class="problem-headline">And the government has been sitting on free money with your name on it.</div>
+        <div class="problem-body">Grants specifically designed for businesses exactly like yours — for what you do, where you do it, who you hire. Most of it goes unclaimed every year because finding it requires six hours you do not have on a website designed by someone who has never run a business.</div>
+      </div>
+    </div>
+
+    <div class="problem-closing">None of this is your fault. You were handed a ship and told to sail it. Nobody gave you the bridge.</div>
+  </div>
+</section>
+
+<!-- ====== SECTION 4: THE SOLUTION ====== -->
+<section class="solution" id="solution">
+  <div class="landing-container">
+    <div class="solution-label">THE BRIDGE</div>
+    <h2 class="solution-headline">Your business has always deserved a Commander.</h2>
+    <p class="solution-sub">A human business consultant is brilliant — and forgets half of what you told them between sessions. They cannot hold every case study, every lever, every strategic principle in their head simultaneously while thinking about your specific situation at 11pm on a Wednesday when you cannot sleep. We built something that can.</p>
+
+    <div class="solution-cards" id="solution-cards">
+      <!-- Card 1: The Simulator -->
+      <div class="solution-card">
+        <div class="solution-card-icon">
+          <svg width="40" height="40" viewBox="0 0 40 40" fill="none" stroke="#f0ebe0" stroke-width="1.5">
+            <circle cx="20" cy="20" r="14"/>
+            <line x1="20" y1="20" x2="20" y2="8" stroke-linecap="round"/>
+            <circle cx="20" cy="20" r="2" fill="#c8a96e" stroke="none"/>
+          </svg>
+        </div>
+        <div class="solution-card-label">THE SIMULATOR</div>
+        <div class="solution-card-headline">Role-play the decisions before they cost you anything real.</div>
+        <div class="solution-card-body">Your business. Real scenarios. Four choices, each with a clear cost and a clear gain. No timer. No pressure. Just you and the question every business owner faces: what is the right call — and why? Play it enough and you stop guessing.</div>
+      </div>
+
+      <!-- Card 2: The Commander (featured) -->
+      <div class="solution-card featured">
+        <div class="solution-card-icon">
+          <svg width="40" height="40" viewBox="0 0 40 40" fill="none" stroke="#f0ebe0" stroke-width="1.5">
+            <path d="M8 28 L8 16 Q8 8 20 8 Q32 8 32 16 L32 28 L20 24 Z" stroke-linejoin="round"/>
+            <path d="M18 16 L20 12 L22 16 L20 14 Z" fill="#c8a96e" stroke="none"/>
+          </svg>
+        </div>
+        <div class="solution-card-label">THE COMMANDER</div>
+        <div class="solution-card-headline">The strategic advisor who never forgets your business.</div>
+        <div class="solution-card-body">The Commander is built on a framework synthesized from the twelve most important business books ever written — not their summaries, their actual operating principles. It knows your business before you type a word. It asks the hard questions before it gives a single answer. And it never runs out of context. Ever.</div>
+      </div>
+
+      <!-- Card 3: Grant Radar -->
+      <div class="solution-card">
+        <div class="solution-card-icon">
+          <svg width="40" height="40" viewBox="0 0 40 40" fill="none" stroke="#f0ebe0" stroke-width="1.5">
+            <circle cx="20" cy="20" r="14"/>
+            <circle cx="20" cy="20" r="7" opacity="0.5"/>
+            <line x1="20" y1="20" x2="30" y2="10" stroke-linecap="round"/>
+            <circle cx="20" cy="20" r="2" fill="#c8a96e" stroke="none"/>
+          </svg>
+        </div>
+        <div class="solution-card-label">GRANT RADAR</div>
+        <div class="solution-card-headline">The money was always there. You just could not see it.</div>
+        <div class="solution-card-body">Federal databases. State portals. County programs. Thousands of grant opportunities updated continuously — filtered to businesses exactly like yours, in your state, in your industry, at your stage. We search it so you do not have to spend six hours on a .gov website that was designed in 2004.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ====== SECTION 5: SIMULATOR SPOTLIGHT ====== -->
+<section class="spotlight" id="spotlight">
+  <div class="landing-container">
+    <div class="spotlight-grid">
+      <div class="spotlight-text">
+        <div class="spotlight-label">THE FREE SIMULATOR</div>
+        <h2 class="spotlight-headline">What if you could make the mistake before it costs you anything?</h2>
+        <div class="spotlight-body">
+          <p>The simulator is not a game. It is a mirror.</p>
+          <p>You put in your business — what you do, who you serve, where you are right now. The simulator builds your situation around those answers. Then it throws real problems at you. A competitor undercuts your price. A key client goes quiet. You hit a ceiling you did not see coming.</p>
+          <p>You pick a response. You see what happens — not in theory, not in someone else's case study, but in your business, your numbers, your relationships. You find out which decisions build something durable and which ones bleed you slowly without you noticing.</p>
+          <p>People who do not own businesses play it because it is genuinely addictive. People who do own businesses play it and suddenly understand in twenty minutes what took them years to learn by accident.</p>
+          <p>It is free. It always will be. Because we want you to know — before you spend a dollar — exactly what you are getting into.</p>
+        </div>
+        <a href="/simulator" class="btn-spotlight">Role-play your business — free</a>
+      </div>
+      <div class="spotlight-graphic">
+        <div class="spotlight-mockup" id="sim-mockup">
+          <!-- Abstract simulator wireframe SVG -->
+          <svg viewBox="0 0 400 340" width="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- Resource bars -->
+            <text x="10" y="18" font-family="Space Mono, monospace" font-size="8" fill="#7a7570" letter-spacing="0.1em">CAPITAL</text>
+            <rect x="10" y="24" width="180" height="6" rx="1" fill="#c8c0b0" opacity="0.3"/>
+            <rect x="10" y="24" width="0" height="6" rx="1" fill="#0a0a0f" class="sim-bar-fill" data-width="130"/>
+
+            <text x="210" y="18" font-family="Space Mono, monospace" font-size="8" fill="#7a7570" letter-spacing="0.1em">CUSTOMERS</text>
+            <rect x="210" y="24" width="180" height="6" rx="1" fill="#c8c0b0" opacity="0.3"/>
+            <rect x="210" y="24" width="0" height="6" rx="1" fill="#0a0a0f" class="sim-bar-fill" data-width="108"/>
+
+            <text x="10" y="50" font-family="Space Mono, monospace" font-size="8" fill="#7a7570" letter-spacing="0.1em">POSITIONING</text>
+            <rect x="10" y="56" width="180" height="6" rx="1" fill="#c8c0b0" opacity="0.3"/>
+            <rect x="10" y="56" width="0" height="6" rx="1" fill="#0a0a0f" class="sim-bar-fill" data-width="112"/>
+
+            <text x="210" y="50" font-family="Space Mono, monospace" font-size="8" fill="#7a7570" letter-spacing="0.1em">SWITCHING COSTS</text>
+            <rect x="210" y="56" width="180" height="6" rx="1" fill="#c8c0b0" opacity="0.3"/>
+            <rect x="210" y="56" width="0" height="6" rx="1" fill="#0a0a0f" class="sim-bar-fill" data-width="68"/>
+
+            <!-- Divider -->
+            <line x1="10" y1="80" x2="390" y2="80" stroke="#c8c0b0" stroke-width="0.5" opacity="0.4"/>
+
+            <!-- Situation title placeholder -->
+            <text x="10" y="106" font-family="Space Mono, monospace" font-size="7" fill="#7a7570" letter-spacing="0.12em">SITUATION 3 OF 5</text>
+            <rect x="10" y="116" width="260" height="10" rx="2" fill="#c8c0b0" opacity="0.2"/>
+            <rect x="10" y="132" width="360" height="8" rx="2" fill="#c8c0b0" opacity="0.12"/>
+            <rect x="10" y="146" width="320" height="8" rx="2" fill="#c8c0b0" opacity="0.12"/>
+
+            <!-- Option cards -->
+            <rect x="10" y="172" width="185" height="70" rx="3" stroke="#c8c0b0" stroke-width="1" opacity="0.4"/>
+            <text x="22" y="194" font-family="Space Mono, monospace" font-size="8" fill="#7a7570">OPTION A</text>
+            <rect x="22" y="202" width="140" height="6" rx="1" fill="#c8c0b0" opacity="0.15"/>
+            <rect x="22" y="214" width="120" height="6" rx="1" fill="#c8c0b0" opacity="0.15"/>
+
+            <rect x="205" y="172" width="185" height="70" rx="3" stroke="#c8c0b0" stroke-width="1" opacity="0.4"/>
+            <text x="217" y="194" font-family="Space Mono, monospace" font-size="8" fill="#7a7570">OPTION B</text>
+            <rect x="217" y="202" width="140" height="6" rx="1" fill="#c8c0b0" opacity="0.15"/>
+            <rect x="217" y="214" width="120" height="6" rx="1" fill="#c8c0b0" opacity="0.15"/>
+
+            <rect x="10" y="252" width="185" height="70" rx="3" stroke="#c8c0b0" stroke-width="1" opacity="0.4"/>
+            <text x="22" y="274" font-family="Space Mono, monospace" font-size="8" fill="#7a7570">OPTION C</text>
+            <rect x="22" y="282" width="140" height="6" rx="1" fill="#c8c0b0" opacity="0.15"/>
+            <rect x="22" y="294" width="120" height="6" rx="1" fill="#c8c0b0" opacity="0.15"/>
+
+            <rect x="205" y="252" width="185" height="70" rx="3" stroke="#c8c0b0" stroke-width="1" opacity="0.4"/>
+            <text x="217" y="274" font-family="Space Mono, monospace" font-size="8" fill="#7a7570">OPTION D</text>
+            <rect x="217" y="282" width="140" height="6" rx="1" fill="#c8c0b0" opacity="0.15"/>
+            <rect x="217" y="294" width="120" height="6" rx="1" fill="#c8c0b0" opacity="0.15"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ====== SECTION 6: WHO THIS IS FOR ====== -->
+<section class="captains" id="captains">
+  <div class="landing-container">
+    <div class="captains-label">THE CAPTAINS WE SERVE</div>
+    <h2 class="captains-headline">You do not have to be in tech. You just have to be serious.</h2>
+    <p class="captains-sub">The levers that build a durable business are the same whether you are making software or making sandwiches. Strategy does not care about your industry. Only your willingness to think clearly about it.</p>
+
+    <div class="captains-grid">
+      <!-- 1. Trades -->
+      <div class="captain-card">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="#8a6830" stroke-width="1.5" stroke-linecap="round"><path d="M16 4L12 8L16 12"/><path d="M12 8H22C23 8 24 9 24 10V18C24 19 23 20 22 20H18"/><path d="M4 20L10 14"/><circle cx="4" cy="22" r="2"/></svg>
+        <div class="captain-card-label">Trades and contractors</div>
+      </div>
+      <!-- 2. Restaurants -->
+      <div class="captain-card">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="#8a6830" stroke-width="1.5" stroke-linecap="round"><path d="M8 4V12C8 14 10 16 14 16C18 16 20 14 20 12V4"/><line x1="14" y1="16" x2="14" y2="24"/><line x1="10" y1="24" x2="18" y2="24"/></svg>
+        <div class="captain-card-label">Restaurants and food</div>
+      </div>
+      <!-- 3. Real estate -->
+      <div class="captain-card">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="#8a6830" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 24V12L14 4L24 12V24H4Z"/><rect x="11" y="16" width="6" height="8"/></svg>
+        <div class="captain-card-label">Real estate and property</div>
+      </div>
+      <!-- 4. Beauty -->
+      <div class="captain-card">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="#8a6830" stroke-width="1.5" stroke-linecap="round"><path d="M10 4C10 4 8 10 8 14C8 18 10 20 14 20C18 20 20 18 20 14C20 10 18 4 18 4"/><line x1="14" y1="20" x2="14" y2="24"/><line x1="10" y1="24" x2="18" y2="24"/></svg>
+        <div class="captain-card-label">Beauty and wellness</div>
+      </div>
+      <!-- 5. Healthcare -->
+      <div class="captain-card">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="#8a6830" stroke-width="1.5" stroke-linecap="round"><circle cx="14" cy="8" r="4"/><path d="M8 14C8 14 4 16 4 22H24C24 16 20 14 20 14"/><line x1="14" y1="18" x2="14" y2="22"/><line x1="12" y1="20" x2="16" y2="20"/></svg>
+        <div class="captain-card-label">Healthcare and therapy</div>
+      </div>
+      <!-- 6. Software -->
+      <div class="captain-card">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="#8a6830" stroke-width="1.5" stroke-linecap="round"><circle cx="14" cy="14" r="10"/><circle cx="14" cy="14" r="4"/><line x1="14" y1="4" x2="14" y2="10"/><line x1="14" y1="18" x2="14" y2="24"/><line x1="4" y1="14" x2="10" y2="14"/><line x1="18" y1="14" x2="24" y2="14"/></svg>
+        <div class="captain-card-label">Software and SaaS</div>
+      </div>
+      <!-- 7. Retail -->
+      <div class="captain-card">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="#8a6830" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8H22L20 24H8L6 8Z"/><path d="M10 8V6C10 4 12 2 14 2C16 2 18 4 18 6V8"/></svg>
+        <div class="captain-card-label">Retail and e-commerce</div>
+      </div>
+      <!-- 8. Landscaping -->
+      <div class="captain-card">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="#8a6830" stroke-width="1.5" stroke-linecap="round"><path d="M14 4C14 4 6 10 6 18C6 22 10 24 14 24C18 24 22 22 22 18C22 10 14 4 14 4Z"/><line x1="14" y1="14" x2="14" y2="24"/><path d="M10 18C12 16 14 17 14 17"/></svg>
+        <div class="captain-card-label">Landscaping and outdoor services</div>
+      </div>
+      <!-- 9. Consulting -->
+      <div class="captain-card">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="#8a6830" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="6" width="16" height="18" rx="1"/><line x1="6" y1="10" x2="22" y2="10"/><circle cx="14" cy="4" r="2"/></svg>
+        <div class="captain-card-label">Consulting and coaching</div>
+      </div>
+      <!-- 10. Construction -->
+      <div class="captain-card">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="#8a6830" stroke-width="1.5" stroke-linecap="round"><path d="M6 24L14 6L22 24"/><line x1="9" y1="18" x2="19" y2="18"/></svg>
+        <div class="captain-card-label">Construction and renovation</div>
+      </div>
+      <!-- 11. Education -->
+      <div class="captain-card">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="#8a6830" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12L14 6L26 12L14 18Z"/><path d="M6 14V22L14 26L22 22V14"/><line x1="26" y1="12" x2="26" y2="22"/></svg>
+        <div class="captain-card-label">Education and tutoring</div>
+      </div>
+      <!-- 12. Logistics -->
+      <div class="captain-card">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="#8a6830" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="8" width="16" height="14"/><path d="M18 12H24L26 18V22H18V12Z"/><circle cx="8" cy="24" r="2"/><circle cx="22" cy="24" r="2"/></svg>
+        <div class="captain-card-label">Logistics and delivery</div>
+      </div>
+    </div>
+
+    <div class="captains-closing">If you pay employees, serve customers, and lie awake wondering if you are making the right calls — you belong here.</div>
+  </div>
+</section>
+
+<!-- ====== SECTION 7: PRICING ====== -->
+<section class="pricing" id="pricing">
+  <div class="landing-container">
+    <div class="pricing-label">THE MEMBERSHIP</div>
+    <h2 class="pricing-headline">Less than a dinner out. More useful than most consultants.</h2>
+    <p class="pricing-sub">A business consultant charges $200 to $500 an hour and forgets most of what you told them. The Commander remembers everything, is available at 11pm, and costs $50 a month.</p>
+
+    <div class="pricing-card">
+      <div class="pricing-tier">ENSIGN TIER</div>
+      <div class="pricing-amount">
+        <span class="pricing-dollar">$50</span><span class="pricing-per"> / month</span>
+      </div>
+      <div class="pricing-annual">$500 / year — save two months</div>
+
+      <ul class="pricing-features">
+        <li class="pricing-feature">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="#c8a96e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2 7 6 11 12 3"/></svg>
+          <span class="pricing-feature-text">The Commander — unlimited access to your AI strategic advisor</span>
+        </li>
+        <li class="pricing-feature">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="#c8a96e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2 7 6 11 12 3"/></svg>
+          <span class="pricing-feature-text">The Navigation Chart — your personalized six-page strategic assessment</span>
+        </li>
+        <li class="pricing-feature">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="#c8a96e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2 7 6 11 12 3"/></svg>
+          <span class="pricing-feature-text">Grant Radar — automated government grant search updated monthly</span>
+        </li>
+        <li class="pricing-feature">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="#c8a96e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2 7 6 11 12 3"/></svg>
+          <span class="pricing-feature-text">The Simulator — unlimited sessions for you and your team</span>
+        </li>
+      </ul>
+
+      <a href="/login?action=subscribe" class="btn-pricing">Become a Captain</a>
+      <div class="pricing-below">Or start with the <a href="/simulator">free simulator</a>. No account required.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ====== SECTION 8: FOOTER ====== -->
+<footer class="landing-footer" id="footer">
+  <div class="landing-container">
+    <div class="footer-story">
+      <p>Here is the truth about every business owner we have ever met.</p>
+      <p>They are not lazy. They are not untalented. They are not failing because they do not care enough. They are failing — or plateauing, or grinding without gaining — because they are doing something genuinely hard without the tools the job actually requires.</p>
+      <p>You would not navigate a ship across the ocean with a tourist map and a guess. But that is what most business advice asks you to do. Here is a framework. Here are some principles. Good luck.</p>
+      <p>The Bridge is different not because we have smarter people — it is because we built a system that holds everything. Every principle from every book. Every lever. Every case study. All of it available the moment you need it, applied to your specific situation, asked in the form of a question that makes you think rather than told in the form of advice you forget.</p>
+      <p>You built something real. You deserve a bridge that gets you somewhere.</p>
+      <div class="footer-cta-line">Come aboard, Captain.</div>
+    </div>
+
+    <div class="footer-share">
+      <div class="footer-share-prompt">Know someone who needs this?</div>
+      <button class="btn-share" id="share-btn">Share The Bridge with a friend</button>
+      <div class="footer-share-sub">If you are not a business owner, you almost certainly know one. Send them this. It costs nothing and it might change everything for them.</div>
+    </div>
+
+    <div class="footer-bottom">
+      <div class="footer-copy">THE BRIDGE © 2025</div>
+      <div class="footer-links">
+        <a href="#">Privacy</a>
+        <a href="#">Terms</a>
+        <a href="#">Contact</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- ====== SCRIPTS ====== -->
+<script type="module">
+  import { renderStarfield } from '/js/starfield.js';
+  renderStarfield('starfield', { theme: 'dark' });
+</script>
+<script>
+  // Mobile menu toggle
+  document.getElementById('landing-hamburger').addEventListener('click', () => {
+    document.getElementById('landing-mobile-menu').classList.toggle('open');
+  });
+
+  // Smooth scroll for "See how it works"
+  document.querySelector('.btn-hero-ghost').addEventListener('click', (e) => {
+    e.preventDefault();
+    document.getElementById('problem').scrollIntoView({ behavior: 'smooth' });
+  });
+
+  // IntersectionObserver for fade-in animations
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.15 });
+
+  // Problem items — staggered
+  document.querySelectorAll('.problem-item.fade-in').forEach((el, i) => {
+    el.style.transitionDelay = `${i * 0.15}s`;
+    observer.observe(el);
+  });
+
+  // Solution cards — staggered
+  document.querySelectorAll('.solution-card').forEach((el, i) => {
+    el.style.transitionDelay = `${i * 0.2}s`;
+    observer.observe(el);
+  });
+
+  // Simulator mockup bars — animate on viewport entry
+  const mockupObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.querySelectorAll('.sim-bar-fill').forEach(bar => {
+          const targetWidth = bar.getAttribute('data-width');
+          bar.setAttribute('width', targetWidth);
+        });
+        mockupObserver.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.3 });
+  const mockup = document.getElementById('sim-mockup');
+  if (mockup) mockupObserver.observe(mockup);
+
+  // Share button
+  const shareBtn = document.getElementById('share-btn');
+  if (shareBtn) {
+    shareBtn.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText('https://captainsbridge.io');
+        const original = shareBtn.textContent;
+        shareBtn.textContent = 'Link copied — send it to someone who needs it';
+        setTimeout(() => { shareBtn.textContent = original; }, 3000);
+      } catch (e) {
+        // Fallback
+        const ta = document.createElement('textarea');
+        ta.value = 'https://captainsbridge.io';
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+        const original = shareBtn.textContent;
+        shareBtn.textContent = 'Link copied — send it to someone who needs it';
+        setTimeout(() => { shareBtn.textContent = original; }, 3000);
+      }
+    });
+  }
+</script>
 </body>
 </html>
