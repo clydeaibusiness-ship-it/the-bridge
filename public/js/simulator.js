@@ -132,8 +132,76 @@ function showScreen(id) {
 // ============================================================
 // GAME FLOW
 // ============================================================
-function showIntake() {
+async function showIntake() {
+  // Issue 3: Pre-populate simulator intake from shared intake data
+  await prefillSimulatorIntake();
   showScreen('screen-intake');
+}
+
+async function prefillSimulatorIntake() {
+  let prefilled = false;
+
+  // Field mapping: Navigation Chart intake field → simulator intake field
+  const fieldMap = {
+    industry: 'intake-industry',
+    description: 'intake-industry', // fallback: use description for industry
+    years: 'intake-years',
+    revenue: 'intake-revenue',
+    employees: 'intake-employees',
+    uncertainty: 'intake-challenge',
+    challenge: 'intake-challenge',
+    goal: 'intake-goal',
+    differentiator: 'intake-differentiator'
+  };
+
+  // 1. Try server-side unified intake
+  try {
+    const resp = await fetch('/api/intake/data');
+    if (resp.ok) {
+      const data = await resp.json();
+      if (data.intake) {
+        const a = data.intake;
+        // Map fields
+        if (a.industry) setVal('intake-industry', a.industry);
+        else if (a.description) setVal('intake-industry', a.description);
+        if (a.years) setVal('intake-years', a.years);
+        if (a.revenue) setVal('intake-revenue', a.revenue);
+        if (a.employees) setVal('intake-employees', a.employees);
+        if (a.challenge || a.uncertainty) setVal('intake-challenge', a.challenge || a.uncertainty);
+        if (a.goal) setVal('intake-goal', a.goal);
+        if (a.differentiator) setVal('intake-differentiator', a.differentiator);
+        prefilled = true;
+      }
+    }
+  } catch (e) {}
+
+  // 2. Fallback: localStorage
+  if (!prefilled) {
+    try {
+      const session = JSON.parse(localStorage.getItem('bridge_session'));
+      if (session && session.intakeAnswers) {
+        const a = session.intakeAnswers;
+        if (a.description) setVal('intake-industry', a.description);
+        if (a.years) setVal('intake-years', a.years);
+        if (a.revenue) setVal('intake-revenue', a.revenue);
+        if (a.employees) setVal('intake-employees', a.employees);
+        if (a.uncertainty) setVal('intake-challenge', a.uncertainty);
+        if (a.goal) setVal('intake-goal', a.goal);
+        if (a.differentiator) setVal('intake-differentiator', a.differentiator);
+        prefilled = true;
+      }
+    } catch (e) {}
+  }
+
+  if (prefilled) {
+    const notice = document.getElementById('sim-prefill-notice');
+    if (notice) notice.style.display = 'block';
+  }
+}
+
+function setVal(id, val) {
+  const el = document.getElementById(id);
+  if (el && val) el.value = val;
 }
 
 async function submitIntake(e) {
@@ -185,6 +253,25 @@ async function submitIntake(e) {
       businessContext: businessContext
     }));
   } catch (e) { /* localStorage unavailable */ }
+
+  // Issue 3: Save simulator intake answers to server for sharing with Navigation Chart
+  try {
+    fetch('/api/intake/save', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        answers: {
+          industry: answers.industry,
+          challenge: answers.challenge,
+          goal: answers.goal,
+          differentiator: answers.differentiator,
+          years: answers.years,
+          revenue: answers.revenue,
+          employees: answers.employees
+        }
+      })
+    }).catch(() => {}); // non-critical
+  } catch (e) {}
 
   // Reset state
   generatedSituations = [];

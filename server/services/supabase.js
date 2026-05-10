@@ -243,11 +243,188 @@ async function incrementCommanderUsage(userId) {
   }
 }
 
+// ---- Commander Messages ----
+
+async function saveCommanderMessage(userId, sessionId, role, content) {
+  const db = getClient();
+  if (!db) return null;
+
+  const { data, error } = await db
+    .from('commander_messages')
+    .insert({
+      user_id: userId,
+      session_id: sessionId,
+      message_role: role,
+      message_content: content
+    })
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Save commander message error:', error.message);
+    return null;
+  }
+  return data;
+}
+
+async function getCommanderHistory(userId, limit = 20) {
+  const db = getClient();
+  if (!db) return [];
+
+  const { data, error } = await db
+    .from('commander_messages')
+    .select('*')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
+    .limit(limit);
+
+  if (error) {
+    console.error('Get commander history error:', error.message);
+    return [];
+  }
+  // Return in chronological order
+  return (data || []).reverse();
+}
+
+async function getLatestCommanderSessionId(userId) {
+  const db = getClient();
+  if (!db) return null;
+
+  const { data, error } = await db
+    .from('commander_messages')
+    .select('session_id, created_at')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
+    .limit(1);
+
+  if (error || !data || data.length === 0) return null;
+  return { sessionId: data[0].session_id, lastMessageAt: data[0].created_at };
+}
+
+async function getCommanderMessagesForApi(userId, limit = 10) {
+  const db = getClient();
+  if (!db) return [];
+
+  const { data, error } = await db
+    .from('commander_messages')
+    .select('message_role, message_content')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
+    .limit(limit);
+
+  if (error) return [];
+  // Return in chronological order, formatted for Claude API
+  return (data || []).reverse().map(m => ({
+    role: m.message_role,
+    content: m.message_content
+  }));
+}
+
+// ---- Commander Summaries ----
+
+async function saveCommanderSummary(userId, sessionId, summary) {
+  const db = getClient();
+  if (!db) return null;
+
+  const { data, error } = await db
+    .from('commander_summaries')
+    .insert({
+      user_id: userId,
+      session_id: sessionId,
+      summary
+    })
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Save commander summary error:', error.message);
+    return null;
+  }
+  return data;
+}
+
+async function getLatestCommanderSummary(userId) {
+  const db = getClient();
+  if (!db) return null;
+
+  const { data, error } = await db
+    .from('commander_summaries')
+    .select('summary, created_at')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
+    .limit(1);
+
+  if (error || !data || data.length === 0) return null;
+  return data[0];
+}
+
+// ---- Unified Intake ----
+
+async function upsertIntake(userId, answers) {
+  const db = getClient();
+  if (!db) return null;
+
+  const record = {
+    user_id: userId,
+    business_name: answers.businessName || answers.business_name || null,
+    website_url: answers.websiteUrl || answers.website_url || null,
+    facebook_url: answers.facebookUrl || answers.facebook_url || null,
+    business_description: answers.description || answers.businessDescription || answers.business_description || null,
+    years_operating: answers.years || answers.yearsOperating || answers.years_operating || null,
+    revenue_range: answers.revenue || answers.revenueRange || answers.revenue_range || null,
+    team_size: answers.employees || answers.teamSize || answers.team_size || null,
+    repeat_vs_new: answers.customerType || answers.repeatVsNew || answers.repeat_vs_new || null,
+    switching_costs: answers.switchingCosts || answers.switching_costs || null,
+    systems_dependency: answers.systems || answers.systemsDependency || answers.systems_dependency || null,
+    financial_state: answers.financialState || answers.financial_state || null,
+    biggest_uncertainty: answers.uncertainty || answers.biggestUncertainty || answers.biggest_uncertainty || null,
+    success_in_one_year: answers.goal || answers.successInOneYear || answers.success_in_one_year || null,
+    website_content: answers.websiteContent || answers.website_content || null,
+    facebook_content: answers.facebookContent || answers.facebook_content || null,
+    industry: answers.industry || null,
+    differentiator: answers.differentiator || null,
+    challenge: answers.challenge || null,
+    updated_at: new Date().toISOString()
+  };
+
+  const { data, error } = await db
+    .from('user_intake')
+    .upsert(record, { onConflict: 'user_id' })
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Upsert intake error:', error.message);
+    return null;
+  }
+  return data;
+}
+
+async function getIntake(userId) {
+  const db = getClient();
+  if (!db) return null;
+
+  const { data, error } = await db
+    .from('user_intake')
+    .select('*')
+    .eq('user_id', userId)
+    .single();
+
+  if (error && error.code !== 'PGRST116') {
+    console.error('Get intake error:', error.message);
+  }
+  return data || null;
+}
+
 module.exports = {
   getClient,
   createUser, getUserByClerkId, updateMembershipTier, updateStripeCustomerId,
   saveGameState, getGameState,
   saveRunHistory, getRunHistory,
   upsertAnonymousEvent, getWeeklyEvents,
-  getCommanderUsage, incrementCommanderUsage
+  getCommanderUsage, incrementCommanderUsage,
+  saveCommanderMessage, getCommanderHistory, getLatestCommanderSessionId,
+  getCommanderMessagesForApi,
+  saveCommanderSummary, getLatestCommanderSummary,
+  upsertIntake, getIntake
 };

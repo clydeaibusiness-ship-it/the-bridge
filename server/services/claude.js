@@ -193,10 +193,14 @@ ${JSON.stringify(intakeAnswers, null, 2)}`;
 }
 
 /**
- * Commander chat — strategic advice with full business context
+ * Commander chat — strategic advice with full business context.
+ * Now supports conversation history passed as messages array.
  */
-async function commanderChat(message, gameState, runHistory, sessionContext) {
+async function commanderChat(message, gameState, runHistory, sessionContext, conversationHistory, summaryContext) {
   let context = '';
+  if (summaryContext) {
+    context += `Summary of previous conversation:\n${summaryContext}\n\n`;
+  }
   if (sessionContext) {
     context += sessionContext + '\n\n';
   }
@@ -208,7 +212,43 @@ ${JSON.stringify(runHistory, null, 2)}
 
 IMPORTANT: The player has already completed their intake. You have their full business context above. Do NOT ask them what business they are in, what they do, their revenue, team size, or any intake questions. Jump straight into strategic advice using the Big Book of Strategy framework. Address them directly and reference their specific business context in every response.`;
 
+  // If we have conversation history, use multi-turn messages
+  if (conversationHistory && conversationHistory.length > 0) {
+    const systemPrompt = getSystemPrompt();
+    const fullSystem = context
+      ? `${systemPrompt}\n\n---\n\n${context}`
+      : systemPrompt;
+
+    // Build messages array: history + new message
+    const messages = [
+      ...conversationHistory,
+      { role: 'user', content: message }
+    ];
+
+    const response = await client.messages.create({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 4000,
+      system: fullSystem,
+      messages
+    });
+
+    return response.content[0].text;
+  }
+
   return await callClaude(message, context);
+}
+
+/**
+ * Generate a summary of a conversation for long-term context
+ */
+async function generateConversationSummary(messages) {
+  const formatted = messages.map(m =>
+    `${m.role === 'user' ? 'Member' : 'Commander'}: ${m.content}`
+  ).join('\n\n');
+
+  const prompt = `Summarize this conversation between a business owner (Member) and their strategic advisor (Commander) in exactly three sentences. Focus on: what was discussed, what was decided or recommended, and any action items. Be specific to their business.\n\nConversation:\n${formatted}`;
+
+  return await callClaude(prompt);
 }
 
 /**
@@ -259,5 +299,6 @@ module.exports = {
   generateSituation,
   generateDebrief,
   commanderChat,
+  generateConversationSummary,
   generateChart
 };

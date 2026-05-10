@@ -32,6 +32,11 @@
     .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; }
     .loading-msg { font-family: var(--font-data); font-size: var(--text-xs); letter-spacing: 0.1em; color: #7a7570; text-transform: uppercase; text-align: center; margin-top: 12px; display: none; }
     .loading-msg.visible { display: block; }
+    .prefill-notice {
+      font-family: var(--font-ui); font-size: var(--text-sm); color: #3a3530;
+      background: #ece7dc; border: 1px solid #c8c0b0; border-radius: 6px;
+      padding: 12px 14px; margin-bottom: 8px; line-height: 1.55; display: none;
+    }
   </style>
 </head>
 <body>
@@ -62,28 +67,25 @@
     <h1 class="intake-heading" id="heading">Tell us about your business</h1>
     <p class="intake-sub" id="subheading">Your answers shape the Navigation Chart — a personalized strategic assessment built for your specific operation. Be specific.</p>
 
+    <div class="prefill-notice" id="prefill-notice">We found answers from your simulator profile. Review and update anything that has changed.</div>
+
     <form id="intake-form" class="intake-form">
-      <!-- Q1: Business Name -->
       <div class="field">
         <label for="f-businessName">What is the name of your business?</label>
         <input type="text" id="f-businessName" placeholder="e.g. Greenline Landscaping" required>
       </div>
-      <!-- Q2: Website URL -->
       <div class="field">
         <label for="f-websiteUrl">Do you have a business website? If so, paste the URL here.</label>
         <input type="url" id="f-websiteUrl" placeholder="https://yourbusiness.com">
       </div>
-      <!-- Q3: Facebook URL -->
       <div class="field">
         <label for="f-facebookUrl">Do you have a Facebook business page? If so, paste the URL here.</label>
         <input type="url" id="f-facebookUrl" placeholder="https://facebook.com/yourbusinesspage">
       </div>
-      <!-- Q4: What you do -->
       <div class="field">
         <label for="f-description">Describe your business in one or two sentences — what you do and exactly who you do it for.</label>
         <textarea id="f-description" rows="2" required></textarea>
       </div>
-      <!-- Q5: Years operating -->
       <div class="field">
         <label for="f-years">How long have you been operating?</label>
         <select id="f-years" required>
@@ -94,7 +96,6 @@
           <option value="7_plus">7 or more years</option>
         </select>
       </div>
-      <!-- Q6: Revenue -->
       <div class="field">
         <label for="f-revenue">Current annual revenue range?</label>
         <select id="f-revenue" required>
@@ -106,7 +107,6 @@
           <option value="over_500k">Over $500K</option>
         </select>
       </div>
-      <!-- Q7: Team size -->
       <div class="field">
         <label for="f-employees">How many people work in the business?</label>
         <select id="f-employees" required>
@@ -117,7 +117,6 @@
           <option value="15_plus">More than 15 people</option>
         </select>
       </div>
-      <!-- Q8: Repeat vs new -->
       <div class="field">
         <label for="f-customerType">How would you describe your customer base?</label>
         <select id="f-customerType" required>
@@ -127,7 +126,6 @@
           <option value="mostly_new">Mostly one-time — acquisition is constant</option>
         </select>
       </div>
-      <!-- Q9: Switching costs -->
       <div class="field">
         <label for="f-switchingCosts">How easy is it for a customer to leave you for a competitor?</label>
         <select id="f-switchingCosts" required>
@@ -137,7 +135,6 @@
           <option value="very_hard">Very hard — they have too much invested</option>
         </select>
       </div>
-      <!-- Q10: Systems -->
       <div class="field">
         <label for="f-systems">How dependent is the business on you personally?</label>
         <select id="f-systems" required>
@@ -147,7 +144,6 @@
           <option value="well_documented">Well documented — others can run it</option>
         </select>
       </div>
-      <!-- Q11: Financial state -->
       <div class="field">
         <label for="f-financialState">What best describes your current financial state?</label>
         <select id="f-financialState" required>
@@ -157,12 +153,10 @@
           <option value="tight">Tight — watching every dollar</option>
         </select>
       </div>
-      <!-- Q12: Biggest uncertainty -->
       <div class="field">
         <label for="f-uncertainty">What is your single biggest business uncertainty right now?</label>
         <textarea id="f-uncertainty" rows="2" required></textarea>
       </div>
-      <!-- Q13: Success in one year -->
       <div class="field">
         <label for="f-goal">What does success look like for your business in one year — specifically?</label>
         <textarea id="f-goal" rows="2" required></textarea>
@@ -176,23 +170,63 @@
   <script>
     const FIELDS = ['businessName','websiteUrl','facebookUrl','description','years','revenue','employees','customerType','switchingCosts','systems','financialState','uncertainty','goal'];
 
-    // Update mode: pre-populate
     const isUpdate = new URLSearchParams(window.location.search).get('mode') === 'update';
-    if (isUpdate) {
-      document.getElementById('btn-submit').textContent = 'Update my profile →';
-      document.getElementById('heading').textContent = 'Update your answers';
-      document.getElementById('subheading').textContent = 'Change any answers that have shifted. Your Navigation Chart will regenerate with the new information.';
+
+    // Pre-populate from existing data (Issue 3: shared intake)
+    async function prefillIntake() {
+      let prefilled = false;
+      let source = null;
+
+      // 1. Try server-side unified intake (database)
       try {
-        const session = JSON.parse(localStorage.getItem('bridge_session'));
-        if (session && session.intakeAnswers) {
-          const a = session.intakeAnswers;
-          FIELDS.forEach(f => {
-            const el = document.getElementById('f-' + f);
-            if (el && a[f]) el.value = a[f];
-          });
+        const resp = await fetch('/api/intake/data');
+        if (resp.ok) {
+          const data = await resp.json();
+          if (data.intake) {
+            FIELDS.forEach(f => {
+              const el = document.getElementById('f-' + f);
+              if (el && data.intake[f]) el.value = data.intake[f];
+            });
+            prefilled = true;
+            source = 'database';
+          }
         }
       } catch (e) {}
+
+      // 2. Fallback: try localStorage
+      if (!prefilled) {
+        try {
+          const session = JSON.parse(localStorage.getItem('bridge_session'));
+          if (session && session.intakeAnswers) {
+            const a = session.intakeAnswers;
+            FIELDS.forEach(f => {
+              const el = document.getElementById('f-' + f);
+              if (el && a[f]) el.value = a[f];
+            });
+            prefilled = true;
+            source = 'localStorage';
+          }
+        } catch (e) {}
+      }
+
+      if (prefilled) {
+        const notice = document.getElementById('prefill-notice');
+        if (isUpdate) {
+          notice.textContent = 'Your previous answers are loaded. Update anything that has changed.';
+        } else {
+          notice.textContent = 'We found answers from your simulator profile. Review and update anything that has changed.';
+        }
+        notice.style.display = 'block';
+      }
+
+      if (isUpdate) {
+        document.getElementById('btn-submit').textContent = 'Update my profile →';
+        document.getElementById('heading').textContent = 'Update your answers';
+        document.getElementById('subheading').textContent = 'Change any answers that have shifted. Your Navigation Chart will regenerate with the new information.';
+      }
     }
+
+    prefillIntake();
 
     document.getElementById('intake-form').addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -202,11 +236,9 @@
       loading.textContent = isUpdate ? 'Updating your profile…' : 'Analyzing your business…';
       loading.classList.add('visible');
 
-      // Collect answers
       const answers = {};
       FIELDS.forEach(f => { answers[f] = document.getElementById('f-' + f).value; });
 
-      // Scan URLs in parallel with intake API call
       const scanPromise = (answers.websiteUrl || answers.facebookUrl)
         ? fetch('/api/intake/scan-urls', {
             method: 'POST',
@@ -217,7 +249,6 @@
         : Promise.resolve({ websiteContent: '', facebookContent: '' });
 
       try {
-        // Run intake + scan in parallel
         const [intakeResp, scannedContent] = await Promise.all([
           fetch('/api/game/intake', {
             method: 'POST',
@@ -230,10 +261,18 @@
         if (!intakeResp.ok) throw new Error(`HTTP ${intakeResp.status}`);
         const result = await intakeResp.json();
 
-        // Merge with existing session (preserve run history, simulator state)
+        // Save intake to server (for logged-in users)
+        try {
+          await fetch('/api/intake/save', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ answers, scannedContent })
+          });
+        } catch (e) { /* non-critical — localStorage still works */ }
+
         let existing = {};
         try { existing = JSON.parse(localStorage.getItem('bridge_session')) || {}; } catch (e) {}
-        delete existing.chartSections; // force chart regeneration
+        delete existing.chartSections;
 
         localStorage.setItem('bridge_session', JSON.stringify({
           ...existing,

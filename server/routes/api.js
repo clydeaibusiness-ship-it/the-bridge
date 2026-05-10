@@ -1,10 +1,19 @@
 const express = require('express');
 const router = express.Router();
-const { personalizeIntake, generateSituation, generateDebrief, commanderChat, generateChart } = require('../services/claude');
+const crypto = require('crypto');
+const { personalizeIntake, generateSituation, generateDebrief, commanderChat, generateConversationSummary, generateChart } = require('../services/claude');
 const { 
   saveGameState, getGameState, saveRunHistory, getRunHistory,
-  upsertAnonymousEvent, getCommanderUsage, incrementCommanderUsage
+  upsertAnonymousEvent, getCommanderUsage, incrementCommanderUsage,
+  saveCommanderMessage, getCommanderHistory, getLatestCommanderSessionId,
+  getCommanderMessagesForApi,
+  saveCommanderSummary, getLatestCommanderSummary,
+  upsertIntake, getIntake
 } = require('../services/supabase');
+const { extractUser, requireAuth } = require('../middleware/auth');
+
+// Apply auth extraction to all routes
+router.use(extractUser);
 
 // ---- Game API (no auth required) ----
 
@@ -41,8 +50,13 @@ router.post('/game/intake', async (req, res) => {
     if (!answers) return res.status(400).json({ error: 'Intake answers required' });
 
     const result = await personalizeIntake(answers);
-    // Ensure industry_key is present
     if (!result.industry_key) result.industry_key = 'lawn_care';
+
+    // If user is authenticated, save intake to unified table
+    if (req.dbUser) {
+      await upsertIntake(req.dbUser.id, answers);
+    }
+
     res.json(result);
   } catch (e) {
     console.error('Intake error:', e.message);
@@ -58,8 +72,6 @@ router.post('/game/intake', async (req, res) => {
 /**
  * POST /api/game/situation
  * Generate a single personalized situation using Claude API
- * Receives: businessContext, situationNumber, previousThemes
- * Falls back to static situations.json on failure
  */
 router.post('/game/situation', async (req, res) => {
   const { businessContext, situationNumber, previousThemes } = req.body;
@@ -77,7 +89,6 @@ router.post('/game/situation', async (req, res) => {
     res.json(situation);
   } catch (e) {
     console.error(`Situation ${situationNumber} generation failed:`, e.message);
-    // Fall back to static situation
     try {
       const fs = require('fs');
       const path = require('path');
@@ -100,19 +111,16 @@ router.post('/game/situation', async (req, res) => {
 
 /**
  * POST /api/game/debrief
- * Run-end debrief — accepts both old format (run_history) and new format (intakeAnswers/runSummary)
+ * Run-end debrief
  */
 router.post('/game/debrief', async (req, res) => {
   try {
     const { run_history, intake_answers, intakeAnswers, runSummary } = req.body;
-
-    // Support new payload format from redesigned game
     const history = run_history || runSummary;
     const intake = intake_answers || intakeAnswers;
 
     if (!history) return res.status(400).json({ error: 'Run data required' });
 
-    // If new format, build a targeted prompt
     let debriefText;
     if (runSummary) {
       const { callClaude } = require('../services/claude');
@@ -149,32 +157,23 @@ Your next run: [one sentence and a question]
 
 /**
  * GET /api/game/state
- * Load saved game state (requires auth cookie)
  */
 router.get('/game/state', async (req, res) => {
-  // TODO: Extract user from Clerk session
-  // For now, return null (no saved state)
   res.json(null);
 });
 
 /**
  * POST /api/game/state
- * Save game state
  */
 router.post('/game/state', async (req, res) => {
-  // TODO: Extract user from Clerk session, save to Supabase
   res.json({ saved: true });
 });
 
 /**
  * POST /api/game/save
- * Save game state (new format from redesigned game)
  */
 router.post('/game/save', async (req, res) => {
   try {
-    const { stats, mission, passengers, systems } = req.body;
-    // For unauthenticated users, just acknowledge the save
-    // TODO: When auth is wired, save to Supabase game_state table
     res.json({ success: true });
   } catch (e) {
     console.error('Save error:', e.message);
@@ -184,63 +183,166 @@ router.post('/game/save', async (req, res) => {
 
 // ---- Analytics (no auth) ----
 
-/**
- * POST /api/analytics/event
- * Anonymous event logging
- */
 router.post('/analytics/event', async (req, res) => {
   try {
     await upsertAnonymousEvent(req.body);
     res.json({ ok: true });
   } catch (e) {
-    // Silent fail — never break the game for analytics
     res.json({ ok: true });
   }
 });
 
-// ---- Member API (auth required) ----
+// ---- Commander API ----
 
 /**
  * GET /api/member/commander/sessions
  * Get Commander session usage
  */
 router.get('/member/commander/sessions', async (req, res) => {
-  // TODO: Auth check
+  if (req.dbUser) {
+    try {
+      const usage = await getCommanderUsage(req.dbUser.id);
+      return res.json(usage);
+    } catch (e) {}
+  }
   res.json({ used: 0, max: 20 });
 });
 
 /**
+ * GET /api/member/commander/history
+ * Fetch last 20 commander messages for the authenticated user
+ */
+router.get('/member/commander/history', async (req, res) => {
+  if (!req.dbUser) {
+    return res.json({ messages: [], sessionId: null });
+  }
+
+  try {
+    const messages = await getCommanderHistory(req.dbUser.id, 20);
+    const sessionInfo = await getLatestCommanderSessionId(req.dbUser.id);
+    
+    // Check if we need a summary (>24h gap)
+    let summary = null;
+    if (sessionInfo && sessionInfo.lastMessageAt) {
+      const lastTime = new Date(sessionInfo.lastMessageAt).getTime();
+      const now = Date.now();
+      const hoursSince = (now - lastTime) / (1000 * 60 * 60);
+      
+      if (hoursSince > 24) {
+        // Check if we already have a summary for this gap
+        const existingSummary = await getLatestCommanderSummary(req.dbUser.id);
+        if (existingSummary) {
+          summary = existingSummary.summary;
+        } else if (messages.length > 0) {
+          // Generate summary in background
+          try {
+            const historyForSummary = messages.map(m => ({
+              role: m.message_role,
+              content: m.message_content
+            }));
+            const summaryText = await generateConversationSummary(historyForSummary);
+            await saveCommanderSummary(req.dbUser.id, sessionInfo.sessionId, summaryText);
+            summary = summaryText;
+          } catch (e) {
+            console.error('Summary generation failed:', e.message);
+          }
+        }
+      }
+    }
+
+    res.json({
+      messages: messages.map(m => ({
+        role: m.message_role,
+        content: m.message_content,
+        timestamp: m.created_at
+      })),
+      sessionId: sessionInfo?.sessionId || null,
+      summary
+    });
+  } catch (e) {
+    console.error('Commander history error:', e.message);
+    res.json({ messages: [], sessionId: null });
+  }
+});
+
+/**
  * POST /api/member/commander/message
- * Send message to Commander
+ * Send message to Commander — now with history persistence + context
  */
 router.post('/member/commander/message', async (req, res) => {
   try {
     const { message, sessionContext } = req.body;
     if (!message) return res.status(400).json({ error: 'Message required' });
 
+    let conversationHistory = [];
+    let sessionId = null;
+    let summaryContext = null;
+
+    // If authenticated, load conversation history and save messages
+    if (req.dbUser) {
+      // Get or create session ID
+      const sessionInfo = await getLatestCommanderSessionId(req.dbUser.id);
+      
+      if (sessionInfo) {
+        const lastTime = new Date(sessionInfo.lastMessageAt).getTime();
+        const hoursSince = (Date.now() - lastTime) / (1000 * 60 * 60);
+        
+        if (hoursSince > 24) {
+          // New session after long gap — get summary of old conversation
+          const existingSummary = await getLatestCommanderSummary(req.dbUser.id);
+          if (existingSummary) {
+            summaryContext = existingSummary.summary;
+          }
+          sessionId = crypto.randomUUID();
+        } else {
+          sessionId = sessionInfo.sessionId;
+        }
+      } else {
+        sessionId = crypto.randomUUID();
+      }
+
+      // Get last 10 messages for API context
+      conversationHistory = await getCommanderMessagesForApi(req.dbUser.id, 10);
+
+      // Save user message
+      await saveCommanderMessage(req.dbUser.id, sessionId, 'user', message);
+    }
+
     const gameState = {};
     const runHistory = [];
-    const response = await commanderChat(message, gameState, runHistory, sessionContext);
+    const response = await commanderChat(
+      message,
+      gameState,
+      runHistory,
+      sessionContext || '',
+      conversationHistory,
+      summaryContext
+    );
+
+    // Save assistant response
+    if (req.dbUser && sessionId) {
+      await saveCommanderMessage(req.dbUser.id, sessionId, 'assistant', response);
+    }
 
     res.json({ response });
   } catch (e) {
-    console.error('Commander error:', e.message);
-    res.status(500).json({ error: 'Commander unavailable' });
+    console.error('Commander error:', e.message, e.stack);
+    res.status(500).json({ 
+      error: 'I was not able to process that just now. Could you rephrase or try again in a moment?' 
+    });
   }
 });
 
 /**
  * GET /api/member/runs
- * Get run history
  */
 router.get('/member/runs', async (req, res) => {
-  // TODO: Auth check
   res.json([]);
 });
 
 /**
  * POST /api/member/chart/generate
- * Generate Navigation Chart from businessContext + intakeAnswers
+ * Generate Navigation Chart
  */
 router.post('/member/chart/generate', async (req, res) => {
   try {
@@ -296,6 +398,80 @@ router.post('/intake/scan-urls', async (req, res) => {
   results.websiteContent = website;
   results.facebookContent = facebook;
   res.json(results);
+});
+
+// ---- Unified Intake API ----
+
+/**
+ * GET /api/intake/data
+ * Fetch existing intake data for authenticated user
+ */
+router.get('/intake/data', async (req, res) => {
+  if (!req.dbUser) {
+    return res.json({ intake: null });
+  }
+
+  try {
+    const intake = await getIntake(req.dbUser.id);
+    if (!intake) return res.json({ intake: null });
+
+    // Map DB columns back to frontend field names
+    res.json({
+      intake: {
+        businessName: intake.business_name,
+        websiteUrl: intake.website_url,
+        facebookUrl: intake.facebook_url,
+        description: intake.business_description,
+        years: intake.years_operating,
+        revenue: intake.revenue_range,
+        employees: intake.team_size,
+        customerType: intake.repeat_vs_new,
+        switchingCosts: intake.switching_costs,
+        systems: intake.systems_dependency,
+        financialState: intake.financial_state,
+        uncertainty: intake.biggest_uncertainty,
+        goal: intake.success_in_one_year,
+        websiteContent: intake.website_content,
+        facebookContent: intake.facebook_content,
+        industry: intake.industry,
+        differentiator: intake.differentiator,
+        challenge: intake.challenge,
+        updatedAt: intake.updated_at
+      },
+      source: 'database'
+    });
+  } catch (e) {
+    console.error('Get intake error:', e.message);
+    res.json({ intake: null });
+  }
+});
+
+/**
+ * POST /api/intake/save
+ * Save intake data for authenticated user
+ */
+router.post('/intake/save', async (req, res) => {
+  if (!req.dbUser) {
+    return res.status(401).json({ error: 'Authentication required to save intake' });
+  }
+
+  try {
+    const { answers, scannedContent } = req.body;
+    if (!answers) return res.status(400).json({ error: 'Answers required' });
+
+    // Merge scanned content into answers
+    const merged = { ...answers };
+    if (scannedContent) {
+      merged.websiteContent = scannedContent.websiteContent || '';
+      merged.facebookContent = scannedContent.facebookContent || '';
+    }
+
+    await upsertIntake(req.dbUser.id, merged);
+    res.json({ saved: true });
+  } catch (e) {
+    console.error('Save intake error:', e.message);
+    res.status(500).json({ error: 'Save failed' });
+  }
 });
 
 module.exports = router;

@@ -74,9 +74,19 @@
       </div>
 
       <!-- CENTER: Commander -->
-      <div class="dash-panel dash-commander">
+      <div class="dash-panel dash-commander" id="commander-panel">
         <div class="dash-commander-header">
           <h2 class="dash-commander-title">The Commander</h2>
+          <button class="commander-fullscreen-btn" id="commander-fullscreen-btn" aria-label="Toggle fullscreen">
+            <svg id="fullscreen-expand-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#7a7570" stroke-width="1.5" stroke-linecap="round">
+              <line x1="1" y1="1" x2="5" y2="5"/><line x1="1" y1="1" x2="5" y2="1"/><line x1="1" y1="1" x2="1" y2="5"/>
+              <line x1="15" y1="15" x2="11" y2="11"/><line x1="15" y1="15" x2="11" y2="15"/><line x1="15" y1="15" x2="15" y2="11"/>
+            </svg>
+            <svg id="fullscreen-compress-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#7a7570" stroke-width="1.5" stroke-linecap="round" style="display:none;">
+              <line x1="5" y1="5" x2="1" y2="1"/><line x1="5" y1="5" x2="1" y2="5"/><line x1="5" y1="5" x2="5" y2="1"/>
+              <line x1="11" y1="11" x2="15" y2="15"/><line x1="11" y1="11" x2="15" y2="11"/><line x1="11" y1="11" x2="11" y2="15"/>
+            </svg>
+          </button>
         </div>
         <div class="dash-commander-messages" id="commander-messages"></div>
         <div class="dash-commander-sessions" id="commander-sessions">20 of 20 sessions remaining this month</div>
@@ -90,18 +100,15 @@
           <input type="text" id="commander-input" placeholder="Ask the Commander anything about your business...">
           <button class="dash-btn-send" id="commander-send">Send</button>
         </div>
+        <div class="commander-fullscreen-hint" id="fullscreen-hint" style="display:none;">Press Esc to exit fullscreen</div>
       </div>
 
       <!-- RIGHT -->
       <div class="dash-right">
-
-        <!-- Chart prompt (no intake yet) -->
         <div class="dash-panel dash-chart-prompt" id="chart-prompt">
           <p>You haven't generated a Navigation Chart yet. Complete the full intake to receive your personalized strategic assessment.</p>
           <a href="/intake" class="dash-btn-primary">Start the Intake</a>
         </div>
-
-        <!-- Chart card (after intake) -->
         <div class="dash-panel dash-chart-card" id="chart-card" style="display:none;">
           <div class="dash-section-title">Navigation Chart</div>
           <div class="dash-chart-content" id="chart-content">
@@ -112,16 +119,12 @@
             <a href="/intake?mode=update" class="dash-btn-update">Update your answers</a>
           </div>
         </div>
-
-        <!-- Run History -->
         <div class="dash-panel dash-run-history">
           <div class="dash-section-title">Run History</div>
           <div id="run-history-list" class="dash-run-list">
             <p class="dash-run-empty">No simulator sessions completed yet. Run the simulator to see your history here.</p>
           </div>
         </div>
-
-        <!-- Grant Radar -->
         <div class="dash-panel dash-grant-radar">
           <div class="dash-section-title">Grant Radar</div>
           <div class="dash-grant-body">
@@ -134,6 +137,7 @@
 
   <script>
     let sessionData = null;
+    let isFullscreen = false;
 
     async function initDashboard() {
       // Auth
@@ -149,7 +153,6 @@
 
       // Load session
       try { sessionData = JSON.parse(localStorage.getItem('bridge_session')); } catch (e) {}
-      console.log('Dashboard session:', sessionData ? 'loaded' : 'empty', sessionData?.completedAt ? 'intake done' : 'no intake');
 
       if (sessionData) {
         const name = sessionData.businessName || sessionData.shipName;
@@ -164,7 +167,6 @@
           if (r.switchingCosts !== undefined) document.getElementById('dash-switching').textContent = `${r.switchingCosts}%`;
         }
 
-        // Show chart card if intake was completed
         if (sessionData.completedAt) {
           document.getElementById('chart-prompt').style.display = 'none';
           const chartCard = document.getElementById('chart-card');
@@ -179,17 +181,53 @@
         }
       }
 
-      // Set Commander welcome message based on session state
+      // Load Commander history from server, then set welcome
+      await loadCommanderHistory();
+
+      // Bind fullscreen
+      bindFullscreen();
+    }
+
+    // ---- Commander History (Issue 2) ----
+    async function loadCommanderHistory() {
+      const el = document.getElementById('commander-messages');
+
+      try {
+        const resp = await fetch('/api/member/commander/history');
+        if (resp.ok) {
+          const data = await resp.json();
+
+          // Show summary context if resuming after 24h gap
+          if (data.summary) {
+            const summaryMsg = document.createElement('div');
+            summaryMsg.className = 'dash-msg dash-msg-system';
+            summaryMsg.textContent = `Previous session summary: ${data.summary}`;
+            el.appendChild(summaryMsg);
+          }
+
+          if (data.messages && data.messages.length > 0) {
+            // Render persisted history
+            data.messages.forEach(m => {
+              addMessage(m.content, m.role === 'user' ? 'user' : 'commander');
+            });
+            // Hide quick prompts since there's already a conversation
+            document.getElementById('commander-prompts').style.display = 'none';
+            return;
+          }
+        }
+      } catch (e) {
+        console.log('Could not load commander history:', e.message);
+      }
+
+      // No history — show welcome message
       setCommanderWelcome();
     }
 
-    // ---- Commander welcome ----
     function setCommanderWelcome() {
       const el = document.getElementById('commander-messages');
       if (sessionData && sessionData.businessContext) {
         const ctx = sessionData.businessContext;
         const a = sessionData.intakeAnswers || {};
-        const name = sessionData.businessName || 'your business';
         addMessage(`Welcome back. Based on your intake, I can see you're running ${ctx.businessType} and your most pressing challenge is ${ctx.primaryUncertainty || a.uncertainty || 'growth'}. What would you like to work on?`, 'commander');
       } else {
         addMessage("I don't have your intake data loaded — can you complete the intake form first so I have your full context?", 'commander');
@@ -226,7 +264,6 @@
     function renderChart(sections) {
       const container = document.getElementById('chart-content');
       container.innerHTML = '';
-      // Show first section as preview on dashboard
       if (sections.length > 0) {
         const div = document.createElement('div');
         div.className = 'dash-chart-section';
@@ -241,7 +278,7 @@
       }
     }
 
-    // ---- Commander ----
+    // ---- Commander Chat (Issues 1 + 2) ----
     const commanderInput = document.getElementById('commander-input');
     const commanderSend = document.getElementById('commander-send');
     const commanderMessages = document.getElementById('commander-messages');
@@ -303,6 +340,10 @@ Biggest uncertainty: ${a.uncertainty || 'unknown'}
       if (!text) return;
       commanderInput.value = '';
       commanderSend.disabled = true;
+
+      // Hide quick prompts after first message
+      document.getElementById('commander-prompts').style.display = 'none';
+
       addMessage(text, 'user');
 
       const loadingMsg = document.createElement('div');
@@ -318,15 +359,22 @@ Biggest uncertainty: ${a.uncertainty || 'unknown'}
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ message: text, sessionContext: getSessionContext() })
         });
-        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+
         const data = await resp.json();
         commanderMessages.removeChild(loadingMsg);
-        addMessage(data.response, 'commander');
+
+        if (!resp.ok || data.error) {
+          // Issue 1, Cause C: friendly error instead of "temporarily unavailable"
+          addMessage(data.error || 'I was not able to process that just now. Could you rephrase or try again in a moment?', 'commander');
+        } else {
+          addMessage(data.response, 'commander');
+        }
       } catch (err) {
         commanderMessages.removeChild(loadingMsg);
-        addMessage('The Commander is temporarily unavailable. Please try again.', 'commander');
+        addMessage('I was not able to process that just now. Could you rephrase or try again in a moment?', 'commander');
       }
       commanderSend.disabled = false;
+      commanderInput.focus();
     }
 
     commanderSend.addEventListener('click', sendCommanderMessage);
@@ -339,6 +387,68 @@ Biggest uncertainty: ${a.uncertainty || 'unknown'}
         sendCommanderMessage();
       });
     });
+
+    // ---- Fullscreen Commander (Issue 4) ----
+    function bindFullscreen() {
+      const btn = document.getElementById('commander-fullscreen-btn');
+      btn.addEventListener('click', toggleFullscreen);
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && isFullscreen) {
+          exitFullscreen();
+        }
+      });
+    }
+
+    function toggleFullscreen() {
+      if (isFullscreen) {
+        exitFullscreen();
+      } else {
+        enterFullscreen();
+      }
+    }
+
+    function enterFullscreen() {
+      isFullscreen = true;
+      const panel = document.getElementById('commander-panel');
+      panel.classList.add('commander-fullscreen');
+
+      // Hide other panels
+      document.querySelectorAll('.dash-panel:not(.dash-commander), .dash-header').forEach(el => {
+        el.style.display = 'none';
+      });
+
+      // Swap icons
+      document.getElementById('fullscreen-expand-icon').style.display = 'none';
+      document.getElementById('fullscreen-compress-icon').style.display = 'block';
+
+      // Show hint
+      const hint = document.getElementById('fullscreen-hint');
+      hint.style.display = 'block';
+      setTimeout(() => { hint.style.display = 'none'; }, 5000);
+
+      commanderMessages.scrollTop = commanderMessages.scrollHeight;
+      commanderInput.focus();
+    }
+
+    function exitFullscreen() {
+      isFullscreen = false;
+      const panel = document.getElementById('commander-panel');
+      panel.classList.remove('commander-fullscreen');
+
+      // Show other panels
+      document.querySelectorAll('.dash-panel:not(.dash-commander), .dash-header').forEach(el => {
+        el.style.display = '';
+      });
+
+      // Swap icons
+      document.getElementById('fullscreen-expand-icon').style.display = 'block';
+      document.getElementById('fullscreen-compress-icon').style.display = 'none';
+
+      // Hide hint
+      document.getElementById('fullscreen-hint').style.display = 'none';
+
+      commanderMessages.scrollTop = commanderMessages.scrollHeight;
+    }
 
     initDashboard();
   </script>

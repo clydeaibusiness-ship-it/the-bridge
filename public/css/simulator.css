@@ -4,6 +4,19 @@
    Mobile-first. Scrollable page. 44px min tap targets.
    ============================================================ */
 
+/* Pre-fill notice for shared intake data */
+.sim-prefill-notice {
+  font-family: var(--font-ui);
+  font-size: 0.8125rem;
+  color: var(--color-text, #3a3530);
+  background: rgba(200, 192, 176, 0.2);
+  border: 1px solid rgba(200, 192, 176, 0.5);
+  border-radius: 6px;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  line-height: 1.55;
+}
+
 /* --- SIMULATOR LIGHT THEME OVERRIDES --- */
 :root {
   --void:        #f5f0e8;

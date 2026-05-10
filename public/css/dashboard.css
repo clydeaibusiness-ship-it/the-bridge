@@ -202,17 +202,79 @@
   flex-direction: column;
   min-height: 0;
   background: #ece7dc;
+  transition: all 0.2s ease;
 }
 .dash-commander-header {
   padding-bottom: 12px;
   border-bottom: 1px solid #c8c0b0;
   margin-bottom: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 .dash-commander-title {
   font-family: var(--font-ui);
   font-size: var(--text-base);
   font-weight: 500;
   color: #0a0a0f;
+}
+
+/* Fullscreen toggle button */
+.commander-fullscreen-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 2px;
+  transition: background 0.15s;
+}
+.commander-fullscreen-btn:hover {
+  background: rgba(0,0,0,0.05);
+}
+.commander-fullscreen-btn:hover svg line {
+  stroke: #3a3530;
+}
+
+/* Fullscreen mode */
+.commander-fullscreen {
+  position: fixed !important;
+  inset: 0;
+  z-index: 200;
+  background: #f5f0e8 !important;
+  padding: 20px;
+  border: none;
+  border-radius: 0;
+  max-width: none;
+}
+.commander-fullscreen .dash-commander-messages {
+  max-height: none;
+  flex: 1;
+}
+.commander-fullscreen-hint {
+  font-family: var(--font-data);
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  color: #7a7570;
+  text-align: center;
+  padding: 4px 0 0;
+}
+
+/* System message (summary) */
+.dash-msg-system {
+  background: transparent;
+  align-self: center;
+  text-align: center;
+  font-family: var(--font-data);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  color: #7a7570;
+  padding: 8px 14px;
+  border: 1px dashed #c8c0b0;
+  border-radius: 2px;
+  max-width: 90%;
 }
 .dash-commander-messages {
   flex: 1;
