@@ -437,6 +437,14 @@ function confirmChoice() {
   // 5. Update display
   updateResourceDisplay();
 
+  // Save resource state to localStorage after every decision (so dashboard shows progress)
+  try {
+    const session = JSON.parse(localStorage.getItem('bridge_session')) || {};
+    session.simulatorResources = { ...resources };
+    session.simulatorProgress = { currentSituation: currentSituation + 1, totalSituations: 5 };
+    localStorage.setItem('bridge_session', JSON.stringify(session));
+  } catch (e) {}
+
   // Show outcome
   showOutcome(sit, opt, prev);
 

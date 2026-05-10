@@ -161,10 +161,22 @@
 
         if (sessionData.simulatorResources) {
           const r = sessionData.simulatorResources;
-          if (r.capital !== undefined) document.getElementById('dash-capital').textContent = `$${r.capital.toLocaleString()}`;
-          if (r.customers !== undefined) document.getElementById('dash-customers').textContent = `${r.customers} / 40`;
-          if (r.positioning !== undefined) document.getElementById('dash-positioning').textContent = `${r.positioning}%`;
-          if (r.switchingCosts !== undefined) document.getElementById('dash-switching').textContent = `${r.switchingCosts}%`;
+          if (r.capital !== undefined) {
+            document.getElementById('dash-capital').textContent = `$${r.capital.toLocaleString()}`;
+            document.getElementById('dash-capital-bar').style.width = `${(r.capital / 25000) * 100}%`;
+          }
+          if (r.customers !== undefined) {
+            document.getElementById('dash-customers').textContent = `${r.customers} / 40`;
+            document.getElementById('dash-customers-bar').style.width = `${(r.customers / 40) * 100}%`;
+          }
+          if (r.positioning !== undefined) {
+            document.getElementById('dash-positioning').textContent = `${r.positioning}%`;
+            document.getElementById('dash-positioning-bar').style.width = `${r.positioning}%`;
+          }
+          if (r.switchingCosts !== undefined) {
+            document.getElementById('dash-switching').textContent = `${r.switchingCosts}%`;
+            document.getElementById('dash-switching-bar').style.width = `${r.switchingCosts}%`;
+          }
         }
 
         if (sessionData.completedAt) {

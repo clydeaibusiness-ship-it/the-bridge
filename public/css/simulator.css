@@ -443,7 +443,7 @@ html.sim-active, .sim-active body {
 .results-scroll {
   width: 100%;
   max-width: 520px;
-  padding: 24px 16px 32px;
+  padding: 120px 16px 32px; /* 120px top clears the fixed resource bar on mobile */
 }
 .results-scroll {
   display: flex;
