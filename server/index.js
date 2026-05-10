@@ -63,7 +63,22 @@ app.use('/api/payments', paymentRoutes);
 app.use('/api/grant-radar', grantRoutes);
 app.use('/api/admin', grantRoutes);
 
-// Page routes
+// Auth + tier gate middleware for protected pages
+const { extractUser } = require('./middleware/auth');
+
+async function requirePaidMember(req, res, next) {
+  await new Promise((resolve) => extractUser(req, res, resolve));
+  
+  if (!req.dbUser) {
+    return res.redirect('/login');
+  }
+  if (req.dbUser.membership_tier !== 'ensign') {
+    return res.redirect('/subscribe');
+  }
+  next();
+}
+
+// Public pages — no gate
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '../pages/index.html'));
 });
@@ -72,41 +87,41 @@ app.get('/game', (req, res) => {
   res.sendFile(path.join(__dirname, '../pages/game.html'));
 });
 
-app.get('/dashboard', (req, res) => {
-  // TODO: Clerk auth check — redirect to /login if not authenticated
-  res.sendFile(path.join(__dirname, '../pages/dashboard.html'));
-});
-
 app.get('/login', (req, res) => {
   res.sendFile(path.join(__dirname, '../pages/login.html'));
-});
-
-app.get('/config-panel', (req, res) => {
-  res.sendFile(path.join(__dirname, '../pages/config-panel.html'));
-});
-
-app.get('/simulator', (req, res) => {
-  res.sendFile(path.join(__dirname, '../pages/simulator.html'));
-});
-
-app.get('/intake', (req, res) => {
-  res.sendFile(path.join(__dirname, '../pages/intake.html'));
-});
-
-app.get('/chart', (req, res) => {
-  res.sendFile(path.join(__dirname, '../pages/navigation-chart.html'));
-});
-
-app.get('/navigation-chart', (req, res) => {
-  res.sendFile(path.join(__dirname, '../pages/navigation-chart.html'));
 });
 
 app.get('/subscribe', (req, res) => {
   res.sendFile(path.join(__dirname, '../pages/subscribe.html'));
 });
 
-app.get('/grant-radar', (req, res) => {
+// Protected pages — must be logged in + paid
+app.get('/dashboard', requirePaidMember, (req, res) => {
+  res.sendFile(path.join(__dirname, '../pages/dashboard.html'));
+});
+
+app.get('/simulator', requirePaidMember, (req, res) => {
+  res.sendFile(path.join(__dirname, '../pages/simulator.html'));
+});
+
+app.get('/intake', requirePaidMember, (req, res) => {
+  res.sendFile(path.join(__dirname, '../pages/intake.html'));
+});
+
+app.get('/chart', requirePaidMember, (req, res) => {
+  res.sendFile(path.join(__dirname, '../pages/navigation-chart.html'));
+});
+
+app.get('/navigation-chart', requirePaidMember, (req, res) => {
+  res.sendFile(path.join(__dirname, '../pages/navigation-chart.html'));
+});
+
+app.get('/grant-radar', requirePaidMember, (req, res) => {
   res.sendFile(path.join(__dirname, '../pages/grant-radar.html'));
+});
+
+app.get('/config-panel', (req, res) => {
+  res.sendFile(path.join(__dirname, '../pages/config-panel.html'));
 });
 
 // Health check

@@ -163,19 +163,7 @@
         return;
       }
 
-      // TIER GATE: check membership tier — free users go to subscribe
-      try {
-        const tierResp = await fetch('/api/auth/me');
-        if (tierResp.ok) {
-          const tierData = await tierResp.json();
-          if (tierData.membershipTier === 'free') {
-            window.location.href = '/subscribe';
-            return;
-          }
-        }
-      } catch (e) {
-        console.error('Tier check failed:', e);
-      }
+      // Tier gate handled server-side in index.js
 
       // Load session — Supabase is source of truth, localStorage is cache
       sessionData = await BridgeSession.load();
