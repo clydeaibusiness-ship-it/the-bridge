@@ -194,6 +194,14 @@
   font-weight: 400;
   font-size: 0.8125rem;
   cursor: pointer;
+  justify-content: flex-start;
+}
+.gr-radios input[type="radio"] {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  accent-color: #8a6830;
+  flex-shrink: 0;
 }
 
 .gr-submit-btn {

@@ -129,6 +129,25 @@
       }
     } else {
       showIntake();
+      // Pre-populate from existing intake data
+      await prefillFromExistingIntake();
+    }
+  }
+
+  async function prefillFromExistingIntake() {
+    try {
+      var resp = await fetch('/api/intake/data', { headers: authHeaders() });
+      if (!resp.ok) return;
+      var data = await resp.json();
+      if (!data.intake) return;
+      var a = data.intake;
+      // Pre-fill fields that already have answers
+      if (a.city) { var el = $('#intake-city'); if (el) el.value = a.city; }
+      if (a.state) { var el = $('#intake-state'); if (el) el.value = a.state; }
+      if (a.legalEntity) { var el = $('#intake-entity'); if (el) el.value = a.legalEntity; }
+      if (a.revenue) { var el = $('#intake-revenue'); if (el) el.value = a.revenue; }
+    } catch (e) {
+      console.warn('Prefill failed:', e);
     }
   }
 
