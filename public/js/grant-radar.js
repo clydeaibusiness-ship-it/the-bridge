@@ -143,21 +143,14 @@
   }
 
   function setupFormListeners() {
-    // SAM.gov "What is SAM.gov?" radio
+    // SAM.gov "What is SAM.gov?" info button
     var samWhat = $('#sam-what');
     if (samWhat) {
-      var radios = $$('input[name="sam"]');
-      radios.forEach(function (r) {
-        r.addEventListener('change', function () {
-          var explain = $('#sam-explain');
-          if (explain) {
-            if (r.value === 'What is SAM.gov?') {
-              explain.classList.add('visible');
-            } else {
-              explain.classList.remove('visible');
-            }
-          }
-        });
+      samWhat.addEventListener('click', function () {
+        var explain = $('#sam-explain');
+        if (explain) {
+          explain.classList.toggle('visible');
+        }
       });
     }
 
@@ -238,7 +231,7 @@
       granularRevenue: $('#intake-revenue').value,
       ownerDemographics: demographics,
       grantFundUse: $('#intake-fund-use').value,
-      samRegistration: samVal === 'What is SAM.gov?' ? 'No' : samVal,
+      samRegistration: samVal || 'No',
       naicsCode: $('#intake-naics').value.trim() || null
     };
 
