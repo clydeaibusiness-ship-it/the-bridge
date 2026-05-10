@@ -141,7 +141,7 @@ router.post('/intake', async (req, res) => {
   }
 
   try {
-    const { city, state, legalEntity, granularRevenue, ownerDemographics, grantFundUse, samRegistration, naicsCode } = req.body;
+    const { city, state, county, legalEntity, granularRevenue, ownerDemographics, grantFundUse, samRegistration, naicsCode } = req.body;
 
     const db = getClient();
     if (!db) return res.status(503).json({ error: 'Database not configured' });
@@ -154,6 +154,7 @@ router.post('/intake', async (req, res) => {
         user_id: req.dbUser.id,
         city,
         state,
+        county: county || null,
         legal_entity: legalEntity,
         granular_revenue: granularRevenue,
         owner_demographics: ownerDemographics || [],

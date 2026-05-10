@@ -246,6 +246,7 @@
     var data = {
       city: $('#intake-city').value.trim(),
       state: $('#intake-state').value,
+      county: $('#intake-county').value.trim(),
       legalEntity: $('#intake-entity').value,
       granularRevenue: $('#intake-revenue').value,
       ownerDemographics: demographics,
@@ -340,7 +341,9 @@
       stateHeader.textContent = (results.stateName.toUpperCase()) + ' STATE GRANTS';
     }
     if (results.city) {
-      localHeader.textContent = (results.city.toUpperCase()) + ' AND SURROUNDING LOCAL GRANTS';
+      var localLabel = results.city.toUpperCase();
+      if (results.county) localLabel += ', ' + results.county.toUpperCase();
+      localHeader.textContent = localLabel + ' LOCAL GRANTS';
     }
 
     // Render sections

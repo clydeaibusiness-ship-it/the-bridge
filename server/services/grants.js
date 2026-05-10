@@ -24,6 +24,8 @@ function buildProfileSummary(intake) {
   const stateName = US_STATES[intake.state] || intake.state || 'Unknown state';
   const demographics = Array.isArray(intake.owner_demographics) ? intake.owner_demographics : [];
 
+  const county = intake.county || '';
+
   return `
 MEMBER BUSINESS PROFILE:
 - Business name: ${intake.business_name || 'Not provided'}
@@ -31,6 +33,7 @@ MEMBER BUSINESS PROFILE:
 - Industry: ${intake.industry || 'Not specified'}
 - NAICS code: ${intake.naics_code || 'Not provided — estimate from business description'}
 - City: ${intake.city || 'Not provided'}
+- County/Township: ${county || 'Not provided'}
 - State: ${stateName}
 - Legal entity type: ${intake.legal_entity || 'Not provided'}
 - Annual revenue: ${intake.granular_revenue || intake.revenue_range || 'Not provided'}
@@ -52,6 +55,7 @@ async function scanGrants(intake) {
   const profile = buildProfileSummary(intake);
   const stateName = US_STATES[intake.state] || intake.state || 'their state';
   const city = intake.city || 'their city';
+  const county = intake.county || '';
 
   const prompt = `You are a grant research specialist with deep knowledge of the current landscape of federal, state, and local small business grants in the United States.
 
@@ -59,7 +63,7 @@ Using the member profile below, identify government grants they are likely eligi
 
 1. FEDERAL: Grants.gov programs, SBA programs (including SBIR/STTR, Community Advantage, 8(a)), USDA programs (especially if rural), federal agency-specific grants (DOE, DOD, HHS, NSF, DOL, etc.)
 2. STATE (${stateName}): State economic development agency grants, state small business programs, state-specific industry grants, state innovation funds, state workforce development grants
-3. LOCAL (${city} and surrounding county): City and county economic development grants, local business development incentives, community development block grants, local chamber programs
+3. LOCAL (${city}${county ? ', ' + county : ''} and surrounding area): City, county, and township economic development grants, local business development incentives, community development block grants, local chamber programs, township-level grants
 
 For each grant return a JSON object with these exact fields:
 - "name": Official grant program name
@@ -95,14 +99,15 @@ ${profile}`;
         state: results.filter(g => g.jurisdiction === 'State'),
         local: results.filter(g => g.jurisdiction === 'Local'),
         stateName,
-        city
+        city,
+        county
       };
     }
-    return { federal: [], state: [], local: [], stateName, city };
+    return { federal: [], state: [], local: [], stateName, city, county };
   } catch (e) {
     console.error('Failed to parse grant results:', e.message);
     console.error('Raw response:', response.substring(0, 500));
-    return { federal: [], state: [], local: [], stateName, city };
+    return { federal: [], state: [], local: [], stateName, city, county };
   }
 }
 
