@@ -6,12 +6,17 @@
   <title>The Bridge — Sign In</title>
   <script>
     // Clerk hosts the sign-in UI at accounts.captainsbridge.io
-    // No JS loading, no UI bundles, no CSP issues — just redirect.
     const params = new URLSearchParams(window.location.search);
-    const returnTo = params.get('return') || '/dashboard';
-    // Clerk's sign-up page also has a sign-in link — one page handles both
     const base = 'https://accounts.captainsbridge.io/sign-up';
-    window.location.replace(base + '?redirect_url=' + encodeURIComponent('https://captainsbridge.io' + returnTo));
+
+    // 'action=subscribe' from landing page CTA → after signup go to /subscribe
+    if (params.get('action') === 'subscribe') {
+      window.location.replace(base + '?redirect_url=' + encodeURIComponent('https://captainsbridge.io/subscribe'));
+    } else {
+      // Default: after login/signup go to dashboard (server gate will catch free users)
+      const returnTo = params.get('return') || '/dashboard';
+      window.location.replace(base + '?redirect_url=' + encodeURIComponent('https://captainsbridge.io' + returnTo));
+    }
   </script>
 </head>
 <body></body>

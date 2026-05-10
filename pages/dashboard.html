@@ -163,7 +163,18 @@
         return;
       }
 
-      // Tier gate handled server-side in index.js
+      // Tier gate: server handles it when cookie exists.
+      // For first visit (no cookie yet), check here after Clerk sets it.
+      try {
+        const tierResp = await fetch('/api/auth/me');
+        if (tierResp.ok) {
+          const tierData = await tierResp.json();
+          if (tierData.membershipTier === 'free') {
+            window.location.href = '/subscribe';
+            return;
+          }
+        }
+      } catch (e) {}
 
       // Load session — Supabase is source of truth, localStorage is cache
       sessionData = await BridgeSession.load();

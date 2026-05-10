@@ -67,10 +67,21 @@ app.use('/api/admin', grantRoutes);
 const { extractUser } = require('./middleware/auth');
 
 async function requirePaidMember(req, res, next) {
+  // Check if there's a session cookie — if not, serve the page
+  // and let Clerk JS handle auth client-side (sets the cookie)
+  const token = req.cookies?.__session || req.headers.authorization?.replace('Bearer ', '');
+  if (!token) {
+    // No cookie yet — serve the page so Clerk JS can initialize
+    // The page's client-side JS will redirect to /login if needed
+    return next();
+  }
+
+  // Cookie exists — verify and check tier
   await new Promise((resolve) => extractUser(req, res, resolve));
   
   if (!req.dbUser) {
-    return res.redirect('/login');
+    // Cookie invalid/expired — let page load, Clerk JS will handle
+    return next();
   }
   if (req.dbUser.membership_tier !== 'ensign') {
     return res.redirect('/subscribe');
