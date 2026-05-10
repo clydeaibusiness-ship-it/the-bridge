@@ -158,7 +158,7 @@ router.post('/intake', async (req, res) => {
         legal_entity: legalEntity,
         granular_revenue: granularRevenue,
         owner_demographics: ownerDemographics || [],
-        grant_fund_use: grantFundUse,
+        grant_fund_use: Array.isArray(grantFundUse) ? grantFundUse.join(', ') : grantFundUse,
         sam_registration: samRegistration,
         naics_code: naicsCode || null,
         grant_intake_complete: true,

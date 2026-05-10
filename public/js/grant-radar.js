@@ -162,6 +162,23 @@
   }
 
   function setupFormListeners() {
+    // Fund use checkboxes — max 2, "not sure" clears others
+    var fundBoxes = $$('#fund-use-checkboxes input[type="checkbox"]');
+    fundBoxes.forEach(function (cb) {
+      cb.addEventListener('change', function () {
+        if (cb.value === 'I am not sure yet' && cb.checked) {
+          fundBoxes.forEach(function (other) { if (other !== cb) other.checked = false; });
+        } else if (cb.checked) {
+          // Uncheck "not sure"
+          fundBoxes.forEach(function (other) { if (other.value === 'I am not sure yet') other.checked = false; });
+          // Enforce max 2
+          var checked = [];
+          fundBoxes.forEach(function (b) { if (b.checked) checked.push(b); });
+          if (checked.length > 2) { cb.checked = false; }
+        }
+      });
+    });
+
     // SAM.gov "What is SAM.gov?" info button
     var samWhat = $('#sam-what');
     if (samWhat) {
@@ -250,7 +267,11 @@
       legalEntity: $('#intake-entity').value,
       granularRevenue: $('#intake-revenue').value,
       ownerDemographics: demographics,
-      grantFundUse: $('#intake-fund-use').value,
+      grantFundUse: (function() {
+        var selected = [];
+        $$('#fund-use-checkboxes input[type="checkbox"]:checked').forEach(function(cb) { selected.push(cb.value); });
+        return selected;
+      })(),
       samRegistration: samVal || 'No',
       naicsCode: $('#intake-naics').value.trim() || null
     };
