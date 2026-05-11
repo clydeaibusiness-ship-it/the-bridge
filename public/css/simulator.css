@@ -312,7 +312,7 @@ html.sim-active, .sim-active body {
 .sim-layout {
   width: 100%;
   max-width: 520px;
-  padding: 24px 16px 100px; /* 100px bottom for fixed confirm btn */
+  padding: 100px 16px 100px; /* top clears fixed resource bar; bottom clears fixed confirm btn */
 }
 .sim-left {
   margin-bottom: 24px;

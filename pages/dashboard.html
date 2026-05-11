@@ -68,7 +68,6 @@
         </div>
         <div class="dash-stats">
           <div class="dash-stat-row"><span class="dash-stat-label">Capital</span><span class="dash-stat-value" id="dash-capital">—</span></div>
-          <div class="dash-stat-bar"><div class="dash-stat-fill" id="dash-capital-bar" style="width:0%"></div></div>
           <div class="dash-stat-row"><span class="dash-stat-label">Customers</span><span class="dash-stat-value" id="dash-customers">—</span></div>
           <div class="dash-stat-bar"><div class="dash-stat-fill" id="dash-customers-bar" style="width:0%"></div></div>
           <div class="dash-stat-row"><span class="dash-stat-label">Positioning</span><span class="dash-stat-value" id="dash-positioning">—</span></div>
@@ -123,12 +122,6 @@
           <div class="dash-chart-footer">
             <a href="/navigation-chart" class="dash-btn-primary" style="margin-bottom:8px;">View Navigation Chart</a>
             <a href="/intake?mode=update" class="dash-btn-update">Update your answers</a>
-          </div>
-        </div>
-        <div class="dash-panel dash-run-history">
-          <div class="dash-section-title">Run History</div>
-          <div id="run-history-list" class="dash-run-list">
-            <p class="dash-run-empty">No simulator sessions completed yet. Run the simulator to see your history here.</p>
           </div>
         </div>
         <div class="dash-panel dash-grant-radar">
@@ -188,7 +181,6 @@
           const r = sessionData.simulatorResources;
           if (r.capital !== undefined) {
             document.getElementById('dash-capital').textContent = `$${r.capital.toLocaleString()}`;
-            document.getElementById('dash-capital-bar').style.width = `${(r.capital / 25000) * 100}%`;
           }
           if (r.customers !== undefined) {
             document.getElementById('dash-customers').textContent = `${r.customers} / 40`;

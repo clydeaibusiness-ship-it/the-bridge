@@ -52,7 +52,7 @@
       <span class="site-nav-sep">|</span>
       <a href="/api/auth/logout" id="nav-auth">Sign Out</a>
     </div>
-    <button class="site-nav-hamburger" id="hamburger" aria-label="Menu">
+    <button class="site-nav-hamburger" aria-label="Menu">
       <span></span><span></span><span></span>
     </button>
     <div class="site-nav-mobile" id="mobile-menu"><button class="site-nav-mobile-close" aria-label="Close">✕</button>
@@ -80,11 +80,6 @@
   </div>
 
   <script>
-    // Hamburger
-    document.getElementById('hamburger').addEventListener('click', () => {
-      document.getElementById('mobile-menu').classList.toggle('open');
-    });
-
     (async function() {
       // Initialize Clerk so __session cookie is set for API auth
       try {
