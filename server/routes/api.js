@@ -50,7 +50,7 @@ router.post('/game/intake', async (req, res) => {
     if (!answers) return res.status(400).json({ error: 'Intake answers required' });
 
     const result = await personalizeIntake(answers);
-    if (!result.industry_key) result.industry_key = 'lawn_care';
+    if (!result.industry_key) result.industry_key = 'general';
 
     // If user is authenticated, save intake to unified table
     if (req.dbUser) {
@@ -61,9 +61,9 @@ router.post('/game/intake', async (req, res) => {
   } catch (e) {
     console.error('Intake error:', e.message);
     res.status(500).json({
-      ship_name: 'ISV Greenline',
+      ship_name: 'Your Business',
       destination_name: 'Growth Horizon',
-      industry_key: 'lawn_care',
+      industry_key: 'general',
       flavor_text: 'Your business is waiting. The decisions ahead are yours to make.'
     });
   }

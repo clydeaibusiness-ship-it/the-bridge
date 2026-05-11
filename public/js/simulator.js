@@ -198,11 +198,11 @@ async function submitIntake(e) {
   // Show loading screen
   showScreen('screen-loading');
 
-  // Race: API call vs 6s timeout (intake now also generates businessContext)
+  // Race: API call vs 20s timeout (Claude personalization with 26KB system prompt needs time)
   const fallback = {
-    ship_name: 'ISV Greenline',
+    ship_name: answers.industry || 'Your Business',
     destination_name: 'Growth Horizon',
-    industry_key: 'lawn_care',
+    industry_key: 'general',
     flavor_text: 'Your business is waiting. The decisions ahead are yours to make.',
     businessContext: null
   };
@@ -210,7 +210,7 @@ async function submitIntake(e) {
   try {
     const result = await Promise.race([
       fetchIntake(answers),
-      new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 6000))
+      new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 20000))
     ]);
     intakeProfile = result;
   } catch (err) {
