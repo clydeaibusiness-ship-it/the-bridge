@@ -134,8 +134,8 @@
         <div class="dash-panel dash-grant-radar">
           <div class="dash-section-title">GRANT RADAR</div>
           <div class="dash-grant-body" id="dash-grant-body">
-            <p id="dash-grant-text">Run your first scan to see grants matched to your business.</p>
-            <a href="/grant-radar" class="dash-btn-ghost" id="dash-grant-btn">Launch Grant Radar →</a>
+            <p id="dash-grant-text">Grant Radar matches your business profile against live federal grant opportunities published by the U.S. government. Run your first scan to see which programs you qualify for.</p>
+            <a href="/grant-radar" class="dash-btn-ghost" id="dash-grant-btn">Find my grants →</a>
           </div>
         </div>
       </div>
@@ -501,8 +501,8 @@ Biggest uncertainty: ${a.uncertainty || 'unknown'}
           const local = (data.results.local || []).length;
           const total = federal + state + local;
           const open = [...(data.results.federal || []), ...(data.results.state || []), ...(data.results.local || [])].filter(function(g) { return g.status && g.status.toLowerCase().indexOf('open') >= 0 || g.status && g.status.toLowerCase().indexOf('rolling') >= 0; }).length;
-          textEl.textContent = 'Your last scan found ' + total + ' matched grants. ' + open + ' are currently open.';
-          btnEl.textContent = 'View all results \u2192';
+          textEl.textContent = 'Your last scan found ' + total + ' federal grants matched to your business profile. ' + open + ' are currently accepting applications.';
+          btnEl.textContent = 'View matched grants \u2192';
           if (data.scanDate) {
             var dateNote = document.createElement('div');
             dateNote.style.cssText = 'font-family:var(--font-data);font-size:10px;color:#7a7570;margin-top:6px;';

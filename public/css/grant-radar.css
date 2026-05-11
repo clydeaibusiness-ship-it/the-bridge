@@ -599,3 +599,49 @@
   color: #5a8a6a;
   font-style: italic;
 }
+
+/* ---- Grant Radar Acknowledgment Box ---- */
+.gr-acknowledgment {
+  background: #ece7dc;
+  border: 1px solid #c8c0b0;
+  border-radius: 4px;
+  padding: 16px 18px;
+  margin-bottom: 24px;
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.gr-acknowledgment-text {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.9rem;
+  color: #3a3530;
+  line-height: 1.7;
+  margin: 0 0 14px 0;
+}
+
+.gr-acknowledgment-text a {
+  color: #8a6830;
+  text-decoration: underline;
+}
+
+.gr-acknowledgment-text a:hover {
+  color: #c8a96e;
+}
+
+.gr-acknowledgment-btn {
+  font-family: 'Space Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: #f5f0e8;
+  background: #0a0a0f;
+  border: none;
+  border-radius: 4px;
+  padding: 10px 20px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.gr-acknowledgment-btn:hover {
+  background: #2a2a2f;
+}

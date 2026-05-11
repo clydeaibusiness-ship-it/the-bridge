@@ -131,6 +131,10 @@ app.get('/grant-radar', requirePaidMember, (req, res) => {
   res.sendFile(path.join(__dirname, '../pages/grant-radar.html'));
 });
 
+app.get('/terms', (req, res) => {
+  res.sendFile(path.join(__dirname, '../pages/terms.html'));
+});
+
 app.get('/config-panel', (req, res) => {
   res.sendFile(path.join(__dirname, '../pages/config-panel.html'));
 });

@@ -68,6 +68,47 @@ router.get('/debug-auth', async (req, res) => {
   });
 });
 
+// ---- Grant Radar Acknowledgment ----
+
+router.get('/acknowledgment-status', requireAuth, async (req, res) => {
+  try {
+    const db = getClient();
+    if (!db) return res.json({ acknowledged: false });
+
+    const { data, error } = await db
+      .from('user_intake')
+      .select('grant_radar_acknowledged')
+      .eq('user_id', req.dbUser.id)
+      .single();
+
+    if (error && error.code !== 'PGRST116') throw error;
+    res.json({ acknowledged: !!(data && data.grant_radar_acknowledged) });
+  } catch (e) {
+    console.error('Acknowledgment status error:', e.message);
+    res.json({ acknowledged: false });
+  }
+});
+
+router.post('/acknowledge', requireAuth, async (req, res) => {
+  try {
+    const db = getClient();
+    if (!db) return res.status(503).json({ error: 'Database not configured' });
+
+    const { error } = await db
+      .from('user_intake')
+      .upsert({
+        user_id: req.dbUser.id,
+        grant_radar_acknowledged: true
+      }, { onConflict: 'user_id' });
+
+    if (error) throw error;
+    res.json({ success: true });
+  } catch (e) {
+    console.error('Acknowledge error:', e.message);
+    res.status(500).json({ error: 'Failed to save acknowledgment' });
+  }
+});
+
 // ---- Community Total (PUBLIC — no auth) ----
 
 let cachedTotal = null;

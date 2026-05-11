@@ -43,11 +43,17 @@
     <!-- HEADER -->
     <header class="gr-header">
       <div class="gr-label">GRANT RADAR</div>
-      <div class="gr-subtitle">Scanning federal, state, and local grant databases for opportunities matched to your business.</div>
+      <div class="gr-subtitle">Grant Radar reads your business profile and matches it against live federal grant opportunities published by the U.S. government through Grants.gov. Every result shown meets a minimum 80% match with your specific business inputs. All grant data is sourced directly from the official federal grant database and is publicly available information.</div>
       <div class="gr-scan-info" id="last-scan"></div>
       <div class="gr-scan-info" id="next-scan"></div>
       <button class="gr-rescan-btn" id="rescan-btn" style="display:none;">Run new scan →</button>
     </header>
+
+    <!-- ACKNOWLEDGMENT BOX (first visit only) -->
+    <div class="gr-acknowledgment" id="gr-acknowledgment" style="display:none;">
+      <p class="gr-acknowledgment-text">Grant Radar displays federal grant opportunities sourced directly from Grants.gov, the official U.S. government grant database. All data is publicly available information. Match percentages reflect alignment between your profile and listed eligibility criteria — they are not guarantees of eligibility or award. Grant availability can change at any time. Always verify with the awarding agency before applying. By using Grant Radar you agree to the terms described in our <a href="/terms" target="_blank">Terms of Service</a>.</p>
+      <button class="gr-acknowledgment-btn" id="gr-acknowledge-btn">I understand — show my matches →</button>
+    </div>
 
     <!-- REFRESH BANNER -->
     <div class="gr-refresh-banner" id="refresh-banner">Your Grant Radar refreshed today with new results.</div>

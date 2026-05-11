@@ -98,6 +98,51 @@
     return d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
   }
 
+  // ---- Acknowledgment ----
+  var acknowledgmentChecked = false;
+  var userAcknowledged = false;
+
+  async function checkAcknowledgment() {
+    try {
+      var res = await fetch('/api/grant-radar/acknowledgment-status', { headers: authHeaders() });
+      if (res.ok) {
+        var data = await res.json();
+        userAcknowledged = !!data.acknowledged;
+      }
+    } catch (e) {
+      console.warn('Acknowledgment check failed:', e);
+      userAcknowledged = false;
+    }
+    acknowledgmentChecked = true;
+  }
+
+  function showAcknowledgment(onDismiss) {
+    var box = document.getElementById('gr-acknowledgment');
+    if (!box) { onDismiss(); return; }
+    box.style.display = 'block';
+    // Hide content sections until acknowledged
+    $('#intake-section').style.display = 'none';
+    $('#loading-section').style.display = 'none';
+    $('#results-section').style.display = 'none';
+
+    var btn = document.getElementById('gr-acknowledge-btn');
+    btn.addEventListener('click', async function () {
+      btn.disabled = true;
+      btn.textContent = 'Loading...';
+      try {
+        await fetch('/api/grant-radar/acknowledge', {
+          method: 'POST',
+          headers: authHeaders()
+        });
+      } catch (e) {
+        console.warn('Acknowledge save failed:', e);
+      }
+      userAcknowledged = true;
+      box.style.display = 'none';
+      onDismiss();
+    });
+  }
+
   // ---- Init ----
   async function init() {
     const authed = await initAuth();
@@ -105,6 +150,9 @@
 
     populateStateDropdown();
     setupFormListeners();
+
+    // Check acknowledgment status
+    await checkAcknowledgment();
 
     // Check intake status
     const statusRes = await fetch('/api/grant-radar/intake-status', { headers: authHeaders() });
@@ -119,7 +167,17 @@
       const resultsRes = await fetch('/api/grant-radar/results', { headers: authHeaders() });
       const resultsData = await resultsRes.json();
 
-      if (needsAutoScan || !resultsData.results) {
+      if (!userAcknowledged) {
+        // Show acknowledgment first, then results on dismiss
+        showAcknowledgment(function () {
+          if (needsAutoScan || !resultsData.results) {
+            showLoading();
+            runScan(false);
+          } else {
+            showResults(resultsData.results, resultsData.scanDate, resultsData.nextScanDate);
+          }
+        });
+      } else if (needsAutoScan || !resultsData.results) {
         // Run auto scan
         showLoading();
         await runScan(false);
@@ -128,9 +186,16 @@
         showResults(resultsData.results, resultsData.scanDate, resultsData.nextScanDate);
       }
     } else {
-      showIntake();
-      // Pre-populate from existing intake data
-      await prefillFromExistingIntake();
+      if (!userAcknowledged) {
+        showAcknowledgment(function () {
+          showIntake();
+          prefillFromExistingIntake();
+        });
+      } else {
+        showIntake();
+        // Pre-populate from existing intake data
+        await prefillFromExistingIntake();
+      }
     }
   }
 

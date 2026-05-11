@@ -1,0 +1,124 @@
+/* Terms of Service Page */
+.terms-body {
+  background: #f5f0e8;
+  color: #0a0a0f;
+  margin: 0;
+  padding: 0;
+  overflow: visible;
+  height: auto;
+  font-family: 'Space Grotesk', sans-serif;
+}
+
+.terms-nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+  background: #f5f0e8;
+  border-bottom: 1px solid #c8c0b0;
+}
+
+.terms-nav-brand {
+  font-family: 'Space Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  color: #0a0a0f;
+  text-decoration: none;
+}
+
+.terms-main {
+  padding: 4rem 1.5rem;
+}
+
+.terms-container {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.terms-page-heading {
+  font-family: 'Space Mono', monospace;
+  font-size: 10px;
+  color: #7a7570;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.terms-updated {
+  font-family: 'Space Mono', monospace;
+  font-size: 10px;
+  color: #7a7570;
+  margin-bottom: 2rem;
+}
+
+.terms-heading {
+  font-family: 'Space Mono', monospace;
+  font-size: 11px;
+  color: #3a3530;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-top: 2.5rem;
+  margin-bottom: 0.75rem;
+  font-weight: 400;
+}
+
+.terms-container p {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1rem;
+  color: #3a3530;
+  line-height: 1.8;
+  margin: 0 0 1rem 0;
+}
+
+/* Footer */
+.terms-footer {
+  border-top: 1px solid #c8c0b0;
+  padding: 24px;
+}
+
+.terms-footer-inner {
+  max-width: 720px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.terms-footer-copy {
+  font-family: 'Space Mono', monospace;
+  font-size: 10px;
+  color: #7a7570;
+  letter-spacing: 0.1em;
+}
+
+.terms-footer-links {
+  display: flex;
+  gap: 16px;
+}
+
+.terms-footer-links a {
+  font-family: 'Space Mono', monospace;
+  font-size: 10px;
+  color: #7a7570;
+  text-decoration: none;
+}
+
+.terms-footer-links a:hover {
+  text-decoration: underline;
+}
+
+/* Mobile */
+@media (max-width: 48em) {
+  .terms-main {
+    padding: 2rem 1rem;
+  }
+
+  .terms-footer-inner {
+    flex-direction: column;
+    gap: 12px;
+    text-align: center;
+  }
+}
