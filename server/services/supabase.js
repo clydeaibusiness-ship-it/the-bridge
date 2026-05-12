@@ -257,24 +257,16 @@ async function saveCommanderMessage(userId, sessionId, role, content, soulVersio
   };
   if (soulVersion) insertData.soul_version = soulVersion;
 
-  let { data, error } = await db
+  const { data, error } = await db
     .from('commander_messages')
     .insert(insertData)
     .select()
     .single();
 
-  // If soul_version column doesn't exist yet, retry without it
-  if (error && soulVersion && error.message && error.message.includes('soul_version')) {
-    console.warn('soul_version column not found, saving without it');
-    delete insertData.soul_version;
-    ({ data, error } = await db
-      .from('commander_messages')
-      .insert(insertData)
-      .select()
-      .single());
-  }
-
   if (error) {
+    if (error.message && error.message.includes('soul_version')) {
+      console.error('MISSING COLUMN: commander_messages.soul_version does not exist. Run: ALTER TABLE commander_messages ADD COLUMN soul_version TEXT DEFAULT NULL;');
+    }
     console.error('Save commander message error:', error.message);
     return null;
   }
@@ -326,19 +318,15 @@ async function getCommanderMessagesForApi(userId, limit = 10, soulVersion = null
     .order('created_at', { ascending: false })
     .limit(limit);
 
-  let { data, error } = await query;
+  const { data, error } = await query;
 
-  // If soul_version column doesn't exist yet, query without it
-  if (error && error.message && error.message.includes('soul_version')) {
-    ({ data, error } = await db
-      .from('commander_messages')
-      .select('message_role, message_content')
-      .eq('user_id', userId)
-      .order('created_at', { ascending: false })
-      .limit(limit));
+  if (error) {
+    if (error.message && error.message.includes('soul_version')) {
+      console.error('MISSING COLUMN: commander_messages.soul_version does not exist. Run: ALTER TABLE commander_messages ADD COLUMN soul_version TEXT DEFAULT NULL;');
+    }
+    console.error('Get commander messages error:', error.message);
+    return [];
   }
-
-  if (error) return [];
 
   // If we have a soul version, filter out assistant messages from old versions.
   // User messages always pass through — they're the member's words.
