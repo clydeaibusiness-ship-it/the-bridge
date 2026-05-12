@@ -1,14 +1,15 @@
 const express = require('express');
 const router = express.Router();
 const crypto = require('crypto');
-const { personalizeIntake, generateSituation, generateDebrief, commanderChat, generateConversationSummary, generateChart, getSoulVersion } = require('../services/claude');
+const { personalizeIntake, generateSituation, generateDebrief, commanderChat, generateConversationSummary, generateChart, getSoulVersion, compressSession } = require('../services/claude');
 const { 
   saveGameState, getGameState, saveRunHistory, getRunHistory,
   upsertAnonymousEvent, getCommanderUsage, incrementCommanderUsage,
   saveCommanderMessage, getCommanderHistory, getLatestCommanderSessionId,
   getCommanderMessagesForApi,
   saveCommanderSummary, getLatestCommanderSummary,
-  upsertIntake, getIntake
+  upsertIntake, getIntake,
+  getCommanderSessionMessages, saveSessionNote, getSessionNotes, sessionNoteExists
 } = require('../services/supabase');
 const { extractUser, requireAuth } = require('../middleware/auth');
 
@@ -277,6 +278,7 @@ router.post('/member/commander/message', async (req, res) => {
     let conversationHistory = [];
     let sessionId = null;
     let summaryContext = null;
+    let sessionNotesContext = '';
 
     // If authenticated, load conversation history and save messages
     if (req.dbUser) {
@@ -285,10 +287,36 @@ router.post('/member/commander/message', async (req, res) => {
       
       if (sessionInfo) {
         const lastTime = new Date(sessionInfo.lastMessageAt).getTime();
-        const hoursSince = (Date.now() - lastTime) / (1000 * 60 * 60);
+        const minutesSince = (Date.now() - lastTime) / (1000 * 60);
         
-        if (hoursSince > 24) {
-          // New session after long gap — get summary of old conversation
+        if (minutesSince >= 30) {
+          // Session ended by inactivity — compress the old session before starting new one
+          const oldSessionId = sessionInfo.sessionId;
+          const alreadyCompressed = await sessionNoteExists(req.dbUser.id, oldSessionId);
+          
+          if (!alreadyCompressed) {
+            const oldMessages = await getCommanderSessionMessages(req.dbUser.id, oldSessionId);
+            if (oldMessages.length >= 4) {
+              // Only compress sessions with meaningful conversation (at least 2 exchanges)
+              try {
+                const compressed = await compressSession(oldMessages);
+                await saveSessionNote(
+                  req.dbUser.id,
+                  oldSessionId,
+                  compressed.operator_insights || [],
+                  compressed.strategic_ground || [],
+                  compressed.unresolved_threads || [],
+                  oldMessages.length
+                );
+                console.log(`Session ${oldSessionId} compressed: ${oldMessages.length} messages → session note`);
+              } catch (compressErr) {
+                console.error('Session compression error:', compressErr.message);
+                // Compression failed but don't block the new message
+              }
+            }
+          }
+
+          // Get summary of old conversation for transition context
           const existingSummary = await getLatestCommanderSummary(req.dbUser.id);
           if (existingSummary) {
             summaryContext = existingSummary.summary;
@@ -305,8 +333,13 @@ router.post('/member/commander/message', async (req, res) => {
       const soulVersion = getSoulVersion();
 
       // Get last 10 messages for API context — filtered by soul version
-      // User messages always included; old-soul assistant messages stripped
       conversationHistory = await getCommanderMessagesForApi(req.dbUser.id, 10, soulVersion);
+
+      // Load session notes (long-term memory) — max 30 most recent
+      const sessionNotes = await getSessionNotes(req.dbUser.id, 30);
+      if (sessionNotes.length > 0) {
+        sessionNotesContext = formatSessionNotes(sessionNotes);
+      }
 
       // Save user message tagged with current soul version
       await saveCommanderMessage(req.dbUser.id, sessionId, 'user', message, soulVersion);
@@ -320,7 +353,8 @@ router.post('/member/commander/message', async (req, res) => {
       runHistory,
       sessionContext || '',
       conversationHistory,
-      summaryContext
+      summaryContext,
+      sessionNotesContext
     );
 
     // Save assistant response tagged with current soul version
@@ -337,6 +371,43 @@ router.post('/member/commander/message', async (req, res) => {
     });
   }
 });
+
+/**
+ * Format session notes into the context block the Commander reads.
+ */
+function formatSessionNotes(notes) {
+  const allInsights = [];
+  const allGround = [];
+  const allThreads = [];
+
+  // Notes come newest-first; collect all entries
+  for (const note of notes) {
+    if (note.operator_insights) allInsights.push(...note.operator_insights);
+    if (note.strategic_ground) allGround.push(...note.strategic_ground);
+    if (note.unresolved_threads) allThreads.push(...note.unresolved_threads);
+  }
+
+  let block = 'WHAT I KNOW ABOUT THIS PERSON FROM OUR PREVIOUS CONVERSATIONS:\n\n';
+
+  if (allInsights.length > 0) {
+    block += 'Operator insights:\n';
+    for (const insight of allInsights) block += `\u2014 ${insight}\n`;
+    block += '\n';
+  }
+
+  if (allGround.length > 0) {
+    block += 'Strategic ground we have covered:\n';
+    for (const ground of allGround) block += `\u2014 ${ground}\n`;
+    block += '\n';
+  }
+
+  if (allThreads.length > 0) {
+    block += 'Open threads we have not resolved:\n';
+    for (const thread of allThreads) block += `\u2014 ${thread}\n`;
+  }
+
+  return block;
+}
 
 /**
  * GET /api/member/runs

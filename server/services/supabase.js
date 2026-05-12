@@ -455,6 +455,99 @@ async function getIntake(userId) {
   return data || null;
 }
 
+// ---- Commander Session Notes (compression / long-term memory) ----
+
+/**
+ * Get all messages for a specific session (for compression).
+ */
+async function getCommanderSessionMessages(userId, sessionId) {
+  const db = getClient();
+  if (!db) return [];
+
+  const { data, error } = await db
+    .from('commander_messages')
+    .select('message_role, message_content, created_at')
+    .eq('user_id', userId)
+    .eq('session_id', sessionId)
+    .order('created_at', { ascending: true });
+
+  if (error) {
+    console.error('Get commander session messages error:', error.message);
+    return [];
+  }
+  return data || [];
+}
+
+/**
+ * Save a compressed session note.
+ */
+async function saveSessionNote(userId, sessionId, insights, strategicGround, unresolvedThreads, turnCount) {
+  const db = getClient();
+  if (!db) return null;
+
+  const { data, error } = await db
+    .from('commander_session_notes')
+    .insert({
+      user_id: userId,
+      session_id: sessionId,
+      operator_insights: insights,
+      strategic_ground: strategicGround,
+      unresolved_threads: unresolvedThreads,
+      generated_at: new Date().toISOString(),
+      conversation_turn_count: turnCount
+    })
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Save session note error:', error.message);
+    return null;
+  }
+  return data;
+}
+
+/**
+ * Get session notes for a user (most recent 30, ordered newest first).
+ */
+async function getSessionNotes(userId, limit = 30) {
+  const db = getClient();
+  if (!db) return [];
+
+  const { data, error } = await db
+    .from('commander_session_notes')
+    .select('operator_insights, strategic_ground, unresolved_threads, generated_at')
+    .eq('user_id', userId)
+    .order('generated_at', { ascending: false })
+    .limit(limit);
+
+  if (error) {
+    console.error('Get session notes error:', error.message);
+    return [];
+  }
+  return data || [];
+}
+
+/**
+ * Check if a session note already exists for a given session.
+ */
+async function sessionNoteExists(userId, sessionId) {
+  const db = getClient();
+  if (!db) return false;
+
+  const { data, error } = await db
+    .from('commander_session_notes')
+    .select('id')
+    .eq('user_id', userId)
+    .eq('session_id', sessionId)
+    .limit(1);
+
+  if (error) {
+    console.error('Check session note exists error:', error.message);
+    return false;
+  }
+  return data && data.length > 0;
+}
+
 module.exports = {
   getClient,
   createUser, getUserByClerkId, updateMembershipTier, updateStripeCustomerId,
@@ -465,5 +558,6 @@ module.exports = {
   saveCommanderMessage, getCommanderHistory, getLatestCommanderSessionId,
   getCommanderMessagesForApi,
   saveCommanderSummary, getLatestCommanderSummary,
-  upsertIntake, getIntake
+  upsertIntake, getIntake,
+  getCommanderSessionMessages, saveSessionNote, getSessionNotes, sessionNoteExists
 };

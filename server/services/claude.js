@@ -240,8 +240,11 @@ ${JSON.stringify(intakeAnswers, null, 2)}`;
  * Commander chat — strategic advice with full business context.
  * Now supports conversation history passed as messages array.
  */
-async function commanderChat(message, gameState, runHistory, sessionContext, conversationHistory, summaryContext) {
+async function commanderChat(message, gameState, runHistory, sessionContext, conversationHistory, summaryContext, sessionNotesContext) {
   let context = '';
+  if (sessionNotesContext) {
+    context += sessionNotesContext + '\n\n';
+  }
   if (summaryContext) {
     context += `Summary of previous conversation:\n${summaryContext}\n\n`;
   }
@@ -372,6 +375,35 @@ Return this exact JSON structure with 6 sections. Each section has a "title" and
   return JSON.parse(text);
 }
 
+/**
+ * Extract structured knowledge from a completed Commander session.
+ * Called when 30+ minutes of inactivity ends a session.
+ * Returns { operator_insights, strategic_ground, unresolved_threads }
+ */
+async function compressSession(conversationMessages) {
+  const formatted = conversationMessages.map(m => {
+    const role = m.message_role === 'user' ? 'Member' : 'Commander';
+    return `${role}: ${m.message_content}`;
+  }).join('\n\n');
+
+  const response = await client.messages.create({
+    model: 'claude-sonnet-4-20250514',
+    max_tokens: 1500,
+    system: 'You are extracting meaningful knowledge from a business advisory conversation. Be precise and brief. Return only a JSON object with no markdown, no backticks, no prose.',
+    messages: [{
+      role: 'user',
+      content: `Extract the following from this conversation and return as JSON:\n{\n  "operator_insights": [array of strings — personal observations about who this person is, how they think, what drives them, what they avoid],\n  "strategic_ground": [array of strings — specific levers discussed, recommendations made, decisions reached],\n  "unresolved_threads": [array of strings — open questions, problems named but not solved, things left hanging]\n}\n\nConversation:\n${formatted}`
+    }]
+  });
+
+  const text = response.content[0].text;
+  const jsonMatch = text.match(/\{[\s\S]*\}/);
+  if (!jsonMatch) {
+    throw new Error('compressSession: Claude returned non-JSON response: ' + text.substring(0, 200));
+  }
+  return JSON.parse(jsonMatch[0]);
+}
+
 module.exports = {
   callClaude,
   personalizeIntake,
@@ -380,5 +412,6 @@ module.exports = {
   commanderChat,
   generateConversationSummary,
   generateChart,
-  getSoulVersion
+  getSoulVersion,
+  compressSession
 };
