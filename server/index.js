@@ -51,8 +51,8 @@ app.get('/debug/clear-commander', async (req, res) => {
     const { getClient } = require('./services/supabase');
     const db = getClient();
     if (!db) return res.json({ error: 'No database connection' });
-    const { data: msgs, error: e1 } = await db.from('commander_messages').delete().neq('id', 0).select('id');
-    const { data: sums, error: e2 } = await db.from('commander_summaries').delete().neq('id', 0).select('id');
+    const { data: msgs, error: e1 } = await db.from('commander_messages').delete().gte('created_at', '2000-01-01').select('id');
+    const { data: sums, error: e2 } = await db.from('commander_summaries').delete().gte('created_at', '2000-01-01').select('id');
     res.json({
       cleared: true,
       messagesDeleted: msgs?.length || 0,
