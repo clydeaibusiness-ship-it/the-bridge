@@ -5,10 +5,9 @@ const Anthropic = require('@anthropic-ai/sdk');
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
 /**
- * Read the Big Book of Strategy at call time (not startup)
- * so owner edits take effect immediately
+ * Read strategy book only — used by simulator, intake, debrief, summaries.
  */
-function getSystemPrompt() {
+function getStrategyPrompt() {
   return fs.readFileSync(
     path.join(__dirname, '../../system/big-book-of-strategy.md'),
     'utf8'
@@ -16,10 +15,31 @@ function getSystemPrompt() {
 }
 
 /**
- * Call Claude with the strategy framework as system context
+ * Read soul.md + Big Book of Strategy at call time (not startup)
+ * so owner edits take effect immediately.
+ * soul.md loads FIRST (identity), then big-book-of-strategy.md (knowledge).
+ * Used by Commander chat and Navigation Chart ONLY.
+ */
+function getSystemPrompt() {
+  const soulPrompt = fs.readFileSync(
+    path.join(__dirname, '../../system/soul.md'),
+    'utf8'
+  );
+
+  const strategyPrompt = fs.readFileSync(
+    path.join(__dirname, '../../system/big-book-of-strategy.md'),
+    'utf8'
+  );
+
+  return soulPrompt + '\n\n---\n\n' + strategyPrompt;
+}
+
+/**
+ * Call Claude with strategy-only system context.
+ * Used by simulator, intake, debrief, summaries — NOT Commander/Chart.
  */
 async function callClaude(userContent, additionalContext = '') {
-  const systemPrompt = getSystemPrompt();
+  const systemPrompt = getStrategyPrompt();
   const fullSystem = additionalContext
     ? `${systemPrompt}\n\n---\n\n${additionalContext}`
     : systemPrompt;
@@ -235,7 +255,20 @@ IMPORTANT: The player has already completed their intake. You have their full bu
     return response.content[0].text;
   }
 
-  return await callClaude(message, context);
+  // No history — still use full system prompt (soul + strategy)
+  const systemPrompt = getSystemPrompt();
+  const fullSystem = context
+    ? `${systemPrompt}\n\n---\n\n${context}`
+    : systemPrompt;
+
+  const response = await client.messages.create({
+    model: 'claude-sonnet-4-20250514',
+    max_tokens: 4000,
+    system: fullSystem,
+    messages: [{ role: 'user', content: message }]
+  });
+
+  return response.content[0].text;
 }
 
 /**
@@ -287,10 +320,23 @@ Return this exact JSON structure with 6 sections. Each section has a "title" and
   ]
 }`;
 
-  const response = await callClaude(prompt);
-  const jsonMatch = response.match(/\{[\s\S]*\}/);
+  // Navigation Chart uses full system prompt (soul + strategy)
+  const systemPrompt = getSystemPrompt();
+  const fullSystem = additionalContext
+    ? `${systemPrompt}\n\n---\n\nAdditional context from the player's web presence:${additionalContext}`
+    : systemPrompt;
+
+  const response = await client.messages.create({
+    model: 'claude-sonnet-4-20250514',
+    max_tokens: 4000,
+    system: fullSystem,
+    messages: [{ role: 'user', content: prompt }]
+  });
+
+  const text = response.content[0].text;
+  const jsonMatch = text.match(/\{[\s\S]*\}/);
   if (jsonMatch) return JSON.parse(jsonMatch[0]);
-  return JSON.parse(response);
+  return JSON.parse(text);
 }
 
 module.exports = {
