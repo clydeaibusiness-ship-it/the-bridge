@@ -231,13 +231,22 @@ async function commanderChat(message, gameState, runHistory, sessionContext, con
   if (sessionContext) {
     context += sessionContext + '\n\n';
   }
-  context += `The player's current game state:
-${JSON.stringify(gameState, null, 2)}
+  // Only include game/run context if there's actual data
+  const hasGameState = gameState && Object.keys(gameState).length > 0;
+  const hasRunHistory = runHistory && runHistory.length > 0;
+  
+  if (hasGameState) {
+    context += `Current business state:\n${JSON.stringify(gameState, null, 2)}\n\n`;
+  }
+  if (hasRunHistory) {
+    context += `Previous simulator runs:\n${JSON.stringify(runHistory, null, 2)}\n\n`;
+  }
 
-Their run history:
-${JSON.stringify(runHistory, null, 2)}
-
-IMPORTANT: The player has already completed their intake. You have their full business context above. Do NOT ask them what business they are in, what they do, their revenue, team size, or any intake questions. Jump straight into strategic advice using the Big Book of Strategy framework. Address them directly and reference their specific business context in every response.`;
+  if (hasGameState || sessionContext) {
+    context += `The member has completed their intake. Their business context is above. Do not ask intake questions — address their specific business directly.`;
+  } else {
+    context += `If the member has not completed their intake, respond with exactly: "I don't have your profile loaded yet. Complete the intake form on your dashboard and I'll have everything I need to give you specific advice." Do not invent a business, reference a placeholder, or guess at context.`;
+  }
 
   // If we have conversation history, use multi-turn messages
   if (conversationHistory && conversationHistory.length > 0) {

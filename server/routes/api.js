@@ -42,7 +42,7 @@ router.post('/game/personalize', async (req, res) => {
  * POST /api/game/intake
  * Intake personalization — reads Big Book of Strategy, returns
  * personalized ship name, destination, and industry key.
- * Falls back to lawn care defaults on failure.
+ * Falls back to generic defaults on failure.
  */
 router.post('/game/intake', async (req, res) => {
   try {
