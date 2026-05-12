@@ -45,6 +45,26 @@ app.use('/system', (req, res) => {
   res.status(403).send('Forbidden');
 });
 
+// TEMPORARY DEBUG — remove after confirming soul.md deployment
+app.get('/debug/system-files', (req, res) => {
+  const fs = require('fs');
+  const systemDir = path.join(__dirname, '../system');
+  try {
+    const files = fs.readdirSync(systemDir).map(f => {
+      const stat = fs.statSync(path.join(systemDir, f));
+      return { name: f, size: stat.size, modified: stat.mtime };
+    });
+    const soulExists = files.some(f => f.name === 'soul.md');
+    let soulPreview = null;
+    if (soulExists) {
+      soulPreview = fs.readFileSync(path.join(systemDir, 'soul.md'), 'utf8').substring(0, 100);
+    }
+    res.json({ files, soulExists, soulPreview });
+  } catch (err) {
+    res.json({ error: err.message });
+  }
+});
+
 // Serve config.js from root (needed by frontend modules)
 app.get('/config.js', (req, res) => {
   res.sendFile(path.join(__dirname, '../config.js'));
