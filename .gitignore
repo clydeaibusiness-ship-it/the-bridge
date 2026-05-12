@@ -2,3 +2,8 @@ node_modules/
 .env
 *.log
 .DS_Store
+
+# Spec docs and proprietary content — not source code
+BUILD_SPEC.md
+GAME-REDESIGN-SPEC.md
+big-book-of-strategy.md
