@@ -46,6 +46,24 @@ app.use('/system', (req, res) => {
 });
 
 // TEMPORARY DEBUG — remove after confirming soul.md deployment
+app.get('/debug/clear-commander', async (req, res) => {
+  try {
+    const { getClient } = require('./services/supabase');
+    const db = getClient();
+    if (!db) return res.json({ error: 'No database connection' });
+    const { data: msgs, error: e1 } = await db.from('commander_messages').delete().neq('id', 0).select('id');
+    const { data: sums, error: e2 } = await db.from('commander_summaries').delete().neq('id', 0).select('id');
+    res.json({
+      cleared: true,
+      messagesDeleted: msgs?.length || 0,
+      summariesDeleted: sums?.length || 0,
+      errors: [e1?.message, e2?.message].filter(Boolean)
+    });
+  } catch (err) {
+    res.json({ error: err.message });
+  }
+});
+
 app.get('/debug/system-files', (req, res) => {
   const fs = require('fs');
   const systemDir = path.join(__dirname, '../system');
