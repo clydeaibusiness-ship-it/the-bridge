@@ -245,20 +245,34 @@ async function incrementCommanderUsage(userId) {
 
 // ---- Commander Messages ----
 
-async function saveCommanderMessage(userId, sessionId, role, content) {
+async function saveCommanderMessage(userId, sessionId, role, content, soulVersion = null) {
   const db = getClient();
   if (!db) return null;
 
-  const { data, error } = await db
+  const insertData = {
+    user_id: userId,
+    session_id: sessionId,
+    message_role: role,
+    message_content: content
+  };
+  if (soulVersion) insertData.soul_version = soulVersion;
+
+  let { data, error } = await db
     .from('commander_messages')
-    .insert({
-      user_id: userId,
-      session_id: sessionId,
-      message_role: role,
-      message_content: content
-    })
+    .insert(insertData)
     .select()
     .single();
+
+  // If soul_version column doesn't exist yet, retry without it
+  if (error && soulVersion && error.message && error.message.includes('soul_version')) {
+    console.warn('soul_version column not found, saving without it');
+    delete insertData.soul_version;
+    ({ data, error } = await db
+      .from('commander_messages')
+      .insert(insertData)
+      .select()
+      .single());
+  }
 
   if (error) {
     console.error('Save commander message error:', error.message);
@@ -301,20 +315,46 @@ async function getLatestCommanderSessionId(userId) {
   return { sessionId: data[0].session_id, lastMessageAt: data[0].created_at };
 }
 
-async function getCommanderMessagesForApi(userId, limit = 10) {
+async function getCommanderMessagesForApi(userId, limit = 10, soulVersion = null) {
   const db = getClient();
   if (!db) return [];
 
-  const { data, error } = await db
+  let query = db
     .from('commander_messages')
-    .select('message_role, message_content')
+    .select('message_role, message_content, soul_version')
     .eq('user_id', userId)
     .order('created_at', { ascending: false })
     .limit(limit);
 
+  let { data, error } = await query;
+
+  // If soul_version column doesn't exist yet, query without it
+  if (error && error.message && error.message.includes('soul_version')) {
+    ({ data, error } = await db
+      .from('commander_messages')
+      .select('message_role, message_content')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+      .limit(limit));
+  }
+
   if (error) return [];
+
+  // If we have a soul version, filter out assistant messages from old versions.
+  // User messages always pass through — they're the member's words.
+  // Assistant messages only pass if they match the current soul version
+  // (or have no version tag, for backward compat during transition).
+  let filtered = data || [];
+  if (soulVersion) {
+    filtered = filtered.filter(m => {
+      if (m.message_role === 'user') return true;
+      // Assistant messages: keep if same version or no version tagged yet
+      return !m.soul_version || m.soul_version === soulVersion;
+    });
+  }
+
   // Return in chronological order, formatted for Claude API
-  return (data || []).reverse().map(m => ({
+  return filtered.reverse().map(m => ({
     role: m.message_role,
     content: m.message_content
   }));

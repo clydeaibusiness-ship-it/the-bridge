@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const crypto = require('crypto');
-const { personalizeIntake, generateSituation, generateDebrief, commanderChat, generateConversationSummary, generateChart } = require('../services/claude');
+const { personalizeIntake, generateSituation, generateDebrief, commanderChat, generateConversationSummary, generateChart, getSoulVersion } = require('../services/claude');
 const { 
   saveGameState, getGameState, saveRunHistory, getRunHistory,
   upsertAnonymousEvent, getCommanderUsage, incrementCommanderUsage,
@@ -301,11 +301,15 @@ router.post('/member/commander/message', async (req, res) => {
         sessionId = crypto.randomUUID();
       }
 
-      // Get last 10 messages for API context
-      conversationHistory = await getCommanderMessagesForApi(req.dbUser.id, 10);
+      // Get current soul version for filtering + tagging
+      const soulVersion = getSoulVersion();
 
-      // Save user message
-      await saveCommanderMessage(req.dbUser.id, sessionId, 'user', message);
+      // Get last 10 messages for API context — filtered by soul version
+      // User messages always included; old-soul assistant messages stripped
+      conversationHistory = await getCommanderMessagesForApi(req.dbUser.id, 10, soulVersion);
+
+      // Save user message tagged with current soul version
+      await saveCommanderMessage(req.dbUser.id, sessionId, 'user', message, soulVersion);
     }
 
     const gameState = {};
@@ -319,9 +323,10 @@ router.post('/member/commander/message', async (req, res) => {
       summaryContext
     );
 
-    // Save assistant response
+    // Save assistant response tagged with current soul version
     if (req.dbUser && sessionId) {
-      await saveCommanderMessage(req.dbUser.id, sessionId, 'assistant', response);
+      const soulVersion = getSoulVersion();
+      await saveCommanderMessage(req.dbUser.id, sessionId, 'assistant', response, soulVersion);
     }
 
     res.json({ response });

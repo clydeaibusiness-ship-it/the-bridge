@@ -1,8 +1,25 @@
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 const Anthropic = require('@anthropic-ai/sdk');
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+
+/**
+ * Compute a short hash of soul.md content.
+ * Used to tag messages so we know which soul version they belong to.
+ * When soul.md changes, old assistant messages stop being sent to the API
+ * — the Commander immediately adopts the new personality.
+ */
+function getSoulVersion() {
+  try {
+    const soulPath = path.join(__dirname, '../../system/soul.md');
+    const content = fs.readFileSync(soulPath, 'utf8');
+    return crypto.createHash('md5').update(content).digest('hex').substring(0, 12);
+  } catch (err) {
+    return 'no-soul';
+  }
+}
 
 /**
  * Read strategy book only — used by simulator, intake, debrief, summaries.
@@ -362,5 +379,6 @@ module.exports = {
   generateDebrief,
   commanderChat,
   generateConversationSummary,
-  generateChart
+  generateChart,
+  getSoulVersion
 };
