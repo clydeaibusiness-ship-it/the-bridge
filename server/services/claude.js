@@ -21,17 +21,24 @@ function getStrategyPrompt() {
  * Used by Commander chat and Navigation Chart ONLY.
  */
 function getSystemPrompt() {
-  const soulPrompt = fs.readFileSync(
-    path.join(__dirname, '../../system/soul.md'),
-    'utf8'
-  );
-
-  const strategyPrompt = fs.readFileSync(
-    path.join(__dirname, '../../system/big-book-of-strategy.md'),
-    'utf8'
-  );
-
-  return soulPrompt + '\n\n---\n\n' + strategyPrompt;
+  try {
+    const soulPrompt = fs.readFileSync(
+      path.join(__dirname, '../../system/soul.md'),
+      'utf8'
+    );
+    const strategyPrompt = fs.readFileSync(
+      path.join(__dirname, '../../system/big-book-of-strategy.md'),
+      'utf8'
+    );
+    console.log('Soul file loaded. First 50 chars:', soulPrompt.substring(0, 50));
+    return soulPrompt + '\n\n---\n\n' + strategyPrompt;
+  } catch (err) {
+    console.error('SYSTEM PROMPT ERROR:', err.message);
+    return fs.readFileSync(
+      path.join(__dirname, '../../system/big-book-of-strategy.md'),
+      'utf8'
+    );
+  }
 }
 
 /**
