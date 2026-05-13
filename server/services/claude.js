@@ -276,9 +276,13 @@ async function commanderChat(message, gameState, runHistory, sessionContext, con
 
   const soulPrimer = getSoulPrimer();
 
-  // Build messages array: soul prefill first, then history, then new message
+  // Build messages array: silent user prime, soul prefill, then history, then new message.
+  // Anthropic API requires the first message to be role:user.
   const messages = [
-    ...(soulPrimer ? [{ role: 'assistant', content: soulPrimer }] : []),
+    ...(soulPrimer ? [
+      { role: 'user', content: '.' },
+      { role: 'assistant', content: soulPrimer }
+    ] : []),
     ...(conversationHistory || []),
     { role: 'user', content: message }
   ];
