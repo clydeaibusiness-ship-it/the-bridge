@@ -6,6 +6,20 @@ const Anthropic = require('@anthropic-ai/sdk');
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
 /**
+ * Strip markdown formatting from Commander responses.
+ * The chat window doesn't render markdown, so remove it server-side
+ * to avoid stray asterisks and hash symbols in plain text.
+ */
+function stripMarkdown(text) {
+  return text
+    .replace(/\*\*(.+?)\*\*/g, '$1')   // **bold** → bold
+    .replace(/\*(.+?)\*/g, '$1')       // *italic* → italic
+    .replace(/^#{1,3}\s+/gm, '')       // ### headers → nothing
+    .replace(/^[\-•]\s+/gm, '')        // - or • bullets → clean lines
+    .trim();
+}
+
+/**
  * Compute a short hash of soul.md content.
  * Used to tag messages so we know which soul version they belong to.
  * When soul.md changes, old assistant messages stop being sent to the API
@@ -289,12 +303,12 @@ async function commanderChat(message, gameState, runHistory, sessionContext, con
 
   const response = await client.messages.create({
     model: 'claude-sonnet-4-20250514',
-    max_tokens: 4000,
+    max_tokens: 150,
     system: fullSystem,
     messages
   });
 
-  return response.content[0].text;
+  return stripMarkdown(response.content[0].text);
 }
 
 /**
