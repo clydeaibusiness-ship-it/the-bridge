@@ -123,7 +123,7 @@
     </div>
   </div>
 
-  <script>window.__clerk_publishable_key = 'pk_live_Y2xlcmsuY2FwdGFpbnNicmlkZ2UuaW8k';</script>
+  <script>var x=new XMLHttpRequest();x.open('GET','/api/clerk-key',false);x.send();if(x.status===200){window.__clerk_publishable_key=JSON.parse(x.responseText).key;}</script>
   <script src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@5/dist/clerk.browser.js"></script>
   <script>
     let clerk = null;

@@ -5,17 +5,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>The Bridge — Sign In</title>
   <script>
-    // Clerk hosts the sign-in UI at accounts.captainsbridge.io
-    const params = new URLSearchParams(window.location.search);
-    const base = 'https://accounts.captainsbridge.io/sign-up';
+    // Fetch Clerk config from server so dev and production use correct URLs
+    var x = new XMLHttpRequest();
+    x.open('GET', '/api/clerk-config', false);
+    x.send();
+    var cfg = x.status === 200 ? JSON.parse(x.responseText) : {};
+    var base = (cfg.accountsUrl || 'https://accounts.captainsbridge.io') + '/sign-up';
+    var origin = cfg.origin || 'https://captainsbridge.io';
 
-    // 'action=subscribe' from landing page CTA → after signup go to /subscribe
+    var params = new URLSearchParams(window.location.search);
     if (params.get('action') === 'subscribe') {
-      window.location.replace(base + '?redirect_url=' + encodeURIComponent('https://captainsbridge.io/subscribe'));
+      window.location.replace(base + '?redirect_url=' + encodeURIComponent(origin + '/subscribe'));
     } else {
-      // Default: after login/signup go to dashboard (server gate will catch free users)
-      const returnTo = params.get('return') || '/dashboard';
-      window.location.replace(base + '?redirect_url=' + encodeURIComponent('https://captainsbridge.io' + returnTo));
+      var returnTo = params.get('return') || '/dashboard';
+      window.location.replace(base + '?redirect_url=' + encodeURIComponent(origin + returnTo));
     }
   </script>
 </head>

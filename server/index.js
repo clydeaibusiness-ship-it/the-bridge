@@ -88,6 +88,41 @@ app.get('/config.js', (req, res) => {
   res.sendFile(path.join(__dirname, '../config.js'));
 });
 
+// Serve Clerk publishable key from env (so dev/prod use different keys)
+app.get('/api/clerk-key', (req, res) => {
+  res.json({ key: process.env.CLERK_PUBLISHABLE_KEY || '' });
+});
+
+// Serve Clerk config for login page (accounts URL + origin)
+app.get('/api/clerk-config', (req, res) => {
+  const key = process.env.CLERK_PUBLISHABLE_KEY || '';
+  const isDevKey = key.startsWith('pk_test_');
+  if (isDevKey) {
+    // Dev Clerk instance — decode the domain from the key
+    // pk_test_ keys encode the Clerk frontend API domain in base64 after the prefix
+    let accountsUrl = '';
+    try {
+      const encoded = key.replace('pk_test_', '').replace(/\$$/g, '');
+      const decoded = Buffer.from(encoded, 'base64').toString();
+      // decoded is like 'clerk.xyz.accounts.dev' — accounts URL is 'https://xyz.accounts.dev'
+      accountsUrl = 'https://' + decoded.replace('clerk.', '');
+    } catch (e) {
+      accountsUrl = '';
+    }
+    res.json({
+      accountsUrl,
+      origin: process.env.BASE_URL || req.protocol + '://' + req.get('host'),
+      isDev: true
+    });
+  } else {
+    res.json({
+      accountsUrl: 'https://accounts.captainsbridge.io',
+      origin: 'https://captainsbridge.io',
+      isDev: false
+    });
+  }
+});
+
 // Serve data files
 app.use('/data', express.static(path.join(__dirname, '../public/data')));
 
