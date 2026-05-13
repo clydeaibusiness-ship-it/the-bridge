@@ -529,8 +529,22 @@
 
   function formatDollar(n) {
     if (n >= 1000000000) {
-      var b = (n / 1000000000);
-      return '$' + (b % 1 === 0 ? b.toFixed(0) : b.toFixed(1)) + 'B';
+      var b = n / 1000000000;
+      if (b >= 100) return '$' + Math.round(b) + 'B';
+      if (b >= 10) return '$' + b.toFixed(1) + 'B';
+      return '$' + b.toFixed(2) + 'B';
+    }
+    if (n >= 1000000) {
+      var m = n / 1000000;
+      if (m >= 100) return '$' + Math.round(m) + 'M';
+      if (m >= 10) return '$' + m.toFixed(1) + 'M';
+      return '$' + m.toFixed(2) + 'M';
+    }
+    if (n >= 1000) {
+      var k = n / 1000;
+      if (k >= 100) return '$' + Math.round(k) + 'K';
+      if (k >= 10) return '$' + k.toFixed(1) + 'K';
+      return '$' + k.toFixed(2) + 'K';
     }
     return '$' + n.toLocaleString();
   }
