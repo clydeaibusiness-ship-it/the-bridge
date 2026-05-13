@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Bridge — Grant Radar</title>
+  <link rel="stylesheet" href="/css/global.css">
+  <link rel="stylesheet" href="/css/grant-radar.css">
+  <link rel="stylesheet" href="/css/nav.css">
+  <style>html, body { overflow: visible !important; height: auto !important; background: #f5f0e8 !important; color: #0a0a0f !important; }</style>
+  <script>window.__clerk_publishable_key = 'pk_live_Y2xlcmsuY2FwdGFpbnNicmlkZ2UuaW8k';</script>
+  <script src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@5/dist/clerk.browser.js"></script>
+</head>
+<body class="gr-body">
+  <div class="gr-page">
+
+    <!-- NAV -->
+    <nav class="site-nav">
+      <a href="/" class="site-nav-brand">The Bridge</a>
+      <div class="site-nav-links">
+        <a href="/simulator">Simulator</a>
+        <span class="site-nav-sep">|</span>
+        <a href="/navigation-chart">Navigator</a>
+        <span class="site-nav-sep">|</span>
+        <a href="/grant-radar" class="nav-active">Grant Radar</a>
+        <span class="site-nav-sep">|</span>
+        <a href="/dashboard">Dashboard</a>
+        <span class="site-nav-sep">|</span>
+        <a href="/api/auth/logout">Sign Out</a>
+      </div>
+      <button class="site-nav-hamburger" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+      <div class="site-nav-mobile" id="mobile-menu"><button class="site-nav-mobile-close" aria-label="Close">✕</button>
+        <a href="/simulator">Simulator</a>
+        <a href="/navigation-chart">Navigator</a>
+        <a href="/grant-radar" class="nav-active">Grant Radar</a>
+        <a href="/dashboard">Dashboard</a>
+        <a href="/api/auth/logout">Sign Out</a>
+      </div>
+    </nav>
+
+    <!-- HEADER -->
+    <header class="gr-header">
+      <div class="gr-label">GRANT RADAR</div>
+      <div class="gr-subtitle">Grant Radar reads your business profile and matches it against live federal grant opportunities published by the U.S. government through Grants.gov. Every result shown meets a minimum 80% match with your specific business inputs. All grant data is sourced directly from the official federal grant database and is publicly available information.</div>
+      <div class="gr-scan-info" id="last-scan"></div>
+      <div class="gr-scan-info" id="next-scan"></div>
+      <button class="gr-rescan-btn" id="rescan-btn" style="display:none;">Run new scan →</button>
+      <button class="gr-edit-btn" id="edit-profile-btn" style="display:none;">Edit profile →</button>
+    </header>
+
+    <!-- ACKNOWLEDGMENT BOX (first visit only) -->
+    <div class="gr-acknowledgment" id="gr-acknowledgment" style="display:none;">
+      <p class="gr-acknowledgment-text">Grant Radar displays federal grant opportunities sourced directly from Grants.gov, the official U.S. government grant database. All data is publicly available information. Match percentages reflect alignment between your profile and listed eligibility criteria — they are not guarantees of eligibility or award. Grant availability can change at any time. Always verify with the awarding agency before applying. By using Grant Radar you agree to the terms described in our <a href="/terms" target="_blank">Terms of Service</a>.</p>
+      <button class="gr-acknowledgment-btn" id="gr-acknowledge-btn">I understand — show my matches →</button>
+    </div>
+
+    <!-- REFRESH BANNER -->
+    <div class="gr-refresh-banner" id="refresh-banner">Your Grant Radar refreshed today with new results.</div>
+
+    <!-- INTAKE FORM (shown if not complete) -->
+    <div id="intake-section" style="display:none;">
+      <div class="gr-intake">
+        <div class="gr-intake-title">Before we scan, tell us a bit more about your business.</div>
+        <div class="gr-intake-note">These answers supplement your existing profile. You will only see fields you have not already answered.</div>
+
+        <form id="grant-intake-form">
+          <!-- Q1: City and State -->
+          <div class="gr-field" id="field-city-state">
+            <label>What city and state is your business located in?</label>
+            <div style="display:flex;gap:10px;">
+              <input type="text" id="intake-city" placeholder="City" style="flex:1;" required>
+              <select id="intake-state" style="flex:1;" required>
+                <option value="">State</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Q1b: County/Township -->
+          <div class="gr-field" id="field-county">
+            <label>What county or township does your business operate in?</label>
+            <input type="text" id="intake-county" placeholder="e.g. Centre County, College Township" required>
+            <div class="gr-hint">Many local grants are administered at the county or township level. Include both if applicable.</div>
+          </div>
+
+          <!-- Q2: Legal Entity -->
+          <div class="gr-field" id="field-entity">
+            <label>How is your business legally structured?</label>
+            <select id="intake-entity" required>
+              <option value="">Select one</option>
+              <option value="Sole proprietorship">Sole proprietorship</option>
+              <option value="Partnership">Partnership</option>
+              <option value="LLC">LLC (Limited Liability Company)</option>
+              <option value="S-Corporation">S-Corporation</option>
+              <option value="C-Corporation">C-Corporation</option>
+              <option value="Nonprofit — 501(c)(3)">Nonprofit — 501(c)(3)</option>
+              <option value="Nonprofit — other">Nonprofit — other</option>
+              <option value="Not yet registered">Not yet registered</option>
+            </select>
+          </div>
+
+          <!-- Q3: Granular Revenue -->
+          <div class="gr-field" id="field-revenue">
+            <label>What was your business's total revenue last year?</label>
+            <select id="intake-revenue" required>
+              <option value="">Select range</option>
+              <option value="$0 — Pre-revenue">$0 — Pre-revenue</option>
+              <option value="$1 to $10,000">$1 to $10,000</option>
+              <option value="$10,001 to $25,000">$10,001 to $25,000</option>
+              <option value="$25,001 to $50,000">$25,001 to $50,000</option>
+              <option value="$50,001 to $100,000">$50,001 to $100,000</option>
+              <option value="$100,001 to $150,000">$100,001 to $150,000</option>
+              <option value="$150,001 to $300,000">$150,001 to $300,000</option>
+              <option value="$300,001 to $500,000">$300,001 to $500,000</option>
+              <option value="$500,001 to $1,000,000">$500,001 to $1,000,000</option>
+              <option value="$1,000,001 to $5,000,000">$1,000,001 to $5,000,000</option>
+              <option value="Over $5,000,000">Over $5,000,000</option>
+            </select>
+          </div>
+
+          <!-- Q4: Owner Demographics -->
+          <div class="gr-field" id="field-demographics">
+            <label>Which of the following apply to you or your business? Select all that apply.</label>
+            <div class="gr-checkboxes">
+              <label><input type="checkbox" value="Woman-owned"> Woman-owned (51%+ owned by a woman)</label>
+              <label><input type="checkbox" value="Minority-owned"> Minority-owned (51%+ owned by a person of color)</label>
+              <label><input type="checkbox" value="Veteran-owned"> Veteran-owned (51%+ owned by a US military veteran)</label>
+              <label><input type="checkbox" value="Service-disabled veteran-owned"> Service-disabled veteran-owned</label>
+              <label><input type="checkbox" value="Rural area"> Located in a rural area (town &lt; 50,000)</label>
+              <label><input type="checkbox" value="Economically distressed area"> Located in an economically distressed area or opportunity zone</label>
+              <label><input type="checkbox" value="LGBTQ+-owned"> LGBTQ+-owned</label>
+              <label><input type="checkbox" id="demo-none" value="None"> None of the above</label>
+            </div>
+          </div>
+
+          <!-- Q5: Grant Fund Use (select up to 2) -->
+          <div class="gr-field" id="field-fund-use">
+            <label>If you received a grant, what would you use it for? Select up to 2.</label>
+            <div class="gr-checkboxes" id="fund-use-checkboxes">
+              <label><input type="checkbox" value="Hiring employees or expanding my team"> Hiring employees or expanding my team</label>
+              <label><input type="checkbox" value="Purchasing equipment or technology"> Purchasing equipment or technology</label>
+              <label><input type="checkbox" value="Research and development"> Research and development</label>
+              <label><input type="checkbox" value="Opening or expanding a physical location"> Opening or expanding a physical location</label>
+              <label><input type="checkbox" value="Marketing and customer acquisition"> Marketing and customer acquisition</label>
+              <label><input type="checkbox" value="Export or international trade"> Export or international trade</label>
+              <label><input type="checkbox" value="Workforce training and development"> Workforce training and development</label>
+              <label><input type="checkbox" value="Community or social impact programs"> Community or social impact programs</label>
+              <label><input type="checkbox" value="General operating costs and stability"> General operating costs and stability</label>
+              <label><input type="checkbox" value="I am not sure yet"> I am not sure yet</label>
+            </div>
+          </div>
+
+          <!-- Q6: SAM.gov -->
+          <div class="gr-field" id="field-sam">
+            <label>Is your business registered on SAM.gov?</label>
+            <div class="gr-radios">
+              <label><input type="radio" name="sam" value="Yes"> Yes</label>
+              <label><input type="radio" name="sam" value="No"> No</label>
+            </div>
+            <button type="button" class="gr-info-link" id="sam-what">What is SAM.gov? →</button>
+            <div class="gr-sam-explain" id="sam-explain">
+              SAM.gov is the federal government's official vendor and grant recipient registration system. Most federal grants require registration before you can apply. It is free and takes about 30 minutes. We will flag any grant results that require it.
+            </div>
+          </div>
+
+          <!-- Q7: NAICS Code -->
+          <div class="gr-field" id="field-naics">
+            <label>Do you know your business's NAICS code?</label>
+            <input type="text" id="intake-naics" placeholder="e.g. 561730 for Landscaping Services">
+            <div class="gr-hint">This is the federal industry classification code. If you don't have one, leave this blank — we'll estimate it from your business description. <a href="https://www.census.gov/naics/" target="_blank">Look up your NAICS code →</a></div>
+          </div>
+
+          <button type="submit" class="gr-submit-btn" id="intake-submit">Start scanning →</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- LOADING -->
+    <div id="loading-section" style="display:none;">
+      <div class="gr-loading">
+        <div class="gr-spinner"></div>
+        <div class="gr-loading-text">Scanning grant databases matched to your business profile...</div>
+      </div>
+    </div>
+
+    <!-- RESULTS -->
+    <div id="results-section" style="display:none;">
+      <!-- Saved Grants -->
+      <div class="gr-saved-section" id="saved-section" style="display:none;">
+        <button class="gr-saved-toggle" id="saved-toggle">SAVED GRANTS (0)</button>
+        <div class="gr-saved-list" id="saved-list"></div>
+      </div>
+
+      <!-- Federal -->
+      <div class="gr-section-header">FEDERAL</div>
+      <div id="federal-results"></div>
+
+      <!-- State -->
+      <div class="gr-section-header" id="state-header">STATE GRANTS</div>
+      <div id="state-results"></div>
+
+      <!-- Local -->
+      <div class="gr-section-header" id="local-header">LOCAL GRANTS</div>
+      <div id="local-results"></div>
+    </div>
+
+  </div>
+
+  <script src="/js/nav.js"></script>
+  <script>
+    // Initialize Clerk (tier gate handled server-side)
+    window.__grClerkReady = (async function() {
+      try {
+        var clerk = window.Clerk;
+        if (!clerk) return null;
+        if (!clerk.loaded) await clerk.load();
+        if (clerk.user) {
+          window.__grClerk = clerk;
+          return clerk;
+        }
+        return null;
+      } catch(e) {
+        console.error('Clerk init:', e);
+        return null;
+      }
+    })();
+  </script>
+  <script src="/js/grant-radar.js"></script>
+</body>
+</html>
