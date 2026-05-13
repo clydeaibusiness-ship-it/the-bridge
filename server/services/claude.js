@@ -1,14 +1,30 @@
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 const Anthropic = require('@anthropic-ai/sdk');
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
 /**
- * Read the Big Book of Strategy at call time (not startup)
- * so owner edits take effect immediately
+ * Compute a short hash of soul.md content.
+ * Used to tag messages so we know which soul version they belong to.
+ * When soul.md changes, old assistant messages stop being sent to the API
+ * — the Commander immediately adopts the new personality.
  */
-function getSystemPrompt() {
+function getSoulVersion() {
+  try {
+    const soulPath = path.join(__dirname, '../../system/soul.md');
+    const content = fs.readFileSync(soulPath, 'utf8');
+    return crypto.createHash('md5').update(content).digest('hex').substring(0, 12);
+  } catch (err) {
+    return 'no-soul';
+  }
+}
+
+/**
+ * Read strategy book only — used by simulator, intake, debrief, summaries.
+ */
+function getStrategyPrompt() {
   return fs.readFileSync(
     path.join(__dirname, '../../system/big-book-of-strategy.md'),
     'utf8'
@@ -16,10 +32,37 @@ function getSystemPrompt() {
 }
 
 /**
- * Call Claude with the strategy framework as system context
+ * Read soul.md + Big Book of Strategy at call time (not startup)
+ * so owner edits take effect immediately.
+ * soul.md loads FIRST (identity), then big-book-of-strategy.md (knowledge).
+ * Used by Commander chat and Navigation Chart ONLY.
+ */
+function getSystemPrompt() {
+  try {
+    const soulPrompt = fs.readFileSync(
+      path.join(__dirname, '../../system/soul.md'),
+      'utf8'
+    );
+    const strategyPrompt = fs.readFileSync(
+      path.join(__dirname, '../../system/big-book-of-strategy.md'),
+      'utf8'
+    );
+    return soulPrompt + '\n\n---\n\n' + strategyPrompt;
+  } catch (err) {
+    console.error('SYSTEM PROMPT ERROR:', err.message);
+    return fs.readFileSync(
+      path.join(__dirname, '../../system/big-book-of-strategy.md'),
+      'utf8'
+    );
+  }
+}
+
+/**
+ * Call Claude with strategy-only system context.
+ * Used by simulator, intake, debrief, summaries — NOT Commander/Chart.
  */
 async function callClaude(userContent, additionalContext = '') {
-  const systemPrompt = getSystemPrompt();
+  const systemPrompt = getStrategyPrompt();
   const fullSystem = additionalContext
     ? `${systemPrompt}\n\n---\n\n${additionalContext}`
     : systemPrompt;
@@ -196,21 +239,23 @@ ${JSON.stringify(intakeAnswers, null, 2)}`;
  * Commander chat — strategic advice with full business context.
  * Now supports conversation history passed as messages array.
  */
-async function commanderChat(message, gameState, runHistory, sessionContext, conversationHistory, summaryContext) {
+async function commanderChat(message, gameState, runHistory, sessionContext, conversationHistory, summaryContext, sessionNotesContext) {
+  // Build pure data context — no behavioral instructions.
+  // The soul file is the ONLY source of behavioral directives.
   let context = '';
+  if (sessionNotesContext) {
+    context += sessionNotesContext + '\n\n';
+  }
   if (summaryContext) {
     context += `Summary of previous conversation:\n${summaryContext}\n\n`;
   }
   if (sessionContext) {
     context += sessionContext + '\n\n';
   }
-  context += `The player's current game state:
-${JSON.stringify(gameState, null, 2)}
-
-Their run history:
-${JSON.stringify(runHistory, null, 2)}
-
-IMPORTANT: The player has already completed their intake. You have their full business context above. Do NOT ask them what business they are in, what they do, their revenue, team size, or any intake questions. Jump straight into strategic advice using the Big Book of Strategy framework. Address them directly and reference their specific business context in every response.`;
+  const hasRunHistory = runHistory && runHistory.length > 0;
+  if (hasRunHistory) {
+    context += `Previous simulator runs:\n${JSON.stringify(runHistory, null, 2)}\n\n`;
+  }
 
   // If we have conversation history, use multi-turn messages
   if (conversationHistory && conversationHistory.length > 0) {
@@ -235,7 +280,20 @@ IMPORTANT: The player has already completed their intake. You have their full bu
     return response.content[0].text;
   }
 
-  return await callClaude(message, context);
+  // No history — still use full system prompt (soul + strategy)
+  const systemPrompt = getSystemPrompt();
+  const fullSystem = context
+    ? `${systemPrompt}\n\n---\n\n${context}`
+    : systemPrompt;
+
+  const response = await client.messages.create({
+    model: 'claude-sonnet-4-20250514',
+    max_tokens: 4000,
+    system: fullSystem,
+    messages: [{ role: 'user', content: message }]
+  });
+
+  return response.content[0].text;
 }
 
 /**
@@ -287,10 +345,52 @@ Return this exact JSON structure with 6 sections. Each section has a "title" and
   ]
 }`;
 
-  const response = await callClaude(prompt);
-  const jsonMatch = response.match(/\{[\s\S]*\}/);
+  // Navigation Chart uses full system prompt (soul + strategy)
+  const systemPrompt = getSystemPrompt();
+  const fullSystem = additionalContext
+    ? `${systemPrompt}\n\n---\n\nAdditional context from the player's web presence:${additionalContext}`
+    : systemPrompt;
+
+  const response = await client.messages.create({
+    model: 'claude-sonnet-4-20250514',
+    max_tokens: 4000,
+    system: fullSystem,
+    messages: [{ role: 'user', content: prompt }]
+  });
+
+  const text = response.content[0].text;
+  const jsonMatch = text.match(/\{[\s\S]*\}/);
   if (jsonMatch) return JSON.parse(jsonMatch[0]);
-  return JSON.parse(response);
+  return JSON.parse(text);
+}
+
+/**
+ * Extract structured knowledge from a completed Commander session.
+ * Called when 30+ minutes of inactivity ends a session.
+ * Returns { operator_insights, strategic_ground, unresolved_threads }
+ */
+async function compressSession(conversationMessages) {
+  const formatted = conversationMessages.map(m => {
+    const role = m.message_role === 'user' ? 'Member' : 'Commander';
+    return `${role}: ${m.message_content}`;
+  }).join('\n\n');
+
+  const response = await client.messages.create({
+    model: 'claude-sonnet-4-20250514',
+    max_tokens: 1500,
+    system: 'You are extracting meaningful knowledge from a business advisory conversation. Be precise and brief. Return only a JSON object with no markdown, no backticks, no prose.',
+    messages: [{
+      role: 'user',
+      content: `Extract the following from this conversation and return as JSON:\n{\n  "operator_insights": [array of strings — personal observations about who this person is, how they think, what drives them, what they avoid],\n  "strategic_ground": [array of strings — specific levers discussed, recommendations made, decisions reached],\n  "unresolved_threads": [array of strings — open questions, problems named but not solved, things left hanging]\n}\n\nConversation:\n${formatted}`
+    }]
+  });
+
+  const text = response.content[0].text;
+  const jsonMatch = text.match(/\{[\s\S]*\}/);
+  if (!jsonMatch) {
+    throw new Error('compressSession: Claude returned non-JSON response: ' + text.substring(0, 200));
+  }
+  return JSON.parse(jsonMatch[0]);
 }
 
 module.exports = {
@@ -300,5 +400,7 @@ module.exports = {
   generateDebrief,
   commanderChat,
   generateConversationSummary,
-  generateChart
+  generateChart,
+  getSoulVersion,
+  compressSession
 };

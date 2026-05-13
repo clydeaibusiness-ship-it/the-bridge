@@ -45,10 +45,14 @@ app.use('/system', (req, res) => {
   res.status(403).send('Forbidden');
 });
 
+
+
 // Serve config.js from root (needed by frontend modules)
 app.get('/config.js', (req, res) => {
   res.sendFile(path.join(__dirname, '../config.js'));
 });
+
+
 
 // Serve data files
 app.use('/data', express.static(path.join(__dirname, '../public/data')));

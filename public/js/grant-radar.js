@@ -591,6 +591,27 @@
 
     card.appendChild(chips);
 
+    // Link quality label
+    if (grant.link_quality) {
+      var lqChip = document.createElement('span');
+      if (grant.link_quality === 'direct') {
+        lqChip.className = 'gr-chip gr-chip-link-direct';
+        lqChip.textContent = 'Direct application link';
+      } else if (grant.link_quality === 'program_page') {
+        lqChip.className = 'gr-chip gr-chip-link-program';
+        lqChip.textContent = 'Program page \u2014 find application inside';
+      } else if (grant.link_quality === 'homepage') {
+        lqChip.className = 'gr-chip gr-chip-link-homepage';
+        lqChip.textContent = 'Homepage \u2014 navigate to find application';
+      }
+      if (lqChip.textContent) {
+        var lqRow = document.createElement('div');
+        lqRow.style.marginBottom = '8px';
+        lqRow.appendChild(lqChip);
+        card.appendChild(lqRow);
+      }
+    }
+
     // Row 4: What to shift (expandable inline — does NOT navigate)
     if (grant.gaps && grant.gaps.length > 0 && grant.matchPercent < 100) {
       var trigger = document.createElement('button');

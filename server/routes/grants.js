@@ -57,17 +57,6 @@ function verifyToken(token) {
   }
 }
 
-// ---- Debug: test intake save (TEMPORARY — remove after testing) ----
-router.get('/debug-auth', async (req, res) => {
-  res.json({
-    hasDbUser: !!req.dbUser,
-    userId: req.dbUser?.id || null,
-    hasCookie: !!req.cookies?.__session,
-    hasAuthHeader: !!req.headers.authorization,
-    clerkUserId: req.userId || null
-  });
-});
-
 // ---- Grant Radar Acknowledgment ----
 
 router.get('/acknowledgment-status', requireAuth, async (req, res) => {

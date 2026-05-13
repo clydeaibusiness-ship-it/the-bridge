@@ -1,43 +1,29 @@
 <!--
 OWNER INSTRUCTIONS:
-This file is the brain behind every AI response in The Bridge.
-Edit it directly in Replit to update the framework, add new books,
-or add new case studies. Changes take effect on the next API call.
-No redeployment needed.
+This file is the knowledge base behind every Commander and Navigation Chart response.
+It loads AFTER soul.md in the system prompt. Never reorder this.
+Edit directly in the repository to update the framework, add new books, or add case studies.
+Changes take effect on the next API call. No redeployment needed.
 
 TO ADD A NEW BOOK:
-Add a new section at the bottom of the Levers section following
-the same format as existing entries. Include the book title in
-parentheses after each bullet point it contributes.
+Add a new section at the bottom of the Levers section following the same format.
+Include the book title in parentheses after each bullet point it contributes.
 
 TO ADD A CASE STUDY:
-Add entries to /public/data/case-studies.json following the
-existing format. Index them by threat_id so they retrieve correctly.
+Add entries to /public/data/case-studies.json following the existing format.
 -->
 
 # The Big Book of Strategy
-
-## Who You Are
-
-You are a direct, compassionate business strategy advisor operating exclusively from the framework in this document. You advise established small business owners doing $50K to $500K annually.
-
-You do not flatter. You do not soften findings that matter. You challenge thinking the way a trusted mentor would - honestly, specifically, and with the founder's best outcome as the only agenda.
-
-You never give generic advice that could apply to any business. Every response is specific to the business in front of you. Every recommendation is grounded in the levers below. You name the lever. You name the sequence. You name what success looks like before the next move.
-
-When you do not have enough information to give a specific answer, you ask for it. You never fill gaps with assumptions dressed up as insight.
-
----
 
 ## The Strategy Canvas
 
 *Every lever pulled should serve answers already committed to on this canvas. Revisit it every time the business changes fundamentally.*
 
 **Problem**
-What specific, painful problem are you solving? It should be urgent enough that people are already attempting to solve it imperfectly - through workarounds, manual effort, or inferior alternatives. If no one is currently attempting to solve it, question whether the pain justifies a business.
+What specific, painful problem are you solving? It should be urgent enough that people are already attempting to solve it imperfectly — through workarounds, manual effort, or inferior alternatives. If no one is currently attempting to solve it, question whether the pain justifies a business.
 
 **Customer Segments**
-Who experiences this problem most acutely? Not everyone - the narrowest, most clearly defined group for whom your solution is the most obviously right. A product built for everyone is built for no one. Precision here is survival. Segments expand as the business scales.
+Who experiences this problem most acutely? Not everyone — the narrowest, most clearly defined group for whom your solution is the most obviously right. A product built for everyone is built for no one. Precision here is survival. Segments expand as the business scales.
 
 **Unique Value Proposition**
 In one sentence: what do you do, for whom, and why is it meaningfully different from every alternative they currently have? If the answer requires more than one sentence, the proposition is not yet unique enough.
@@ -52,223 +38,234 @@ What do you have that cannot be easily bought, copied, or replicated by a well-f
 How do customers find you, evaluate you, buy from you, and receive value from you? The best channel is one your target customer already uses and trusts. Channels that require customers to change behavior are expensive and slow.
 
 **Revenue Streams**
-How does the business get paid, and is that the same thing as where it actually makes money? Pricing structure - subscription, ownership, licensing, usage, membership, transaction fee - shapes customer behavior and determines what kind of business you are building.
+How does the business get paid, and is that the same thing as where it actually makes money? Pricing structure — subscription, ownership, licensing, usage, membership, transaction fee — shapes customer behavior and determines what kind of business you are building.
 
 **Cost Structure**
 What are your fixed costs regardless of volume, and what scales with activity? Which costs are investments that compound, and which are pure expenses? A business that doesn't understand its cost structure cannot price correctly, scale deliberately, or survive a downturn.
 
 **Key Metrics**
-What is the single number that most honestly tells you whether the business is healthy right now? Not the number that looks best - the one that, if it moved against you, signals a real problem. Know what you are measuring and why it matters.
+What is the single number that most honestly tells you whether the business is healthy right now? Not the number that looks best — the one that, if it moved against you, signals a real problem. Know what you are measuring and why it matters.
 
 ---
 
 ## The Levers
 
-### Lever 1 - Positioning / Focus
+### Lever 1 — Positioning / Focus
 
 *Get this wrong and every other lever you pull is pointed in the wrong direction.*
 
 - Am I competing where I can win, or fighting on someone else's terms in a market they already own?
 - Keep it stupid simple, especially in your offerings. If a customer has to think hard about what you do or why they need it, you've already lost most of them.
 - You don't have to be the best to win. You have to be the favorite. Red Bull doesn't make the best energy drink. Coca-Cola doesn't make the best cola. They own an emotional territory so completely that logic doesn't get a vote.
-- What emotional state do you want to own? The most powerful positioning is being the thing someone automatically reaches for when they feel a specific way - bored, anxious, ambitious, celebratory.
-- Am I in a red ocean - fighting established competitors for fixed existing demand - or can I create a blue ocean, an uncontested market space where I define the rules and the competition becomes irrelevant? (Blue Ocean Strategy - Kim and Mauborgne)
-- Are you going from zero to one - creating something genuinely new - or from one to n, entering an existing market and competing for share? Competition destroys profits over time. A monopoly built on something unique you do that no one else can replicate preserves them. (Zero to One - Thiel)
-- What important truth do very few people agree with you on? The gap between what the market believes and what you know to be true is where your real competitive advantage lives. (Zero to One - Thiel)
-- In most cases it is safer and smarter to take a proven model, execute it better, and improve on it rather than pioneer a category from scratch. Pioneers get arrows. The second or third mover learns from the pioneer's mistakes and captures the market. (The Dhandho Investor - Pabrai)
+- What emotional state do you want to own? The most powerful positioning is being the thing someone automatically reaches for when they feel a specific way — bored, anxious, ambitious, celebratory.
+- Am I in a red ocean — fighting established competitors for fixed existing demand — or can I create a blue ocean, an uncontested market space where I define the rules and the competition becomes irrelevant? (Blue Ocean Strategy — Kim and Mauborgne)
+- Are you going from zero to one — creating something genuinely new — or from one to n, entering an existing market and competing for share? Competition destroys profits over time. A monopoly built on something unique preserves them. (Zero to One — Thiel)
+- What important truth do very few people agree with you on? The gap between what the market believes and what you know to be true is where your real competitive advantage lives. (Zero to One — Thiel)
+- In most cases it is safer and smarter to take a proven model, execute it better, and improve on it rather than pioneer a category from scratch. Pioneers get arrows. The second or third mover learns from the pioneer's mistakes and captures the market. (The Dhandho Investor — Pabrai)
+- The most dangerous competitor is not the one attacking your strengths — it is the one making your entire category irrelevant. Always ask: is there a world where what we do simply stops mattering? (Blue Ocean Strategy — Kim and Mauborgne)
+- Are you optimizing for the short game or the infinite game? Businesses that play to win a finite contest eventually run out of will, resources, or relevance. Businesses that play to keep playing outlast competitors who are only trying to win. (The Infinite Game — Sinek)
 
 ---
 
-### Lever 2 - Information Asymmetry
+### Lever 2 — Information Asymmetry
 
-*Your edge lives here. If you don't know something your competitors don't, you are competing on execution alone - and someone with more resources will eventually outexecute you.*
+*Your edge lives here. If you don't know something your competitors don't, you are competing on execution alone — and someone with more resources will eventually outexecute you.*
 
 - What do I know that my competitors don't? Information advantages are temporary, so the question is not just whether you have an edge today but how you keep generating new ones.
-- What secret are you sitting on - an important truth about your customer, market, or category that the industry hasn't priced in yet? If your insight is obvious, so is your competition. (Zero to One - Thiel)
-- Is what you're selling the same thing as where you make your money? The most durable business models separate the two. Costco barely profits on products - the membership is the business.
-- Do you understand the real, irrational reasons your customers buy - not the logical justifications they give you, but the unconscious emotional drivers underneath? People don't run on logic. They run on psycho-logic. (Alchemy - Sutherland)
-- Are you measuring what actually moves the business, or metrics that feel good but obscure reality? Vanity metrics create the illusion of progress while real problems go invisible. (The Lean Startup - Ries)
-- Go to the source. Direct observation of how your product or process actually works in the real world will consistently reveal what reports and dashboards cannot. (The Toyota Way - Liker: genchi genbutsu - go and see for yourself.)
+- Before you validate your solution, validate your problem. Most businesses fail not because they built something bad but because they built something nobody actually needed badly enough. (The Mom Test — Fitzpatrick)
+- Customers lie — not to be malicious but to be polite. "That sounds interesting" and "I would definitely buy that" are worthless data. Watch what people do with their time and money, not what they say they will do. (The Mom Test — Fitzpatrick)
+- The mom test: would your mom give you honest feedback about your business idea? Probably not. Design every customer conversation so that even your mom couldn't lie to you — ask about their life, their problems, their past behavior, not your solution. (The Mom Test — Fitzpatrick)
+- Go and see for yourself. Data tells you what happened. Being present tells you why. The most important insights about your business are usually visible only at ground level. (The Toyota Way — Liker: genchi genbutsu)
+- The uncomfortable truth your best customers are not telling you is more valuable than the positive feedback they freely offer. Create systems to surface what people are avoiding saying. (The Mom Test — Fitzpatrick)
+- Counterintuitive thinking is a form of information asymmetry. If the obvious answer were correct, your competitors would already be doing it. When conventional wisdom says one thing, ask what would have to be true for the opposite to be right. (Think Like a Freak — Levitt and Dubner)
 
 ---
 
-### Lever 3 - Time
+### Lever 3 — Time
 
-*How you allocate time is how you allocate the business. Most businesses spend the first 80% of their time on things that produce 20% of the results.*
+*You cannot manage what you cannot measure, and most businesses measure the wrong things.*
 
-- 80% of your results come from 20% of your efforts. Identify that 20% and protect it ruthlessly from everything else demanding your attention.
-- Am I thinking five moves ahead - mapping my competitor's likely response to my move, and my response to theirs - or reacting to whatever is in front of me today? (Your Next Five Moves - Bet-David)
-- Am I making few bets, big bets, and infrequent bets - only moving when the odds are overwhelmingly in my favor? Frequent, scattered bets dilute focus and capital. (The Dhandho Investor - Pabrai)
-- Is now the right moment to enter this market? Too early means you educate the market for someone else. Too late means you fight for scraps. (Zero to One - Thiel)
-- Are my highest-value decisions being made at peak cognitive time, not during the mental trough that hits most people in the early afternoon? Time of day accounts for roughly 20% of the variance in human performance. (When - Pink)
-- Am I working in focused, fixed cycles with built-in reflection, or grinding without measuring? Short sprints force visible progress and surface problems before they compound. (Scrum - Sutherland)
-- Slow is smooth, smooth is fast. Deliberate, unhurried execution with a level workload consistently outperforms fast and chaotic production because errors compound and rework costs more than care. Speed is the byproduct of discipline, not urgency. (The Toyota Way - Liker: heijunka - level the workload.)
-
----
-
-### Lever 4 - Capital
-
-*Capital deployed without a clear thesis is just spending. Every allocation is a bet. Treat it like one.*
-
-- Where is my highest ROI allocation right now?
-- Is the downside of this bet truly limited while the upside is asymmetric? Heads I win, tails I don't lose much. If you can't clearly articulate the floor of the loss, you don't yet understand the bet. (The Dhandho Investor - Pabrai)
-- Test your most important assumptions with the smallest possible investment before committing large resources. A wrong assumption at scale is a catastrophe. The same assumption tested small is tuition. (The Lean Startup - Ries)
-- Do I have a loss leader - something offered at cost or below that pulls people into the relationship? The loss leader is not charity. It is a calculated acquisition tool. (Costco's $1.50 hot dog, Arizona Tea's 99-cent can.)
-- Spend 95% of your budget with precision and accountability. Reserve the last 5% to spend unreasonably - on moments of unexpected generosity or quality that no competitor would justify on a spreadsheet. That 5% produces a disproportionate share of loyalty and word of mouth. (Unreasonable Hospitality - Guidara)
-- Do people own or rent my product? Ownership creates switching costs. Rental creates recurring revenue. Know which one you are building and why.
-- Do I rent or own my critical assets? Owning provides control and margin. Renting preserves flexibility and cash.
-- Do I need to vertically integrate - owning both the product and the distribution or infrastructure it depends on? Tesla sells cars and builds the charging network because one without the other is a fragile bet.
+- What is the one number — the single metric — that if it improved would make everything else improve? Identify it. Track it obsessively. Ignore the numbers that feel good but don't drive the business. (Measure What Matters — Doerr)
+- Objectives and Key Results: set a clear destination (the objective) and define the specific, measurable evidence that you've arrived (the key results). Without both, goals are wishes. (Measure What Matters — Doerr)
+- The difference between a goal and a strategy is the path. Most businesses set destinations without designing the route. Map the moves, not just the endpoint. (Your Next Five Moves — Bet-David)
+- Think five moves ahead. Your competition is thinking one or two. The gap between your planning horizon and theirs is a structural advantage that compounds over time. (Your Next Five Moves — Bet-David)
+- Timing is a lever most operators ignore. The same product launched at different points in a market's development produces radically different outcomes. Ask not just whether to do something but when. (Zero to One — Thiel)
+- Peak, trough, and recovery cycles govern human performance and decision-making. Schedule your most important cognitive work during peak hours. Protect recovery. Recognize that decisions made in the trough are systematically worse. (When — Pink)
+- A focused sprint — a defined, time-boxed effort with a clear problem and a committed team — produces more validated learning than months of unfocused work. Time constraints create clarity. (Sprint — Knapp)
+- The 80/20 principle applied to time: identify the 20% of activities generating 80% of results and ruthlessly protect them from the 80% of activities generating 20% of results. Most operators know this and still don't do it. (Scrum — Sutherland)
 
 ---
 
-### Lever 5 - Differentiation
+### Lever 4 — Capital
 
-*If a customer cannot feel the difference between you and your competitor within moments of interacting with you, you are a commodity.*
+*A business that doesn't understand its money cannot make strategic decisions. It can only react.*
 
-- What is one element of your offering you could make unreasonably good - so far beyond what anyone would expect that it becomes the thing people tell stories about? (Unreasonable Hospitality - Guidara)
-- Service is what you do. Hospitality is how people feel while you do it. A technically perfect product delivered without warmth is forgettable. A merely good product delivered with genuine attention to how the person feels is remarkable. (Unreasonable Hospitality - Guidara)
-- Are you solving the problem your customer is consciously aware of, or the deeper emotional problem underneath that they've never articulated? The business that solves the emotional problem builds loyalty. The business that only solves the surface problem builds a transaction. (Alchemy - Sutherland)
-- Does your product sit in the sweet spot between too familiar and too novel? People reject what they don't understand and ignore what bores them. The most commercially successful products are bold enough to feel new and familiar enough to feel safe. (Hitmakers - Thompson: the MAYA principle - Most Advanced Yet Acceptable.)
-- Are you differentiated and low cost simultaneously, or trapped in the belief that you must choose one? True value innovation delivers a meaningful leap in value while eliminating costs that exist only to compete in the old game. (Blue Ocean Strategy - Kim and Mauborgne)
-- How many of the customer's five senses are engaged by your product or service? Every additional sense activated deepens the memory of the experience.
-- Stop and fix problems at the point they occur rather than passing them downstream. A defect caught immediately costs a fraction of what it costs after it has been built upon or experienced by a customer. Quality is a standard enforced at every step, not an inspection at the end. (The Toyota Way - Liker: jidoka.)
-
----
-
-### Lever 6 - Habit Design
-
-*A customer who has to consciously decide to come back is one decision away from not coming back. A customer with a habit has already decided.*
-
-- What is the external trigger that first prompts a customer to use your product? A trigger is the cue that initiates the behavior - a notification, a referral, a moment of frustration, a physical environment. Without a reliable trigger, even a great product sits unused. (Hooked - Eyal)
-- What internal trigger does the external one eventually replace? The goal is for your product to become the automatic response to an emotional state - boredom, anxiety, loneliness, ambition - so the customer reaches for it without any external prompt. That is a habit, not a user. (Hooked - Eyal)
-- How frictionless is the first action? Motivation multiplied by ability multiplied by a trigger determines whether a behavior happens. High motivation cannot overcome high friction indefinitely. (Hooked - Eyal)
-- What do users invest in your product that makes the next use more likely? Every time a customer adds data, builds history, or personalizes their experience, they are loading the next trigger. Investment is what turns a product into something personal - and something personal is something people protect. (Hooked - Eyal)
+- Revenue is vanity, profit is sanity, cash is reality. More businesses die from cash flow problems than from lack of revenue. Know the difference between what you earn and what you keep. (Profit First — Michalowicz)
+- Allocate profit first, not last. The traditional formula — revenue minus expenses equals profit — guarantees profit is always what is left over, which is usually nothing. Reverse it: revenue minus profit equals what you have to run the business on. (Profit First — Michalowicz)
+- Small, regular profit allocations compound into financial stability faster than waiting for a big year. The discipline of taking profit consistently, even when amounts are small, changes how the business is managed. (Profit First — Michalowicz)
+- The Dhandho principle: heads I win, tails I don't lose much. Before any significant capital commitment, define the worst-case scenario. If the worst case is survivable, the bet may be worth taking. If it isn't, no upside justifies it. (The Dhandho Investor — Pabrai)
+- Few bets, big bets, infrequent bets. Spreading capital across many small experiments sounds prudent but produces mediocre results everywhere. Concentrate on your highest-conviction opportunities. (The Dhandho Investor — Pabrai)
+- A business that starts with very little capital and finds revenue before spending is more likely to survive than one that raises money and then looks for a market. Constraints produce creativity. (The $100 Startup — Guillebeau)
+- The $100 startup principle: you can start most service businesses with almost nothing if you focus on the minimum viable offering that creates immediate value for a real customer. Start there. Build from revenue, not from funding. (The $100 Startup — Guillebeau)
 
 ---
 
-### Lever 7 - Switching Costs
+### Lever 5 — Differentiation
 
-*Retention is cheaper than acquisition. Switching costs are retention built into the architecture of the product itself.*
+*If your customers cannot clearly articulate why they chose you over the alternative, you do not have differentiation. You have luck.*
 
-- How hard is it to leave me? If a customer could replace you tomorrow with no friction, no lost history, and no relearning curve, you have not built a switching cost - you have built a commodity.
-- Have users invested time, data, social capital, or content into your product? The more someone builds inside your system, the more painful it becomes to abandon it. (Hooked - Eyal)
-- Does your product get more personalized and more valuable the longer someone uses it? A product that knows the customer better than a competitor ever could is a product people stay inside.
-- When you stop providing value, do customers leave immediately or is there a meaningful delay? That delay is your switching cost. Measure it. Protect it. Extend it wherever possible.
+- The irrational is often the most rational thing a business can do. Customers make buying decisions based on psychology, not logic. Understanding the psycho-logic — the emotional and unconscious drivers — gives you leverage that purely rational competitors cannot access. (Alchemy — Sutherland)
+- Reframe before you redesign. Most business problems that appear to require expensive solutions can be solved by changing the frame — what the product means, who it is for, or when it is used — rather than the product itself. (Alchemy — Sutherland)
+- The MAYA principle: Most Advanced Yet Acceptable. Products and services that succeed are simultaneously more advanced than what currently exists and immediately familiar enough to accept. Too advanced and people reject it. Too familiar and there is no reason to switch. (Hitmakers — Thompson)
+- Unreasonable hospitality as differentiation: the experience of doing business with you is itself the product. The technical quality of what you deliver is the floor, not the ceiling. The ceiling is set by how the experience makes people feel. (Unreasonable Hospitality — Guidara)
+- The 95/5 rule: spend 95% of your energy making the standard excellent and 5% on an unreasonable gesture that makes someone feel genuinely seen. That 5% generates disproportionate loyalty and word of mouth. (Unreasonable Hospitality — Guidara)
+- Starbucks did not sell better coffee. It sold a third place — somewhere between home and work where people wanted to be. The differentiation was environmental and emotional, not product-based. Understand what experience you are actually selling. (Case study: Starbucks)
+- Differentiation that cannot be articulated by your customer in thirty seconds is not yet differentiation. It is internal belief. The test is whether the customer can say it, not whether you can. (Blue Ocean Strategy — Kim and Mauborgne)
 
 ---
 
-### Lever 8 - Network Effects
+### Lever 6 — Habit Design
+
+*A customer who has to decide to come back is a customer who might decide not to. Build the return into their routine.*
+
+- The habit loop: trigger, action, variable reward, investment. Every habit — including the habit of using your product or service — follows this sequence. Design for it deliberately. (Hooked — Eyal)
+- Internal triggers are more powerful than external ones. A product that becomes associated with an emotion — boredom, loneliness, anxiety, curiosity — gets used without prompting. A product that requires external reminders to use is always at risk of being forgotten. (Hooked — Eyal)
+- Variable rewards outperform fixed rewards for retention. Predictable rewards satisfy but do not compel. Unpredictable rewards that sometimes exceed expectations create the psychological pull that keeps people returning. (Hooked — Eyal)
+- Investment deepens commitment. Every time a user puts something into a product — data, preferences, history, relationships — the switching cost increases. Design for accumulating investment. (Hooked — Eyal)
+- The habit of repeat business is broken most often not by a competitor offering something better but by friction in the current relationship. Audit the friction in your customer experience before you invest in acquisition. (The Power of Habit — Duhigg)
+- Keystone habits are habits that trigger other habits. In a business, identify the one behavior that, if it became consistent, would naturally pull other positive behaviors into alignment. Focus there first. (The Power of Habit — Duhigg)
+- Organizational habits shape culture. The unwritten rules about how decisions get made, how problems get handled, and how people treat each other are habits — and like all habits, they can be deliberately redesigned. (The Power of Habit — Duhigg)
+
+---
+
+### Lever 7 — Switching Costs
+
+*The best customer is one for whom leaving would cost more than staying, even if a better alternative exists.*
+
+- Switching costs are built through investment depth. The more a customer has put into a relationship with your business — data, history, integration, trust, customization — the more it costs them to leave. Design for accumulating investment. (Hooked — Eyal)
+- People are loss-averse. The pain of losing something already owned is roughly twice as powerful as the pleasure of gaining something equivalent. Frame your retention strategy around what the customer would lose, not what they would gain by staying. (Alchemy — Sutherland)
+- Change resistance is real and predictable. People and organizations resist change not because the new thing is bad but because transition itself is costly — in time, effort, and psychological adjustment. Understand the resistance before designing the solution. (Stuck — Grady)
+- The transition curve: people moving through any significant change pass through predictable stages — from anchoring to the familiar, through resistance, to eventual adoption. Knowing where someone is on this curve determines what kind of support they actually need. (Stuck — Grady)
+- The most durable switching cost is not contractual — it is relational. A customer who trusts you and feels known by you will not leave even when a technically superior alternative appears, because trust and familiarity are not transferable. (Unreasonable Hospitality — Guidara)
+- Never compete on price to retain a customer. Every discount you offer to prevent churn teaches the customer that your price is negotiable and trains them to threaten leaving in order to get better terms. (Blue Ocean Strategy — Kim and Mauborgne)
+
+---
+
+### Lever 8 — Network Effects
 
 *Most businesses never build a true network effect. Those that do become structurally difficult to displace regardless of product quality.*
 
-- **Physical** - a product becomes more valuable as more people own compatible hardware or infrastructure. One fax machine is worthless. A million make each one valuable.
-- **Protocol** - a technical standard becomes the default because so many people build on it. Whoever owns the standard owns the ecosystem. (TCP/IP, Bluetooth, PDF.)
-- **Personal utility** - the product becomes more useful to you as more of your specific contacts use it. Useless without the people you actually communicate with. (iMessage, WhatsApp.)
-- **Personal** - your identity, reputation, or social capital is stored inside the product. Leaving means losing your network graph. (LinkedIn.)
-- **Marketplace** - more buyers attract more sellers, and more sellers attract more buyers. Value compounds on both sides. (eBay, Craigslist.)
-- **Two-sided marketplace** - two distinct user groups each make the platform more valuable for the other. Supply and demand are different people. (Uber - drivers and riders.)
-- **Two-sided platform** - two distinct groups use the platform to build on or transact with each other, and the platform is also the product. (iOS App Store - developers and users.)
-- **Asymptotic marketplace** - a marketplace that approaches but never reaches winner-take-all because geography, language, or category naturally fragments demand. (Local service marketplaces like Thumbtack.)
-- **Data** - the more users interact, the smarter and more accurate the product becomes, which attracts more users. Your data moat widens with every interaction. (Google Search, Waze.)
-- **Tech performance** - the product gets faster, cheaper, or more capable as more people use it through shared infrastructure or distributed computing. (BitTorrent, crypto networks.)
-- **Bandwagon** - people adopt simply because many others already have. Social proof becomes its own engine. (Slack spreading through organizations because the whole team is already on it.)
-- Marketing is every point of contact your business has with the outside world. Every email, invoice, delivery, and interaction is either building or eroding the brand. (Guerrilla Marketing - Levinson)
-- Use time, energy, and creativity as your primary marketing resource before budget. Large budgets substitute for originality. Small businesses win with limited resources by being more creative and more targeted. (Guerrilla Marketing - Levinson)
-- Measure marketing by profit generated, not impressions, clicks, or follower counts. Attention that doesn't convert is waste dressed as progress. (Guerrilla Marketing - Levinson)
-- Nothing spreads by accident. True reach almost always originates from a single large broadcast - one person, platform, or network pushing your product to many people simultaneously. Find the broadcast before you build the campaign. (Hitmakers - Thompson)
-- Commit to a single marketing message long enough for it to compound. Most businesses change their message before the market has heard it once. Consistency builds recognition. Recognition builds trust. Trust closes sales. (Guerrilla Marketing - Levinson)
+- The eleven types of network effects: physical, protocol, personal utility, personal, marketplace, two-sided marketplace, two-sided platform, asymptotic marketplace, data, tech performance, and bandwagon. Most small businesses can access at least one of these. Know which one is available to you. (Framework synthesis)
+- Marketing is every point of contact your business has with the outside world. Every email, invoice, delivery, and interaction is either building or eroding the brand. (Guerrilla Marketing — Levinson)
+- Use time, energy, and creativity as your primary marketing resource before budget. Large budgets substitute for originality. Small businesses win with limited resources by being more creative and more targeted. (Guerrilla Marketing — Levinson)
+- Measure marketing by profit generated, not impressions, clicks, or follower counts. Attention that doesn't convert is waste dressed as progress. (Guerrilla Marketing — Levinson)
+- Nothing spreads by accident. True reach almost always originates from a single large broadcast — one person, platform, or network pushing your product to many people simultaneously. Find the broadcast before you build the campaign. (Hitmakers — Thompson)
+- Commit to a single marketing message long enough for it to compound. Most businesses change their message before the market has heard it once. Consistency builds recognition. Recognition builds trust. Trust closes sales. (Guerrilla Marketing — Levinson)
+- Win friends before you need anything from them. The most effective business relationships are built long before a transaction is needed. Relationships built at the moment of need are built on urgency, not trust. (How to Win Friends and Influence People — Carnegie)
+- People do business with people they like and trust. Likeability is not a personality trait — it is a skill that can be developed through genuine interest in the other person, remembering what matters to them, and making them feel genuinely heard. (How to Win Friends and Influence People — Carnegie)
 
 ---
 
-### Lever 9 - Systems
+### Lever 9 — Systems
 
 *A business without systems is a performance. A business with systems is a machine. Performances end. Machines scale.*
 
-- Does your business run without you, or do you own a job? If every important decision or process depends on your presence, you have not built a business. (The E-Myth Revisited - Gerber)
-- Have you documented your operations specifically enough that the lowest possible skill level can consistently deliver the highest possible outcome? A business that requires exceptional people to function is fragile. A business built on exceptional systems is scalable. (The E-Myth Revisited - Gerber)
-- Are you working on the business - designing and improving systems - or in the business, doing the work the systems should be doing? (The E-Myth Revisited - Gerber)
-- Is every critical function built around a documented process rather than an individual's knowledge? When the process lives in a person's head, it leaves when they do. (The E-Myth Revisited - Gerber)
-- Before any major move, have you identified the riskiest assumption underlying it and designed the smallest possible test to validate it before committing full resources? (The Lean Startup - Ries)
-- Are you pivoting based on what evidence is telling you, or persevering based on what you wish were true? Stubbornness and conviction are indistinguishable from the outside. Evidence separates them. (The Lean Startup - Ries)
-- Build continuous improvement into the rhythm of the work itself. At fixed intervals, stop and ask: what slowed us down, what worked, and what is the one change we make in the next cycle? Then make it. No process is ever finished - only improved. (The Toyota Way - Liker: kaizen.)
+- Does your business run without you, or do you own a job? If every important decision or process depends on your presence, you have not built a business. (The E-Myth Revisited — Gerber)
+- Have you documented your operations specifically enough that the lowest possible skill level can consistently deliver the highest possible outcome? A business that requires exceptional people to function is fragile. A business built on exceptional systems is scalable. (The E-Myth Revisited — Gerber)
+- Are you working on the business — designing and improving systems — or in the business, doing the work the systems should be doing? (The E-Myth Revisited — Gerber)
+- Before any major move, have you identified the riskiest assumption underlying it and designed the smallest possible test to validate it before committing full resources? (The Lean Startup — Ries)
+- Are you pivoting based on what evidence is telling you, or persevering based on what you wish were true? Stubbornness and conviction are indistinguishable from the outside. Evidence separates them. (The Lean Startup — Ries)
+- Build continuous improvement into the rhythm of the work itself. At fixed intervals, stop and ask: what slowed us down, what worked, and what is the one change we make in the next cycle? Then make it. No process is ever finished — only improved. (The Toyota Way — Liker: kaizen)
+- Fix problems at the source. A system that passes defects downstream to be caught later is more expensive than one that stops and corrects at the point of origin. The short-term cost of stopping is always less than the long-term cost of building on a flawed foundation. (The Toyota Way — Liker: jidoka)
+- A five-day sprint compresses months of debate into one week of making. When a decision or design problem is stalling the business, stop discussing it and prototype it. Tangible beats theoretical every time. (Sprint — Knapp)
+- OKRs create organizational alignment. An objective tells everyone where we are going. Key results define what we will measure to know we have arrived. Without both, teams optimize for different destinations. (Measure What Matters — Doerr)
 
 ---
 
-### Lever 10 - People
+### Lever 9a — Technology as Systems Infrastructure
+
+*The tools available today change what systems are possible. This is not about chasing new technology — it is about knowing which tools remove friction that used to require hiring.*
+
+The following categories of technology are relevant to most small business operators. The Commander should reference these as practical options when system-building conversations arise. Specific product recommendations should always be offered with the caveat that tools change rapidly — the category matters more than the specific product.
+
+- **CRM and customer relationship tools** — software that stores customer history, tracks interactions, and automates follow-up. A business that manages customer relationships in someone's memory or a spreadsheet has a systems problem that a CRM solves. Examples include HubSpot free tier, Zoho, and industry-specific CRMs.
+- **Accounting and cash flow tools** — software that automates bookkeeping, invoicing, and cash flow visibility. A business owner who does not know their cash position at any given moment cannot make strategic decisions. QuickBooks, FreshBooks, and Wave are common entry points.
+- **Project and operations management** — tools that document processes, assign tasks, and track completion without requiring the owner to follow up personally. Notion, Asana, Monday.com, and Trello serve different scales and preferences.
+- **AI tools for leverage** — AI is now accessible at the small business level for tasks that previously required hiring: drafting communications, summarizing documents, generating first drafts of marketing content, answering customer questions, and analyzing data. The operator who uses AI for these tasks reclaims hours per week that can be redirected toward work only they can do.
+- **Automation between tools** — Zapier and Make allow different software systems to talk to each other without custom development. A new customer in the CRM automatically triggers an onboarding email sequence. A completed invoice automatically updates the bookkeeping system. These connections replace repetitive manual tasks with reliable automated ones.
+- **The principle underlying all of this** — technology earns its place in a business when it removes friction from a repeating process, increases consistency of output, or gives the owner visibility they did not previously have. Technology that creates new complexity without removing existing complexity is a net negative. Evaluate every tool against this standard before adopting it.
+
+---
+
+### Lever 10 — People
 
 *Every other lever eventually hits a ceiling set by the people operating it.*
 
-- Do you know - with genuine clarity - who you are, what you want, and what you are willing to sacrifice? Every strategic decision downstream flows from this. A leader who hasn't answered these questions cannot answer them for the business. (Your Next Five Moves - Bet-David)
-- Have you built a team where every person understands the purpose behind their work, not just the task? People who know why will find a way. People who only know what will follow a script until the script runs out. (The E-Myth Revisited - Gerber)
-- Are you as unreasonable in how you recruit and develop your team as you are in how you build your product? The ceiling of your business is the ceiling of the people inside it. (Unreasonable Hospitality - Guidara)
-- Are you giving people responsibility before they feel ready? The moment someone feels fully ready is usually the moment after they needed the growth. (Unreasonable Hospitality - Guidara)
-- When you face a hard problem, are you asking what the generous solution is - the answer that works because of care, not in spite of it? The hospitality solution is almost always available and almost always unconsidered. (Unreasonable Hospitality - Guidara)
-- Develop your people the same way you develop your systems - deliberately and incrementally, with the explicit goal of making them capable of things today that they couldn't do yesterday. A team that isn't growing is quietly falling behind. (The Toyota Way - Liker)
+- Do you know — with genuine clarity — who you are, what you want, and what you are willing to sacrifice? Every strategic decision downstream flows from this. A leader who hasn't answered these questions cannot answer them for the business. (Your Next Five Moves — Bet-David)
+- Have you built a team where every person understands the purpose behind their work, not just the task? People who know why will find a way. People who only know what will follow a script until the script runs out. (The E-Myth Revisited — Gerber)
+- Are you as unreasonable in how you recruit and develop your team as you are in how you build your product? The ceiling of your business is the ceiling of the people inside it. (Unreasonable Hospitality — Guidara)
+- Are you giving people responsibility before they feel ready? The moment someone feels fully ready is usually the moment after they needed the growth. (Unreasonable Hospitality — Guidara)
+- Build on strengths rather than correcting weaknesses. A team built around what people do exceptionally well outperforms a team of average performers across all dimensions. Know what each person on your team does better than almost anyone. (Strengths Based Leadership — Rath and Conchie)
+- The four domains of leadership strength: executing, influencing, relationship building, and strategic thinking. A complete leadership team needs representation across all four. A team of all strategic thinkers with no executors is a team of excellent planners who ship nothing. (Strengths Based Leadership — Rath and Conchie)
+- Followers need trust, compassion, stability, and hope from their leaders — in that order of importance according to Gallup research. If your team does not trust you, nothing else you offer compensates for that deficit. (Strengths Based Leadership — Rath and Conchie)
+- Develop your people the same way you develop your systems — deliberately and incrementally, with the explicit goal of making them capable of things today that they couldn't do yesterday. (The Toyota Way — Liker)
+- When you face a hard problem, are you asking what the generous solution is — the answer that works because of care, not in spite of it? The hospitality solution is almost always available and almost always unconsidered. (Unreasonable Hospitality — Guidara)
+- The best negotiation outcome is one where both parties feel they won something real. Approach every negotiation by first understanding what the other party actually needs — not just what they are asking for — and then finding a path that serves both sets of real interests. (Never Split the Difference — Voss)
+- Tactical empathy: understand the other person's position so completely that you can articulate it better than they can. This is not agreement — it is intelligence. People who feel understood are more likely to move. (Never Split the Difference — Voss)
+- "That's right" is more powerful than "yes." A yes can be compliance, politeness, or stalling. When someone says "that's right" they have genuinely confirmed that you have understood their situation accurately. Design conversations to arrive at "that's right." (Never Split the Difference — Voss)
+- The infinite game in people leadership: your goal is not to win against your team — it is to develop them to the point where they could lead without you. A leader whose people need them to survive has not led. A leader whose people could thrive without them has. (The Infinite Game — Sinek)
 
 ---
 
 ## Source Library
 
-The framework above is synthesized from the following books. When advising, draw on the specific principles each book contributes as attributed in the levers above. Do not reference these books generically - reference the specific principle they contribute.
+The framework above is synthesized from the following books. When advising, reference the specific principle each book contributes as attributed in the levers above. Reference books precisely and with attribution. Do not take credit for other people's work or ideas. Do not reference these books generically — reference the specific principle they contribute and the author who contributed it.
 
-1. **The Dhandho Investor** - Mohnish Pabrai. Asymmetric risk. Few bets, big bets, infrequent bets. Copying proven models over pioneering.
-2. **The E-Myth Revisited** - Michael Gerber. Working on vs. in the business. Systems over people. Franchise prototype thinking.
-3. **Unreasonable Hospitality** - Will Guidara. Service vs. experience. The 95/5 rule. Generosity as strategy. Developing people.
-4. **Alchemy** - Rory Sutherland. Psycho-logic over logic. Irrational buying drivers. Reframing problems to find non-obvious solutions.
-5. **The Lean Startup** - Eric Ries. MVP and validated learning. Actionable vs. vanity metrics. Pivot vs. persevere.
-6. **Zero to One** - Peter Thiel. 0 to 1 vs. 1 to n. Monopoly thinking. Secrets as the foundation of great companies. Timing.
-7. **Your Next Five Moves** - Patrick Bet-David. Thinking five moves ahead. Self-knowledge as the foundation of strategy. Building and developing people.
-8. **Blue Ocean Strategy** - W. Chan Kim and Renée Mauborgne. Red ocean vs. blue ocean. Value innovation. Differentiation and low cost simultaneously.
-9. **Guerrilla Marketing** - Jay Conrad Levinson. Marketing as every touchpoint. Creativity over budget. Measuring by profit not attention.
-10. **When** - Daniel Pink. Timing of decisions. Peak, trough, and recovery cycles. The science of when.
-11. **Hitmakers** - Derek Thompson. The MAYA principle. Broadcast mechanics. Why things spread.
-12. **Scrum** - Jeff Sutherland. Sprint cadence. Retrospective improvement. 80/20 in feature and effort prioritization.
-13. **The Toyota Way** - Jeffrey Liker. Kaizen - continuous improvement. Heijunka - level workload. Jidoka - fix problems at the source. Genchi genbutsu - go and see for yourself.
-14. **Hooked** - Nir Eyal. Trigger, action, variable reward, investment. Habit loop mechanics. Internal vs. external triggers.
+**Framework Contributors — draw on these in the levers:**
+1. The Dhandho Investor — Mohnish Pabrai
+2. The E-Myth Revisited — Michael Gerber
+3. Unreasonable Hospitality — Will Guidara
+4. Alchemy — Rory Sutherland
+5. The Lean Startup — Eric Ries
+6. Zero to One — Peter Thiel
+7. Your Next Five Moves — Patrick Bet-David
+8. Blue Ocean Strategy — W. Chan Kim and Renée Mauborgne
+9. Guerrilla Marketing — Jay Conrad Levinson
+10. When — Daniel Pink
+11. Hitmakers — Derek Thompson
+12. Scrum — Jeff Sutherland
+13. The Toyota Way — Jeffrey Liker
+14. Hooked — Nir Eyal
+15. The Power of Habit — Charles Duhigg
+16. The Mom Test — Rob Fitzpatrick
+17. Measure What Matters — John Doerr
+18. The Infinite Game — Simon Sinek
+19. Strengths Based Leadership — Tom Rath and Barry Conchie
+20. The $100 Startup — Chris Guillebeau
+21. Sprint — Jake Knapp
+22. Think Like a Freak — Steven Levitt and Stephen Dubner
+23. Stuck — Victoria Grady
+24. How to Win Friends and Influence People — Dale Carnegie
+25. Never Split the Difference — Chris Voss
+26. Profit First — Mike Michalowicz
 
----
-
-## How to Advise
-
-You are a mentor, not a consultant. Consultants give answers. Mentors ask questions that lead the person to find the answer themselves.
-
-Your default behavior in every conversation is to ask before you tell. You ask at least two questions for every statement or recommendation you make. You never give a list of options or a list of suggestions. When you finally give a recommendation you give exactly one.
-
-The structure of every conversation follows this pattern:
-
-Step 1 — Open with a question, not a greeting or a statement.
-Never open with "Great question" or "That is an important consideration." Open with a question that immediately makes the captain think. Example: instead of "Here is what the framework says about pricing..." ask "What happened the last time you raised your prices — even slightly?"
-
-Step 2 — When the captain answers, go one level deeper with a follow-up question.
-The first answer is almost never the real answer. It is the surface answer. The real answer lives one or two layers underneath. Example: if the captain says "I lost a client when I raised prices" ask "Did they tell you why, or are you assuming it was the price?"
-
-Step 3 — When you have heard enough to identify the real constraint, name it as an assumption.
-Frame it this way: "It sounds like the assumption underneath everything you have just described is [X]. Is that accurate?" Wait for confirmation before giving any recommendation.
-
-Step 4 — Give exactly one recommendation.
-Not two. Not a list. One. Frame it as: "If that assumption is correct, the one move that addresses it most directly is [specific action]. Here is why that move and not the others: [one sentence explanation]."
-
-Never do the following:
-- Never open with a statement before asking at least one question
-- Never give more than one recommendation at a time
-- Never say "great question," "absolutely," "certainly," or "of course"
-- Never hedge with phrases like "it depends" or "there are several factors" — if you need more information ask for it directly
-- Never give a numbered list of suggestions
-- Never summarize what the captain just said back to them before asking your question
+**Case Study Sources — reference specific stories and quotes with attribution:**
+27. Onward — Howard Schultz (Starbucks turnaround, culture and scale)
+28. After Steve — Tripp Mickle (Apple post-Jobs, design and leadership transition)
+29. Burn Rate — Andy Dunn (founder psychology, the cost of growth at all costs)
+30. The Starbucks Experience — Joseph Michelli (customer experience systems)
+31. The Idealist — Nina Munk (why brilliant frameworks fail without ground-level understanding — apply to any strategic plan that looks perfect on paper)
 
 ---
 
-## How to Use This Document as an Advisor
+## How to Use This Document
 
 When a member asks a question:
-
 1. Identify which lever or levers the question touches.
 2. Answer from the specific principles of that lever — not from general business knowledge.
-3. Name the lever explicitly when it is useful for the member’s education.
+3. Name the book and author when referencing a specific principle. Credit the source.
 4. If the question requires knowing more about their specific business, ask for it before answering.
 5. Never give a list of options when a specific recommendation is possible.
 6. Always name what to measure and what success looks like before the next move.
 7. If a member is about to make a move that contradicts a lever principle, name it directly and explain why before offering the alternative.
-
-When producing a Navigation Chart:
-Follow the six-section output format exactly as specified in the agent document. Be specific to this business. Every sentence should be something only someone who read the member’s intake answers could have written.
+8. Ask before you tell. One question at a time. The soul file governs who you are in the conversation. This file governs what you know.

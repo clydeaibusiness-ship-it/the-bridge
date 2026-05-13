@@ -245,22 +245,28 @@ async function incrementCommanderUsage(userId) {
 
 // ---- Commander Messages ----
 
-async function saveCommanderMessage(userId, sessionId, role, content) {
+async function saveCommanderMessage(userId, sessionId, role, content, soulVersion = null) {
   const db = getClient();
   if (!db) return null;
 
+  const insertData = {
+    user_id: userId,
+    session_id: sessionId,
+    message_role: role,
+    message_content: content
+  };
+  if (soulVersion) insertData.soul_version = soulVersion;
+
   const { data, error } = await db
     .from('commander_messages')
-    .insert({
-      user_id: userId,
-      session_id: sessionId,
-      message_role: role,
-      message_content: content
-    })
+    .insert(insertData)
     .select()
     .single();
 
   if (error) {
+    if (error.message && error.message.includes('soul_version')) {
+      console.error('MISSING COLUMN: commander_messages.soul_version does not exist. Run: ALTER TABLE commander_messages ADD COLUMN soul_version TEXT DEFAULT NULL;');
+    }
     console.error('Save commander message error:', error.message);
     return null;
   }
@@ -301,20 +307,42 @@ async function getLatestCommanderSessionId(userId) {
   return { sessionId: data[0].session_id, lastMessageAt: data[0].created_at };
 }
 
-async function getCommanderMessagesForApi(userId, limit = 10) {
+async function getCommanderMessagesForApi(userId, limit = 10, soulVersion = null) {
   const db = getClient();
   if (!db) return [];
 
-  const { data, error } = await db
+  let query = db
     .from('commander_messages')
-    .select('message_role, message_content')
+    .select('message_role, message_content, soul_version')
     .eq('user_id', userId)
     .order('created_at', { ascending: false })
     .limit(limit);
 
-  if (error) return [];
+  const { data, error } = await query;
+
+  if (error) {
+    if (error.message && error.message.includes('soul_version')) {
+      console.error('MISSING COLUMN: commander_messages.soul_version does not exist. Run: ALTER TABLE commander_messages ADD COLUMN soul_version TEXT DEFAULT NULL;');
+    }
+    console.error('Get commander messages error:', error.message);
+    return [];
+  }
+
+  // If we have a soul version, filter out assistant messages from old versions.
+  // User messages always pass through — they're the member's words.
+  // Assistant messages only pass if they match the current soul version
+  // (or have no version tag, for backward compat during transition).
+  let filtered = data || [];
+  if (soulVersion) {
+    filtered = filtered.filter(m => {
+      if (m.message_role === 'user') return true;
+      // Assistant messages: keep if same version or no version tagged yet
+      return !m.soul_version || m.soul_version === soulVersion;
+    });
+  }
+
   // Return in chronological order, formatted for Claude API
-  return (data || []).reverse().map(m => ({
+  return filtered.reverse().map(m => ({
     role: m.message_role,
     content: m.message_content
   }));
@@ -427,6 +455,99 @@ async function getIntake(userId) {
   return data || null;
 }
 
+// ---- Commander Session Notes (compression / long-term memory) ----
+
+/**
+ * Get all messages for a specific session (for compression).
+ */
+async function getCommanderSessionMessages(userId, sessionId) {
+  const db = getClient();
+  if (!db) return [];
+
+  const { data, error } = await db
+    .from('commander_messages')
+    .select('message_role, message_content, created_at')
+    .eq('user_id', userId)
+    .eq('session_id', sessionId)
+    .order('created_at', { ascending: true });
+
+  if (error) {
+    console.error('Get commander session messages error:', error.message);
+    return [];
+  }
+  return data || [];
+}
+
+/**
+ * Save a compressed session note.
+ */
+async function saveSessionNote(userId, sessionId, insights, strategicGround, unresolvedThreads, turnCount) {
+  const db = getClient();
+  if (!db) return null;
+
+  const { data, error } = await db
+    .from('commander_session_notes')
+    .insert({
+      user_id: userId,
+      session_id: sessionId,
+      operator_insights: insights,
+      strategic_ground: strategicGround,
+      unresolved_threads: unresolvedThreads,
+      generated_at: new Date().toISOString(),
+      conversation_turn_count: turnCount
+    })
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Save session note error:', error.message);
+    return null;
+  }
+  return data;
+}
+
+/**
+ * Get session notes for a user (most recent 30, ordered newest first).
+ */
+async function getSessionNotes(userId, limit = 30) {
+  const db = getClient();
+  if (!db) return [];
+
+  const { data, error } = await db
+    .from('commander_session_notes')
+    .select('operator_insights, strategic_ground, unresolved_threads, generated_at')
+    .eq('user_id', userId)
+    .order('generated_at', { ascending: false })
+    .limit(limit);
+
+  if (error) {
+    console.error('Get session notes error:', error.message);
+    return [];
+  }
+  return data || [];
+}
+
+/**
+ * Check if a session note already exists for a given session.
+ */
+async function sessionNoteExists(userId, sessionId) {
+  const db = getClient();
+  if (!db) return false;
+
+  const { data, error } = await db
+    .from('commander_session_notes')
+    .select('id')
+    .eq('user_id', userId)
+    .eq('session_id', sessionId)
+    .limit(1);
+
+  if (error) {
+    console.error('Check session note exists error:', error.message);
+    return false;
+  }
+  return data && data.length > 0;
+}
+
 module.exports = {
   getClient,
   createUser, getUserByClerkId, updateMembershipTier, updateStripeCustomerId,
@@ -437,5 +558,6 @@ module.exports = {
   saveCommanderMessage, getCommanderHistory, getLatestCommanderSessionId,
   getCommanderMessagesForApi,
   saveCommanderSummary, getLatestCommanderSummary,
-  upsertIntake, getIntake
+  upsertIntake, getIntake,
+  getCommanderSessionMessages, saveSessionNote, getSessionNotes, sessionNoteExists
 };
