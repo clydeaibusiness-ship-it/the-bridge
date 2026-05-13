@@ -345,13 +345,44 @@ router.post('/member/commander/message', async (req, res) => {
       await saveCommanderMessage(req.dbUser.id, sessionId, 'user', message, soulVersion);
     }
 
-    const gameState = {};
+    // Load actual intake data and run history from database
+    let intakeContext = '';
     const runHistory = [];
+    if (req.dbUser) {
+      const intake = await getIntake(req.dbUser.id);
+      if (intake && intake.intake_completed_at) {
+        intakeContext = `MEMBER PROFILE:\n`;
+        if (intake.business_name) intakeContext += `Business: ${intake.business_name}\n`;
+        if (intake.business_description) intakeContext += `Description: ${intake.business_description}\n`;
+        if (intake.industry) intakeContext += `Industry: ${intake.industry}\n`;
+        if (intake.revenue_range) intakeContext += `Revenue: ${intake.revenue_range}\n`;
+        if (intake.team_size) intakeContext += `Team size: ${intake.team_size}\n`;
+        if (intake.years_operating) intakeContext += `Years operating: ${intake.years_operating}\n`;
+        if (intake.city) intakeContext += `Location: ${intake.city}${intake.state ? ', ' + intake.state : ''}\n`;
+        if (intake.differentiator) intakeContext += `Differentiator: ${intake.differentiator}\n`;
+        if (intake.challenge) intakeContext += `Current challenge: ${intake.challenge}\n`;
+        if (intake.destination_name) intakeContext += `Business destination: ${intake.destination_name}\n`;
+        if (intake.business_context) intakeContext += `Additional context: ${intake.business_context}\n`;
+        if (intake.chart_sections) {
+          try {
+            const chart = typeof intake.chart_sections === 'string' ? JSON.parse(intake.chart_sections) : intake.chart_sections;
+            if (chart && Array.isArray(chart)) {
+              intakeContext += `\nNAVIGATION CHART:\n`;
+              chart.forEach(s => { intakeContext += `${s.title}: ${s.body}\n`; });
+            }
+          } catch (e) { /* chart parse failed, skip */ }
+        }
+      }
+
+      const runs = await getRunHistory(req.dbUser.id);
+      if (runs && runs.length > 0) runHistory.push(...runs);
+    }
+
     const response = await commanderChat(
       message,
-      gameState,
+      {},
       runHistory,
-      sessionContext || '',
+      intakeContext,
       conversationHistory,
       summaryContext,
       sessionNotesContext
