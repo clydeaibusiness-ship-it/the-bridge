@@ -103,6 +103,9 @@ router.post('/acknowledge', requireAuth, async (req, res) => {
 let cachedTotal = null;
 let cachedTotalAt = 0;
 
+let cachedAvailable = null;
+let cachedAvailableAt = 0;
+
 router.get('/community-total', async (req, res) => {
   try {
     const now = Date.now();
@@ -129,6 +132,86 @@ router.get('/community-total', async (req, res) => {
     res.json({ total });
   } catch (e) {
     console.error('Community total error:', e.message);
+    res.json({ total: 0 });
+  }
+});
+
+// ---- Total Available Funding Identified (PUBLIC — no auth) ----
+
+function parseGrantAmount(amountStr) {
+  if (!amountStr || typeof amountStr !== 'string') return 0;
+  const lower = amountStr.toLowerCase();
+  if (lower === 'varies' || lower === 'variable' || lower === 'n/a') return 0;
+
+  // Extract the largest number from strings like "Up to $500,000" or "$10,000 - $50,000"
+  const matches = amountStr.match(/[\d,]+\.?\d*/g);
+  if (!matches || matches.length === 0) return 0;
+
+  // Take the largest number found
+  let max = 0;
+  for (const m of matches) {
+    const val = parseFloat(m.replace(/,/g, ''));
+    if (!isNaN(val) && val > max) max = val;
+  }
+
+  // Check for million/billion suffixes
+  if (/million/i.test(amountStr)) max *= 1000000;
+  if (/billion/i.test(amountStr)) max *= 1000000000;
+
+  return max;
+}
+
+router.get('/total-available', async (req, res) => {
+  try {
+    const now = Date.now();
+    // Cache for 1 hour
+    if (cachedAvailable !== null && (now - cachedAvailableAt) < 3600000) {
+      return res.json({ total: cachedAvailable });
+    }
+
+    const db = getClient();
+    if (!db) return res.json({ total: 0 });
+
+    const { data, error } = await db
+      .from('grant_radar_results')
+      .select('results_json');
+
+    if (error) throw error;
+
+    // Deduplicate grants by name across all scans, sum unique amounts
+    const seenGrants = new Map(); // grant name -> parsed amount
+
+    for (const row of (data || [])) {
+      const results = row.results_json;
+      if (!results) continue;
+
+      // results_json has { federal: [...], state: [...], local: [...] }
+      const allGrants = [
+        ...(results.federal || []),
+        ...(results.state || []),
+        ...(results.local || [])
+      ];
+
+      for (const grant of allGrants) {
+        if (!grant.name) continue;
+        const key = grant.name.toLowerCase().trim();
+        if (!seenGrants.has(key)) {
+          seenGrants.set(key, parseGrantAmount(grant.amount));
+        }
+      }
+    }
+
+    let total = 0;
+    for (const amount of seenGrants.values()) {
+      total += amount;
+    }
+
+    cachedAvailable = total;
+    cachedAvailableAt = now;
+
+    res.json({ total });
+  } catch (e) {
+    console.error('Total available error:', e.message);
     res.json({ total: 0 });
   }
 });

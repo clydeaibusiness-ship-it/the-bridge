@@ -614,6 +614,12 @@
   color: #b8b0a0;
   margin-bottom: 0.5rem;
 }
+.grant-counter-divider {
+  width: 40%;
+  height: 1px;
+  background: rgba(200,169,110,0.2);
+  margin: 2rem auto;
+}
 .grant-counter-verified {
   font-family: 'Space Grotesk', sans-serif;
   font-size: 1rem;

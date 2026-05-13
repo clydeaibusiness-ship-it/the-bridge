@@ -129,6 +129,15 @@
 <!-- ====== GRANT MONEY COUNTER ====== -->
 <section class="grant-counter-section" id="grant-counter">
   <div class="grant-counter-inner">
+    <!-- Available funding identified -->
+    <div class="grant-counter-label">FEDERAL GRANT FUNDING IDENTIFIED FOR BRIDGE MEMBERS</div>
+    <div class="grant-counter-number" id="grant-available-number">$0</div>
+    <div class="grant-counter-desc">In active federal grants matched to businesses like yours.</div>
+
+    <!-- Divider -->
+    <div class="grant-counter-divider"></div>
+
+    <!-- Verified wins -->
     <div class="grant-counter-label">GRANT MONEY SECURED BY THE BRIDGE COMMUNITY</div>
     <div class="grant-counter-number" id="grant-counter-number">$0</div>
     <div class="grant-counter-desc">In free government grant money that Bridge members found, applied for, and won.</div>
@@ -515,48 +524,63 @@
 </script>
 <script>
 (function() {
-  // Fetch community total and animate counter
-  var counterEl = document.getElementById('grant-counter-number');
-  if (!counterEl) return;
+  var sectionEl = document.getElementById('grant-counter');
+  if (!sectionEl) return;
 
-  fetch('/api/grant-radar/community-total')
-    .then(function(r) { return r.json(); })
-    .then(function(data) {
-      var total = data.total || 0;
-      if (total === 0) {
-        counterEl.textContent = '$0';
-        return;
-      }
+  function formatDollar(n) {
+    if (n >= 1000000000) {
+      var b = (n / 1000000000);
+      return '$' + (b % 1 === 0 ? b.toFixed(0) : b.toFixed(1)) + 'B';
+    }
+    return '$' + n.toLocaleString();
+  }
 
-      // Animate on scroll into view
-      var animated = false;
-      var observer = new IntersectionObserver(function(entries) {
-        entries.forEach(function(entry) {
-          if (entry.isIntersecting && !animated) {
-            animated = true;
-            animateCounter(counterEl, total);
-            observer.disconnect();
-          }
-        });
-      }, { threshold: 0.3 });
-      observer.observe(document.getElementById('grant-counter'));
-    })
-    .catch(function() {});
-
-  function animateCounter(el, target) {
+  function animateCounter(el, target, formatter) {
     var duration = 2000;
     var start = performance.now();
     function step(now) {
       var elapsed = now - start;
       var progress = Math.min(elapsed / duration, 1);
-      // Ease out
       var eased = 1 - Math.pow(1 - progress, 3);
       var current = Math.round(target * eased);
-      el.textContent = '$' + current.toLocaleString();
+      el.textContent = formatter(current);
       if (progress < 1) requestAnimationFrame(step);
     }
     requestAnimationFrame(step);
   }
+
+  function setupCounter(elId, fetchUrl) {
+    var el = document.getElementById(elId);
+    if (!el) return;
+
+    fetch(fetchUrl)
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        var total = data.total || 0;
+        if (total === 0) {
+          el.textContent = '$0';
+          return;
+        }
+
+        var animated = false;
+        var obs = new IntersectionObserver(function(entries) {
+          entries.forEach(function(entry) {
+            if (entry.isIntersecting && !animated) {
+              animated = true;
+              animateCounter(el, total, formatDollar);
+              obs.disconnect();
+            }
+          });
+        }, { threshold: 0.3 });
+        obs.observe(sectionEl);
+      })
+      .catch(function() {});
+  }
+
+  // Available funding identified
+  setupCounter('grant-available-number', '/api/grant-radar/total-available');
+  // Verified wins
+  setupCounter('grant-counter-number', '/api/grant-radar/community-total');
 })();
 </script>
 </body>
