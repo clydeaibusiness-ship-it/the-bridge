@@ -4,23 +4,56 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>The Bridge — Sign In</title>
-  <script>
-    // Fetch Clerk config from server so dev and production use correct URLs
-    var x = new XMLHttpRequest();
-    x.open('GET', '/api/clerk-config', false);
-    x.send();
-    var cfg = x.status === 200 ? JSON.parse(x.responseText) : {};
-    var base = (cfg.accountsUrl || 'https://accounts.captainsbridge.io') + '/sign-up';
-    var origin = cfg.origin || 'https://captainsbridge.io';
-
-    var params = new URLSearchParams(window.location.search);
-    if (params.get('action') === 'subscribe') {
-      window.location.replace(base + '?redirect_url=' + encodeURIComponent(origin + '/subscribe'));
-    } else {
-      var returnTo = params.get('return') || '/dashboard';
-      window.location.replace(base + '?redirect_url=' + encodeURIComponent(origin + returnTo));
+  <script>var x=new XMLHttpRequest();x.open('GET','/api/clerk-key',false);x.send();if(x.status===200){window.__clerk_publishable_key=JSON.parse(x.responseText).key;}</script>
+  <script src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@5/dist/clerk.browser.js"></script>
+  <style>
+    body {
+      margin: 0;
+      background: #f5f0e8;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      font-family: 'Space Grotesk', sans-serif;
     }
-  </script>
+    #sign-in-container {
+      width: 100%;
+      max-width: 400px;
+      padding: 1rem;
+    }
+  </style>
 </head>
-<body></body>
+<body>
+  <div id="sign-in-container"></div>
+  <script>
+    (async function() {
+      try {
+        var clerk = window.Clerk;
+        if (!clerk) { console.error('Clerk not loaded'); return; }
+        if (!clerk.loaded) await clerk.load();
+
+        // Already signed in? Redirect immediately.
+        if (clerk.user) {
+          var params = new URLSearchParams(window.location.search);
+          var dest = params.get('action') === 'subscribe' ? '/subscribe' : (params.get('return') || '/dashboard');
+          window.location.replace(dest);
+          return;
+        }
+
+        // Determine where to go after sign-in
+        var params = new URLSearchParams(window.location.search);
+        var afterPath = params.get('action') === 'subscribe' ? '/subscribe' : (params.get('return') || '/dashboard');
+
+        // Mount embedded sign-in — no cross-domain redirect needed
+        clerk.mountSignIn(document.getElementById('sign-in-container'), {
+          afterSignInUrl: afterPath,
+          afterSignUpUrl: afterPath,
+          signUpUrl: '/login'
+        });
+      } catch (e) {
+        console.error('Login init error:', e);
+      }
+    })();
+  </script>
+</body>
 </html>
