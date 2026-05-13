@@ -350,7 +350,7 @@ router.post('/member/commander/message', async (req, res) => {
     const runHistory = [];
     if (req.dbUser) {
       const intake = await getIntake(req.dbUser.id);
-      if (intake && intake.intake_completed_at) {
+      if (intake && (intake.intake_completed_at || intake.business_name || intake.industry || intake.business_description)) {
         intakeContext = `MEMBER PROFILE:\n`;
         if (intake.business_name) intakeContext += `Business: ${intake.business_name}\n`;
         if (intake.business_description) intakeContext += `Description: ${intake.business_description}\n`;

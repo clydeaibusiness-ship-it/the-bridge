@@ -263,9 +263,9 @@ async function commanderChat(message, gameState, runHistory, sessionContext, con
   }
 
   if (hasGameState || sessionContext) {
-    context += `The member has completed their intake. Their business context is above. Do not ask intake questions — address their specific business directly.`;
+    context += `The member has completed their intake. Their business context is above.`;
   } else {
-    context += `If the member has not completed their intake, respond with exactly: "I don't have your profile loaded yet. Complete the intake form on your dashboard and I'll have everything I need to give you specific advice." Do not invent a business, reference a placeholder, or guess at context.`;
+    context += `The member has not completed their intake. Respond with exactly this and nothing else: "I don't have your profile loaded yet. Complete the intake form on your dashboard and I'll have everything I need to give you specific advice."`;
   }
 
   // If we have conversation history, use multi-turn messages
