@@ -102,8 +102,8 @@ app.get('/api/clerk-config', (req, res) => {
     // pk_test_ keys encode the Clerk frontend API domain in base64 after the prefix
     let accountsUrl = '';
     try {
-      const encoded = key.replace('pk_test_', '').replace(/\$$/g, '');
-      const decoded = Buffer.from(encoded, 'base64').toString();
+      const encoded = key.replace('pk_test_', '');
+      const decoded = Buffer.from(encoded, 'base64').toString().replace(/\$+$/, '');
       // decoded is like 'clerk.xyz.accounts.dev' — accounts URL is 'https://xyz.accounts.dev'
       accountsUrl = 'https://' + decoded.replace('clerk.', '');
     } catch (e) {
