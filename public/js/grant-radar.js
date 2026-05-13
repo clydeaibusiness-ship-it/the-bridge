@@ -292,6 +292,14 @@
       });
     }
 
+    // Edit profile button
+    var editBtn = $('#edit-profile-btn');
+    if (editBtn) {
+      editBtn.addEventListener('click', function () {
+        showIntakeForEdit();
+      });
+    }
+
     // Saved grants toggle
     var savedToggle = $('#saved-toggle');
     if (savedToggle) {
@@ -303,11 +311,65 @@
   }
 
   // ---- Intake ----
+  var isEditMode = false;
+
   function showIntake() {
+    isEditMode = false;
     $('#intake-section').style.display = 'block';
     $('#loading-section').style.display = 'none';
     $('#results-section').style.display = 'none';
     $('#rescan-btn').style.display = 'none';
+    $('#edit-profile-btn').style.display = 'none';
+    var submitBtn = $('#intake-submit');
+    if (submitBtn) submitBtn.textContent = 'Start scanning \u2192';
+  }
+
+  async function showIntakeForEdit() {
+    isEditMode = true;
+    $('#intake-section').style.display = 'block';
+    $('#loading-section').style.display = 'none';
+    $('#results-section').style.display = 'none';
+    $('#rescan-btn').style.display = 'none';
+    $('#edit-profile-btn').style.display = 'none';
+    var submitBtn = $('#intake-submit');
+    if (submitBtn) submitBtn.textContent = 'Save & rescan \u2192';
+
+    // Pre-fill from grant intake data
+    try {
+      var res = await fetch('/api/grant-radar/intake-status', { headers: authHeaders() });
+      var data = await res.json();
+      if (data.complete && data.intake) {
+        var i = data.intake;
+        if (i.city) { var el = $('#intake-city'); if (el) el.value = i.city; }
+        if (i.state) { var el = $('#intake-state'); if (el) el.value = i.state; }
+        if (i.county) { var el = $('#intake-county'); if (el) el.value = i.county; }
+        if (i.legalEntity) { var el = $('#intake-entity'); if (el) el.value = i.legalEntity; }
+        if (i.granularRevenue) { var el = $('#intake-revenue'); if (el) el.value = i.granularRevenue; }
+        if (i.samRegistration) {
+          $$('input[name="sam"]').forEach(function (r) {
+            r.checked = (r.value === i.samRegistration);
+          });
+        }
+        if (i.naicsCode) { var el = $('#intake-naics'); if (el) el.value = i.naicsCode; }
+        // Owner demographics
+        if (i.ownerDemographics && Array.isArray(i.ownerDemographics)) {
+          $$('#field-demographics input[type="checkbox"]').forEach(function (cb) {
+            cb.checked = i.ownerDemographics.indexOf(cb.value) !== -1;
+          });
+        }
+        // Grant fund use
+        if (i.grantFundUse) {
+          var uses = typeof i.grantFundUse === 'string' ? i.grantFundUse.split(', ') : i.grantFundUse;
+          $$('#fund-use-checkboxes input[type="checkbox"]').forEach(function (cb) {
+            cb.checked = uses.indexOf(cb.value) !== -1;
+          });
+        }
+      }
+    } catch (e) {
+      console.warn('Failed to load intake for edit:', e);
+    }
+    // Also try general intake prefill
+    await prefillFromExistingIntake();
   }
 
   async function submitIntake() {
@@ -350,10 +412,10 @@
       if (!res.ok) throw new Error('Save failed');
 
       showLoading();
-      await runScan(false);
+      await runScan(isEditMode ? 'profileUpdated' : false);
     } catch (e) {
       btn.disabled = false;
-      btn.textContent = 'Start scanning →';
+      btn.textContent = isEditMode ? 'Save & rescan \u2192' : 'Start scanning \u2192';
       alert('Failed to save intake. Please try again.');
     }
   }
@@ -367,10 +429,11 @@
 
   async function runScan(manual) {
     try {
+      var isProfileUpdate = (manual === 'profileUpdated');
       var res = await fetch('/api/grant-radar/scan', {
         method: 'POST',
         headers: authHeaders(),
-        body: JSON.stringify({ manual: !!manual })
+        body: JSON.stringify({ manual: !!manual, profileUpdated: isProfileUpdate })
       });
 
       if (res.status === 429) {
@@ -415,6 +478,10 @@
     if (nextScanDate) {
       $('#next-scan').textContent = 'Next automatic scan: ' + formatDate(nextScanDate);
     }
+
+    // Show edit profile button
+    var editBtn = $('#edit-profile-btn');
+    if (editBtn) editBtn.style.display = 'inline-block';
 
     // Load saved grants and applications
     await loadSavedGrants();

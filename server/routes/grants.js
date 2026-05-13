@@ -144,6 +144,7 @@ router.get('/intake-status', requireAuth, async (req, res) => {
       intake: complete ? {
         city: intake.city,
         state: intake.state,
+        county: intake.county,
         legalEntity: intake.legal_entity,
         granularRevenue: intake.granular_revenue,
         ownerDemographics: intake.owner_demographics,
@@ -225,7 +226,8 @@ router.post('/scan', requireAuth, async (req, res) => {
       .order('scan_date', { ascending: false })
       .limit(1);
 
-    if (lastScan && lastScan.length > 0 && req.body.manual) {
+    // Profile-updated scans bypass the cooldown — member changed their intake
+    if (lastScan && lastScan.length > 0 && req.body.manual && !req.body.profileUpdated) {
       const lastDate = new Date(lastScan[0].scan_date);
       const daysSince = (Date.now() - lastDate.getTime()) / (1000 * 60 * 60 * 24);
       if (daysSince < 7) {

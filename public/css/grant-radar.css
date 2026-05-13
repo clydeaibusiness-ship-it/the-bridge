@@ -61,6 +61,22 @@
 .gr-rescan-btn:hover { border-color: #3a3530; }
 .gr-rescan-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
+.gr-edit-btn {
+  font-family: var(--font-data);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #3a3530;
+  background: transparent;
+  border: 1px solid #c8c0b0;
+  padding: 8px 16px;
+  cursor: pointer;
+  margin-top: 0.75rem;
+  margin-left: 8px;
+  border-radius: 2px;
+}
+.gr-edit-btn:hover { border-color: #3a3530; }
+
 /* ---- LAYOUT (desktop: sidebar + results) ---- */
 .gr-layout {
   display: grid;
