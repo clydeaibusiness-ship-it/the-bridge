@@ -45,87 +45,14 @@ app.use('/system', (req, res) => {
   res.status(403).send('Forbidden');
 });
 
-// TEMPORARY DEBUG — remove after confirming soul.md deployment
-app.get('/debug/clear-commander', async (req, res) => {
-  try {
-    const { getClient } = require('./services/supabase');
-    const db = getClient();
-    if (!db) return res.json({ error: 'No database connection' });
-    const { data: msgs, error: e1 } = await db.from('commander_messages').delete().gte('created_at', '2000-01-01').select('id');
-    const { data: sums, error: e2 } = await db.from('commander_summaries').delete().gte('created_at', '2000-01-01').select('id');
-    res.json({
-      cleared: true,
-      messagesDeleted: msgs?.length || 0,
-      summariesDeleted: sums?.length || 0,
-      errors: [e1?.message, e2?.message].filter(Boolean)
-    });
-  } catch (err) {
-    res.json({ error: err.message });
-  }
-});
 
-app.get('/debug/deploy-version', (req, res) => {
-  res.json({ commit: 'e924432', deployed: new Date().toISOString() });
-});
-
-app.get('/debug/system-files', (req, res) => {
-  const fs = require('fs');
-  const systemDir = path.join(__dirname, '../system');
-  try {
-    const files = fs.readdirSync(systemDir).map(f => {
-      const stat = fs.statSync(path.join(systemDir, f));
-      return { name: f, size: stat.size, modified: stat.mtime };
-    });
-    const soulExists = files.some(f => f.name === 'soul.md');
-    let soulPreview = null;
-    if (soulExists) {
-      soulPreview = fs.readFileSync(path.join(systemDir, 'soul.md'), 'utf8').substring(0, 100);
-    }
-    res.json({ files, soulExists, soulPreview });
-  } catch (err) {
-    res.json({ error: err.message });
-  }
-});
 
 // Serve config.js from root (needed by frontend modules)
 app.get('/config.js', (req, res) => {
   res.sendFile(path.join(__dirname, '../config.js'));
 });
 
-// Serve Clerk publishable key from env (so dev/prod use different keys)
-app.get('/api/clerk-key', (req, res) => {
-  res.json({ key: process.env.CLERK_PUBLISHABLE_KEY || '' });
-});
 
-// Serve Clerk config for login page (accounts URL + origin)
-app.get('/api/clerk-config', (req, res) => {
-  const key = process.env.CLERK_PUBLISHABLE_KEY || '';
-  const isDevKey = key.startsWith('pk_test_');
-  if (isDevKey) {
-    // Dev Clerk instance — decode the domain from the key
-    // pk_test_ keys encode the Clerk frontend API domain in base64 after the prefix
-    let accountsUrl = '';
-    try {
-      const encoded = key.replace('pk_test_', '');
-      const decoded = Buffer.from(encoded, 'base64').toString().replace(/\$+$/, '');
-      // decoded is like 'clerk.xyz.accounts.dev' — accounts URL is 'https://xyz.accounts.dev'
-      accountsUrl = 'https://' + decoded.replace('clerk.', '');
-    } catch (e) {
-      accountsUrl = '';
-    }
-    res.json({
-      accountsUrl,
-      origin: process.env.BASE_URL || req.protocol + '://' + req.get('host'),
-      isDev: true
-    });
-  } else {
-    res.json({
-      accountsUrl: 'https://accounts.captainsbridge.io',
-      origin: 'https://captainsbridge.io',
-      isDev: false
-    });
-  }
-});
 
 // Serve data files
 app.use('/data', express.static(path.join(__dirname, '../public/data')));

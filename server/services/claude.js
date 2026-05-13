@@ -47,7 +47,6 @@ function getSystemPrompt() {
       path.join(__dirname, '../../system/big-book-of-strategy.md'),
       'utf8'
     );
-    console.log('Soul file loaded. First 50 chars:', soulPrompt.substring(0, 50));
     return soulPrompt + '\n\n---\n\n' + strategyPrompt;
   } catch (err) {
     console.error('SYSTEM PROMPT ERROR:', err.message);
@@ -241,6 +240,8 @@ ${JSON.stringify(intakeAnswers, null, 2)}`;
  * Now supports conversation history passed as messages array.
  */
 async function commanderChat(message, gameState, runHistory, sessionContext, conversationHistory, summaryContext, sessionNotesContext) {
+  // Build pure data context — no behavioral instructions.
+  // The soul file is the ONLY source of behavioral directives.
   let context = '';
   if (sessionNotesContext) {
     context += sessionNotesContext + '\n\n';
@@ -251,21 +252,9 @@ async function commanderChat(message, gameState, runHistory, sessionContext, con
   if (sessionContext) {
     context += sessionContext + '\n\n';
   }
-  // Only include game/run context if there's actual data
-  const hasGameState = gameState && Object.keys(gameState).length > 0;
   const hasRunHistory = runHistory && runHistory.length > 0;
-  
-  if (hasGameState) {
-    context += `Current business state:\n${JSON.stringify(gameState, null, 2)}\n\n`;
-  }
   if (hasRunHistory) {
     context += `Previous simulator runs:\n${JSON.stringify(runHistory, null, 2)}\n\n`;
-  }
-
-  if (hasGameState || sessionContext) {
-    context += `The member has completed their intake. Their business context is above.`;
-  } else {
-    context += `The member has not completed their intake. Respond with exactly this and nothing else: "I don't have your profile loaded yet. Complete the intake form on your dashboard and I'll have everything I need to give you specific advice."`;
   }
 
   // If we have conversation history, use multi-turn messages
