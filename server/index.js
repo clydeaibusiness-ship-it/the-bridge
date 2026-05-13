@@ -64,6 +64,10 @@ app.get('/debug/clear-commander', async (req, res) => {
   }
 });
 
+app.get('/debug/deploy-version', (req, res) => {
+  res.json({ commit: 'e924432', deployed: new Date().toISOString() });
+});
+
 app.get('/debug/system-files', (req, res) => {
   const fs = require('fs');
   const systemDir = path.join(__dirname, '../system');
