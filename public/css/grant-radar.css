@@ -394,6 +394,11 @@
 .gr-chip-sam { background: #1a1a0a; color: #a8a040; }
 .gr-chip-status-changed { background: #1a1a0a; color: #c87a4e; font-size: 9px; }
 
+/* Link quality chips */
+.gr-chip-link-direct { background: #0a1a10; color: #5a8a6a; }
+.gr-chip-link-program { background: #1a1a0a; color: #a8a040; }
+.gr-chip-link-homepage { background: #1a100a; color: #c87a4e; }
+
 /* Row 4: What to shift */
 .gr-expand-trigger {
   font-family: var(--font-data);
