@@ -32,28 +32,40 @@ function getStrategyPrompt() {
 }
 
 /**
- * Read soul.md + Big Book of Strategy at call time (not startup)
- * so owner edits take effect immediately.
- * soul.md loads FIRST (identity), then big-book-of-strategy.md (knowledge).
- * Used by Commander chat and Navigation Chart ONLY.
+ * Read soul.md and return as a string for assistant prefill.
+ * When passed as the first assistant message, the model treats it
+ * as something it already said — continuing from that identity
+ * rather than deciding whether to adopt it.
  */
-function getSystemPrompt() {
+function getSoulPrimer() {
   try {
-    const soulPrompt = fs.readFileSync(
+    const soul = fs.readFileSync(
       path.join(__dirname, '../../system/soul.md'),
       'utf8'
     );
-    const strategyPrompt = fs.readFileSync(
-      path.join(__dirname, '../../system/big-book-of-strategy.md'),
-      'utf8'
-    );
-    return soulPrompt + '\n\n---\n\n' + strategyPrompt;
+    console.log('Soul primer loaded. First 50 chars:', soul.substring(0, 50));
+    return soul;
   } catch (err) {
-    console.error('SYSTEM PROMPT ERROR:', err.message);
-    return fs.readFileSync(
+    console.error('SOUL PRIMER ERROR:', err.message);
+    return ''; // empty string fallback — Commander will still work, just without soul
+  }
+}
+
+/**
+ * Read Big Book of Strategy only.
+ * Used as system prompt for Commander chat (soul is now in assistant prefill).
+ * User context is appended by the caller.
+ */
+function getSystemPrompt() {
+  try {
+    const strategy = fs.readFileSync(
       path.join(__dirname, '../../system/big-book-of-strategy.md'),
       'utf8'
     );
+    return strategy;
+  } catch (err) {
+    console.error('STRATEGY PROMPT ERROR:', err.message);
+    return '';
   }
 }
 
@@ -257,40 +269,25 @@ async function commanderChat(message, gameState, runHistory, sessionContext, con
     context += `Previous simulator runs:\n${JSON.stringify(runHistory, null, 2)}\n\n`;
   }
 
-  // If we have conversation history, use multi-turn messages
-  if (conversationHistory && conversationHistory.length > 0) {
-    const systemPrompt = getSystemPrompt();
-    const fullSystem = context
-      ? `${systemPrompt}\n\n---\n\n${context}`
-      : systemPrompt;
-
-    // Build messages array: history + new message
-    const messages = [
-      ...conversationHistory,
-      { role: 'user', content: message }
-    ];
-
-    const response = await client.messages.create({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 4000,
-      system: fullSystem,
-      messages
-    });
-
-    return response.content[0].text;
-  }
-
-  // No history — still use full system prompt (soul + strategy)
   const systemPrompt = getSystemPrompt();
   const fullSystem = context
     ? `${systemPrompt}\n\n---\n\n${context}`
     : systemPrompt;
 
+  const soulPrimer = getSoulPrimer();
+
+  // Build messages array: soul prefill first, then history, then new message
+  const messages = [
+    ...(soulPrimer ? [{ role: 'assistant', content: soulPrimer }] : []),
+    ...(conversationHistory || []),
+    { role: 'user', content: message }
+  ];
+
   const response = await client.messages.create({
     model: 'claude-sonnet-4-20250514',
     max_tokens: 4000,
     system: fullSystem,
-    messages: [{ role: 'user', content: message }]
+    messages
   });
 
   return response.content[0].text;
@@ -345,11 +342,15 @@ Return this exact JSON structure with 6 sections. Each section has a "title" and
   ]
 }`;
 
-  // Navigation Chart uses full system prompt (soul + strategy)
-  const systemPrompt = getSystemPrompt();
+  // Navigation Chart keeps soul in system prompt (no prefill pattern here)
+  const soulContent = getSoulPrimer();
+  const strategyContent = getSystemPrompt();
+  const chartSystemPrompt = soulContent
+    ? `${soulContent}\n\n---\n\n${strategyContent}`
+    : strategyContent;
   const fullSystem = additionalContext
-    ? `${systemPrompt}\n\n---\n\nAdditional context from the player's web presence:${additionalContext}`
-    : systemPrompt;
+    ? `${chartSystemPrompt}\n\n---\n\nAdditional context from the player's web presence:${additionalContext}`
+    : chartSystemPrompt;
 
   const response = await client.messages.create({
     model: 'claude-sonnet-4-20250514',
@@ -402,5 +403,6 @@ module.exports = {
   generateConversationSummary,
   generateChart,
   getSoulVersion,
+  getSoulPrimer,
   compressSession
 };
