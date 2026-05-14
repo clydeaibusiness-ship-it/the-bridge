@@ -474,6 +474,23 @@
     $('#results-section').style.display = 'block';
     $('#rescan-btn').style.display = 'inline-block';
 
+    // Contextual search note
+    var existingNote = $('#gr-search-note');
+    if (existingNote) existingNote.remove();
+
+    var totalCount = (results.federal || []).length + (results.state || []).length + (results.local || []).length;
+    var countText = totalCount === 0 ? 'No opportunities' : totalCount + ' opportunities';
+
+    var note = document.createElement('div');
+    note.id = 'gr-search-note';
+    note.className = 'gr-search-note';
+    note.textContent = 'This scan searched active federal grant opportunities published through Grants.gov and matched them against your business profile across seven eligibility dimensions. ' + countText + ' met the 80% match threshold for your profile. Federal grants represent one category of available funding \u2014 private foundations, community foundations, and state programs are not included in this search and may offer additional opportunities relevant to your business.';
+
+    var federalHeader = document.querySelector('.gr-section-header');
+    if (federalHeader) {
+      federalHeader.parentNode.insertBefore(note, federalHeader);
+    }
+
     // Scan info
     if (scanDate) {
       $('#last-scan').textContent = 'Last scanned: ' + formatDate(scanDate);
@@ -510,6 +527,26 @@
     renderGrantSection('federal-results', results.federal || []);
     renderGrantSection('state-results', results.state || []);
     renderGrantSection('local-results', results.local || []);
+
+    // Beyond Federal Grants section
+    var existingBeyond = $('#gr-beyond-federal');
+    if (existingBeyond) existingBeyond.remove();
+
+    var beyond = document.createElement('div');
+    beyond.id = 'gr-beyond-federal';
+    beyond.className = 'gr-beyond-federal';
+
+    beyond.innerHTML = '<span class="gr-beyond-label">BEYOND FEDERAL GRANTS</span>' +
+      '<p class="gr-beyond-intro">Grant Radar searches the federal government\u2019s official grant database. Federal funding covers a specific and defined slice of available grant money. The following categories of funding sources operate outside the federal system and are worth researching independently based on your business or organization type. These are not specific recommendations and we have not verified current availability \u2014 they are named categories of sources that business owners and nonprofits in your category have historically accessed.</p>' +
+      '<div class="gr-beyond-category"><span class="gr-beyond-name">Private foundations</span> \u2014 Organizations like the Lilly Endowment, Maclellan Foundation, and National Christian Foundation specifically fund faith-based community work, theological education, and congregational vitality that federal sources cannot touch. Most major industries and causes have equivalent private foundations. Search your category plus private foundation grants to find organizations aligned with your mission.</div>' +
+      '<div class="gr-beyond-category"><span class="gr-beyond-name">Community foundations</span> \u2014 Most cities and regions have a community foundation that distributes grants to local nonprofits and small businesses operating in their area. These foundations typically fund organizations serving their geographic community regardless of industry. Search your city name plus community foundation to find yours.</div>' +
+      '<div class="gr-beyond-category"><span class="gr-beyond-name">Industry and trade associations</span> \u2014 Many industries operate their own foundations or grant programs for members working within that sector. Your industry or trade association likely has a funding, grants, or scholarships page worth reviewing. These programs are often less competitive than federal grants because they are targeted to a specific membership community.</div>' +
+      '<div class="gr-beyond-category"><span class="gr-beyond-name">State and local government programs</span> \u2014 Beyond federal grants, your state economic development office and local county or city government may operate grant and loan programs specifically designed for businesses and nonprofits at your stage and in your region. Grant Radar will add state grant matching in a future update. Until then searching your state name plus small business grants or nonprofit grants is the fastest starting point.</div>' +
+      '<div class="gr-beyond-category"><span class="gr-beyond-name">Corporate foundations and giving programs</span> \u2014 Large companies operating in your region or serving your industry often run charitable giving programs or small business support initiatives open to application. These programs are typically tied to the company\u2019s geographic footprint or strategic priorities. Searching major employers in your area plus community grants or foundation is a practical starting point.</div>' +
+      '<div class="gr-beyond-disclaimer">The Bridge does not endorse any of the above and has not verified current availability. These are categories of funding named for general awareness. Always conduct your own research before investing time in any application.</div>';
+
+    var resultsSection = $('#results-section');
+    resultsSection.appendChild(beyond);
   }
 
   async function loadSavedGrants() {

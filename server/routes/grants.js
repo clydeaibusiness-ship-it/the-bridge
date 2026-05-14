@@ -779,7 +779,7 @@ router.get('/intake-full-status', requireAuth, async (req, res) => {
       q21: 'q21_conducts_rd', q22: 'q22_has_ip', q23: 'q23_university_partnerships',
       q24: 'q24_professional_licenses', q24_detail: 'q24_licenses_detail', q25: 'q25_facility',
       q26: 'q26_equipment_value', q27: 'q27_mission_statement', q28: 'q28_population_served',
-      q29: 'q29_has_board', q30: 'q30_annual_budget', q31: 'q31_area_population',
+      q29: 'q29_has_board', q30: 'q30_annual_budget', q30a: 'community_service_programs', q31: 'q31_area_population',
       q32: 'q32_creates_local_jobs', q33: 'q33_currently_exports', q34: 'q34_target_markets',
       q35: 'q35_training_employee_count', q36: 'q36_training_skills', q37: 'q37_additional_info'
     };
@@ -842,6 +842,7 @@ router.post('/intake-full', requireAuth, async (req, res) => {
       q35_training_employee_count: answers.q35 != null ? parseInt(answers.q35, 10) : null,
       q36_training_skills: answers.q36 || null,
       q37_additional_info: answers.q37 || null,
+      community_service_programs: answers.q30a || null,
       completed_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     };

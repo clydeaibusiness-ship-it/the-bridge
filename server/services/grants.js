@@ -53,6 +53,7 @@ MEMBER BUSINESS PROFILE:
 - Website content summary: ${intake.website_content ? intake.website_content.substring(0, 500) : 'No website scanned'}
 - Differentiator: ${intake.differentiator || 'Not provided'}
 - Challenge: ${intake.challenge || 'Not provided'}
+- Community service programs: ${intake.community_service_programs || 'Not provided'}
   `.trim();
 }
 

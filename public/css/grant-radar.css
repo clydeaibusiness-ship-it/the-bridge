@@ -672,3 +672,73 @@
 .gr-acknowledgment-btn:hover {
   background: #2a2a2f;
 }
+
+/* Search note */
+.gr-search-note {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.8125rem;
+  color: #7a7570;
+  font-style: italic;
+  line-height: 1.7;
+  margin-bottom: 1.5rem;
+  padding: 0.75rem 1rem;
+  border-left: 0.125rem solid #c8c0b0;
+}
+
+@media (max-width: 48em) {
+  .gr-search-note {
+    border-left: none;
+    border-top: 0.125rem solid #c8c0b0;
+    padding-top: 1rem;
+  }
+}
+
+/* Beyond Federal Grants */
+.gr-beyond-federal {
+  margin-top: 2.5rem;
+  padding-top: 1.5rem;
+  border-top: 0.0625rem solid #c8c0b0;
+}
+
+.gr-beyond-label {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.625rem;
+  letter-spacing: 0.15em;
+  color: #7a7570;
+  text-transform: uppercase;
+  margin-bottom: 0.75rem;
+  display: block;
+}
+
+.gr-beyond-intro {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.8125rem;
+  color: #3a3530;
+  line-height: 1.75;
+  margin-bottom: 1.25rem;
+}
+
+.gr-beyond-category {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.8125rem;
+  color: #3a3530;
+  line-height: 1.75;
+  margin-bottom: 0.875rem;
+}
+
+.gr-beyond-name {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #0a0a0f;
+}
+
+.gr-beyond-disclaimer {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.75rem;
+  color: #7a7570;
+  font-style: italic;
+  line-height: 1.6;
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 0.0625rem solid #c8c0b0;
+}

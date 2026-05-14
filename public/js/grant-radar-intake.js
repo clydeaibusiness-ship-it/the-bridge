@@ -94,6 +94,9 @@
       qs.push({ id: 'q28', label: 'What population or community does your organization serve?', type: 'textarea', required: true, branch: 'C' });
       qs.push({ id: 'q29', label: 'Do you have a board of directors?', type: 'radio', options: ['Yes', 'No'], required: true, branch: 'C' });
       qs.push({ id: 'q30', label: 'What is your organization\'s annual operating budget?', type: 'number', required: true, prefix: '$', placeholder: '0', branch: 'C' });
+      qs.push({ id: 'q30a', label: 'Separate from your religious or faith mission, does your organization run any community service programs?', type: 'textarea', required: false, branch: 'C',
+        placeholder: 'Describe any community service programs your organization runs \u2014 who they serve, what they provide, and how often.',
+        hint: { always: true, text: 'Federal grants cannot fund religious activities but can fund community services delivered by faith-based organizations. Examples include food assistance, housing support, youth programs, mental health services, job training, addiction recovery, or educational programs open to the public. Describing these programs helps Grant Radar find federal opportunities you qualify for.' } });
     }
 
     // Branch D: Rural/Distressed
@@ -198,6 +201,7 @@
       var ta = document.createElement('textarea');
       ta.id = 'gri-' + q.id;
       ta.rows = 3;
+      if (q.placeholder) ta.placeholder = q.placeholder;
       ta.value = getValue(q) || '';
       div.appendChild(ta);
     } else if (q.type === 'select') {

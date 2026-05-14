@@ -510,7 +510,8 @@ function buildMemberProfile(businessBasics, grantIntake) {
     ),
     isDistressed: (gi.q12_owner_demographics || bb.owner_demographics || []).some(
       d => d.toLowerCase().includes('distressed') || d.toLowerCase().includes('opportunity zone')
-    )
+    ),
+    communityServicePrograms: gi.community_service_programs || ''
   };
 }
 
