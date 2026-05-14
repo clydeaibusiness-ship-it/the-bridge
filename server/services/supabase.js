@@ -401,6 +401,8 @@ async function upsertIntake(userId, answers) {
     years_operating: answers.years || answers.yearsOperating || answers.years_operating || null,
     revenue_range: answers.revenue || answers.revenueRange || answers.revenue_range || null,
     team_size: answers.employees || answers.teamSize || answers.team_size || null,
+    exact_revenue: (typeof answers.revenue === 'number' || (typeof answers.revenue === 'string' && /^\d+$/.test(answers.revenue))) ? parseInt(answers.revenue, 10) : null,
+    exact_employee_count: (typeof answers.employees === 'number' || (typeof answers.employees === 'string' && /^\d+$/.test(answers.employees))) ? parseInt(answers.employees, 10) : null,
     repeat_vs_new: answers.customerType || answers.repeatVsNew || answers.repeat_vs_new || null,
     switching_costs: answers.switchingCosts || answers.switching_costs || null,
     systems_dependency: answers.systems || answers.systemsDependency || answers.systems_dependency || null,
@@ -412,6 +414,7 @@ async function upsertIntake(userId, answers) {
     industry: answers.industry || null,
     differentiator: answers.differentiator || null,
     challenge: answers.challenge || null,
+    business_basics_completed: true,
     updated_at: new Date().toISOString()
   };
 

@@ -1,7 +1,16 @@
 /**
- * Grant Search Service — Claude API powered grant matching
+ * Grant Search Service — Claude extracts & structures grant data,
+ * then calculateGrantMatch scores mathematically.
+ *
+ * Flow:
+ * 1. Claude searches for grant opportunities and returns structured eligibility data
+ * 2. calculateGrantMatch scores each grant against member profile (pure math)
+ * 3. Only grants scoring 80+ (with no hard disqualifiers) are returned
+ * 4. Server fetches each qualifying grant URL for detail_data
  */
 const { callClaude } = require('./claude');
+const { calculateGrantMatch, buildMemberProfile } = require('./grant-scoring');
+const { fetchGrantDetailsBatch } = require('./grant-detail-fetcher');
 
 const US_STATES = {
   'AL': 'Alabama', 'AK': 'Alaska', 'AZ': 'Arizona', 'AR': 'Arkansas', 'CA': 'California',
@@ -18,12 +27,11 @@ const US_STATES = {
 };
 
 /**
- * Build the member profile summary from intake data
+ * Build profile summary for Claude's grant search.
  */
 function buildProfileSummary(intake) {
   const stateName = US_STATES[intake.state] || intake.state || 'Unknown state';
   const demographics = Array.isArray(intake.owner_demographics) ? intake.owner_demographics : [];
-
   const county = intake.county || '';
 
   return `
@@ -36,8 +44,8 @@ MEMBER BUSINESS PROFILE:
 - County/Township: ${county || 'Not provided'}
 - State: ${stateName}
 - Legal entity type: ${intake.legal_entity || 'Not provided'}
-- Annual revenue: ${intake.granular_revenue || intake.revenue_range || 'Not provided'}
-- Team size: ${intake.team_size || 'Not provided'}
+- Annual revenue: $${(intake.exact_revenue || intake.granular_revenue || 0).toLocaleString()}
+- Team size: ${intake.exact_employee_count || intake.team_size || 'Not provided'}
 - Years in operation: ${intake.years_operating || 'Not provided'}
 - Owner demographics: ${demographics.length > 0 ? demographics.join(', ') : 'None selected'}
 - SAM.gov registered: ${intake.sam_registration || 'Unknown'}
@@ -49,116 +57,140 @@ MEMBER BUSINESS PROFILE:
 }
 
 /**
- * Scan for grants matching the member's profile
+ * Scan for grants — Claude finds opportunities, scoring function scores them.
  */
-async function scanGrants(intake) {
+async function scanGrants(intake, grantRadarIntake) {
   const profile = buildProfileSummary(intake);
   const stateName = US_STATES[intake.state] || intake.state || 'their state';
   const city = intake.city || 'their city';
   const county = intake.county || '';
 
-  const prompt = `You are a grant research specialist with deep knowledge of the current landscape of federal, state, and local small business grants in the United States.
+  // Build member profile for scoring
+  const memberProfile = buildMemberProfile(intake, grantRadarIntake);
 
-Using the member profile below, identify government grants they are likely eligible for. Search across:
+  const prompt = `You are a grant research specialist. Using the member profile below, identify government grants they may be eligible for. Search across federal (Grants.gov, SBA, USDA, etc.), state (${stateName}), and local (${city}${county ? ', ' + county : ''}) programs.
 
-1. FEDERAL: Grants.gov programs, SBA programs (Community Advantage, 8(a)), USDA programs (especially if rural), federal agency-specific grants (DOE, DOD, HHS, NSF, DOL, etc.)
-2. STATE (${stateName}): State economic development agency grants, state small business programs, state-specific industry grants, state innovation funds, state workforce development grants
-3. LOCAL (${city}${county ? ', ' + county : ''} and surrounding area): City, county, and township economic development grants, local business development incentives, community development block grants, local chamber programs, township-level grants
+CRITICAL: You are NOT scoring or matching. You are finding grants and extracting their eligibility criteria in a structured format. A separate scoring engine will determine match percentages mathematically. Your job is accurate data extraction.
 
---- ELIGIBILITY EXCLUSION RULES (MANDATORY) ---
-
-Do NOT surface any grant that requires ANY of the following unless the member's profile EXPLICITLY confirms they meet the criteria:
-
-1. SBIR/STTR EXCLUSION: Do not surface SBIR or STTR grants unless the member's profile explicitly indicates they conduct formal research and development with documented methodology, have research partnerships, or have university affiliations. An AI platform, advisory service, software tool, service business, contractor, or retail business does NOT qualify for SBIR/STTR.
-
-2. SAM.gov: If the member indicated they are NOT registered for SAM.gov, you may still surface grants requiring SAM.gov but you MUST flag it prominently and reduce the match percentage by at least 20 points.
-
-3. REVENUE THRESHOLDS: If a grant requires revenue under a certain amount and the member's stated revenue exceeds it, exclude the grant entirely.
-
-4. INDUSTRY MISMATCH: Do not surface agricultural grants for software companies, manufacturing grants for service businesses, or any grant whose industry requirements clearly do not match the member's business type.
-
-5. WHEN IN DOUBT, EXCLUDE. A result that wastes the member's time is worse than no result. Quality over quantity on every scan.
-
---- MATCH PERCENTAGE RULES (MANDATORY) ---
-
-The match percentage must reflect PRACTICAL eligibility, not surface-level keyword overlap.
-
-For each unmet hard prerequisite (SAM.gov registration, R&D documentation, formal research partnerships, specific licensing, specific certifications), reduce the match percentage by at least 20 percentage points.
-
-A grant with two or more unmet prerequisites CANNOT exceed 60% match regardless of other criteria alignment.
-
-Only return grants with a final match percentage of 80% or higher AFTER applying these deductions.
-
---- URL RULES (MANDATORY) ---
-
-For the "url" field: provide the most specific, direct URL to the actual open solicitation or application page — NOT the program homepage. The member should land on a page where they can immediately see the deadline, award amount, and application instructions.
-
-Bad example: https://www.sbir.gov/ (homepage — member wastes 20 minutes)
-Good example: https://ies.ed.gov/funding/research/programs/small-business-innovation-research-sbir/solicitation-information (specific solicitation page)
-
-For each grant, also assess the URL quality and return a "link_quality" field with one of these exact values:
-- "direct" — URL goes directly to the specific open solicitation or application form
-- "program_page" — URL goes to a program page that contains a link to the current application
-- "homepage" — URL is a top-level program homepage and the member will need to explore
-
-If the link_quality is "homepage", append this sentence to the description: "Note: this link goes to the program homepage. Navigate to find the current open solicitation before applying."
-
---- GAPS / "WHAT WOULD BRING THIS TO 100%" RULES ---
-
-Order gap items by EASE OF COMPLETION — quickest wins first, most difficult last.
-
-For each gap item, include a plain-English time/effort estimate. Examples:
-- "Register for SAM.gov — free, takes about 30 minutes"
-- "Form an LLC — costs $50-$200 depending on state, takes 1-2 weeks"
-- "Develop a technical research proposal — significant time investment, consider whether this grant is worth pursuing"
-
-This helps the member decide whether to pursue the grant at all.
+--- EXCLUSION RULES ---
+1. Do NOT include SBIR/STTR unless the profile explicitly indicates formal R&D activity.
+2. Only include grants that are currently open, have rolling applications, or reopen within 6 months.
+3. Quality over quantity — 5 to 20 results across all jurisdictions.
 
 --- OUTPUT FORMAT ---
 
-For each grant return a JSON object with these exact fields:
-- "name": Official grant program name
-- "url": The most specific direct URL to the open solicitation or application (NOT a homepage)
-- "amount": Funding amount as a string (e.g. "$10,000", "Up to $500,000", "Varies")
-- "description": Two sentences maximum. Plain English. What the grant is for and who it primarily serves. If link_quality is "homepage", append the navigation note.
-- "matchPercent": Integer 80-100 AFTER applying prerequisite deductions
-- "jurisdiction": Exactly one of "Federal", "State", "Local"
-- "status": Exactly one of "Open now", "Rolling applications", or a deadline string like "Deadline: June 30, 2025" or "Closed — check back January 2026"
-- "requirements": Array of strings — key eligibility requirements
-- "memberMeets": Array of strings — which requirements the member already satisfies
-- "gaps": Array of strings — ordered by ease of completion (quickest first), each with a time/effort estimate
-- "requiresSAM": Boolean — true if SAM.gov registration is needed
-- "link_quality": Exactly one of "direct", "program_page", or "homepage"
-
-${intake.legal_entity === 'Nonprofit — 501(c)(3)' ? 'Include nonprofit-specific grants (foundation grants, 501(c)(3) federal programs) alongside or instead of for-profit results.' : ''}
-
-Only include grants that are currently open, have rolling applications, or have a known reopening date within 6 months. Aim for 5-15 total results across all three jurisdictions.
-
 Return ONLY a valid JSON array. No markdown, no backticks, no prose outside the JSON.
+
+For each grant return this exact structure:
+{
+  "name": "Official grant program name",
+  "url": "Most specific direct URL to the solicitation or application page",
+  "amount": "Funding amount as string (e.g. '$10,000', 'Up to $500,000', 'Varies')",
+  "description": "Two sentences max. What the grant is for and who it serves.",
+  "jurisdiction": "Federal" | "State" | "Local",
+  "status": "Open now" | "Rolling applications" | "Deadline: June 30, 2025" | "Closed — check back January 2026",
+  "requiresSAM": true | false,
+
+  "eligibility": {
+    "entityTypes": ["LLC", "S-Corporation", "Sole proprietorship", "Nonprofit", "Any"],
+    "revenueMin": null,
+    "revenueMax": null,
+    "eligibleNAICS": ["541512", "541519"],
+    "eligibleIndustries": ["technology", "software", "information services"],
+    "eligibleLocations": ["Nationwide"] or ["Oklahoma", "Texas"],
+    "demographicPriorities": ["woman-owned", "minority-owned"] or [],
+    "requiresEIN": true,
+    "requiresSAM": true,
+    "eligibleUses": ["hiring employees", "purchasing equipment", "research and development"]
+  },
+
+  "link_quality": "direct" | "program_page" | "homepage"
+}
+
+For eligibility fields:
+- revenueMin/revenueMax: exact dollar integers or null if no limit. Extract from the grant text. Example: if grant says "businesses with less than $1 million in annual revenue" then revenueMax = 1000000.
+- entityTypes: list all explicitly eligible types. Use "Any" if no restriction stated.
+- eligibleNAICS: specific NAICS codes if stated. Empty array if not specified.
+- eligibleIndustries: industry keywords if stated. Empty array if any industry qualifies.
+- eligibleLocations: ["Nationwide"] if no geographic restriction, otherwise list states/regions.
+- demographicPriorities: only include if grant explicitly prioritizes certain demographics.
+- eligibleUses: what the grant funds can be used for.
+
+If a field is not specified in the grant, use null for numbers and empty arrays for lists. Do NOT guess — only extract what the grant explicitly states.
 
 ${profile}`;
 
   const response = await callClaude(prompt);
 
   try {
-    // Extract JSON array from response
     const jsonMatch = response.match(/\[[\s\S]*\]/);
-    if (jsonMatch) {
-      const results = JSON.parse(jsonMatch[0]);
-      // Organize by jurisdiction
-      return {
-        federal: results.filter(g => g.jurisdiction === 'Federal'),
-        state: results.filter(g => g.jurisdiction === 'State'),
-        local: results.filter(g => g.jurisdiction === 'Local'),
-        stateName,
-        city,
-        county
-      };
+    if (!jsonMatch) {
+      console.error('No JSON array found in Claude response');
+      return { federal: [], state: [], local: [], stateName, city, county };
     }
-    return { federal: [], state: [], local: [], stateName, city, county };
+
+    const rawGrants = JSON.parse(jsonMatch[0]);
+
+    // ---- SCORE EACH GRANT MATHEMATICALLY ----
+    const scoredGrants = [];
+
+    for (const grant of rawGrants) {
+      const grantCriteria = {
+        eligibleEntityTypes: grant.eligibility?.entityTypes || [],
+        revenueMin: grant.eligibility?.revenueMin,
+        revenueMax: grant.eligibility?.revenueMax,
+        eligibleNAICS: grant.eligibility?.eligibleNAICS || [],
+        eligibleIndustries: grant.eligibility?.eligibleIndustries || [],
+        eligibleLocations: grant.eligibility?.eligibleLocations || [],
+        demographicPriorities: grant.eligibility?.demographicPriorities || [],
+        requiresSAM: grant.eligibility?.requiresSAM !== false,
+        requiresEIN: grant.eligibility?.requiresEIN !== false,
+        eligibleUses: grant.eligibility?.eligibleUses || []
+      };
+
+      const scoreResult = calculateGrantMatch(memberProfile, grantCriteria);
+
+      // Only include if score >= 80 and no hard disqualifiers
+      if (!scoreResult.excluded && scoreResult.totalScore >= 80) {
+        scoredGrants.push({
+          name: grant.name,
+          url: grant.url,
+          amount: grant.amount,
+          description: grant.description,
+          jurisdiction: grant.jurisdiction,
+          status: grant.status,
+          requiresSAM: grant.requiresSAM,
+          link_quality: grant.link_quality || 'program_page',
+          // Scoring data (calculated, not Claude-generated)
+          matchPercent: scoreResult.totalScore,
+          scoreDimensions: scoreResult.dimensions,
+          gaps: scoreResult.improvements,
+          memberMeets: Object.entries(scoreResult.dimensions)
+            .filter(([, v]) => v.score === v.max)
+            .map(([, v]) => v.detail),
+          requirements: Object.entries(scoreResult.dimensions)
+            .map(([k, v]) => `${k}: ${v.detail}`)
+        });
+      }
+    }
+
+    // Sort by match percentage descending
+    scoredGrants.sort((a, b) => b.matchPercent - a.matchPercent);
+
+    // ---- FETCH DETAIL DATA for each qualifying grant ----
+    const grantsWithDetails = await fetchGrantDetailsBatch(scoredGrants);
+
+    // Organize by jurisdiction
+    return {
+      federal: grantsWithDetails.filter(g => g.jurisdiction === 'Federal'),
+      state: grantsWithDetails.filter(g => g.jurisdiction === 'State'),
+      local: grantsWithDetails.filter(g => g.jurisdiction === 'Local'),
+      stateName,
+      city,
+      county
+    };
   } catch (e) {
-    console.error('Failed to parse grant results:', e.message);
-    console.error('Raw response:', response.substring(0, 500));
+    console.error('Failed to parse/score grant results:', e.message);
     return { federal: [], state: [], local: [], stateName, city, county };
   }
 }

@@ -8,6 +8,7 @@ const {
   getIntake, upsertIntake
 } = require('../services/supabase');
 const { scanGrants } = require('../services/grants');
+const { buildMemberProfile } = require('../services/grant-scoring');
 const {
   sendAdminVerificationEmail,
   sendWinVerifiedEmail,
@@ -321,8 +322,19 @@ router.post('/scan', requireAuth, async (req, res) => {
       }
     }
 
-    // Run the grant search
-    const results = await scanGrants(intake);
+    // Load grant radar intake if it exists
+    let grantRadarIntake = null;
+    try {
+      const { data: griData } = await db
+        .from('grant_radar_intake')
+        .select('*')
+        .eq('user_id', req.dbUser.id)
+        .single();
+      grantRadarIntake = griData;
+    } catch (e) { /* table may not exist yet */ }
+
+    // Run the grant search with scoring
+    const results = await scanGrants(intake, grantRadarIntake);
 
     // Store results
     const { error: insertError } = await db
@@ -735,6 +747,165 @@ router.post('/grant-verify', express.urlencoded({ extended: false }), async (req
   } catch (e) {
     console.error('Admin verify error:', e.message);
     res.status(500).send('Something went wrong. Please try the link again.');
+  }
+});
+
+// ---- Full Grant Radar Intake (new 20-45 question form) ----
+
+router.get('/intake-full-status', requireAuth, async (req, res) => {
+  try {
+    const db = getClient();
+    if (!db) return res.json({ intake: null });
+
+    const { data, error } = await db
+      .from('grant_radar_intake')
+      .select('*')
+      .eq('user_id', req.dbUser.id)
+      .single();
+
+    if (error && error.code !== 'PGRST116') throw error;
+    if (!data) return res.json({ intake: null });
+
+    // Map DB columns to question IDs
+    const intake = {};
+    const colMap = {
+      q1: 'q1_legal_name', q2: 'q2_has_ein', q3: 'q3_sam_registered',
+      q4: 'q4_street_address', q5: 'q5_business_description', q6: 'q6_problem_solved',
+      q7: 'q7_primary_fund_use', q8: 'q8_annual_revenue', q9: 'q9_employee_count',
+      q10: 'q10_years_operating', q11: 'q11_legal_structure', q12: 'q12_owner_demographics',
+      q13: 'q13_separate_bank_account', q14: 'q14_filed_tax_returns', q15: 'q15_business_plan',
+      q16: 'q16_short_term_goals', q17: 'q17_success_metrics', q18: 'q18_prior_grants',
+      q18_detail: 'q18_prior_grants_detail', q19: 'q19_current_gov_funding', q20: 'q20_naics_code',
+      q21: 'q21_conducts_rd', q22: 'q22_has_ip', q23: 'q23_university_partnerships',
+      q24: 'q24_professional_licenses', q24_detail: 'q24_licenses_detail', q25: 'q25_facility',
+      q26: 'q26_equipment_value', q27: 'q27_mission_statement', q28: 'q28_population_served',
+      q29: 'q29_has_board', q30: 'q30_annual_budget', q31: 'q31_area_population',
+      q32: 'q32_creates_local_jobs', q33: 'q33_currently_exports', q34: 'q34_target_markets',
+      q35: 'q35_training_employee_count', q36: 'q36_training_skills', q37: 'q37_additional_info'
+    };
+    for (const [qId, col] of Object.entries(colMap)) {
+      intake[qId] = data[col];
+    }
+    res.json({ intake, completedAt: data.completed_at });
+  } catch (e) {
+    console.error('Full intake status error:', e.message);
+    res.json({ intake: null });
+  }
+});
+
+router.post('/intake-full', requireAuth, async (req, res) => {
+  try {
+    const { answers, isEdit } = req.body;
+    if (!answers) return res.status(400).json({ error: 'Answers required' });
+
+    const db = getClient();
+    if (!db) return res.status(503).json({ error: 'Database not configured' });
+
+    const record = {
+      user_id: req.dbUser.id,
+      q1_legal_name: answers.q1 || null,
+      q2_has_ein: answers.q2 || null,
+      q3_sam_registered: answers.q3 || null,
+      q4_street_address: answers.q4 || null,
+      q5_business_description: answers.q5 || null,
+      q6_problem_solved: answers.q6 || null,
+      q7_primary_fund_use: answers.q7 || null,
+      q8_annual_revenue: answers.q8 != null ? parseInt(answers.q8, 10) : null,
+      q9_employee_count: answers.q9 != null ? parseInt(answers.q9, 10) : null,
+      q10_years_operating: answers.q10 || null,
+      q11_legal_structure: answers.q11 || null,
+      q12_owner_demographics: Array.isArray(answers.q12) ? answers.q12 : [],
+      q13_separate_bank_account: answers.q13 || null,
+      q14_filed_tax_returns: answers.q14 || null,
+      q15_business_plan: answers.q15 || null,
+      q16_short_term_goals: answers.q16 || null,
+      q17_success_metrics: answers.q17 || null,
+      q18_prior_grants: answers.q18 || null,
+      q18_prior_grants_detail: answers.q18_detail || null,
+      q19_current_gov_funding: answers.q19 || null,
+      q20_naics_code: answers.q20 || null,
+      q21_conducts_rd: answers.q21 || null,
+      q22_has_ip: answers.q22 || null,
+      q23_university_partnerships: answers.q23 || null,
+      q24_professional_licenses: answers.q24 || null,
+      q24_licenses_detail: answers.q24_detail || null,
+      q25_facility: answers.q25 || null,
+      q26_equipment_value: answers.q26 != null ? parseInt(answers.q26, 10) : null,
+      q27_mission_statement: answers.q27 || null,
+      q28_population_served: answers.q28 || null,
+      q29_has_board: answers.q29 || null,
+      q30_annual_budget: answers.q30 != null ? parseInt(answers.q30, 10) : null,
+      q31_area_population: answers.q31 || null,
+      q32_creates_local_jobs: answers.q32 || null,
+      q33_currently_exports: answers.q33 || null,
+      q34_target_markets: answers.q34 || null,
+      q35_training_employee_count: answers.q35 != null ? parseInt(answers.q35, 10) : null,
+      q36_training_skills: answers.q36 || null,
+      q37_additional_info: answers.q37 || null,
+      completed_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+
+    const { error } = await db
+      .from('grant_radar_intake')
+      .upsert(record, { onConflict: 'user_id' });
+
+    if (error) throw error;
+
+    // Also update the old user_intake grant fields for backward compat
+    await db.from('user_intake').upsert({
+      user_id: req.dbUser.id,
+      grant_intake_complete: true,
+      exact_revenue: record.q8_annual_revenue,
+      exact_employee_count: record.q9_employee_count,
+      naics_code: record.q20_naics_code,
+      sam_registration: record.q3_sam_registered,
+      legal_entity: record.q11_legal_structure,
+      owner_demographics: record.q12_owner_demographics,
+      grant_fund_use: record.q7_primary_fund_use,
+      updated_at: new Date().toISOString()
+    }, { onConflict: 'user_id' });
+
+    res.json({ saved: true });
+  } catch (e) {
+    console.error('Full intake save error:', e.message);
+    res.status(500).json({ error: 'Failed to save intake' });
+  }
+});
+
+// ---- Grant Detail (for detail page) ----
+
+router.get('/detail/:grantName', requireAuth, async (req, res) => {
+  try {
+    const grantName = decodeURIComponent(req.params.grantName);
+    const db = getClient();
+    if (!db) return res.status(503).json({ error: 'Database not configured' });
+
+    // Get latest results for this user
+    const { data, error } = await db
+      .from('grant_radar_results')
+      .select('results_json')
+      .eq('user_id', req.dbUser.id)
+      .order('scan_date', { ascending: false })
+      .limit(1);
+
+    if (error) throw error;
+    if (!data || data.length === 0) return res.json({ grant: null });
+
+    const results = data[0].results_json;
+    const allGrants = [
+      ...(results.federal || []),
+      ...(results.state || []),
+      ...(results.local || [])
+    ];
+
+    const grant = allGrants.find(g => g.name === grantName);
+    if (!grant) return res.json({ grant: null });
+
+    res.json({ grant });
+  } catch (e) {
+    console.error('Grant detail error:', e.message);
+    res.status(500).json({ error: 'Failed to load grant details' });
   }
 });
 

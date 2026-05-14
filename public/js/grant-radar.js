@@ -151,6 +151,9 @@
     populateStateDropdown();
     setupFormListeners();
 
+    // Check for auto-scan redirect from grant radar intake form
+    var autoScan = new URLSearchParams(window.location.search).get('scan') === 'auto';
+
     // Check acknowledgment status
     await checkAcknowledgment();
 
@@ -161,7 +164,7 @@
     if (status.complete) {
       // Check if auto-rescan needed
       const nextScan = status.intake.nextScanDate ? new Date(status.intake.nextScanDate) : null;
-      const needsAutoScan = nextScan && new Date() >= nextScan;
+      const needsAutoScan = autoScan || (nextScan && new Date() >= nextScan);
 
       // Load existing results
       const resultsRes = await fetch('/api/grant-radar/results', { headers: authHeaders() });
@@ -210,7 +213,7 @@
       if (a.city) { var el = $('#intake-city'); if (el) el.value = a.city; }
       if (a.state) { var el = $('#intake-state'); if (el) el.value = a.state; }
       if (a.legalEntity) { var el = $('#intake-entity'); if (el) el.value = a.legalEntity; }
-      if (a.revenue) { var el = $('#intake-revenue'); if (el) el.value = a.revenue; }
+      if (a.revenue !== undefined && a.revenue !== null) { var el = $('#intake-revenue'); if (el) el.value = a.revenue; }
     } catch (e) {
       console.warn('Prefill failed:', e);
     }
@@ -344,7 +347,7 @@
         if (i.state) { var el = $('#intake-state'); if (el) el.value = i.state; }
         if (i.county) { var el = $('#intake-county'); if (el) el.value = i.county; }
         if (i.legalEntity) { var el = $('#intake-entity'); if (el) el.value = i.legalEntity; }
-        if (i.granularRevenue) { var el = $('#intake-revenue'); if (el) el.value = i.granularRevenue; }
+        if (i.granularRevenue !== undefined && i.granularRevenue !== null) { var el = $('#intake-revenue'); if (el) el.value = i.granularRevenue; }
         if (i.samRegistration) {
           $$('input[name="sam"]').forEach(function (r) {
             r.checked = (r.value === i.samRegistration);
@@ -392,7 +395,7 @@
       state: $('#intake-state').value,
       county: $('#intake-county').value.trim(),
       legalEntity: $('#intake-entity').value,
-      granularRevenue: $('#intake-revenue').value,
+      granularRevenue: parseInt($('#intake-revenue').value, 10) || 0,
       ownerDemographics: demographics,
       grantFundUse: (function() {
         var selected = [];
@@ -482,6 +485,10 @@
     // Show edit profile button
     var editBtn = $('#edit-profile-btn');
     if (editBtn) editBtn.style.display = 'inline-block';
+
+    // Show full intake button
+    var fullIntakeBtn = $('#full-intake-btn');
+    if (fullIntakeBtn) fullIntakeBtn.style.display = 'inline-block';
 
     // Load saved grants and applications
     await loadSavedGrants();
@@ -710,16 +717,12 @@
     var actions = document.createElement('div');
     actions.className = 'gr-card-actions';
 
-    // View application button
-    if (grant.url) {
-      var viewBtn = document.createElement('a');
-      viewBtn.className = 'gr-btn-view';
-      viewBtn.href = grant.url;
-      viewBtn.target = '_blank';
-      viewBtn.rel = 'noopener';
-      viewBtn.textContent = 'View application →';
-      actions.appendChild(viewBtn);
-    }
+    // View full details button (links to detail page)
+    var detailBtn = document.createElement('a');
+    detailBtn.className = 'gr-btn-view';
+    detailBtn.href = '/grant-radar/' + encodeURIComponent(grant.name);
+    detailBtn.textContent = 'View full details →';
+    actions.appendChild(detailBtn);
 
     // "I applied for this" / "I received this grant" buttons
     var app = applications[grant.name];

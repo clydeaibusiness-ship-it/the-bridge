@@ -135,6 +135,15 @@ app.get('/grant-radar', requirePaidMember, (req, res) => {
   res.sendFile(path.join(__dirname, '../pages/grant-radar.html'));
 });
 
+app.get('/grant-radar/intake', requirePaidMember, (req, res) => {
+  res.sendFile(path.join(__dirname, '../pages/grant-radar-intake.html'));
+});
+
+// Grant detail page — matches /grant-radar/<anything-else>
+app.get('/grant-radar/:grantId', requirePaidMember, (req, res) => {
+  res.sendFile(path.join(__dirname, '../pages/grant-detail.html'));
+});
+
 app.get('/terms', (req, res) => {
   res.sendFile(path.join(__dirname, '../pages/terms.html'));
 });

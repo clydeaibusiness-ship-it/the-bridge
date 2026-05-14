@@ -355,8 +355,10 @@ router.post('/member/commander/message', async (req, res) => {
         if (intake.business_name) intakeContext += `Business: ${intake.business_name}\n`;
         if (intake.business_description) intakeContext += `Description: ${intake.business_description}\n`;
         if (intake.industry) intakeContext += `Industry: ${intake.industry}\n`;
-        if (intake.revenue_range) intakeContext += `Revenue: ${intake.revenue_range}\n`;
-        if (intake.team_size) intakeContext += `Team size: ${intake.team_size}\n`;
+        if (intake.exact_revenue) intakeContext += `Annual revenue: $${intake.exact_revenue.toLocaleString()}\n`;
+        else if (intake.revenue_range) intakeContext += `Revenue: ${intake.revenue_range}\n`;
+        if (intake.exact_employee_count) intakeContext += `Employees: ${intake.exact_employee_count}\n`;
+        else if (intake.team_size) intakeContext += `Team size: ${intake.team_size}\n`;
         if (intake.years_operating) intakeContext += `Years operating: ${intake.years_operating}\n`;
         if (intake.city) intakeContext += `Location: ${intake.city}${intake.state ? ', ' + intake.state : ''}\n`;
         if (intake.differentiator) intakeContext += `Differentiator: ${intake.differentiator}\n`;
@@ -373,6 +375,33 @@ router.post('/member/commander/message', async (req, res) => {
           } catch (e) { /* chart parse failed, skip */ }
         }
       }
+
+      // Load grant radar intake answers for Commander context
+      try {
+        const db = require('../services/supabase').getClient();
+        if (db) {
+          const { data: griData } = await db
+            .from('grant_radar_intake')
+            .select('*')
+            .eq('user_id', req.dbUser.id)
+            .single();
+          if (griData && griData.completed_at) {
+            intakeContext += `\nGRANT RADAR PROFILE:\n`;
+            if (griData.q1_legal_name) intakeContext += `Legal business name: ${griData.q1_legal_name}\n`;
+            if (griData.q2_has_ein) intakeContext += `Has EIN: ${griData.q2_has_ein}\n`;
+            if (griData.q3_sam_registered) intakeContext += `SAM.gov registered: ${griData.q3_sam_registered}\n`;
+            if (griData.q5_business_description) intakeContext += `Detailed description: ${griData.q5_business_description}\n`;
+            if (griData.q6_problem_solved) intakeContext += `Problem solved: ${griData.q6_problem_solved}\n`;
+            if (griData.q7_primary_fund_use) intakeContext += `Would use grant for: ${griData.q7_primary_fund_use}\n`;
+            if (griData.q8_annual_revenue != null) intakeContext += `Exact revenue: $${griData.q8_annual_revenue.toLocaleString()}\n`;
+            if (griData.q9_employee_count != null) intakeContext += `Employees: ${griData.q9_employee_count}\n`;
+            if (griData.q11_legal_structure) intakeContext += `Legal structure: ${griData.q11_legal_structure}\n`;
+            if (griData.q15_business_plan) intakeContext += `Business plan: ${griData.q15_business_plan}\n`;
+            if (griData.q16_short_term_goals) intakeContext += `12-month goals: ${griData.q16_short_term_goals}\n`;
+            if (griData.q20_naics_code) intakeContext += `NAICS code: ${griData.q20_naics_code}\n`;
+          }
+        }
+      } catch (e) { /* grant_radar_intake table may not exist yet */ }
 
       const runs = await getRunHistory(req.dbUser.id);
       if (runs && runs.length > 0) runHistory.push(...runs);

@@ -48,6 +48,7 @@
       <div class="gr-scan-info" id="next-scan"></div>
       <button class="gr-rescan-btn" id="rescan-btn" style="display:none;">Run new scan →</button>
       <button class="gr-edit-btn" id="edit-profile-btn" style="display:none;">Edit profile →</button>
+      <a href="/grant-radar/intake" class="gr-edit-btn" id="full-intake-btn" style="display:none;">Update grant profile →</a>
     </header>
 
     <!-- ACKNOWLEDGMENT BOX (first visit only) -->
@@ -59,8 +60,16 @@
     <!-- REFRESH BANNER -->
     <div class="gr-refresh-banner" id="refresh-banner">Your Grant Radar refreshed today with new results.</div>
 
-    <!-- INTAKE FORM (shown if not complete) -->
+    <!-- INTAKE REDIRECT (shown if not complete) -->
     <div id="intake-section" style="display:none;">
+      <div class="gr-intake">
+        <div class="gr-intake-title">Start Grant Radar intake</div>
+        <div class="gr-intake-note">Answer a curated set of questions about your business to find federal grants you qualify for. Takes 5 to 10 minutes.</div>
+        <a href="/grant-radar/intake" class="gr-submit-btn" style="display:inline-block;text-align:center;text-decoration:none;">Start Grant Radar intake →</a>
+      </div>
+    </div>
+    <!-- OLD INTAKE FORM (hidden, kept for backward compat) -->
+    <div id="old-intake-section" style="display:none;">
       <div class="gr-intake">
         <div class="gr-intake-title">Before we scan, tell us a bit more about your business.</div>
         <div class="gr-intake-note">These answers supplement your existing profile. You will only see fields you have not already answered.</div>
@@ -100,23 +109,14 @@
             </select>
           </div>
 
-          <!-- Q3: Granular Revenue -->
+          <!-- Q3: Exact Revenue -->
           <div class="gr-field" id="field-revenue">
             <label>What was your business's total revenue last year?</label>
-            <select id="intake-revenue" required>
-              <option value="">Select range</option>
-              <option value="$0 — Pre-revenue">$0 — Pre-revenue</option>
-              <option value="$1 to $10,000">$1 to $10,000</option>
-              <option value="$10,001 to $25,000">$10,001 to $25,000</option>
-              <option value="$25,001 to $50,000">$25,001 to $50,000</option>
-              <option value="$50,001 to $100,000">$50,001 to $100,000</option>
-              <option value="$100,001 to $150,000">$100,001 to $150,000</option>
-              <option value="$150,001 to $300,000">$150,001 to $300,000</option>
-              <option value="$300,001 to $500,000">$300,001 to $500,000</option>
-              <option value="$500,001 to $1,000,000">$500,001 to $1,000,000</option>
-              <option value="$1,000,001 to $5,000,000">$1,000,001 to $5,000,000</option>
-              <option value="Over $5,000,000">Over $5,000,000</option>
-            </select>
+            <div style="display:flex;align-items:center;gap:4px;">
+              <span style="font-size:1rem;font-weight:500;color:#0a0a0f;">$</span>
+              <input type="number" id="intake-revenue" min="0" step="1" placeholder="0" required style="flex:1;">
+            </div>
+            <div class="gr-hint">Enter your actual revenue in dollars. If pre-revenue enter 0.</div>
           </div>
 
           <!-- Q4: Owner Demographics -->

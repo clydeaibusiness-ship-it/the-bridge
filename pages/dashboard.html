@@ -7,7 +7,13 @@
   <link rel="stylesheet" href="/css/global.css">
   <link rel="stylesheet" href="/css/dashboard.css">
   <link rel="stylesheet" href="/css/nav.css">
-  <style>html, body { overflow: visible !important; height: auto !important; background: #f5f0e8 !important; color: #0a0a0f !important; }</style>
+  <style>
+    html, body { overflow: visible !important; height: auto !important; background: #f5f0e8 !important; color: #0a0a0f !important; }
+    .dash-onboarding-gate { position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 1000; display: flex; align-items: center; justify-content: center; }
+    .dash-onboarding-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(245,240,232,0.92); }
+    .dash-onboarding-modal { position: relative; z-index: 1; background: #f5f0e8; border: 1px solid #c8c0b0; border-radius: 8px; padding: 32px; max-width: 440px; text-align: center; box-shadow: 0 4px 24px rgba(0,0,0,0.08); }
+    .dash-grayed .dash-grid { opacity: 0.3; pointer-events: none; }
+  </style>
   <script>window.__clerk_publishable_key = 'pk_live_Y2xlcmsuY2FwdGFpbnNicmlkZ2UuaW8k';</script>
   <script src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@5/dist/clerk.browser.js"></script>
   <script src="/js/session.js"></script>
@@ -40,6 +46,15 @@
         <a href="/api/auth/logout">Sign Out</a>
       </div>
     </nav>
+
+    <!-- ONBOARDING GATE (new members who haven't completed business basics) -->
+    <div class="dash-onboarding-gate" id="onboarding-gate" style="display:none;">
+      <div class="dash-onboarding-overlay"></div>
+      <div class="dash-onboarding-modal">
+        <p style="font-family:var(--font-ui);font-size:var(--text-sm);color:#3a3530;line-height:1.6;margin-bottom:20px;">Before your Navigation Chart can be generated and the Commander can advise you, we need to understand your business. This takes about three minutes.</p>
+        <a href="/intake" class="dash-btn-primary" style="display:inline-block;text-decoration:none;">Start →</a>
+      </div>
+    </div>
 
     <header class="dash-header">
       <h1 class="dash-welcome" id="dash-welcome">Welcome back.</h1>
@@ -127,8 +142,8 @@
         <div class="dash-panel dash-grant-radar">
           <div class="dash-section-title">GRANT RADAR</div>
           <div class="dash-grant-body" id="dash-grant-body">
-            <p id="dash-grant-text">Grant Radar matches your business profile against live federal grant opportunities published by the U.S. government. Run your first scan to see which programs you qualify for.</p>
-            <a href="/grant-radar" class="dash-btn-ghost" id="dash-grant-btn">Find my grants →</a>
+            <p id="dash-grant-text">Answer a curated set of questions about your business to find federal grants you qualify for. Takes 5 to 10 minutes.</p>
+            <a href="/grant-radar/intake" class="dash-btn-ghost" id="dash-grant-btn">Start Grant Radar intake →</a>
           </div>
         </div>
       </div>
@@ -171,6 +186,13 @@
 
       // Load session — Supabase is source of truth, localStorage is cache
       sessionData = await BridgeSession.load();
+
+      // Onboarding gate: if no session data (no intake completed), gray out dashboard
+      if (!sessionData || !sessionData.completedAt) {
+        document.getElementById('onboarding-gate').style.display = 'flex';
+        document.querySelector('.dash-page').classList.add('dash-grayed');
+        // Still render the rest of the dashboard (grayed out)
+      }
 
       if (sessionData) {
         const name = sessionData.businessName || sessionData.shipName;
@@ -493,8 +515,9 @@ Biggest uncertainty: ${a.uncertainty || 'unknown'}
           const local = (data.results.local || []).length;
           const total = federal + state + local;
           const open = [...(data.results.federal || []), ...(data.results.state || []), ...(data.results.local || [])].filter(function(g) { return g.status && g.status.toLowerCase().indexOf('open') >= 0 || g.status && g.status.toLowerCase().indexOf('rolling') >= 0; }).length;
-          textEl.textContent = 'Your last scan found ' + total + ' federal grants matched to your business profile. ' + open + ' are currently accepting applications.';
+          textEl.textContent = 'Your last scan found ' + total + ' grants matched to your business profile. ' + open + ' are currently accepting applications.';
           btnEl.textContent = 'View matched grants \u2192';
+          btnEl.href = '/grant-radar';
           if (data.scanDate) {
             var dateNote = document.createElement('div');
             dateNote.style.cssText = 'font-family:var(--font-data);font-size:10px;color:#7a7570;margin-top:6px;';
