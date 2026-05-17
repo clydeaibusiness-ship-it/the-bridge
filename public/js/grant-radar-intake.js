@@ -48,7 +48,8 @@
     qs.push({ id: 'q3', label: 'Do you have a Unique Entity Identifier (UEI) and are you registered on SAM.gov?', type: 'radio', options: ['Yes', 'No', 'I am not sure'], required: true,
       hint: { trigger: ['No', 'I am not sure'], text: 'SAM.gov registration is required for most federal grants. It is free and takes about 30 minutes at sam.gov.' } });
     qs.push({ id: 'q4', label: 'What is your business\'s primary street address?', type: 'text', required: true });
-    qs.push({ id: 'q4_city', label: 'What city is your business located in?', type: 'text', required: true, prefillKey: 'city' });
+    qs.push({ id: 'q4_city', label: 'What city is your business located in?', type: 'text', required: false, prefillKey: 'city',
+      hint: { always: true, text: 'Optional. Used to identify local grant programs in your area.' } });
     qs.push({ id: 'q4_state', label: 'What state is your business located in?', type: 'select', required: true, prefillKey: 'state',
       options: ['Alabama','Alaska','Arizona','Arkansas','California','Colorado','Connecticut','Delaware','District of Columbia','Florida','Georgia','Hawaii','Idaho','Illinois','Indiana','Iowa','Kansas','Kentucky','Louisiana','Maine','Maryland','Massachusetts','Michigan','Minnesota','Mississippi','Missouri','Montana','Nebraska','Nevada','New Hampshire','New Jersey','New Mexico','New York','North Carolina','North Dakota','Ohio','Oklahoma','Oregon','Pennsylvania','Rhode Island','South Carolina','South Dakota','Tennessee','Texas','Utah','Vermont','Virginia','Washington','West Virginia','Wisconsin','Wyoming'] });
     qs.push({ id: 'q4_county', label: 'What county does your business operate in?', type: 'text', required: false,
