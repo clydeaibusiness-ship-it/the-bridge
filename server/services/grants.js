@@ -77,6 +77,9 @@ CRITICAL: You are NOT scoring or matching. You are finding grants and extracting
 1. Do NOT include SBIR/STTR unless the profile explicitly indicates formal R&D activity.
 2. Only include grants that are currently open, have rolling applications, or reopen within 6 months.
 3. Quality over quantity — 5 to 20 results across all jurisdictions.
+4. GRANTS ONLY — Do NOT include loans, microloans, loan guarantees, or any program that requires repayment. SBA loans, USDA loans, CDC/504 loans, and similar debt instruments are NOT grants. If the program requires repayment of any kind, exclude it entirely.
+5. DIRECT FUNDING ONLY — Do NOT include mentoring programs, counseling services, training workshops, business advisory centers, or outreach programs that do not provide direct monetary awards to the applicant. Programs like SCORE mentoring, Veterans Business Outreach Centers (VBOC), Small Business Development Centers (SBDC), and similar advisory services are NOT grants.
+6. Every result must be a program that directly awards free money (a grant, cooperative agreement, or cash award) to the applicant with no repayment obligation.
 
 --- OUTPUT FORMAT ---
 
