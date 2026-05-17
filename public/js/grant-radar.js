@@ -152,7 +152,9 @@
     setupFormListeners();
 
     // Check for auto-scan redirect from grant radar intake form
-    var autoScan = new URLSearchParams(window.location.search).get('scan') === 'auto';
+    var searchParams = new URLSearchParams(window.location.search);
+    var autoScan = searchParams.get('scan') === 'auto';
+    var profileUpdated = searchParams.get('profileUpdated') === '1';
 
     // Check acknowledgment status
     await checkAcknowledgment();
@@ -164,26 +166,31 @@
     if (status.complete) {
       // Check if auto-rescan needed
       const nextScan = status.intake.nextScanDate ? new Date(status.intake.nextScanDate) : null;
-      const needsAutoScan = autoScan || (nextScan && new Date() >= nextScan);
+      const nextScanDue = nextScan && new Date() >= nextScan;
 
       // Load existing results
       const resultsRes = await fetch('/api/grant-radar/results', { headers: authHeaders() });
       const resultsData = await resultsRes.json();
 
+      // Only auto-scan if: no results exist, next scan date has passed, or profile was updated.
+      // If results exist and scan=auto came from intake form without profile change, show existing.
+      const hasResults = !!(resultsData.results);
+      const needsAutoScan = !hasResults || nextScanDue || profileUpdated;
+
       if (!userAcknowledged) {
         // Show acknowledgment first, then results on dismiss
         showAcknowledgment(function () {
-          if (needsAutoScan || !resultsData.results) {
+          if (needsAutoScan) {
             showLoading();
-            runScan(false);
+            runScan(profileUpdated ? 'profileUpdated' : false);
           } else {
             showResults(resultsData.results, resultsData.scanDate, resultsData.nextScanDate);
           }
         });
-      } else if (needsAutoScan || !resultsData.results) {
+      } else if (needsAutoScan) {
         // Run auto scan
         showLoading();
-        await runScan(false);
+        await runScan(profileUpdated ? 'profileUpdated' : false);
       } else {
         // Show existing results
         showResults(resultsData.results, resultsData.scanDate, resultsData.nextScanDate);
@@ -433,11 +440,18 @@
   async function runScan(manual) {
     try {
       var isProfileUpdate = (manual === 'profileUpdated');
+
+      // Use AbortController for 90-second timeout
+      var controller = new AbortController();
+      var timeout = setTimeout(function() { controller.abort(); }, 90000);
+
       var res = await fetch('/api/grant-radar/scan', {
         method: 'POST',
         headers: authHeaders(),
-        body: JSON.stringify({ manual: !!manual, profileUpdated: isProfileUpdate })
+        body: JSON.stringify({ manual: !!manual, profileUpdated: isProfileUpdate }),
+        signal: controller.signal
       });
+      clearTimeout(timeout);
 
       if (res.status === 429) {
         var err = await res.json();
@@ -460,6 +474,15 @@
       }
       showResults(data.results, data.scanDate, data.nextScanDate);
     } catch (e) {
+      // On any failure (timeout, network, server error), try showing existing results
+      try {
+        var fallbackRes = await fetch('/api/grant-radar/results', { headers: authHeaders() });
+        var fallbackData = await fallbackRes.json();
+        if (fallbackData.results) {
+          showResults(fallbackData.results, fallbackData.scanDate, fallbackData.nextScanDate);
+          return;
+        }
+      } catch (e2) { /* no fallback available */ }
       $('#loading-section').style.display = 'none';
       alert('Grant scan failed. Please try again.');
     }

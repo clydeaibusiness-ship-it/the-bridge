@@ -419,8 +419,8 @@
       });
       if (!res.ok) throw new Error('Save failed');
 
-      // Redirect to grant radar page for scanning
-      window.location.href = '/grant-radar?scan=auto';
+      // Redirect to grant radar page — profileUpdated triggers rescan
+      window.location.href = '/grant-radar?scan=auto&profileUpdated=1';
     } catch (e) {
       submitBtn.disabled = false;
       submitBtn.textContent = 'Find my grants →';
