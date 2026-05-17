@@ -1066,21 +1066,6 @@
   }
 
   // ---- Beyond Federal Grants Builder ----
-  var cachedIntakeForBeyond = null;
-
-  async function loadIntakeForBeyond() {
-    if (cachedIntakeForBeyond) return cachedIntakeForBeyond;
-    try {
-      var res = await fetch('/api/intake/data', { headers: authHeaders() });
-      if (res.ok) {
-        var data = await res.json();
-        cachedIntakeForBeyond = data.intake || {};
-        return cachedIntakeForBeyond;
-      }
-    } catch (e) {}
-    return {};
-  }
-
   function buildBeyondFederalContent(results) {
     // Pull what we know from results metadata
     var stateName = (results && results.stateName) || 'your state';
