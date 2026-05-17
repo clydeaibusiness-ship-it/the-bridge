@@ -15,6 +15,7 @@
   var isEditMode = false;
   var existingIntake = null;
   var STORAGE_KEY = 'gr_intake_progress';
+  var STATE_ABBREV_TO_NAME = {'AL':'Alabama','AK':'Alaska','AZ':'Arizona','AR':'Arkansas','CA':'California','CO':'Colorado','CT':'Connecticut','DE':'Delaware','DC':'District of Columbia','FL':'Florida','GA':'Georgia','HI':'Hawaii','ID':'Idaho','IL':'Illinois','IN':'Indiana','IA':'Iowa','KS':'Kansas','KY':'Kentucky','LA':'Louisiana','ME':'Maine','MD':'Maryland','MA':'Massachusetts','MI':'Michigan','MN':'Minnesota','MS':'Mississippi','MO':'Missouri','MT':'Montana','NE':'Nebraska','NV':'Nevada','NH':'New Hampshire','NJ':'New Jersey','NM':'New Mexico','NY':'New York','NC':'North Carolina','ND':'North Dakota','OH':'Ohio','OK':'Oklahoma','OR':'Oregon','PA':'Pennsylvania','RI':'Rhode Island','SC':'South Carolina','SD':'South Dakota','TN':'Tennessee','TX':'Texas','UT':'Utah','VT':'Vermont','VA':'Virginia','WA':'Washington','WV':'West Virginia','WI':'Wisconsin','WY':'Wyoming'};
 
   // ---- Auth ----
   async function initAuth() {
@@ -333,13 +334,17 @@
 
   function getValue(q) {
     // Priority: existing intake (edit mode) > prefill from business basics
+    var val = null;
     if (existingIntake && existingIntake[q.id] !== undefined && existingIntake[q.id] !== null) {
-      return existingIntake[q.id];
+      val = existingIntake[q.id];
+    } else if (q.prefillKey && prefillData[q.prefillKey] !== undefined) {
+      val = prefillData[q.prefillKey];
     }
-    if (q.prefillKey && prefillData[q.prefillKey] !== undefined) {
-      return prefillData[q.prefillKey];
+    // Convert state abbreviation back to full name for dropdown
+    if (q.id === 'q4_state' && val && val.length === 2 && STATE_ABBREV_TO_NAME[val]) {
+      val = STATE_ABBREV_TO_NAME[val];
     }
-    return null;
+    return val;
   }
 
   // ---- Progress Persistence ----
