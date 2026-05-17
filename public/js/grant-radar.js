@@ -302,13 +302,7 @@
       });
     }
 
-    // Edit profile button
-    var editBtn = $('#edit-profile-btn');
-    if (editBtn) {
-      editBtn.addEventListener('click', function () {
-        showIntakeForEdit();
-      });
-    }
+
 
     // Saved grants toggle
     var savedToggle = $('#saved-toggle');
@@ -329,7 +323,8 @@
     $('#loading-section').style.display = 'none';
     $('#results-section').style.display = 'none';
     $('#rescan-btn').style.display = 'none';
-    $('#edit-profile-btn').style.display = 'none';
+    var fullIntakeBtn = $('#full-intake-btn');
+    if (fullIntakeBtn) fullIntakeBtn.style.display = 'none';
     var submitBtn = $('#intake-submit');
     if (submitBtn) submitBtn.textContent = 'Start scanning \u2192';
   }
@@ -340,7 +335,8 @@
     $('#loading-section').style.display = 'none';
     $('#results-section').style.display = 'none';
     $('#rescan-btn').style.display = 'none';
-    $('#edit-profile-btn').style.display = 'none';
+    var fullIntakeBtn = $('#full-intake-btn');
+    if (fullIntakeBtn) fullIntakeBtn.style.display = 'none';
     var submitBtn = $('#intake-submit');
     if (submitBtn) submitBtn.textContent = 'Save & rescan \u2192';
 
@@ -522,11 +518,7 @@
       $('#next-scan').textContent = 'Next automatic scan: ' + formatDate(nextScanDate);
     }
 
-    // Show edit profile button
-    var editBtn = $('#edit-profile-btn');
-    if (editBtn) editBtn.style.display = 'inline-block';
-
-    // Show full intake button
+    // Show update profile button
     var fullIntakeBtn = $('#full-intake-btn');
     if (fullIntakeBtn) fullIntakeBtn.style.display = 'inline-block';
 

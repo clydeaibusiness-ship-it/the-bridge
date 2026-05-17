@@ -854,6 +854,13 @@ router.post('/intake-full', requireAuth, async (req, res) => {
     if (error) throw error;
 
     // Also update the old user_intake grant fields for backward compat
+    // Parse state abbreviation from full name
+    const STATE_ABBREVS = {'Alabama':'AL','Alaska':'AK','Arizona':'AZ','Arkansas':'AR','California':'CA','Colorado':'CO','Connecticut':'CT','Delaware':'DE','District of Columbia':'DC','Florida':'FL','Georgia':'GA','Hawaii':'HI','Idaho':'ID','Illinois':'IL','Indiana':'IN','Iowa':'IA','Kansas':'KS','Kentucky':'KY','Louisiana':'LA','Maine':'ME','Maryland':'MD','Massachusetts':'MA','Michigan':'MI','Minnesota':'MN','Mississippi':'MS','Missouri':'MO','Montana':'MT','Nebraska':'NE','Nevada':'NV','New Hampshire':'NH','New Jersey':'NJ','New Mexico':'NM','New York':'NY','North Carolina':'NC','North Dakota':'ND','Ohio':'OH','Oklahoma':'OK','Oregon':'OR','Pennsylvania':'PA','Rhode Island':'RI','South Carolina':'SC','South Dakota':'SD','Tennessee':'TN','Texas':'TX','Utah':'UT','Vermont':'VT','Virginia':'VA','Washington':'WA','West Virginia':'WV','Wisconsin':'WI','Wyoming':'WY'};
+    const cityVal = answers.q4_city || null;
+    const stateFullName = answers.q4_state || null;
+    const stateAbbrev = stateFullName ? (STATE_ABBREVS[stateFullName] || stateFullName) : null;
+    const countyVal = answers.q4_county || null;
+
     await db.from('user_intake').upsert({
       user_id: req.dbUser.id,
       grant_intake_complete: true,
@@ -864,6 +871,9 @@ router.post('/intake-full', requireAuth, async (req, res) => {
       legal_entity: record.q11_legal_structure,
       owner_demographics: record.q12_owner_demographics,
       grant_fund_use: record.q7_primary_fund_use,
+      city: cityVal,
+      state: stateAbbrev,
+      county: countyVal,
       updated_at: new Date().toISOString()
     }, { onConflict: 'user_id' });
 

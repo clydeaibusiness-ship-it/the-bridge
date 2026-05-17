@@ -47,8 +47,12 @@
       hint: { trigger: ['No', 'I am not sure'], text: 'An EIN is required for most federal grants. You can apply for one free at irs.gov/ein. We will flag grants that require one.' } });
     qs.push({ id: 'q3', label: 'Do you have a Unique Entity Identifier (UEI) and are you registered on SAM.gov?', type: 'radio', options: ['Yes', 'No', 'I am not sure'], required: true,
       hint: { trigger: ['No', 'I am not sure'], text: 'SAM.gov registration is required for most federal grants. It is free and takes about 30 minutes at sam.gov.' } });
-    qs.push({ id: 'q4', label: 'What is your business\'s primary street address?', type: 'text', required: true,
-      hint: { always: true, text: 'City and state are already known from your business profile.' } });
+    qs.push({ id: 'q4', label: 'What is your business\'s primary street address?', type: 'text', required: true });
+    qs.push({ id: 'q4_city', label: 'What city is your business located in?', type: 'text', required: true, prefillKey: 'city' });
+    qs.push({ id: 'q4_state', label: 'What state is your business located in?', type: 'select', required: true, prefillKey: 'state',
+      options: ['Alabama','Alaska','Arizona','Arkansas','California','Colorado','Connecticut','Delaware','District of Columbia','Florida','Georgia','Hawaii','Idaho','Illinois','Indiana','Iowa','Kansas','Kentucky','Louisiana','Maine','Maryland','Massachusetts','Michigan','Minnesota','Mississippi','Missouri','Montana','Nebraska','Nevada','New Hampshire','New Jersey','New Mexico','New York','North Carolina','North Dakota','Ohio','Oklahoma','Oregon','Pennsylvania','Rhode Island','South Carolina','South Dakota','Tennessee','Texas','Utah','Vermont','Virginia','Washington','West Virginia','Wisconsin','Wyoming'] });
+    qs.push({ id: 'q4_county', label: 'What county does your business operate in?', type: 'text', required: false,
+      hint: { always: true, text: 'Many local grants are administered at the county level. Include this if you know it.' } });
     qs.push({ id: 'q5', label: 'In one or two sentences, what does your business do and who do you do it for?', type: 'textarea', required: true, prefillKey: 'businessDescription' });
     qs.push({ id: 'q6', label: 'What specific problem does your business solve?', type: 'textarea', required: true });
     qs.push({ id: 'q7', label: 'What is the primary activity you would fund with a grant?', type: 'select', required: true,
