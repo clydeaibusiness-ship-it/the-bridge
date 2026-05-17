@@ -14,6 +14,7 @@
   var prefillData = {};  // from business basics
   var isEditMode = false;
   var existingIntake = null;
+  var STORAGE_KEY = 'gr_intake_progress';
 
   // ---- Auth ----
   async function initAuth() {
@@ -336,6 +337,32 @@
     return null;
   }
 
+  // ---- Progress Persistence ----
+  function saveProgress() {
+    try {
+      var saved = { answers: answers, currentIndex: currentIndex, timestamp: Date.now() };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
+    } catch (e) { /* localStorage unavailable */ }
+  }
+
+  function loadProgress() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return null;
+      var saved = JSON.parse(raw);
+      // Expire after 24 hours
+      if (Date.now() - saved.timestamp > 24 * 60 * 60 * 1000) {
+        localStorage.removeItem(STORAGE_KEY);
+        return null;
+      }
+      return saved;
+    } catch (e) { return null; }
+  }
+
+  function clearProgress() {
+    try { localStorage.removeItem(STORAGE_KEY); } catch (e) { /* ok */ }
+  }
+
   // ---- Collect Answer ----
   function collectAnswer(q) {
     var div = document.querySelector('.gri-question[data-id="' + q.id + '"]');
@@ -419,6 +446,7 @@
       });
       if (!res.ok) throw new Error('Save failed');
 
+      clearProgress();
       // Redirect to grant radar page — profileUpdated triggers rescan
       window.location.href = '/grant-radar?scan=auto&profileUpdated=1';
     } catch (e) {
@@ -496,13 +524,28 @@
     // Build question list
     questions = buildQuestions(branches);
 
+    // Restore saved progress (answers saved to localStorage on every Next)
+    var savedProgress = loadProgress();
+    if (savedProgress && savedProgress.answers && !isEditMode) {
+      // Merge saved answers into existingIntake so getValue() picks them up
+      if (!existingIntake) existingIntake = {};
+      for (var key in savedProgress.answers) {
+        if (savedProgress.answers[key] !== null && savedProgress.answers[key] !== undefined) {
+          existingIntake[key] = savedProgress.answers[key];
+        }
+      }
+      answers = savedProgress.answers;
+    }
+
     // Render all questions
     var container = document.getElementById('gri-questions');
     questions.forEach(function(q, idx) {
       container.appendChild(renderQuestion(q, idx));
     });
 
-    showQuestion(0);
+    // Resume from saved position or start at beginning
+    var startIndex = (savedProgress && savedProgress.currentIndex && !isEditMode) ? Math.min(savedProgress.currentIndex, questions.length - 1) : 0;
+    showQuestion(startIndex);
 
     // Nav handlers
     document.getElementById('gri-next').addEventListener('click', function() {
@@ -512,11 +555,13 @@
         return;
       }
       answers[q.id] = collectAnswer(q);
+      saveProgress();
       showQuestion(currentIndex + 1);
     });
 
     document.getElementById('gri-back').addEventListener('click', function() {
       answers[questions[currentIndex].id] = collectAnswer(questions[currentIndex]);
+      saveProgress();
       showQuestion(currentIndex - 1);
     });
 
