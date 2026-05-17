@@ -294,6 +294,9 @@ router.post('/intake', async (req, res) => {
 
 // ---- Scan for Grants ----
 
+// In-memory scan status tracking
+const activeScanUsers = new Map(); // userId -> { status: 'scanning'|'done'|'error', startedAt }
+
 router.post('/scan', requireAuth, async (req, res) => {
   try {
     const intake = await getIntake(req.dbUser.id);
@@ -322,44 +325,81 @@ router.post('/scan', requireAuth, async (req, res) => {
       }
     }
 
-    // Load grant radar intake if it exists
-    let grantRadarIntake = null;
-    try {
-      const { data: griData } = await db
-        .from('grant_radar_intake')
-        .select('*')
-        .eq('user_id', req.dbUser.id)
-        .single();
-      grantRadarIntake = griData;
-    } catch (e) { /* table may not exist yet */ }
+    // If a scan is already running for this user, don't start another
+    const existing = activeScanUsers.get(req.dbUser.id);
+    if (existing && existing.status === 'scanning' && (Date.now() - existing.startedAt < 120000)) {
+      return res.json({ status: 'scanning' });
+    }
 
-    // Run the grant search with scoring
-    const results = await scanGrants(intake, grantRadarIntake);
+    // Mark scan as started and respond immediately
+    activeScanUsers.set(req.dbUser.id, { status: 'scanning', startedAt: Date.now() });
+    res.json({ status: 'scanning' });
 
-    // Store results
-    const { error: insertError } = await db
-      .from('grant_radar_results')
-      .insert({
-        user_id: req.dbUser.id,
-        results_json: results,
-        scan_date: new Date().toISOString()
-      });
+    // Run scan in background (no await — response already sent)
+    (async () => {
+      try {
+        // Load grant radar intake if it exists
+        let grantRadarIntake = null;
+        try {
+          const { data: griData } = await db
+            .from('grant_radar_intake')
+            .select('*')
+            .eq('user_id', req.dbUser.id)
+            .single();
+          grantRadarIntake = griData;
+        } catch (e) { /* table may not exist yet */ }
 
-    if (insertError) console.error('Failed to store scan results:', insertError.message);
+        // Run the grant search with scoring
+        const results = await scanGrants(intake, grantRadarIntake);
 
-    // Update next scan date (30 days)
-    const nextScan = new Date();
-    nextScan.setDate(nextScan.getDate() + 30);
+        // Store results
+        const { error: insertError } = await db
+          .from('grant_radar_results')
+          .insert({
+            user_id: req.dbUser.id,
+            results_json: results,
+            scan_date: new Date().toISOString()
+          });
 
-    await db
-      .from('user_intake')
-      .update({ next_scan_date: nextScan.toISOString() })
-      .eq('user_id', req.dbUser.id);
+        if (insertError) console.error('Failed to store scan results:', insertError.message);
 
-    res.json({ results, scanDate: new Date().toISOString(), nextScanDate: nextScan.toISOString() });
+        // Update next scan date (30 days)
+        const nextScan = new Date();
+        nextScan.setDate(nextScan.getDate() + 30);
+
+        await db
+          .from('user_intake')
+          .update({ next_scan_date: nextScan.toISOString() })
+          .eq('user_id', req.dbUser.id);
+
+        activeScanUsers.set(req.dbUser.id, { status: 'done', startedAt: Date.now() });
+        console.log('Background scan complete for user:', req.dbUser.id);
+      } catch (e) {
+        console.error('Background scan error:', e.message);
+        activeScanUsers.set(req.dbUser.id, { status: 'error', startedAt: Date.now() });
+      }
+    })();
   } catch (e) {
     console.error('Grant scan error:', e.message);
     res.status(500).json({ error: 'Grant scan failed. Please try again.' });
+  }
+});
+
+// ---- Scan Status (for polling) ----
+router.get('/scan-status', requireAuth, async (req, res) => {
+  const status = activeScanUsers.get(req.dbUser.id);
+  if (!status || status.status !== 'scanning') {
+    // Not scanning — check if results exist
+    const db = getClient();
+    const { data } = await db
+      .from('grant_radar_results')
+      .select('scan_date')
+      .eq('user_id', req.dbUser.id)
+      .order('scan_date', { ascending: false })
+      .limit(1);
+    res.json({ status: 'ready', hasResults: !!(data && data.length > 0) });
+  } else {
+    res.json({ status: 'scanning' });
   }
 });
 

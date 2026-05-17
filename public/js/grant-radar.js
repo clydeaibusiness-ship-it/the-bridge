@@ -437,22 +437,15 @@
     try {
       var isProfileUpdate = (manual === 'profileUpdated');
 
-      // Use AbortController for 90-second timeout
-      var controller = new AbortController();
-      var timeout = setTimeout(function() { controller.abort(); }, 90000);
-
       var res = await fetch('/api/grant-radar/scan', {
         method: 'POST',
         headers: authHeaders(),
-        body: JSON.stringify({ manual: !!manual, profileUpdated: isProfileUpdate }),
-        signal: controller.signal
+        body: JSON.stringify({ manual: !!manual, profileUpdated: isProfileUpdate })
       });
-      clearTimeout(timeout);
 
       if (res.status === 429) {
         var err = await res.json();
         alert(err.error);
-        // Show existing results instead
         var existingRes = await fetch('/api/grant-radar/results', { headers: authHeaders() });
         var existingData = await existingRes.json();
         if (existingData.results) {
@@ -464,13 +457,23 @@
       if (!res.ok) throw new Error('Scan failed');
 
       var data = await res.json();
-      if (manual) {
-        var banner = $('#refresh-banner');
-        if (banner) { banner.classList.add('visible'); }
+
+      // Server returns { status: 'scanning' } and runs in background
+      if (data.status === 'scanning') {
+        await pollForResults(manual);
+        return;
       }
-      showResults(data.results, data.scanDate, data.nextScanDate);
+
+      // Legacy: server returned results directly
+      if (data.results) {
+        if (manual) {
+          var banner = $('#refresh-banner');
+          if (banner) { banner.classList.add('visible'); }
+        }
+        showResults(data.results, data.scanDate, data.nextScanDate);
+      }
     } catch (e) {
-      // On any failure (timeout, network, server error), try showing existing results
+      // On any failure, try showing existing results
       try {
         var fallbackRes = await fetch('/api/grant-radar/results', { headers: authHeaders() });
         var fallbackData = await fallbackRes.json();
@@ -478,10 +481,48 @@
           showResults(fallbackData.results, fallbackData.scanDate, fallbackData.nextScanDate);
           return;
         }
-      } catch (e2) { /* no fallback available */ }
+      } catch (e2) { /* no fallback */ }
       $('#loading-section').style.display = 'none';
       alert('Grant scan failed. Please try again.');
     }
+  }
+
+  async function pollForResults(manual) {
+    var maxAttempts = 40; // 40 x 3 seconds = 2 minutes max
+    var attempt = 0;
+
+    while (attempt < maxAttempts) {
+      attempt++;
+      await new Promise(function(resolve) { setTimeout(resolve, 3000); });
+
+      try {
+        var statusRes = await fetch('/api/grant-radar/scan-status', { headers: authHeaders() });
+        var statusData = await statusRes.json();
+
+        if (statusData.status !== 'scanning') {
+          // Scan finished — load results
+          var resultsRes = await fetch('/api/grant-radar/results', { headers: authHeaders() });
+          var resultsData = await resultsRes.json();
+          if (resultsData.results) {
+            if (manual) {
+              var banner = $('#refresh-banner');
+              if (banner) { banner.classList.add('visible'); }
+            }
+            showResults(resultsData.results, resultsData.scanDate, resultsData.nextScanDate);
+          } else {
+            $('#loading-section').style.display = 'none';
+            alert('Scan completed but no results were found. Try updating your profile.');
+          }
+          return;
+        }
+      } catch (e) {
+        // Network hiccup — keep polling
+      }
+    }
+
+    // Timed out after 2 minutes
+    $('#loading-section').style.display = 'none';
+    alert('Scan is taking longer than expected. Please refresh the page in a few minutes to see your results.');
   }
 
   // ---- Results Display ----
