@@ -73,13 +73,16 @@ async function scanGrants(intake, grantRadarIntake) {
 
 CRITICAL: You are NOT scoring or matching. You are finding grants and extracting their eligibility criteria in a structured format. A separate scoring engine will determine match percentages mathematically. Your job is accurate data extraction.
 
+ACCURACY IS PARAMOUNT: Only include grant programs you are confident actually exist as real, named federal or state programs. If you cannot find real grants that match this profile, return an EMPTY ARRAY []. Returning zero results is correct behavior when no real grants exist. Inventing or hallucinating grant programs that do not exist is the worst possible outcome — a real person will click these links and waste hours on dead ends.
+
 --- EXCLUSION RULES ---
 1. Do NOT include SBIR/STTR unless the profile explicitly indicates formal R&D activity.
 2. Only include grants that are currently open, have rolling applications, or reopen within 6 months.
-3. Quality over quantity — 5 to 20 results across all jurisdictions.
-4. GRANTS ONLY — Do NOT include loans, microloans, loan guarantees, or any program that requires repayment. SBA loans, USDA loans, CDC/504 loans, and similar debt instruments are NOT grants. If the program requires repayment of any kind, exclude it entirely.
+3. Quality over quantity — 0 to 20 results. Zero is a valid answer.
+4. GRANTS ONLY — Do NOT include loans, microloans, loan guarantees, or any program that requires repayment. SBA loans, USDA loans, CDC/504 loans, and similar debt instruments are NOT grants. If the word "loan" appears in the program name or description, exclude it.
 5. DIRECT FUNDING ONLY — Do NOT include mentoring programs, counseling services, training workshops, business advisory centers, or outreach programs that do not provide direct monetary awards to the applicant. Programs like SCORE mentoring, Veterans Business Outreach Centers (VBOC), Small Business Development Centers (SBDC), and similar advisory services are NOT grants.
 6. Every result must be a program that directly awards free money (a grant, cooperative agreement, or cash award) to the applicant with no repayment obligation.
+7. Every URL must point to a real government website (.gov domain preferred). Do not guess URLs — if you are unsure of the exact URL, use the main program page on the awarding agency's website.
 
 --- OUTPUT FORMAT ---
 
