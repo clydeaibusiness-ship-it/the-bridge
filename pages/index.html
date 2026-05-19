@@ -10,88 +10,152 @@
 </head>
 <body class="landing-body">
 
-<!-- ====== SECTION 1: NAVIGATION BAR ====== -->
+<!-- ====== SECTION 1: STICKY NAVIGATION BAR ====== -->
 <nav class="landing-nav">
   <div class="landing-nav-inner">
-    <a href="/" class="landing-nav-wordmark">THE BRIDGE</a>
-    <div class="landing-nav-links">
-      <a href="/login" class="landing-nav-login">Log In</a>
-      <a href="/login?action=subscribe" class="landing-nav-cta">Become a Captain</a>
+    <div class="landing-nav-brand">
+      <a href="/" class="landing-nav-wordmark">THE BRIDGE</a>
+      <span class="beta-chip">BETA</span>
+    </div>
+    <div class="landing-nav-links" id="landing-nav-links">
+      <a href="/simulator" class="landing-nav-link">Simulator</a>
+      <a href="/navigation-chart" class="landing-nav-link">Navigator</a>
+      <a href="/grant-radar" class="landing-nav-link">Grant Radar</a>
+      <a href="/dashboard" class="landing-nav-link">Dashboard</a>
+      <a href="/login" class="landing-nav-link" id="nav-auth-link">Sign In</a>
     </div>
     <button class="landing-hamburger" id="landing-hamburger" aria-label="Menu">
       <span></span><span></span><span></span>
     </button>
   </div>
   <div class="landing-mobile-menu" id="landing-mobile-menu">
-    <a href="/login">Log In</a>
-    <a href="/login?action=subscribe">Become a Captain</a>
+    <a href="/simulator">Simulator</a>
+    <a href="/navigation-chart">Navigator</a>
+    <a href="/grant-radar">Grant Radar</a>
+    <a href="/dashboard">Dashboard</a>
+    <a href="/login" id="nav-auth-link-mobile">Sign In</a>
   </div>
 </nav>
 
-<!-- ====== SECTION 2: HERO ====== -->
+<!-- ====== SECTION 2: HERO — PRELIMINARY GRANT SCAN ====== -->
 <section class="hero" id="hero">
-  <!-- Floating stars -->
-  <div class="stars-field">
-    <div class="star star--sm star--drift1" style="top:12%;left:8%"></div>
-    <div class="star star--md star--drift2" style="top:30%;left:85%"></div>
-    <div class="star star--sm star--drift3" style="top:65%;left:18%"></div>
-    <div class="star star--lg star--drift1" style="top:80%;left:72%"></div>
-    <div class="star star--sm star--drift2" style="top:45%;left:55%"></div>
-    <div class="star star--md star--drift3" style="top:20%;left:42%"></div>
-    <div class="star star--sm star--drift1" style="top:75%;left:92%"></div>
-    <div class="star star--md star--drift1" style="top:55%;left:35%"></div>
-  </div>
-  <div class="hero-inner">
-    <div class="hero-text">
-      <div class="hero-eyebrow">STRATEGIC NAVIGATION FOR SMALL BUSINESS</div>
-      <h1 class="hero-headline">
-        <span class="line1">You built something real.</span>
-        <span class="line2">Now let's make sure it goes somewhere.</span>
-      </h1>
-      <p class="hero-sub">Most business owners are working harder than anyone they know — and still feel like they are one bad month away from it all unraveling. Not because they lack talent. Not because the product is wrong. Because no one ever handed them the map.</p>
-      <div class="hero-buttons">
-        <a href="/simulator" class="btn-hero-primary">Role-play your business — free</a>
-        <a href="#problem" class="btn-hero-ghost">See how it works</a>
+  <!-- SCAN FORM STATE -->
+  <div class="hero-scan-form" id="hero-scan-form">
+    <div class="hero-scan-label">FREE GRANT SCAN</div>
+    <h1 class="hero-scan-headline">Find out if federal grant money exists for your business. Takes 30 seconds.</h1>
+    <p class="hero-scan-sub">No account. No credit card. Just three quick answers.</p>
+
+    <div class="hero-scan-fields">
+      <div class="hero-field">
+        <label class="hero-field-label" for="scan-industry">What does your business do?</label>
+        <select id="scan-industry" class="hero-select">
+          <option value="">Select your industry</option>
+          <option value="Trades and contractors">Trades and contractors</option>
+          <option value="Restaurants and food">Restaurants and food</option>
+          <option value="Real estate and property">Real estate and property</option>
+          <option value="Beauty and wellness">Beauty and wellness</option>
+          <option value="Healthcare and therapy">Healthcare and therapy</option>
+          <option value="Software and technology">Software and technology</option>
+          <option value="Retail and e-commerce">Retail and e-commerce</option>
+          <option value="Landscaping and outdoor services">Landscaping and outdoor services</option>
+          <option value="Consulting and coaching">Consulting and coaching</option>
+          <option value="Construction and renovation">Construction and renovation</option>
+          <option value="Education and tutoring">Education and tutoring</option>
+          <option value="Logistics and delivery">Logistics and delivery</option>
+          <option value="Nonprofit organization">Nonprofit organization</option>
+          <option value="Manufacturing">Manufacturing</option>
+          <option value="Agriculture and farming">Agriculture and farming</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+
+      <div class="hero-field">
+        <label class="hero-field-label" for="scan-state">What state are you operating in?</label>
+        <select id="scan-state" class="hero-select">
+          <option value="">Select your state</option>
+          <option>Alabama</option><option>Alaska</option><option>Arizona</option><option>Arkansas</option><option>California</option>
+          <option>Colorado</option><option>Connecticut</option><option>Delaware</option><option>Florida</option><option>Georgia</option>
+          <option>Hawaii</option><option>Idaho</option><option>Illinois</option><option>Indiana</option><option>Iowa</option>
+          <option>Kansas</option><option>Kentucky</option><option>Louisiana</option><option>Maine</option><option>Maryland</option>
+          <option>Massachusetts</option><option>Michigan</option><option>Minnesota</option><option>Mississippi</option><option>Missouri</option>
+          <option>Montana</option><option>Nebraska</option><option>Nevada</option><option>New Hampshire</option><option>New Jersey</option>
+          <option>New Mexico</option><option>New York</option><option>North Carolina</option><option>North Dakota</option><option>Ohio</option>
+          <option>Oklahoma</option><option>Oregon</option><option>Pennsylvania</option><option>Rhode Island</option><option>South Carolina</option>
+          <option>South Dakota</option><option>Tennessee</option><option>Texas</option><option>Utah</option><option>Vermont</option>
+          <option>Virginia</option><option>Washington</option><option>West Virginia</option><option>Wisconsin</option><option>Wyoming</option>
+        </select>
+      </div>
+
+      <div class="hero-field">
+        <label class="hero-field-label" for="scan-revenue">What was your approximate revenue last year?</label>
+        <select id="scan-revenue" class="hero-select">
+          <option value="">Select revenue range</option>
+          <option value="Pre-revenue (not yet earning)">Pre-revenue (not yet earning)</option>
+          <option value="Under $50,000">Under $50,000</option>
+          <option value="$50,000 to $150,000">$50,000 to $150,000</option>
+          <option value="$150,000 to $500,000">$150,000 to $500,000</option>
+          <option value="$500,000 to $1,000,000">$500,000 to $1,000,000</option>
+          <option value="Over $1,000,000">Over $1,000,000</option>
+        </select>
       </div>
     </div>
-    <div class="hero-graphic">
-      <!-- Bridge console SVG — dark/gold strokes on cream -->
-      <svg viewBox="0 0 280 320" fill="none" xmlns="http://www.w3.org/2000/svg" width="100%">
-        <!-- Horizon line -->
-        <line x1="20" y1="160" x2="260" y2="160" stroke="#c8c0b0" stroke-width="0.5" opacity="0.5"/>
-        <!-- Console base -->
-        <path d="M60 280 L80 200 L200 200 L220 280" stroke="#0a0a0f" stroke-width="1" opacity="0.25"/>
-        <line x1="50" y1="280" x2="230" y2="280" stroke="#0a0a0f" stroke-width="1" opacity="0.25"/>
-        <!-- Helm circle -->
-        <g class="helm-circle">
-          <circle cx="140" cy="140" r="50" stroke="#0a0a0f" stroke-width="1" opacity="0.2"/>
-          <circle cx="140" cy="140" r="3" fill="#c8a96e" opacity="0.8"/>
-          <!-- Helm spokes -->
-          <line x1="140" y1="90" x2="140" y2="100" stroke="#0a0a0f" stroke-width="1" opacity="0.2"/>
-          <line x1="140" y1="180" x2="140" y2="190" stroke="#0a0a0f" stroke-width="1" opacity="0.2"/>
-          <line x1="90" y1="140" x2="100" y2="140" stroke="#0a0a0f" stroke-width="1" opacity="0.2"/>
-          <line x1="180" y1="140" x2="190" y2="140" stroke="#0a0a0f" stroke-width="1" opacity="0.2"/>
-        </g>
-        <!-- Lever shapes -->
-        <rect x="90" y="220" width="4" height="30" rx="2" fill="#0a0a0f" opacity="0.12"/>
-        <rect x="110" y="215" width="4" height="35" rx="2" fill="#0a0a0f" opacity="0.15"/>
-        <rect x="166" y="218" width="4" height="32" rx="2" fill="#0a0a0f" opacity="0.13"/>
-        <rect x="186" y="222" width="4" height="28" rx="2" fill="#0a0a0f" opacity="0.12"/>
-        <!-- Display dots — constellation style -->
-        <circle cx="80" cy="100" r="1.5" fill="#c8a96e" opacity="0.6"/>
-        <circle cx="200" cy="100" r="1.5" fill="#c8a96e" opacity="0.6"/>
-        <circle cx="140" cy="60" r="1.5" fill="#c8a96e" opacity="0.5"/>
-        <line x1="80" y1="100" x2="140" y2="60" stroke="#c8a96e" stroke-width="0.5" opacity="0.25"/>
-        <line x1="140" y1="60" x2="200" y2="100" stroke="#c8a96e" stroke-width="0.5" opacity="0.25"/>
-        <!-- Readout lines -->
-        <line x1="75" y1="240" x2="135" y2="240" stroke="#0a0a0f" stroke-width="0.5" opacity="0.1"/>
-        <line x1="145" y1="240" x2="205" y2="240" stroke="#0a0a0f" stroke-width="0.5" opacity="0.1"/>
-      </svg>
+
+    <button class="hero-scan-btn" id="hero-scan-btn">Run my free grant scan →</button>
+    <p class="hero-scan-disclaimer">We search active federal grants from Grants.gov against your inputs. No personal data stored.</p>
+  </div>
+
+  <!-- RESULTS STATE — HAS RESULTS -->
+  <div class="hero-scan-results" id="hero-scan-results" style="display:none;">
+    <div class="hero-scan-label">YOUR PRELIMINARY SCAN RESULTS</div>
+    <h2 class="hero-results-headline" id="results-headline"></h2>
+    <p class="hero-results-avg" id="results-avg"></p>
+    <p class="hero-results-disclaimer">These are preliminary matches based on your industry and state. Exact eligibility depends on your full business profile.</p>
+    <div class="hero-results-buttons">
+      <a href="/login?action=subscribe&tier=captain" class="hero-results-primary" id="results-primary-btn">See my full grant matches — $30/mo →</a>
+      <a href="/login?action=subscribe&tier=navigator" class="hero-results-secondary" id="results-secondary-btn">Get strategic advice only — $15/mo</a>
     </div>
+    <p class="hero-results-alt">Not ready to commit? Explore the free simulator at the bottom of this page.</p>
+  </div>
+
+  <!-- RESULTS STATE — NO RESULTS -->
+  <div class="hero-scan-noresults" id="hero-scan-noresults" style="display:none;">
+    <div class="hero-scan-label">YOUR PRELIMINARY SCAN RESULTS</div>
+    <h2 class="hero-results-headline">Federal grants may be limited for your current profile.</h2>
+    <p class="hero-noresults-body">Federal grants have specific eligibility rules around industry, revenue stage, and registration status. Based on your inputs we did not find strong federal matches — but that does not mean funding does not exist for your business.</p>
+    <a href="/login?action=subscribe&tier=navigator" class="hero-results-primary">Talk to the Commander — $15/mo →</a>
+    <p class="hero-noresults-below">The Commander helps you find the right strategic path regardless of grant availability. Federal and private grant sources are covered inside.</p>
   </div>
 </section>
 
-<!-- ====== SECTION 3: THE PROBLEM ====== -->
+<!-- ====== SECTION 3: STAR TREK CONTEXT ====== -->
+<section class="trek-context" id="trek-context">
+  <div class="trek-context-inner">
+    <!-- Ship's helm SVG -->
+    <svg class="trek-helm" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" width="90" height="90">
+      <circle cx="50" cy="50" r="35" stroke="#3a3530" stroke-width="1.5"/>
+      <circle cx="50" cy="50" r="6" stroke="#c8a96e" stroke-width="1.5"/>
+      <!-- 8 spokes -->
+      <line x1="50" y1="15" x2="50" y2="30" stroke="#3a3530" stroke-width="1.5" stroke-linecap="round"/>
+      <line x1="50" y1="70" x2="50" y2="85" stroke="#3a3530" stroke-width="1.5" stroke-linecap="round"/>
+      <line x1="15" y1="50" x2="30" y2="50" stroke="#3a3530" stroke-width="1.5" stroke-linecap="round"/>
+      <line x1="70" y1="50" x2="85" y2="50" stroke="#3a3530" stroke-width="1.5" stroke-linecap="round"/>
+      <line x1="25.25" y1="25.25" x2="35.61" y2="35.61" stroke="#3a3530" stroke-width="1.5" stroke-linecap="round"/>
+      <line x1="64.39" y1="64.39" x2="74.75" y2="74.75" stroke="#3a3530" stroke-width="1.5" stroke-linecap="round"/>
+      <line x1="74.75" y1="25.25" x2="64.39" y2="35.61" stroke="#3a3530" stroke-width="1.5" stroke-linecap="round"/>
+      <line x1="35.61" y1="64.39" x2="25.25" y2="74.75" stroke="#3a3530" stroke-width="1.5" stroke-linecap="round"/>
+      <!-- Spoke handles (knobs) -->
+      <circle cx="50" cy="13" r="3" stroke="#3a3530" stroke-width="1.5"/>
+      <circle cx="50" cy="87" r="3" stroke="#3a3530" stroke-width="1.5"/>
+      <circle cx="13" cy="50" r="3" stroke="#3a3530" stroke-width="1.5"/>
+      <circle cx="87" cy="50" r="3" stroke="#3a3530" stroke-width="1.5"/>
+    </svg>
+
+    <div class="trek-context-label">WHY A BRIDGE</div>
+    <p class="trek-context-body">Captain Kirk did not navigate the Enterprise alone. He stood at the bridge — a room designed to give him every lever, every reading, and every voice he needed to make the right call under pressure. Small business owners are running ships with no bridge. No instruments. No levers. No one calling out what is ahead. The Bridge is the room you were always supposed to have.</p>
+  </div>
+</section>
+
+<!-- ====== SECTION 4: THE PROBLEM ====== -->
 <section class="problem" id="problem">
   <div class="stars-field">
     <div class="star star--sm star--drift2" style="top:10%;left:5%"></div>
@@ -126,18 +190,13 @@
   </div>
 </section>
 
-<!-- ====== GRANT MONEY COUNTER ====== -->
+<!-- ====== SECTION 5: GRANT MONEY COUNTER ====== -->
 <section class="grant-counter-section" id="grant-counter">
   <div class="grant-counter-inner">
-    <!-- Available funding identified -->
     <div class="grant-counter-label">FEDERAL GRANT FUNDING IDENTIFIED FOR BRIDGE MEMBERS</div>
     <div class="grant-counter-number" id="grant-available-number">$0</div>
     <div class="grant-counter-desc">In active federal grants matched to businesses like yours.</div>
-
-    <!-- Divider -->
     <div class="grant-counter-divider"></div>
-
-    <!-- Verified wins -->
     <div class="grant-counter-label">GRANT MONEY SECURED BY THE BRIDGE COMMUNITY</div>
     <div class="grant-counter-number" id="grant-counter-number">$0</div>
     <div class="grant-counter-desc">In free government grant money that Bridge members found, applied for, and won.</div>
@@ -145,7 +204,7 @@
   </div>
 </section>
 
-<!-- ====== SECTION 4: THE SOLUTION ====== -->
+<!-- ====== SECTION 6: PRODUCT DESCRIPTION CARDS ====== -->
 <section class="solution" id="solution">
   <div class="stars-field">
     <div class="star star--md star--drift3" style="top:8%;left:12%"></div>
@@ -161,26 +220,13 @@
     <p class="solution-sub">A human business consultant is brilliant — and forgets half of what you told them between sessions. They cannot hold every case study, every lever, every strategic principle in their head simultaneously while thinking about your specific situation at 11pm on a Wednesday when you cannot sleep. We built something that can.</p>
 
     <div class="solution-cards" id="solution-cards">
-      <!-- Card 1: The Simulator -->
-      <div class="solution-card">
-        <div class="solution-card-icon">
-          <svg width="40" height="40" viewBox="0 0 40 40" fill="none" stroke="#0a0a0f" stroke-width="1.5">
-            <circle cx="20" cy="20" r="14" opacity="0.3"/>
-            <line x1="20" y1="20" x2="20" y2="8" stroke-linecap="round" opacity="0.4"/>
-            <circle cx="20" cy="20" r="2" fill="#c8a96e" stroke="none"/>
-          </svg>
-        </div>
-        <div class="solution-card-label">THE SIMULATOR</div>
-        <div class="solution-card-headline">Role-play the decisions before they cost you anything real.</div>
-        <div class="solution-card-body">Your business. Real scenarios. Four choices, each with a clear cost and a clear gain. No timer. No pressure. Just you and the question every business owner faces: what is the right call — and why? Play it enough and you stop guessing.</div>
-      </div>
-
-      <!-- Card 2: The Commander (featured) -->
+      <!-- Card 1: The Commander (featured) -->
       <div class="solution-card featured">
         <div class="solution-card-icon">
           <svg width="40" height="40" viewBox="0 0 40 40" fill="none" stroke="#0a0a0f" stroke-width="1.5">
-            <path d="M8 28 L8 16 Q8 8 20 8 Q32 8 32 16 L32 28 L20 24 Z" stroke-linejoin="round" opacity="0.3"/>
-            <path d="M18 16 L20 12 L22 16 L20 14 Z" fill="#c8a96e" stroke="none"/>
+            <path d="M20 6L8 16V34H32V16L20 6Z" stroke-linejoin="round" opacity="0.3"/>
+            <rect x="16" y="22" width="8" height="12" opacity="0.2"/>
+            <circle cx="20" cy="14" r="3" fill="#c8a96e" stroke="none"/>
           </svg>
         </div>
         <div class="solution-card-label">THE COMMANDER</div>
@@ -188,7 +234,7 @@
         <div class="solution-card-body">The Commander is built on a framework synthesized from the twelve most important business books ever written — not their summaries, their actual operating principles. It knows your business before you type a word. It asks the hard questions before it gives a single answer. And it never runs out of context. Ever.</div>
       </div>
 
-      <!-- Card 3: Grant Radar -->
+      <!-- Card 2: Grant Radar -->
       <div class="solution-card">
         <div class="solution-card-icon">
           <svg width="40" height="40" viewBox="0 0 40 40" fill="none" stroke="#0a0a0f" stroke-width="1.5">
@@ -206,7 +252,161 @@
   </div>
 </section>
 
-<!-- ====== SECTION 5: SIMULATOR SPOTLIGHT ====== -->
+<!-- ====== SECTION 7: PRICING ====== -->
+<section class="pricing" id="pricing">
+  <div class="stars-field">
+    <div class="star star--sm star--drift2" style="top:10%;left:10%"></div>
+    <div class="star star--md star--drift1" style="top:35%;left:85%"></div>
+    <div class="star star--sm star--drift3" style="top:70%;left:22%"></div>
+    <div class="star star--lg star--drift2" style="top:55%;left:65%"></div>
+    <div class="star star--sm star--drift1" style="top:85%;left:50%"></div>
+  </div>
+  <div class="landing-container">
+    <div class="pricing-label">THE MEMBERSHIP</div>
+    <h2 class="pricing-headline">Beta pricing. Full access. No fluff.</h2>
+    <p class="pricing-sub">We are building this in the open. You get access while we improve it. When pricing changes, early members lock in what they paid.</p>
+
+    <div class="pricing-grid">
+      <!-- NAVIGATOR TIER -->
+      <div class="pricing-card pricing-card--navigator">
+        <div class="pricing-tier">NAVIGATOR TIER</div>
+        <div class="pricing-amount">
+          <span class="pricing-dollar">$15</span><span class="pricing-per">/month</span>
+        </div>
+        <div class="pricing-annual">$150 / year — save two months</div>
+
+        <ul class="pricing-features">
+          <li class="pricing-feature">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="#c8a96e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2 7 6 11 12 3"/></svg>
+            <span class="pricing-feature-text">The Commander — unlimited access to your AI strategic advisor</span>
+          </li>
+          <li class="pricing-feature">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="#c8a96e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2 7 6 11 12 3"/></svg>
+            <span class="pricing-feature-text">The Navigation Chart — your personalized strategic assessment</span>
+          </li>
+          <li class="pricing-feature">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="#c8a96e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2 7 6 11 12 3"/></svg>
+            <span class="pricing-feature-text">The Simulator — unlimited sessions</span>
+          </li>
+        </ul>
+
+        <a href="/login?action=subscribe&tier=navigator" class="btn-pricing-ghost">START NAVIGATING →</a>
+      </div>
+
+      <!-- CAPTAIN TIER -->
+      <div class="pricing-card pricing-card--captain">
+        <div class="pricing-captain-chip">INCLUDES GRANT RADAR</div>
+        <div class="pricing-tier">CAPTAIN TIER</div>
+        <div class="pricing-amount">
+          <span class="pricing-dollar">$30</span><span class="pricing-per">/month</span>
+        </div>
+        <div class="pricing-annual">$300 / year — save two months</div>
+
+        <ul class="pricing-features">
+          <li class="pricing-feature">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="#c8a96e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2 7 6 11 12 3"/></svg>
+            <span class="pricing-feature-text">Everything in Navigator Tier</span>
+          </li>
+          <li class="pricing-feature">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="#c8a96e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2 7 6 11 12 3"/></svg>
+            <span class="pricing-feature-text">Grant Radar — federal grant matching powered by your full business profile</span>
+          </li>
+          <li class="pricing-feature">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="#c8a96e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2 7 6 11 12 3"/></svg>
+            <span class="pricing-feature-text">Priority access to new features as they ship</span>
+          </li>
+        </ul>
+
+        <a href="/login?action=subscribe&tier=captain" class="btn-pricing">BECOME A CAPTAIN →</a>
+      </div>
+    </div>
+
+    <div class="pricing-beta-note">Both tiers are beta pricing. Early members keep their rate when we raise prices.</div>
+  </div>
+</section>
+
+<!-- ====== SECTION 8: CAPTAINS WE SERVE ====== -->
+<section class="captains" id="captains">
+  <div class="stars-field">
+    <div class="star star--sm star--drift3" style="top:12%;left:88%"></div>
+    <div class="star star--md star--drift1" style="top:40%;left:5%"></div>
+    <div class="star star--sm star--drift2" style="top:75%;left:70%"></div>
+    <div class="star star--lg star--drift3" style="top:60%;left:35%"></div>
+    <div class="star star--sm star--drift1" style="top:90%;left:15%"></div>
+  </div>
+  <div class="landing-container">
+    <div class="captains-label">THE CAPTAINS WE SERVE</div>
+    <h2 class="captains-headline">You do not have to be in tech. You just have to be serious.</h2>
+    <p class="captains-sub">The levers that build a durable business are the same whether you are making software or making sandwiches. Strategy does not care about your industry. Only your willingness to think clearly about it.</p>
+
+    <div class="captains-grid">
+      <!-- 1. Trades — wrench -->
+      <div class="captain-card">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="#8a6830" stroke-width="1.5" stroke-linecap="round"><path d="M21 4C18.8 4 17 5.8 17 8C17 8.7 17.2 9.3 17.5 9.9L9.9 17.5C9.3 17.2 8.7 17 8 17C5.8 17 4 18.8 4 21C4 23.2 5.8 25 8 25C10.2 25 12 23.2 12 21C12 20.3 11.8 19.7 11.5 19.1L19.1 11.5C19.7 11.8 20.3 12 21 12C23.2 12 25 10.2 25 8C25 7.3 24.8 6.6 24.4 6L22 8.4L20.6 7L23 4.6C22.4 4.2 21.7 4 21 4Z"/></svg>
+        <div class="captain-card-label">Trades and contractors</div>
+      </div>
+      <!-- 2. Restaurants — plate with utensils -->
+      <div class="captain-card">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="#8a6830" stroke-width="1.5" stroke-linecap="round"><circle cx="14" cy="14" r="9"/><path d="M8 4V12C8 14 10 16 14 16C18 16 20 14 20 12V4"/><line x1="14" y1="16" x2="14" y2="24"/></svg>
+        <div class="captain-card-label">Restaurants and food</div>
+      </div>
+      <!-- 3. Real estate — house -->
+      <div class="captain-card">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="#8a6830" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 24V12L14 4L24 12V24H4Z"/><rect x="11" y="16" width="6" height="8"/></svg>
+        <div class="captain-card-label">Real estate and property</div>
+      </div>
+      <!-- 4. Beauty — scissors -->
+      <div class="captain-card">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="#8a6830" stroke-width="1.5" stroke-linecap="round"><circle cx="8" cy="20" r="4"/><circle cx="20" cy="20" r="4"/><line x1="8" y1="16" x2="20" y2="4"/><line x1="20" y1="16" x2="8" y2="4"/></svg>
+        <div class="captain-card-label">Beauty and wellness</div>
+      </div>
+      <!-- 5. Healthcare — cross -->
+      <div class="captain-card">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="#8a6830" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="10" y="4" width="8" height="20" rx="1"/><rect x="4" y="10" width="20" height="8" rx="1"/></svg>
+        <div class="captain-card-label">Healthcare and therapy</div>
+      </div>
+      <!-- 6. Software — monitor with code -->
+      <div class="captain-card">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="#8a6830" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="20" height="14" rx="2"/><line x1="10" y1="22" x2="18" y2="22"/><line x1="14" y1="18" x2="14" y2="22"/><path d="M10 9L8 11L10 13"/><path d="M18 9L20 11L18 13"/></svg>
+        <div class="captain-card-label">Software and SaaS</div>
+      </div>
+      <!-- 7. Retail — shopping bag -->
+      <div class="captain-card">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="#8a6830" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8H22L20 24H8L6 8Z"/><path d="M10 8V6C10 4 12 2 14 2C16 2 18 4 18 6V8"/></svg>
+        <div class="captain-card-label">Retail and e-commerce</div>
+      </div>
+      <!-- 8. Landscaping — tree -->
+      <div class="captain-card">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="#8a6830" stroke-width="1.5" stroke-linecap="round"><path d="M14 4C10 4 6 8 6 14C6 18 10 22 14 22C18 22 22 18 22 14C22 8 18 4 14 4Z"/><line x1="14" y1="22" x2="14" y2="26"/></svg>
+        <div class="captain-card-label">Landscaping and outdoor services</div>
+      </div>
+      <!-- 9. Consulting — clipboard -->
+      <div class="captain-card">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="#8a6830" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="6" width="16" height="18" rx="1"/><line x1="6" y1="10" x2="22" y2="10"/><line x1="10" y1="14" x2="18" y2="14"/><line x1="10" y1="18" x2="16" y2="18"/></svg>
+        <div class="captain-card-label">Consulting and coaching</div>
+      </div>
+      <!-- 10. Construction — hard hat -->
+      <div class="captain-card">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="#8a6830" stroke-width="1.5" stroke-linecap="round"><path d="M6 18C6 12 9 6 14 6C19 6 22 12 22 18"/><line x1="4" y1="18" x2="24" y2="18"/><line x1="14" y1="6" x2="14" y2="18"/></svg>
+        <div class="captain-card-label">Construction and renovation</div>
+      </div>
+      <!-- 11. Education — graduation cap -->
+      <div class="captain-card">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="#8a6830" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12L14 6L26 12L14 18Z"/><path d="M6 14V22L14 26L22 22V14"/><line x1="26" y1="12" x2="26" y2="22"/></svg>
+        <div class="captain-card-label">Education and tutoring</div>
+      </div>
+      <!-- 12. Logistics — delivery truck -->
+      <div class="captain-card">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="#8a6830" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="8" width="16" height="14"/><path d="M18 12H24L26 18V22H18V12Z"/><circle cx="8" cy="24" r="2"/><circle cx="22" cy="24" r="2"/></svg>
+        <div class="captain-card-label">Logistics and delivery</div>
+      </div>
+    </div>
+
+    <div class="captains-closing">If you pay employees, serve customers, and lie awake wondering if you are making the right calls — you belong here.</div>
+  </div>
+</section>
+
+<!-- ====== SECTION 9: SIMULATOR SPOTLIGHT ====== -->
 <section class="spotlight" id="spotlight">
   <div class="stars-field">
     <div class="star star--sm star--drift1" style="top:15%;left:92%"></div>
@@ -230,50 +430,36 @@
       </div>
       <div class="spotlight-graphic">
         <div class="spotlight-mockup" id="sim-mockup">
-          <!-- Abstract simulator wireframe SVG -->
           <svg viewBox="0 0 400 340" width="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <!-- Resource bars -->
             <text x="10" y="18" font-family="Space Mono, monospace" font-size="8" fill="#7a7570" letter-spacing="0.1em">CAPITAL</text>
             <rect x="10" y="24" width="180" height="6" rx="1" fill="#c8c0b0" opacity="0.3"/>
             <rect x="10" y="24" width="0" height="6" rx="1" fill="#0a0a0f" class="sim-bar-fill" data-width="130"/>
-
             <text x="210" y="18" font-family="Space Mono, monospace" font-size="8" fill="#7a7570" letter-spacing="0.1em">CUSTOMERS</text>
             <rect x="210" y="24" width="180" height="6" rx="1" fill="#c8c0b0" opacity="0.3"/>
             <rect x="210" y="24" width="0" height="6" rx="1" fill="#0a0a0f" class="sim-bar-fill" data-width="108"/>
-
             <text x="10" y="50" font-family="Space Mono, monospace" font-size="8" fill="#7a7570" letter-spacing="0.1em">POSITIONING</text>
             <rect x="10" y="56" width="180" height="6" rx="1" fill="#c8c0b0" opacity="0.3"/>
             <rect x="10" y="56" width="0" height="6" rx="1" fill="#0a0a0f" class="sim-bar-fill" data-width="112"/>
-
             <text x="210" y="50" font-family="Space Mono, monospace" font-size="8" fill="#7a7570" letter-spacing="0.1em">SWITCHING COSTS</text>
             <rect x="210" y="56" width="180" height="6" rx="1" fill="#c8c0b0" opacity="0.3"/>
             <rect x="210" y="56" width="0" height="6" rx="1" fill="#0a0a0f" class="sim-bar-fill" data-width="68"/>
-
-            <!-- Divider -->
             <line x1="10" y1="80" x2="390" y2="80" stroke="#c8c0b0" stroke-width="0.5" opacity="0.4"/>
-
-            <!-- Situation title placeholder -->
             <text x="10" y="106" font-family="Space Mono, monospace" font-size="7" fill="#7a7570" letter-spacing="0.12em">SITUATION 3 OF 5</text>
             <rect x="10" y="116" width="260" height="10" rx="2" fill="#c8c0b0" opacity="0.2"/>
             <rect x="10" y="132" width="360" height="8" rx="2" fill="#c8c0b0" opacity="0.12"/>
             <rect x="10" y="146" width="320" height="8" rx="2" fill="#c8c0b0" opacity="0.12"/>
-
-            <!-- Option cards -->
             <rect x="10" y="172" width="185" height="70" rx="3" stroke="#c8c0b0" stroke-width="1" opacity="0.4"/>
             <text x="22" y="194" font-family="Space Mono, monospace" font-size="8" fill="#7a7570">OPTION A</text>
             <rect x="22" y="202" width="140" height="6" rx="1" fill="#c8c0b0" opacity="0.15"/>
             <rect x="22" y="214" width="120" height="6" rx="1" fill="#c8c0b0" opacity="0.15"/>
-
             <rect x="205" y="172" width="185" height="70" rx="3" stroke="#c8c0b0" stroke-width="1" opacity="0.4"/>
             <text x="217" y="194" font-family="Space Mono, monospace" font-size="8" fill="#7a7570">OPTION B</text>
             <rect x="217" y="202" width="140" height="6" rx="1" fill="#c8c0b0" opacity="0.15"/>
             <rect x="217" y="214" width="120" height="6" rx="1" fill="#c8c0b0" opacity="0.15"/>
-
             <rect x="10" y="252" width="185" height="70" rx="3" stroke="#c8c0b0" stroke-width="1" opacity="0.4"/>
             <text x="22" y="274" font-family="Space Mono, monospace" font-size="8" fill="#7a7570">OPTION C</text>
             <rect x="22" y="282" width="140" height="6" rx="1" fill="#c8c0b0" opacity="0.15"/>
             <rect x="22" y="294" width="120" height="6" rx="1" fill="#c8c0b0" opacity="0.15"/>
-
             <rect x="205" y="252" width="185" height="70" rx="3" stroke="#c8c0b0" stroke-width="1" opacity="0.4"/>
             <text x="217" y="274" font-family="Space Mono, monospace" font-size="8" fill="#7a7570">OPTION D</text>
             <rect x="217" y="282" width="140" height="6" rx="1" fill="#c8c0b0" opacity="0.15"/>
@@ -285,134 +471,8 @@
   </div>
 </section>
 
-<!-- ====== SECTION 6: WHO THIS IS FOR ====== -->
-<section class="captains" id="captains">
-  <div class="stars-field">
-    <div class="star star--sm star--drift3" style="top:12%;left:88%"></div>
-    <div class="star star--md star--drift1" style="top:40%;left:5%"></div>
-    <div class="star star--sm star--drift2" style="top:75%;left:70%"></div>
-    <div class="star star--lg star--drift3" style="top:60%;left:35%"></div>
-    <div class="star star--sm star--drift1" style="top:90%;left:15%"></div>
-  </div>
-  <div class="landing-container">
-    <div class="captains-label">THE CAPTAINS WE SERVE</div>
-    <h2 class="captains-headline">You do not have to be in tech. You just have to be serious.</h2>
-    <p class="captains-sub">The levers that build a durable business are the same whether you are making software or making sandwiches. Strategy does not care about your industry. Only your willingness to think clearly about it.</p>
-
-    <div class="captains-grid">
-      <!-- 1. Trades -->
-      <div class="captain-card">
-        <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="#8a6830" stroke-width="1.5" stroke-linecap="round"><path d="M16 4L12 8L16 12"/><path d="M12 8H22C23 8 24 9 24 10V18C24 19 23 20 22 20H18"/><path d="M4 20L10 14"/><circle cx="4" cy="22" r="2"/></svg>
-        <div class="captain-card-label">Trades and contractors</div>
-      </div>
-      <!-- 2. Restaurants -->
-      <div class="captain-card">
-        <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="#8a6830" stroke-width="1.5" stroke-linecap="round"><path d="M8 4V12C8 14 10 16 14 16C18 16 20 14 20 12V4"/><line x1="14" y1="16" x2="14" y2="24"/><line x1="10" y1="24" x2="18" y2="24"/></svg>
-        <div class="captain-card-label">Restaurants and food</div>
-      </div>
-      <!-- 3. Real estate -->
-      <div class="captain-card">
-        <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="#8a6830" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 24V12L14 4L24 12V24H4Z"/><rect x="11" y="16" width="6" height="8"/></svg>
-        <div class="captain-card-label">Real estate and property</div>
-      </div>
-      <!-- 4. Beauty -->
-      <div class="captain-card">
-        <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="#8a6830" stroke-width="1.5" stroke-linecap="round"><path d="M10 4C10 4 8 10 8 14C8 18 10 20 14 20C18 20 20 18 20 14C20 10 18 4 18 4"/><line x1="14" y1="20" x2="14" y2="24"/><line x1="10" y1="24" x2="18" y2="24"/></svg>
-        <div class="captain-card-label">Beauty and wellness</div>
-      </div>
-      <!-- 5. Healthcare -->
-      <div class="captain-card">
-        <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="#8a6830" stroke-width="1.5" stroke-linecap="round"><circle cx="14" cy="8" r="4"/><path d="M8 14C8 14 4 16 4 22H24C24 16 20 14 20 14"/><line x1="14" y1="18" x2="14" y2="22"/><line x1="12" y1="20" x2="16" y2="20"/></svg>
-        <div class="captain-card-label">Healthcare and therapy</div>
-      </div>
-      <!-- 6. Software -->
-      <div class="captain-card">
-        <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="#8a6830" stroke-width="1.5" stroke-linecap="round"><circle cx="14" cy="14" r="10"/><circle cx="14" cy="14" r="4"/><line x1="14" y1="4" x2="14" y2="10"/><line x1="14" y1="18" x2="14" y2="24"/><line x1="4" y1="14" x2="10" y2="14"/><line x1="18" y1="14" x2="24" y2="14"/></svg>
-        <div class="captain-card-label">Software and SaaS</div>
-      </div>
-      <!-- 7. Retail -->
-      <div class="captain-card">
-        <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="#8a6830" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8H22L20 24H8L6 8Z"/><path d="M10 8V6C10 4 12 2 14 2C16 2 18 4 18 6V8"/></svg>
-        <div class="captain-card-label">Retail and e-commerce</div>
-      </div>
-      <!-- 8. Landscaping -->
-      <div class="captain-card">
-        <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="#8a6830" stroke-width="1.5" stroke-linecap="round"><path d="M14 4C14 4 6 10 6 18C6 22 10 24 14 24C18 24 22 22 22 18C22 10 14 4 14 4Z"/><line x1="14" y1="14" x2="14" y2="24"/><path d="M10 18C12 16 14 17 14 17"/></svg>
-        <div class="captain-card-label">Landscaping and outdoor services</div>
-      </div>
-      <!-- 9. Consulting -->
-      <div class="captain-card">
-        <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="#8a6830" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="6" width="16" height="18" rx="1"/><line x1="6" y1="10" x2="22" y2="10"/><circle cx="14" cy="4" r="2"/></svg>
-        <div class="captain-card-label">Consulting and coaching</div>
-      </div>
-      <!-- 10. Construction -->
-      <div class="captain-card">
-        <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="#8a6830" stroke-width="1.5" stroke-linecap="round"><path d="M6 24L14 6L22 24"/><line x1="9" y1="18" x2="19" y2="18"/></svg>
-        <div class="captain-card-label">Construction and renovation</div>
-      </div>
-      <!-- 11. Education -->
-      <div class="captain-card">
-        <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="#8a6830" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12L14 6L26 12L14 18Z"/><path d="M6 14V22L14 26L22 22V14"/><line x1="26" y1="12" x2="26" y2="22"/></svg>
-        <div class="captain-card-label">Education and tutoring</div>
-      </div>
-      <!-- 12. Logistics -->
-      <div class="captain-card">
-        <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="#8a6830" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="8" width="16" height="14"/><path d="M18 12H24L26 18V22H18V12Z"/><circle cx="8" cy="24" r="2"/><circle cx="22" cy="24" r="2"/></svg>
-        <div class="captain-card-label">Logistics and delivery</div>
-      </div>
-    </div>
-
-    <div class="captains-closing">If you pay employees, serve customers, and lie awake wondering if you are making the right calls — you belong here.</div>
-  </div>
-</section>
-
-<!-- ====== SECTION 7: PRICING ====== -->
-<section class="pricing" id="pricing">
-  <div class="stars-field">
-    <div class="star star--sm star--drift2" style="top:10%;left:10%"></div>
-    <div class="star star--md star--drift1" style="top:35%;left:85%"></div>
-    <div class="star star--sm star--drift3" style="top:70%;left:22%"></div>
-    <div class="star star--lg star--drift2" style="top:55%;left:65%"></div>
-    <div class="star star--sm star--drift1" style="top:85%;left:50%"></div>
-  </div>
-  <div class="landing-container">
-    <div class="pricing-label">THE MEMBERSHIP</div>
-    <h2 class="pricing-headline">Less than a dinner out. More useful than most consultants.</h2>
-    <p class="pricing-sub">A business consultant charges $200 to $500 an hour and forgets most of what you told them. The Commander remembers everything, is available at 11pm, and costs $50 a month.</p>
-
-    <div class="pricing-card">
-      <div class="pricing-tier">ENSIGN TIER</div>
-      <div class="pricing-amount">
-        <span class="pricing-dollar">$50</span><span class="pricing-per"> / month</span>
-      </div>
-      <div class="pricing-annual">$500 / year — save two months</div>
-
-      <ul class="pricing-features">
-        <li class="pricing-feature">
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="#c8a96e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2 7 6 11 12 3"/></svg>
-          <span class="pricing-feature-text">The Commander — unlimited access to your AI strategic advisor</span>
-        </li>
-        <li class="pricing-feature">
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="#c8a96e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2 7 6 11 12 3"/></svg>
-          <span class="pricing-feature-text">The Navigation Chart — your personalized six-page strategic assessment</span>
-        </li>
-        <li class="pricing-feature">
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="#c8a96e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2 7 6 11 12 3"/></svg>
-          <span class="pricing-feature-text">Grant Radar — federal grant matching powered by your business profile</span>
-        </li>
-        <li class="pricing-feature">
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="#c8a96e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2 7 6 11 12 3"/></svg>
-          <span class="pricing-feature-text">The Simulator — unlimited sessions for you and your team</span>
-        </li>
-      </ul>
-
-      <a href="/login?action=subscribe" class="btn-pricing">Become a Captain</a>
-      <div class="pricing-below">Or start with the <a href="/simulator">free simulator</a>. No account required.</div>
-    </div>
-  </div>
-</section>
-
-<!-- ====== SECTION 8: FOOTER ====== -->
+<!-- ====== SECTION 10: SHARE ====== -->
+<!-- ====== SECTION 11: FOOTER ====== -->
 <footer class="landing-footer" id="footer">
   <div class="stars-field">
     <div class="star star--sm star--drift1" style="top:15%;left:80%"></div>
@@ -448,18 +508,27 @@
 </footer>
 
 <!-- ====== SCRIPTS ====== -->
-<!-- Starfield canvas removed — cream background throughout, floating CSS stars instead -->
 <script>
   // Mobile menu toggle
   document.getElementById('landing-hamburger').addEventListener('click', () => {
     document.getElementById('landing-mobile-menu').classList.toggle('open');
   });
 
-  // Smooth scroll for "See how it works"
-  document.querySelector('.btn-hero-ghost').addEventListener('click', (e) => {
-    e.preventDefault();
-    document.getElementById('problem').scrollIntoView({ behavior: 'smooth' });
-  });
+  // Auth state — toggle Sign In / Sign Out
+  (async function checkAuth() {
+    try {
+      const resp = await fetch('/api/auth/me');
+      if (resp.ok) {
+        const data = await resp.json();
+        if (data.id) {
+          const link = document.getElementById('nav-auth-link');
+          const mobileLink = document.getElementById('nav-auth-link-mobile');
+          if (link) { link.textContent = 'Sign Out'; link.href = '/api/auth/logout'; }
+          if (mobileLink) { mobileLink.textContent = 'Sign Out'; mobileLink.href = '/api/auth/logout'; }
+        }
+      }
+    } catch(e) {}
+  })();
 
   // IntersectionObserver for fade-in animations
   const observer = new IntersectionObserver((entries) => {
@@ -471,19 +540,17 @@
     });
   }, { threshold: 0.15 });
 
-  // Problem items — staggered
   document.querySelectorAll('.problem-item.fade-in').forEach((el, i) => {
     el.style.transitionDelay = `${i * 0.15}s`;
     observer.observe(el);
   });
 
-  // Solution cards — staggered
   document.querySelectorAll('.solution-card').forEach((el, i) => {
     el.style.transitionDelay = `${i * 0.2}s`;
     observer.observe(el);
   });
 
-  // Simulator mockup bars — animate on viewport entry
+  // Simulator mockup bars
   const mockupObserver = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
@@ -508,7 +575,6 @@
         shareBtn.textContent = 'Link copied — send it to someone who needs it';
         setTimeout(() => { shareBtn.textContent = original; }, 3000);
       } catch (e) {
-        // Fallback
         const ta = document.createElement('textarea');
         ta.value = 'https://captainsbridge.io';
         document.body.appendChild(ta);
@@ -521,6 +587,65 @@
       }
     });
   }
+
+  // ---- HERO GRANT SCAN ----
+  const scanBtn = document.getElementById('hero-scan-btn');
+  scanBtn.addEventListener('click', async () => {
+    const industry = document.getElementById('scan-industry').value;
+    const state = document.getElementById('scan-state').value;
+    const revenue = document.getElementById('scan-revenue').value;
+
+    if (!industry || !state || !revenue) {
+      scanBtn.textContent = 'Please fill in all three fields';
+      setTimeout(() => { scanBtn.textContent = 'Run my free grant scan →'; }, 2000);
+      return;
+    }
+
+    scanBtn.textContent = 'Scanning federal grants';
+    scanBtn.disabled = true;
+    let dots = 0;
+    const ellipsis = setInterval(() => {
+      dots = (dots + 1) % 4;
+      scanBtn.textContent = 'Scanning federal grants' + '.'.repeat(dots);
+    }, 400);
+
+    try {
+      const resp = await fetch('/api/grant-radar/preview-scan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ industry, state, revenue_range: revenue })
+      });
+      const data = await resp.json();
+
+      clearInterval(ellipsis);
+
+      const form = document.getElementById('hero-scan-form');
+      form.style.opacity = '0';
+      form.style.transform = 'translateY(-10px)';
+      setTimeout(() => {
+        form.style.display = 'none';
+
+        if (data.has_results && data.match_count > 0) {
+          const results = document.getElementById('hero-scan-results');
+          document.getElementById('results-headline').textContent =
+            'We found ' + data.match_count + ' federal grant programs that may apply to ' + industry + ' businesses in ' + state + '.';
+          document.getElementById('results-avg').textContent =
+            'Average award across these programs: ' + data.average_award + '.';
+          results.style.display = 'block';
+          requestAnimationFrame(() => { results.style.opacity = '1'; results.style.transform = 'translateY(0)'; });
+        } else {
+          const noresults = document.getElementById('hero-scan-noresults');
+          noresults.style.display = 'block';
+          requestAnimationFrame(() => { noresults.style.opacity = '1'; noresults.style.transform = 'translateY(0)'; });
+        }
+      }, 300);
+    } catch (e) {
+      clearInterval(ellipsis);
+      scanBtn.textContent = 'Scan failed — try again';
+      scanBtn.disabled = false;
+      setTimeout(() => { scanBtn.textContent = 'Run my free grant scan →'; }, 3000);
+    }
+  });
 </script>
 <script>
 (function() {
@@ -528,36 +653,18 @@
   if (!sectionEl) return;
 
   function formatDollar(n) {
-    if (n >= 1000000000) {
-      var b = n / 1000000000;
-      if (b >= 100) return '$' + Math.round(b) + 'B';
-      if (b >= 10) return '$' + b.toFixed(1) + 'B';
-      return '$' + b.toFixed(2) + 'B';
-    }
-    if (n >= 1000000) {
-      var m = n / 1000000;
-      if (m >= 100) return '$' + Math.round(m) + 'M';
-      if (m >= 10) return '$' + m.toFixed(1) + 'M';
-      return '$' + m.toFixed(2) + 'M';
-    }
-    if (n >= 1000) {
-      var k = n / 1000;
-      if (k >= 100) return '$' + Math.round(k) + 'K';
-      if (k >= 10) return '$' + k.toFixed(1) + 'K';
-      return '$' + k.toFixed(2) + 'K';
-    }
+    if (n >= 1000000000) { var b = n / 1000000000; if (b >= 100) return '$' + Math.round(b) + 'B'; if (b >= 10) return '$' + b.toFixed(1) + 'B'; return '$' + b.toFixed(2) + 'B'; }
+    if (n >= 1000000) { var m = n / 1000000; if (m >= 100) return '$' + Math.round(m) + 'M'; if (m >= 10) return '$' + m.toFixed(1) + 'M'; return '$' + m.toFixed(2) + 'M'; }
+    if (n >= 1000) { var k = n / 1000; if (k >= 100) return '$' + Math.round(k) + 'K'; if (k >= 10) return '$' + k.toFixed(1) + 'K'; return '$' + k.toFixed(2) + 'K'; }
     return '$' + n.toLocaleString();
   }
 
   function animateCounter(el, target, formatter) {
-    var duration = 2000;
-    var start = performance.now();
+    var duration = 2000; var start = performance.now();
     function step(now) {
-      var elapsed = now - start;
-      var progress = Math.min(elapsed / duration, 1);
+      var elapsed = now - start; var progress = Math.min(elapsed / duration, 1);
       var eased = 1 - Math.pow(1 - progress, 3);
-      var current = Math.round(target * eased);
-      el.textContent = formatter(current);
+      el.textContent = formatter(Math.round(target * eased));
       if (progress < 1) requestAnimationFrame(step);
     }
     requestAnimationFrame(step);
@@ -566,34 +673,20 @@
   function setupCounter(elId, fetchUrl) {
     var el = document.getElementById(elId);
     if (!el) return;
-
-    fetch(fetchUrl)
-      .then(function(r) { return r.json(); })
-      .then(function(data) {
-        var total = data.total || 0;
-        if (total === 0) {
-          el.textContent = '$0';
-          return;
-        }
-
-        var animated = false;
-        var obs = new IntersectionObserver(function(entries) {
-          entries.forEach(function(entry) {
-            if (entry.isIntersecting && !animated) {
-              animated = true;
-              animateCounter(el, total, formatDollar);
-              obs.disconnect();
-            }
-          });
-        }, { threshold: 0.3 });
-        obs.observe(sectionEl);
-      })
-      .catch(function() {});
+    fetch(fetchUrl).then(function(r) { return r.json(); }).then(function(data) {
+      var total = data.total || 0;
+      if (total === 0) { el.textContent = '$0'; return; }
+      var animated = false;
+      var obs = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+          if (entry.isIntersecting && !animated) { animated = true; animateCounter(el, total, formatDollar); obs.disconnect(); }
+        });
+      }, { threshold: 0.3 });
+      obs.observe(sectionEl);
+    }).catch(function() {});
   }
 
-  // Available funding identified
   setupCounter('grant-available-number', '/api/grant-radar/total-available');
-  // Verified wins
   setupCounter('grant-counter-number', '/api/grant-radar/community-total');
 })();
 </script>

@@ -31,6 +31,83 @@ const upload = multer({
 
 router.use(extractUser);
 
+// ---- Preview Scan (PUBLIC — no auth, landing page hero) ----
+
+const previewScanCache = new Map(); // key: industry+state -> { result, cachedAt }
+
+router.post('/preview-scan', async (req, res) => {
+  try {
+    const { industry, state, revenue_range } = req.body;
+    if (!industry || !state) {
+      return res.json({ match_count: 0, average_award: '$0', has_results: false });
+    }
+
+    const cacheKey = `${industry}::${state}`.toLowerCase();
+    const cached = previewScanCache.get(cacheKey);
+    if (cached && (Date.now() - cached.cachedAt < 3600000)) {
+      return res.json(cached.result);
+    }
+
+    // Query Grants.gov API — grants only, filter for small business eligibility
+    const searchPayload = {
+      keyword: industry.replace(/ and /g, ' '),
+      oppStatuses: 'forecasted|posted',
+      fundingInstruments: 'G',
+      eligibilities: '23|22',  // small businesses + for-profit orgs
+      rows: 25,
+      sortBy: 'openDate|desc'
+    };
+
+    // For nonprofit searches, use nonprofit eligibility filter
+    if (industry.toLowerCase().includes('nonprofit')) {
+      searchPayload.eligibilities = '12|13';  // 501c3 + non-501c3 nonprofits
+    }
+
+    let matchCount = 0;
+
+    try {
+      const resp = await fetch('https://apply07.grants.gov/grantsws/rest/opportunities/search/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(searchPayload),
+        signal: AbortSignal.timeout(8000)
+      });
+
+      if (resp.ok) {
+        const data = await resp.json();
+        matchCount = data.hitCount || 0;
+      }
+    } catch (fetchErr) {
+      console.error('Grants.gov API error:', fetchErr.message);
+      matchCount = 0;
+    }
+
+    // Award amounts aren't in search results; use per-industry estimates
+    const awardEstimates = {
+      'Agriculture and farming': '$150,000',
+      'Software and technology': '$250,000',
+      'Manufacturing': '$200,000',
+      'Nonprofit organization': '$100,000',
+      'Healthcare and therapy': '$175,000',
+      'Education and tutoring': '$125,000',
+      'Construction and renovation': '$150,000'
+    };
+    const avgFormatted = matchCount > 0 ? (awardEstimates[industry] || '$100,000') : '$0';
+
+    const result = {
+      match_count: matchCount,
+      average_award: avgFormatted,
+      has_results: matchCount > 0
+    };
+
+    previewScanCache.set(cacheKey, { result, cachedAt: Date.now() });
+    res.json(result);
+  } catch (e) {
+    console.error('Preview scan error:', e.message);
+    res.json({ match_count: 0, average_award: '$0', has_results: false });
+  }
+});
+
 // Signing secret derived from service key
 const SIGN_SECRET = process.env.SUPABASE_SERVICE_KEY
   ? crypto.createHash('sha256').update(process.env.SUPABASE_SERVICE_KEY).digest('hex').slice(0, 32)

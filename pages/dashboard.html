@@ -23,7 +23,7 @@
 
     <!-- NAV -->
     <nav class="site-nav">
-      <a href="/" class="site-nav-brand">The Bridge</a>
+      <a href="/" class="site-nav-brand"><span class="site-nav-brand-text">THE BRIDGE</span><span class="beta-chip">BETA</span></a>
       <div class="site-nav-links">
         <a href="/simulator">Simulator</a>
         <span class="site-nav-sep">|</span>
@@ -173,16 +173,33 @@
 
       // Tier gate: server handles it when cookie exists.
       // For first visit (no cookie yet), check here after Clerk sets it.
+      let userTier = null;
       try {
         const tierResp = await fetch('/api/auth/me');
         if (tierResp.ok) {
           const tierData = await tierResp.json();
-          if (tierData.membershipTier === 'free') {
+          userTier = tierData.membershipTier;
+          if (userTier === 'free') {
             window.location.href = '/subscribe';
             return;
           }
+          // Map legacy ensign to captain
+          if (userTier === 'ensign') userTier = 'captain';
         }
       } catch (e) {}
+
+      // Grant Radar tier gating — navigator sees locked state
+      if (userTier === 'navigator') {
+        const grantBody = document.getElementById('dash-grant-body');
+        if (grantBody) {
+          grantBody.innerHTML = '<div style="opacity:0.5;pointer-events:none;text-align:center;padding:1rem 0;">' +
+            '<svg width="32" height="32" viewBox="0 0 32 32" fill="none" stroke="#9a9590" stroke-width="1.5" stroke-linecap="round" style="display:block;margin:0 auto 0.75rem auto;"><rect x="6" y="14" width="20" height="14" rx="2"/><path d="M10 14V10C10 6.7 12.7 4 16 4C19.3 4 22 6.7 22 10V14"/><circle cx="16" cy="22" r="2"/></svg>' +
+            '<p style="font-family:var(--font-ui);font-size:0.875rem;color:#3a3530;margin-bottom:0.5rem;">Grant Radar is available on the Captain Tier.</p>' +
+            '<p style="font-family:var(--font-ui);font-size:0.8125rem;color:#9a9590;margin-bottom:1rem;">Upgrade to unlock federal grant matching powered by your full business profile.</p>' +
+            '</div>' +
+            '<a href="/subscribe?tier=captain" class="dash-btn-primary" style="display:inline-block;text-decoration:none;">Upgrade to Captain — $30/mo</a>';
+        }
+      }
 
       // Load session — Supabase is source of truth, localStorage is cache
       sessionData = await BridgeSession.load();

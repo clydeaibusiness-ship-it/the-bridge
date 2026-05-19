@@ -19,108 +19,150 @@
       justify-content: center;
       padding: 2rem;
     }
-    .subscribe-card {
-      max-width: 420px;
+    .subscribe-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      max-width: 56rem;
       width: 100%;
+    }
+    .subscribe-card {
+      background: #ece7dc;
+      border: 1px solid #c8c0b0;
+      border-radius: 4px;
+      padding: 2rem 1.5rem;
       text-align: center;
     }
-    .subscribe-title {
-      font-family: var(--font-ui);
-      font-size: var(--text-lg);
-      font-weight: 500;
-      color: #08080f;
-      margin-bottom: 8px;
+    .subscribe-card--captain {
+      border-color: #c8a96e;
     }
-    .subscribe-desc {
-      font-family: var(--font-ui);
-      font-size: var(--text-sm);
-      color: rgba(8, 8, 15, 0.5);
-      margin-bottom: 32px;
-      line-height: 1.5;
+    .subscribe-card--selected {
+      box-shadow: 0 0 0 2px #c8a96e;
+    }
+    .subscribe-chip {
+      display: inline-block;
+      font-family: var(--font-data);
+      font-size: 0.5rem;
+      color: #f5f0e8;
+      background: #c8a96e;
+      padding: 0.125rem 0.5rem;
+      border-radius: 2px;
+      margin-bottom: 0.5rem;
+      letter-spacing: 0.1em;
+    }
+    .subscribe-tier {
+      font-family: var(--font-data);
+      font-size: 0.625rem;
+      color: #c8a96e;
+      letter-spacing: 0.15em;
+      margin-bottom: 1rem;
     }
     .subscribe-price {
-      font-family: var(--font-ui);
-      font-size: 2rem;
-      font-weight: 500;
-      color: #08080f;
-      margin-bottom: 4px;
-    }
-    .subscribe-interval {
       font-family: var(--font-data);
-      font-size: var(--text-xs);
-      color: rgba(8, 8, 15, 0.4);
-      letter-spacing: var(--tracking-data);
-      margin-bottom: 28px;
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: #08080f;
+      margin-bottom: 0.25rem;
+    }
+    .subscribe-price span {
+      font-family: var(--font-ui);
+      font-size: 1rem;
+      color: rgba(8, 8, 15, 0.5);
+    }
+    .subscribe-annual {
+      font-family: var(--font-data);
+      font-size: 0.625rem;
+      color: #9a9590;
+      margin-bottom: 1.5rem;
     }
     .subscribe-features {
       list-style: none;
       text-align: left;
-      margin-bottom: 32px;
+      margin-bottom: 1.5rem;
     }
     .subscribe-features li {
       font-family: var(--font-ui);
       font-size: var(--text-sm);
       color: rgba(8, 8, 15, 0.65);
       line-height: 1.55;
-      padding: 10px 0;
+      padding: 0.625rem 0;
       border-bottom: 1px solid rgba(8, 8, 15, 0.08);
     }
     .subscribe-features li:last-child { border-bottom: none; }
     .subscribe-btn {
       width: 100%;
-      font-family: var(--font-ui);
-      font-size: var(--text-base);
-      font-weight: 500;
-      letter-spacing: var(--tracking-ui);
+      font-family: var(--font-data);
+      font-size: 0.75rem;
+      letter-spacing: 0.1em;
       color: #f0ebe0;
       background: #08080f;
       border: none;
-      border-radius: 8px;
-      padding: 14px 32px;
-      min-height: 48px;
+      border-radius: 2px;
+      padding: 0.875rem;
       cursor: pointer;
-      margin-bottom: 16px;
+      margin-bottom: 0.5rem;
     }
-    .subscribe-btn:disabled {
-      opacity: 0.5;
-      cursor: default;
+    .subscribe-btn--ghost {
+      background: transparent;
+      color: #08080f;
+      border: 1px solid #08080f;
     }
-    .subscribe-btn:active:not(:disabled) {
-      background: #1e1e2a;
-    }
+    .subscribe-btn:disabled { opacity: 0.5; cursor: default; }
     .subscribe-status {
       font-family: var(--font-ui);
       font-size: var(--text-sm);
       color: rgba(8, 8, 15, 0.4);
       min-height: 1.5em;
+      text-align: center;
+      margin-top: 1rem;
     }
     .subscribe-back {
       position: absolute;
-      top: 24px;
-      left: 24px;
+      top: 1.5rem;
+      left: 1.5rem;
       font-family: var(--font-data);
-      font-size: 11px;
+      font-size: 0.6875rem;
       letter-spacing: 0.08em;
       color: rgba(8, 8, 15, 0.5);
       text-decoration: none;
+    }
+    @media (max-width: 48em) {
+      .subscribe-grid { grid-template-columns: 1fr; max-width: 24rem; }
     }
   </style>
 </head>
 <body>
   <a href="/" class="subscribe-back">← Back</a>
   <div class="subscribe-page">
-    <div class="subscribe-card">
-      <div class="subscribe-price">$50 / month</div>
-      <div class="subscribe-interval">ENSIGN TIER</div>
-      <ul class="subscribe-features">
-        <li>Full strategic simulator with saved runs and progression</li>
-        <li>Navigation Chart — your personalized six-page strategic assessment</li>
-        <li>The Commander — AI strategic advisor with your full business context</li>
-        <li>Grant Radar — federal grant matching powered by your business profile</li>
-      </ul>
-      <button class="subscribe-btn" id="btn-subscribe">Subscribe — $50/month</button>
-      <p class="subscribe-status" id="subscribe-status"></p>
+    <div class="subscribe-grid">
+      <!-- Navigator -->
+      <div class="subscribe-card" id="card-navigator">
+        <div class="subscribe-tier">NAVIGATOR TIER</div>
+        <div class="subscribe-price">$15<span> /month</span></div>
+        <div class="subscribe-annual">$150 / year — save two months</div>
+        <ul class="subscribe-features">
+          <li>The Commander — unlimited AI strategic advisor</li>
+          <li>Navigation Chart — personalized strategic assessment</li>
+          <li>The Simulator — unlimited sessions</li>
+        </ul>
+        <button class="subscribe-btn subscribe-btn--ghost" id="btn-navigator">Start Navigating</button>
+      </div>
+
+      <!-- Captain -->
+      <div class="subscribe-card subscribe-card--captain" id="card-captain">
+        <div class="subscribe-chip">INCLUDES GRANT RADAR</div>
+        <div class="subscribe-tier">CAPTAIN TIER</div>
+        <div class="subscribe-price">$30<span> /month</span></div>
+        <div class="subscribe-annual">$300 / year — save two months</div>
+        <ul class="subscribe-features">
+          <li>Everything in Navigator Tier</li>
+          <li>Grant Radar — federal grant matching</li>
+          <li>Priority access to new features</li>
+        </ul>
+        <button class="subscribe-btn" id="btn-captain">Become a Captain</button>
+      </div>
     </div>
+    <p class="subscribe-status" id="subscribe-status"></p>
   </div>
 
   <script>window.__clerk_publishable_key = 'pk_live_Y2xlcmsuY2FwdGFpbnNicmlkZ2UuaW8k';</script>
@@ -128,36 +170,46 @@
   <script>
     let clerk = null;
 
+    // Check URL params for pre-selected tier
+    const params = new URLSearchParams(window.location.search);
+    const preselected = params.get('tier');
+    if (preselected === 'navigator') {
+      document.getElementById('card-navigator').classList.add('subscribe-card--selected');
+    } else if (preselected === 'captain') {
+      document.getElementById('card-captain').classList.add('subscribe-card--selected');
+    }
+
     async function init() {
       try {
         clerk = window.Clerk;
         if (clerk && !clerk.loaded) await clerk.load();
 
         if (!clerk || !clerk.user) {
-          window.location.href = '/login?return=/subscribe';
+          window.location.href = '/login?return=/subscribe' + (preselected ? '&tier=' + preselected : '');
           return;
         }
 
-        // If already paid, skip straight to dashboard
+        // If already paid, skip to dashboard
         try {
           const tierResp = await fetch('/api/auth/me');
           if (tierResp.ok) {
             const tierData = await tierResp.json();
-            if (tierData.membershipTier === 'ensign') {
+            if (tierData.membershipTier === 'ensign' || tierData.membershipTier === 'navigator' || tierData.membershipTier === 'captain') {
               window.location.href = '/dashboard';
               return;
             }
           }
         } catch(e) {}
 
-        document.getElementById('btn-subscribe').addEventListener('click', startCheckout);
+        document.getElementById('btn-navigator').addEventListener('click', () => startCheckout('navigator'));
+        document.getElementById('btn-captain').addEventListener('click', () => startCheckout('captain'));
       } catch (e) {
         document.getElementById('subscribe-status').textContent = 'Unable to verify your account. Please try again.';
       }
     }
 
-    async function startCheckout() {
-      const btn = document.getElementById('btn-subscribe');
+    async function startCheckout(tier) {
+      const btn = document.getElementById('btn-' + tier);
       const status = document.getElementById('subscribe-status');
 
       btn.disabled = true;
@@ -169,6 +221,7 @@
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
+            tier,
             email: clerk.user.primaryEmailAddress?.emailAddress,
             clerkId: clerk.user.id
           })
@@ -181,12 +234,12 @@
         } else {
           status.textContent = data.error || 'Something went wrong. Please try again.';
           btn.disabled = false;
-          btn.textContent = 'Subscribe — $50/month';
+          btn.textContent = tier === 'captain' ? 'Become a Captain' : 'Start Navigating';
         }
       } catch (e) {
         status.textContent = 'Connection failed. Please try again.';
         btn.disabled = false;
-        btn.textContent = 'Subscribe — $50/month';
+        btn.textContent = tier === 'captain' ? 'Become a Captain' : 'Start Navigating';
       }
     }
 

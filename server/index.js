@@ -87,7 +87,8 @@ async function requirePaidMember(req, res, next) {
     // Cookie invalid/expired — let page load, Clerk JS will handle
     return next();
   }
-  if (req.dbUser.membership_tier !== 'ensign') {
+  const tier = req.dbUser.membership_tier;
+  if (tier !== 'ensign' && tier !== 'navigator' && tier !== 'captain') {
     return res.redirect('/subscribe');
   }
   next();
@@ -131,16 +132,28 @@ app.get('/navigation-chart', requirePaidMember, (req, res) => {
   res.sendFile(path.join(__dirname, '../pages/navigation-chart.html'));
 });
 
-app.get('/grant-radar', requirePaidMember, (req, res) => {
+// Grant Radar pages require captain tier (or legacy ensign)
+function requireCaptainTier(req, res, next) {
+  if (req.dbUser && (req.dbUser.membership_tier === 'captain' || req.dbUser.membership_tier === 'ensign')) {
+    return next();
+  }
+  // Navigator or no tier — redirect to subscribe with upgrade CTA
+  if (req.dbUser && req.dbUser.membership_tier === 'navigator') {
+    return res.redirect('/subscribe?tier=captain');
+  }
+  return res.redirect('/subscribe');
+}
+
+app.get('/grant-radar', requirePaidMember, requireCaptainTier, (req, res) => {
   res.sendFile(path.join(__dirname, '../pages/grant-radar.html'));
 });
 
-app.get('/grant-radar/intake', requirePaidMember, (req, res) => {
+app.get('/grant-radar/intake', requirePaidMember, requireCaptainTier, (req, res) => {
   res.sendFile(path.join(__dirname, '../pages/grant-radar-intake.html'));
 });
 
 // Grant detail page — matches /grant-radar/<anything-else>
-app.get('/grant-radar/:grantId', requirePaidMember, (req, res) => {
+app.get('/grant-radar/:grantId', requirePaidMember, requireCaptainTier, (req, res) => {
   res.sendFile(path.join(__dirname, '../pages/grant-detail.html'));
 });
 
