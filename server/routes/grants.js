@@ -80,11 +80,60 @@ router.post('/preview-scan', async (req, res) => {
       oppStatuses: 'forecasted|posted',
       fundingInstruments: 'G',
       eligibilities: eligCodes,
-      rows: 25,
+      rows: 100,
       sortBy: 'openDate|desc'
     };
 
     let matchCount = 0;
+    let avgFormatted = '$0';
+
+    // Define which eligibility codes each entity type requires to be present
+    const nonprofitCodes = new Set(['12', '13']);
+    const smallBizCodes = new Set(['23']);
+    const forProfitCodes = new Set(['22', '23']);
+    const govOnlyCodes = new Set(['00', '01', '02', '06', '07', '08', '20', '21', '25']);
+
+    function grantMatchesEntityType(grantEligibilities, entityType) {
+      // grantEligibilities is a string like "12|23|99" or an object — normalize to a Set of code strings
+      let codes;
+      if (typeof grantEligibilities === 'string') {
+        codes = new Set(grantEligibilities.split('|').map(c => c.trim()));
+      } else if (Array.isArray(grantEligibilities)) {
+        codes = new Set(grantEligibilities.map(c => String(c).trim()));
+      } else {
+        // If we can't parse eligibilities, include the grant (don't exclude on bad data)
+        return true;
+      }
+
+      // Unrestricted (99) always passes
+      if (codes.has('99')) return true;
+
+      const etLower = (entityType || '').toLowerCase();
+
+      if (etLower.includes('nonprofit 501c3') || etLower.includes('nonprofit other')) {
+        // Keep only if grant has a nonprofit code (12 or 13)
+        for (const c of codes) {
+          if (nonprofitCodes.has(c)) return true;
+        }
+        return false;
+      }
+
+      if (etLower === 'sole proprietorship' || etLower === 'not yet registered' || etLower === 'i am not sure') {
+        // Keep only if grant has small business code (23)
+        return codes.has('23');
+      }
+
+      if (etLower === 'llc' || etLower === 's-corporation' || etLower === 'c-corporation') {
+        // Keep only if grant has for-profit (22) or small biz (23)
+        for (const c of codes) {
+          if (forProfitCodes.has(c)) return true;
+        }
+        return false;
+      }
+
+      // Unknown entity type — include the grant
+      return true;
+    }
 
     try {
       const resp = await fetch('https://apply07.grants.gov/grantsws/rest/opportunities/search/', {
@@ -96,24 +145,57 @@ router.post('/preview-scan', async (req, res) => {
 
       if (resp.ok) {
         const data = await resp.json();
-        matchCount = data.hitCount || 0;
+        const allHits = data.oppHits || [];
+
+        // Post-filter: only keep grants where entity type genuinely matches
+        const filtered = allHits.filter(grant => {
+          const grantElig = grant.eligibilities || grant.eligibility || '';
+          return grantMatchesEntityType(grantElig, entity_type);
+        });
+
+        matchCount = filtered.length;
+
+        // Calculate average award from filtered results if award amounts are available
+        if (matchCount > 0) {
+          const awards = filtered
+            .map(g => parseFloat(g.awardCeiling || g.estimatedFunding || 0))
+            .filter(a => a > 0);
+          if (awards.length > 0) {
+            const avg = awards.reduce((sum, a) => sum + a, 0) / awards.length;
+            if (avg >= 1000) {
+              avgFormatted = '$' + Math.round(avg).toLocaleString('en-US');
+            } else {
+              // Fallback to industry estimate if award data is too low / missing
+              const awardEstimates = {
+                'Agriculture and farming': '$150,000',
+                'Software and technology': '$250,000',
+                'Manufacturing': '$200,000',
+                'Nonprofit organization': '$100,000',
+                'Healthcare and therapy': '$175,000',
+                'Education and tutoring': '$125,000',
+                'Construction and renovation': '$150,000'
+              };
+              avgFormatted = awardEstimates[industry] || '$100,000';
+            }
+          } else {
+            // No award data in results — use industry estimates
+            const awardEstimates = {
+              'Agriculture and farming': '$150,000',
+              'Software and technology': '$250,000',
+              'Manufacturing': '$200,000',
+              'Nonprofit organization': '$100,000',
+              'Healthcare and therapy': '$175,000',
+              'Education and tutoring': '$125,000',
+              'Construction and renovation': '$150,000'
+            };
+            avgFormatted = awardEstimates[industry] || '$100,000';
+          }
+        }
       }
     } catch (fetchErr) {
       console.error('Grants.gov API error:', fetchErr.message);
       matchCount = 0;
     }
-
-    // Award amounts aren't in search results; use per-industry estimates
-    const awardEstimates = {
-      'Agriculture and farming': '$150,000',
-      'Software and technology': '$250,000',
-      'Manufacturing': '$200,000',
-      'Nonprofit organization': '$100,000',
-      'Healthcare and therapy': '$175,000',
-      'Education and tutoring': '$125,000',
-      'Construction and renovation': '$150,000'
-    };
-    const avgFormatted = matchCount > 0 ? (awardEstimates[industry] || '$100,000') : '$0';
 
     const result = {
       match_count: matchCount,
