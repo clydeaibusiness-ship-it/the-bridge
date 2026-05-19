@@ -66,7 +66,31 @@ function getSoulPrimer() {
 }
 
 /**
- * Read Big Book of Strategy only.
+ * Read the compressed case study index from case-study-index.md.
+ * Only the index section loads — not the full stories.
+ */
+function getCaseStudyIndex() {
+  try {
+    const fullFile = fs.readFileSync(
+      path.join(__dirname, '../../system/case-study-index.md'),
+      'utf8'
+    );
+    // Extract only the compressed index section
+    const indexStart = fullFile.indexOf('## COMPRESSED INDEX');
+    const indexEnd = fullFile.indexOf('## FULL STORIES');
+    if (indexStart === -1) return '';
+    const indexSection = indexEnd > indexStart
+      ? fullFile.substring(indexStart, indexEnd)
+      : fullFile.substring(indexStart);
+    return indexSection.trim();
+  } catch (err) {
+    console.error('CASE STUDY INDEX ERROR:', err.message);
+    return '';
+  }
+}
+
+/**
+ * Read Big Book of Strategy + compressed case study index.
  * Used as system prompt for Commander chat (soul is now in assistant prefill).
  * User context is appended by the caller.
  */
@@ -76,6 +100,10 @@ function getSystemPrompt() {
       path.join(__dirname, '../../system/big-book-of-strategy.md'),
       'utf8'
     );
+    const caseStudyIndex = getCaseStudyIndex();
+    if (caseStudyIndex) {
+      return strategy + '\n\n---\n\nCASE STUDY LIBRARY — Available for retrieval when relevant:\n\n' + caseStudyIndex;
+    }
     return strategy;
   } catch (err) {
     console.error('STRATEGY PROMPT ERROR:', err.message);
@@ -301,14 +329,110 @@ async function commanderChat(message, gameState, runHistory, sessionContext, con
     { role: 'user', content: message }
   ];
 
+  // Case study retrieval tool
+  const tools = [
+    {
+      name: 'fetch_case_study',
+      description: 'Fetch the full story of a relevant case study from the library when a story would help the member feel understood or when a strategic claim needs grounding. Only call this when a case study would genuinely serve the moment — not to perform knowledge.',
+      input_schema: {
+        type: 'object',
+        properties: {
+          lever_tags: {
+            type: 'array',
+            items: { type: 'string' },
+            description: 'Lever names from the Big Book of Strategy that are relevant to this moment'
+          },
+          problem_tags: {
+            type: 'array',
+            items: { type: 'string' },
+            description: 'Problem type descriptors that match what the member is facing'
+          }
+        },
+        required: ['lever_tags', 'problem_tags']
+      }
+    }
+  ];
+
   const response = await client.messages.create({
     model: 'claude-sonnet-4-20250514',
-    max_tokens: 220,
+    max_tokens: 400,
     system: fullSystem,
-    messages
+    messages,
+    tools
   });
 
-  return stripMarkdown(response.content[0].text);
+  // Check if the Commander wants to fetch a case study
+  const toolUseBlock = response.content.find(b => b.type === 'tool_use' && b.name === 'fetch_case_study');
+
+  if (toolUseBlock) {
+    // Fetch the case study from Supabase
+    let caseStudyText = '';
+    try {
+      const { getClient } = require('./supabase');
+      const db = getClient();
+      if (db) {
+        const { data } = await db
+          .from('case_studies')
+          .select('title, source_book, source_author, story, lever_tags, problem_tags');
+
+        if (data && data.length > 0) {
+          const inputTags = toolUseBlock.input;
+          let bestMatch = null;
+          let bestScore = 0;
+
+          for (const cs of data) {
+            let score = 0;
+            if (inputTags.lever_tags && cs.lever_tags) {
+              for (const tag of inputTags.lever_tags) {
+                if (cs.lever_tags.some(lt => lt.toLowerCase() === tag.toLowerCase())) score += 2;
+              }
+            }
+            if (inputTags.problem_tags && cs.problem_tags) {
+              for (const tag of inputTags.problem_tags) {
+                const tagLower = tag.toLowerCase();
+                if (cs.problem_tags.some(pt => pt.toLowerCase().includes(tagLower) || tagLower.includes(pt.toLowerCase()))) score += 1;
+              }
+            }
+            if (score > bestScore) { bestScore = score; bestMatch = cs; }
+          }
+
+          if (bestMatch) {
+            caseStudyText = `[Case Study: ${bestMatch.title} — from ${bestMatch.source_book} by ${bestMatch.source_author}]\n${bestMatch.story}`;
+          }
+        }
+      }
+    } catch (csErr) {
+      console.error('Case study fetch error:', csErr.message);
+    }
+
+    // Send the tool result back to get the final response
+    const textBlock = response.content.find(b => b.type === 'text');
+    const followUp = await client.messages.create({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 400,
+      system: fullSystem,
+      messages: [
+        ...messages,
+        { role: 'assistant', content: response.content },
+        {
+          role: 'user',
+          content: [{
+            type: 'tool_result',
+            tool_use_id: toolUseBlock.id,
+            content: caseStudyText || 'No matching case study found.'
+          }]
+        }
+      ],
+      tools
+    });
+
+    const finalText = followUp.content.find(b => b.type === 'text');
+    return stripMarkdown(finalText ? finalText.text : (textBlock ? textBlock.text : ''));
+  }
+
+  // No tool call — return text directly
+  const textBlock = response.content.find(b => b.type === 'text');
+  return stripMarkdown(textBlock ? textBlock.text : '');
 }
 
 /**

@@ -10,6 +10,7 @@ const apiRoutes = require('./routes/api');
 const authRoutes = require('./routes/auth');
 const paymentRoutes = require('./routes/payments');
 const grantRoutes = require('./routes/grants');
+const commanderRoutes = require('./routes/commander');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -66,6 +67,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/grant-radar', grantRoutes);
 app.use('/api/admin', grantRoutes);
+app.use('/api/commander', commanderRoutes);
 
 // Auth + tier gate middleware for protected pages
 const { extractUser } = require('./middleware/auth');
