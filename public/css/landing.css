@@ -240,6 +240,11 @@
   text-align: center;
   margin-bottom: 2.5rem;
 }
+.hero-scan-description {
+  max-width: 32rem;
+  margin: 0 auto 0.75rem auto;
+  text-align: left;
+}
 .hero-scan-fields {
   max-width: 32rem;
   margin: 0 auto;
