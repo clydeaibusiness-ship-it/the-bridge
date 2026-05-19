@@ -43,7 +43,7 @@
   <div class="hero-scan-form" id="hero-scan-form">
     <div class="hero-scan-label">FREE GRANT SCAN</div>
     <h1 class="hero-scan-headline">Find out if federal grant money exists for your business. Takes 30 seconds.</h1>
-    <p class="hero-scan-sub">No account. No credit card. Just three quick answers.</p>
+    <p class="hero-scan-sub">No account. No credit card. Just five quick answers.</p>
 
     <div class="hero-scan-fields">
       <div class="hero-field">
@@ -98,10 +98,41 @@
           <option value="Over $1,000,000">Over $1,000,000</option>
         </select>
       </div>
+
+      <div class="hero-field">
+        <label class="hero-field-label" for="scan-entity">How is your business legally structured?</label>
+        <select id="scan-entity" class="hero-select">
+          <option value="">Select entity type</option>
+          <option value="Sole proprietorship">Sole proprietorship</option>
+          <option value="LLC">LLC</option>
+          <option value="S-corporation">S-corporation</option>
+          <option value="C-corporation">C-corporation</option>
+          <option value="Nonprofit 501c3">Nonprofit 501c3</option>
+          <option value="Nonprofit other">Nonprofit other</option>
+          <option value="Not yet registered">Not yet registered</option>
+          <option value="I am not sure">I am not sure</option>
+        </select>
+      </div>
+
+      <div class="hero-field hero-field--full">
+        <label class="hero-field-label" for="scan-funduse">If you received a grant, what would you primarily use it for?</label>
+        <select id="scan-funduse" class="hero-select">
+          <option value="">Select fund use</option>
+          <option value="Hiring employees">Hiring employees</option>
+          <option value="Purchasing equipment or technology">Purchasing equipment or technology</option>
+          <option value="Research and development">Research and development</option>
+          <option value="Expanding or opening a location">Expanding or opening a location</option>
+          <option value="Workforce training">Workforce training</option>
+          <option value="Community service programs">Community service programs</option>
+          <option value="Export or international trade">Export or international trade</option>
+          <option value="General operating costs">General operating costs</option>
+          <option value="I am not sure yet">I am not sure yet</option>
+        </select>
+      </div>
     </div>
 
     <button class="hero-scan-btn" id="hero-scan-btn">Run my free grant scan →</button>
-    <p class="hero-scan-disclaimer">We search active federal grants from Grants.gov against your inputs. No personal data stored.</p>
+    <p class="hero-scan-disclaimer">We search active federal grants from Grants.gov against your inputs. Results are a preliminary estimate only — your actual matches may differ once your full business profile is complete. No personal data stored.</p>
   </div>
 
   <!-- RESULTS STATE — HAS RESULTS -->
@@ -594,9 +625,11 @@
     const industry = document.getElementById('scan-industry').value;
     const state = document.getElementById('scan-state').value;
     const revenue = document.getElementById('scan-revenue').value;
+    const entityType = document.getElementById('scan-entity').value;
+    const fundUse = document.getElementById('scan-funduse').value;
 
-    if (!industry || !state || !revenue) {
-      scanBtn.textContent = 'Please fill in all three fields';
+    if (!industry || !state || !revenue || !entityType || !fundUse) {
+      scanBtn.textContent = 'Please fill in all five fields';
       setTimeout(() => { scanBtn.textContent = 'Run my free grant scan →'; }, 2000);
       return;
     }
@@ -613,7 +646,7 @@
       const resp = await fetch('/api/grant-radar/preview-scan', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ industry, state, revenue_range: revenue })
+        body: JSON.stringify({ industry, state, revenue_range: revenue, entity_type: entityType, fund_use: fundUse })
       });
       const data = await resp.json();
 

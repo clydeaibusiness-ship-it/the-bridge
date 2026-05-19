@@ -241,11 +241,14 @@
   margin-bottom: 2.5rem;
 }
 .hero-scan-fields {
-  max-width: 28rem;
+  max-width: 32rem;
   margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+.hero-field--full {
+  grid-column: 1 / -1;
 }
 .hero-field {
   text-align: left;

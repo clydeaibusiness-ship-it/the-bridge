@@ -37,31 +37,45 @@ const previewScanCache = new Map(); // key: industry+state -> { result, cachedAt
 
 router.post('/preview-scan', async (req, res) => {
   try {
-    const { industry, state, revenue_range } = req.body;
+    const { industry, state, revenue_range, entity_type, fund_use } = req.body;
     if (!industry || !state) {
       return res.json({ match_count: 0, average_award: '$0', has_results: false });
     }
 
-    const cacheKey = `${industry}::${state}`.toLowerCase();
+    const cacheKey = `${industry}::${state}::${entity_type || ''}`.toLowerCase();
     const cached = previewScanCache.get(cacheKey);
     if (cached && (Date.now() - cached.cachedAt < 3600000)) {
       return res.json(cached.result);
     }
 
-    // Query Grants.gov API — grants only, filter for small business eligibility
+    // Query Grants.gov API — grants only, filter by entity type eligibility
+    // Eligibility codes: 23=small biz, 22=for-profit, 12=501c3, 13=non-501c3 nonprofit, 99=unrestricted
+    let eligCodes = '23|22|99';  // default: small business + for-profit + unrestricted
+
+    const et = (entity_type || '').toLowerCase();
+    if (et.includes('nonprofit 501c3')) {
+      eligCodes = '12|99';  // 501c3 nonprofits + unrestricted
+    } else if (et.includes('nonprofit other')) {
+      eligCodes = '13|99';  // non-501c3 nonprofits + unrestricted
+    } else if (et === 'sole proprietorship' || et === 'not yet registered' || et === 'i am not sure') {
+      eligCodes = '23|99';  // small business + unrestricted only (excludes formal entity requirements)
+    } else if (et === 'c-corporation') {
+      eligCodes = '22|23|99';  // for-profit + small biz + unrestricted
+    }
+
+    // Also use nonprofit eligibility if the industry is nonprofit regardless of entity selection
+    if (industry.toLowerCase().includes('nonprofit') && !et.includes('nonprofit')) {
+      eligCodes = '12|13|99';
+    }
+
     const searchPayload = {
       keyword: industry.replace(/ and /g, ' '),
       oppStatuses: 'forecasted|posted',
       fundingInstruments: 'G',
-      eligibilities: '23|22',  // small businesses + for-profit orgs
+      eligibilities: eligCodes,
       rows: 25,
       sortBy: 'openDate|desc'
     };
-
-    // For nonprofit searches, use nonprofit eligibility filter
-    if (industry.toLowerCase().includes('nonprofit')) {
-      searchPayload.eligibilities = '12|13';  // 501c3 + non-501c3 nonprofits
-    }
 
     let matchCount = 0;
 
