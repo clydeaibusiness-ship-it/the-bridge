@@ -43,9 +43,14 @@
   <div class="hero-scan-form" id="hero-scan-form">
     <div class="hero-scan-label">FREE GRANT SCAN</div>
     <h1 class="hero-scan-headline">Find out if federal grant money exists for your business. Takes 30 seconds.</h1>
-    <p class="hero-scan-sub">No account. No credit card. Just five quick answers.</p>
+    <p class="hero-scan-sub">No account. No credit card. Just a few quick answers.</p>
 
     <div class="hero-scan-fields">
+      <div class="hero-field hero-field--full">
+        <label class="hero-field-label" for="scan-description">Describe your business in a few words.</label>
+        <input type="text" id="scan-description" class="hero-input" placeholder="e.g. elevator inspection company, religious nonprofit, coffee shop">
+      </div>
+
       <div class="hero-field">
         <label class="hero-field-label" for="scan-industry">What does your business do?</label>
         <select id="scan-industry" class="hero-select">
@@ -626,6 +631,7 @@
   // ---- HERO GRANT SCAN ----
   const scanBtn = document.getElementById('hero-scan-btn');
   scanBtn.addEventListener('click', async () => {
+    const description = document.getElementById('scan-description').value.trim();
     const industry = document.getElementById('scan-industry').value;
     const state = document.getElementById('scan-state').value;
     const revenue = document.getElementById('scan-revenue').value;
@@ -633,7 +639,7 @@
     const fundUse = document.getElementById('scan-funduse').value;
 
     if (!industry || !state || !revenue || !entityType || !fundUse) {
-      scanBtn.textContent = 'Please fill in all five fields';
+      scanBtn.textContent = 'Please fill in all fields';
       setTimeout(() => { scanBtn.textContent = 'Run my free grant scan →'; }, 2000);
       return;
     }
@@ -650,7 +656,7 @@
       const resp = await fetch('/api/grant-radar/preview-scan', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ industry, state, revenue_range: revenue, entity_type: entityType, fund_use: fundUse })
+        body: JSON.stringify({ industry, state, revenue_range: revenue, entity_type: entityType, fund_use: fundUse, business_description: description })
       });
       const data = await resp.json();
 

@@ -37,12 +37,13 @@ const previewScanCache = new Map(); // key: industry+state -> { result, cachedAt
 
 router.post('/preview-scan', async (req, res) => {
   try {
-    const { industry, state, revenue_range, entity_type, fund_use } = req.body;
+    const { industry, state, revenue_range, entity_type, fund_use, business_description } = req.body;
     if (!industry || !state) {
       return res.json({ match_count: 0, average_award: '$0', has_results: false });
     }
 
-    const cacheKey = `${industry}::${state}::${entity_type || ''}`.toLowerCase();
+    const descKey = (business_description || '').toLowerCase().trim().substring(0, 50);
+    const cacheKey = `${industry}::${state}::${entity_type || ''}::${descKey}`.toLowerCase();
     const cached = previewScanCache.get(cacheKey);
     if (cached && (Date.now() - cached.cachedAt < 3600000)) {
       return res.json(cached.result);
@@ -68,8 +69,14 @@ router.post('/preview-scan', async (req, res) => {
       eligCodes = '12|13|99';
     }
 
+    // Build keyword from industry + business description for more targeted results
+    let keyword = industry.replace(/ and /g, ' ');
+    if (business_description && business_description.trim()) {
+      keyword = business_description.trim() + ' ' + keyword;
+    }
+
     const searchPayload = {
-      keyword: industry.replace(/ and /g, ' '),
+      keyword,
       oppStatuses: 'forecasted|posted',
       fundingInstruments: 'G',
       eligibilities: eligCodes,
