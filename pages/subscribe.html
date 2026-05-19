@@ -173,6 +173,7 @@
     // Check URL params for pre-selected tier
     const params = new URLSearchParams(window.location.search);
     const preselected = params.get('tier');
+    const preselectedInterval = params.get('interval') || 'monthly';
     if (preselected === 'navigator') {
       document.getElementById('card-navigator').classList.add('subscribe-card--selected');
     } else if (preselected === 'captain') {
@@ -201,14 +202,20 @@
           }
         } catch(e) {}
 
-        document.getElementById('btn-navigator').addEventListener('click', () => startCheckout('navigator'));
-        document.getElementById('btn-captain').addEventListener('click', () => startCheckout('captain'));
+        document.getElementById('btn-navigator').addEventListener('click', () => startCheckout('navigator', 'monthly'));
+        document.getElementById('btn-captain').addEventListener('click', () => startCheckout('captain', 'monthly'));
+
+        // If pre-selected with annual interval, auto-start checkout
+        if (preselected && preselectedInterval === 'annual') {
+          startCheckout(preselected, 'annual');
+        }
       } catch (e) {
         document.getElementById('subscribe-status').textContent = 'Unable to verify your account. Please try again.';
       }
     }
 
-    async function startCheckout(tier) {
+    async function startCheckout(tier, interval) {
+      interval = interval || 'monthly';
       const btn = document.getElementById('btn-' + tier);
       const status = document.getElementById('subscribe-status');
 
@@ -222,6 +229,7 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             tier,
+            interval,
             email: clerk.user.primaryEmailAddress?.emailAddress,
             clerkId: clerk.user.id
           })
