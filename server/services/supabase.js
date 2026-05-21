@@ -342,10 +342,33 @@ async function getCommanderMessagesForApi(userId, limit = 10, soulVersion = null
   }
 
   // Return in chronological order, formatted for Claude API
-  return filtered.reverse().map(m => ({
+  const chronological = filtered.reverse().map(m => ({
     role: m.message_role,
     content: m.message_content
   }));
+
+  // Enforce strict role alternation after soul version filtering.
+  // When old assistant messages are filtered out, consecutive user messages remain.
+  // Anthropic rejects consecutive same-role messages.
+  // Keep the LAST message in any consecutive same-role sequence (most recent matters most).
+  const deduplicated = [];
+  for (let i = 0; i < chronological.length; i++) {
+    const msg = chronological[i];
+    const next = chronological[i + 1];
+    // If the next message has the same role, skip this one (keep the later one)
+    if (next && next.role === msg.role) {
+      continue;
+    }
+    deduplicated.push(msg);
+  }
+
+  // Ensure the first message is role:user (it follows the silent "." + soul primer)
+  // If it starts with assistant, drop it — the soul primer already covers that slot
+  if (deduplicated.length > 0 && deduplicated[0].role === 'assistant') {
+    deduplicated.shift();
+  }
+
+  return deduplicated;
 }
 
 // ---- Commander Summaries ----

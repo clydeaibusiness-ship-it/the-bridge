@@ -329,6 +329,9 @@ async function commanderChat(message, gameState, runHistory, sessionContext, con
     { role: 'user', content: message }
   ];
 
+  // Debug: log role sequence so future issues are immediately visible in Railway logs
+  console.log('Commander message roles:', messages.map(m => m.role).join(' → '));
+
   // Case study retrieval tool
   const tools = [
     {
