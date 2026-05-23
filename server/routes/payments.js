@@ -7,26 +7,33 @@ const { sendSubscriptionConfirmation } = require('../services/email');
  * GET /api/payments/checkout-redirect
  * Simple redirect to Stripe Checkout — no JS required
  */
-// Tier-to-price mapping
+// Tier-to-price mapping — env vars with hardcoded fallbacks for production
 const TIER_PRICES = {
   navigator: {
-    monthly: process.env.STRIPE_NAVIGATOR_MONTHLY_PRICE_ID,
-    annual: process.env.STRIPE_NAVIGATOR_ANNUAL_PRICE_ID
+    monthly: process.env.STRIPE_NAVIGATOR_MONTHLY_PRICE_ID || 'price_1TYd9tIeiH9jvG6AqgQ3qL5l',
+    annual: process.env.STRIPE_NAVIGATOR_ANNUAL_PRICE_ID || 'price_1TYd9tIeiH9jvG6A9PTUjgXO'
   },
   captain: {
-    monthly: process.env.STRIPE_CAPTAIN_MONTHLY_PRICE_ID,
-    annual: process.env.STRIPE_CAPTAIN_ANNUAL_PRICE_ID
+    monthly: process.env.STRIPE_CAPTAIN_MONTHLY_PRICE_ID || 'price_1TYd9tIeiH9jvG6AGbB2OlmQ',
+    annual: process.env.STRIPE_CAPTAIN_ANNUAL_PRICE_ID || 'price_1TYd9uIeiH9jvG6APDI5nddU'
   },
   // Legacy fallback
   ensign: {
-    monthly: process.env.STRIPE_ENSIGN_MONTHLY_PRICE_ID,
+    monthly: process.env.STRIPE_ENSIGN_MONTHLY_PRICE_ID || 'price_1TV2mfIeiH9jvG6A8IV8YjsZ',
     annual: process.env.STRIPE_ENSIGN_ANNUAL_PRICE_ID
   }
 };
 
+// Log resolved prices at startup for debugging
+console.log('Stripe price IDs loaded:', JSON.stringify(TIER_PRICES, null, 2));
+
 function resolvePriceId(tier, interval) {
   const t = TIER_PRICES[tier] || TIER_PRICES.captain;
-  return (interval === 'annual' ? t.annual : t.monthly) || t.monthly;
+  const resolved = (interval === 'annual' ? t.annual : t.monthly) || t.monthly;
+  if (!resolved) {
+    console.error(`resolvePriceId FAILED: tier=${tier}, interval=${interval}, lookup=`, t);
+  }
+  return resolved;
 }
 
 router.get('/checkout-redirect', async (req, res) => {
