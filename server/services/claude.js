@@ -117,14 +117,24 @@ function getSystemPrompt() {
  */
 async function callClaude(userContent, additionalContext = '') {
   const systemPrompt = getStrategyPrompt();
-  const fullSystem = additionalContext
-    ? `${systemPrompt}\n\n---\n\n${additionalContext}`
-    : systemPrompt;
+  const systemBlocks = [
+    {
+      type: 'text',
+      text: systemPrompt,
+      cache_control: { type: 'ephemeral' }
+    }
+  ];
+  if (additionalContext) {
+    systemBlocks.push({
+      type: 'text',
+      text: '---\n\n' + additionalContext
+    });
+  }
 
   const response = await client.messages.create({
     model: 'claude-sonnet-4-20250514',
     max_tokens: 4000,
-    system: fullSystem,
+    system: systemBlocks,
     messages: [{ role: 'user', content: userContent }]
   });
 
@@ -312,18 +322,39 @@ async function commanderChat(message, gameState, runHistory, sessionContext, con
   }
 
   const systemPrompt = getSystemPrompt();
-  const fullSystem = context
-    ? `${systemPrompt}\n\n---\n\n${context}`
-    : systemPrompt;
-
   const soulPrimer = getSoulPrimer();
 
-  // Build messages array: silent user prime, soul prefill, then history, then new message.
+  // Build system prompt as array of content blocks with cache_control.
+  // Static content (strategy + case studies) is cached — Anthropic charges 90% less
+  // when the cache is warm (auto-extends on every hit within 5 min).
+  // Per-user context (intake, run history, session notes) is NOT cached — it changes.
+  const systemBlocks = [
+    {
+      type: 'text',
+      text: systemPrompt,
+      cache_control: { type: 'ephemeral' }
+    }
+  ];
+  if (context) {
+    systemBlocks.push({
+      type: 'text',
+      text: '---\n\n' + context
+    });
+  }
+
+  // Build messages array: silent user prime, soul prefill (cached), then history, then new message.
   // Anthropic API requires the first message to be role:user.
   const messages = [
     ...(soulPrimer ? [
       { role: 'user', content: '.' },
-      { role: 'assistant', content: soulPrimer }
+      {
+        role: 'assistant',
+        content: [{
+          type: 'text',
+          text: soulPrimer,
+          cache_control: { type: 'ephemeral' }
+        }]
+      }
     ] : []),
     ...(conversationHistory || []),
     { role: 'user', content: message }
@@ -359,7 +390,7 @@ async function commanderChat(message, gameState, runHistory, sessionContext, con
   const response = await client.messages.create({
     model: 'claude-sonnet-4-20250514',
     max_tokens: 400,
-    system: fullSystem,
+    system: systemBlocks,
     messages,
     tools
   });
@@ -413,7 +444,7 @@ async function commanderChat(message, gameState, runHistory, sessionContext, con
     const followUp = await client.messages.create({
       model: 'claude-sonnet-4-20250514',
       max_tokens: 400,
-      system: fullSystem,
+      system: systemBlocks,
       messages: [
         ...messages,
         { role: 'assistant', content: response.content },
@@ -487,20 +518,32 @@ Return this exact JSON structure with 6 sections. Each section has a "title" and
   ]
 }`;
 
-  // Navigation Chart keeps soul in system prompt (no prefill pattern here)
+  // Navigation Chart — soul + strategy as cached system blocks
   const soulContent = getSoulPrimer();
   const strategyContent = getSystemPrompt();
-  const chartSystemPrompt = soulContent
-    ? `${soulContent}\n\n---\n\n${strategyContent}`
-    : strategyContent;
-  const fullSystem = additionalContext
-    ? `${chartSystemPrompt}\n\n---\n\nAdditional context from the player's web presence:${additionalContext}`
-    : chartSystemPrompt;
+  const chartSystemBlocks = [];
+  if (soulContent) {
+    chartSystemBlocks.push({
+      type: 'text',
+      text: soulContent
+    });
+  }
+  chartSystemBlocks.push({
+    type: 'text',
+    text: strategyContent,
+    cache_control: { type: 'ephemeral' }
+  });
+  if (additionalContext) {
+    chartSystemBlocks.push({
+      type: 'text',
+      text: '---\n\nAdditional context from the player\'s web presence:' + additionalContext
+    });
+  }
 
   const response = await client.messages.create({
     model: 'claude-sonnet-4-20250514',
     max_tokens: 4000,
-    system: fullSystem,
+    system: chartSystemBlocks,
     messages: [{ role: 'user', content: prompt }]
   });
 
