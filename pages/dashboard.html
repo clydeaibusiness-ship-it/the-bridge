@@ -29,8 +29,6 @@
         <span class="site-nav-sep">|</span>
         <a href="/navigation-chart">Navigator</a>
         <span class="site-nav-sep">|</span>
-        <a href="/grant-radar">Grant Radar</a>
-        <span class="site-nav-sep">|</span>
         <a href="/dashboard" class="nav-active">Dashboard</a>
         <span class="site-nav-sep">|</span>
         <a href="/api/auth/logout">Sign Out</a>
@@ -139,13 +137,6 @@
             <a href="/intake?mode=update" class="dash-btn-update">Update your answers</a>
           </div>
         </div>
-        <div class="dash-panel dash-grant-radar">
-          <div class="dash-section-title">GRANT RADAR</div>
-          <div class="dash-grant-body" id="dash-grant-body">
-            <p id="dash-grant-text">Answer a curated set of questions about your business to find federal grants you qualify for. Takes 5 to 10 minutes.</p>
-            <a href="/grant-radar/intake" class="dash-btn-ghost" id="dash-grant-btn">Start Grant Radar intake →</a>
-          </div>
-        </div>
       </div>
     </div>
   </div>
@@ -187,19 +178,6 @@
           if (userTier === 'ensign') userTier = 'captain';
         }
       } catch (e) {}
-
-      // Grant Radar tier gating — navigator sees locked state
-      if (userTier === 'navigator') {
-        const grantBody = document.getElementById('dash-grant-body');
-        if (grantBody) {
-          grantBody.innerHTML = '<div style="opacity:0.5;pointer-events:none;text-align:center;padding:1rem 0;">' +
-            '<svg width="32" height="32" viewBox="0 0 32 32" fill="none" stroke="#9a9590" stroke-width="1.5" stroke-linecap="round" style="display:block;margin:0 auto 0.75rem auto;"><rect x="6" y="14" width="20" height="14" rx="2"/><path d="M10 14V10C10 6.7 12.7 4 16 4C19.3 4 22 6.7 22 10V14"/><circle cx="16" cy="22" r="2"/></svg>' +
-            '<p style="font-family:var(--font-ui);font-size:0.875rem;color:#3a3530;margin-bottom:0.5rem;">Grant Radar is available on the Captain Tier.</p>' +
-            '<p style="font-family:var(--font-ui);font-size:0.8125rem;color:#9a9590;margin-bottom:1rem;">Upgrade to unlock federal grant matching powered by your full business profile.</p>' +
-            '</div>' +
-            '<a href="/subscribe?tier=captain" class="dash-btn-primary" style="display:inline-block;text-decoration:none;">Upgrade to Captain — $30/mo</a>';
-        }
-      }
 
       // Load session — Supabase is source of truth, localStorage is cache
       sessionData = await BridgeSession.load();
@@ -517,33 +495,7 @@ Biggest uncertainty: ${a.uncertainty || 'unknown'}
 
       commanderMessages.scrollTop = commanderMessages.scrollHeight;
     }
-
-    // ---- Grant Radar Status ----
-    async function loadGrantRadarStatus() {
-      try {
-        const res = await fetch('/api/grant-radar/results');
-        if (!res.ok) return;
-        const data = await res.json();
-        const textEl = document.getElementById('dash-grant-text');
-        const btnEl = document.getElementById('dash-grant-btn');
-        if (data.results) {
-          const federal = (data.results.federal || []).length;
-          const state = (data.results.state || []).length;
-          const local = (data.results.local || []).length;
-          const total = federal + state + local;
-          const open = [...(data.results.federal || []), ...(data.results.state || []), ...(data.results.local || [])].filter(function(g) { return g.status && g.status.toLowerCase().indexOf('open') >= 0 || g.status && g.status.toLowerCase().indexOf('rolling') >= 0; }).length;
-          textEl.textContent = 'Your last scan found ' + total + ' grants matched to your business profile. ' + open + ' are currently accepting applications.';
-          btnEl.textContent = 'View matched grants \u2192';
-          btnEl.href = '/grant-radar';
-          if (data.scanDate) {
-            var dateNote = document.createElement('div');
-            dateNote.style.cssText = 'font-family:var(--font-data);font-size:10px;color:#7a7570;margin-top:6px;';
-            dateNote.textContent = 'Last scanned ' + new Date(data.scanDate).toLocaleDateString();
-            document.getElementById('dash-grant-body').appendChild(dateNote);
-          }
-        }
-      } catch (e) {}
-    }
+    
     loadGrantRadarStatus();
 
     initDashboard();

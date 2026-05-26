@@ -9,7 +9,6 @@ const path = require('path');
 const apiRoutes = require('./routes/api');
 const authRoutes = require('./routes/auth');
 const paymentRoutes = require('./routes/payments');
-const grantRoutes = require('./routes/grants');
 const commanderRoutes = require('./routes/commander');
 
 const app = express();
@@ -65,7 +64,6 @@ app.use(express.static(path.join(__dirname, '../public')));
 app.use('/api', apiRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/payments', paymentRoutes);
-app.use('/api/grant-radar', grantRoutes);
 app.use('/api/admin', grantRoutes);
 app.use('/api/commander', commanderRoutes);
 
@@ -145,19 +143,6 @@ function requireCaptainTier(req, res, next) {
   }
   return res.redirect('/subscribe');
 }
-
-app.get('/grant-radar', requirePaidMember, requireCaptainTier, (req, res) => {
-  res.sendFile(path.join(__dirname, '../pages/grant-radar.html'));
-});
-
-app.get('/grant-radar/intake', requirePaidMember, requireCaptainTier, (req, res) => {
-  res.sendFile(path.join(__dirname, '../pages/grant-radar-intake.html'));
-});
-
-// Grant detail page — matches /grant-radar/<anything-else>
-app.get('/grant-radar/:grantId', requirePaidMember, requireCaptainTier, (req, res) => {
-  res.sendFile(path.join(__dirname, '../pages/grant-detail.html'));
-});
 
 app.get('/terms', (req, res) => {
   res.sendFile(path.join(__dirname, '../pages/terms.html'));

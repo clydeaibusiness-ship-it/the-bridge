@@ -17,7 +17,6 @@ ALTER TABLE user_intake ADD COLUMN IF NOT EXISTS grant_fund_use TEXT;
 ALTER TABLE user_intake ADD COLUMN IF NOT EXISTS sam_registration TEXT;
 ALTER TABLE user_intake ADD COLUMN IF NOT EXISTS naics_code TEXT;
 ALTER TABLE user_intake ADD COLUMN IF NOT EXISTS grant_intake_complete BOOLEAN DEFAULT false;
-ALTER TABLE user_intake ADD COLUMN IF NOT EXISTS grant_radar_acknowledged BOOLEAN DEFAULT false;
 ALTER TABLE user_intake ADD COLUMN IF NOT EXISTS next_scan_date TIMESTAMPTZ;
 ALTER TABLE user_intake ADD COLUMN IF NOT EXISTS exact_revenue INTEGER;
 ALTER TABLE user_intake ADD COLUMN IF NOT EXISTS exact_employee_count INTEGER;
@@ -38,19 +37,6 @@ ALTER TABLE user_intake ADD COLUMN IF NOT EXISTS simulator_resources JSONB;
 -- commander_messages — soul_version column
 -- ============================================================
 ALTER TABLE commander_messages ADD COLUMN IF NOT EXISTS soul_version TEXT DEFAULT NULL;
-
--- ============================================================
--- grant_radar_results — detail columns
--- ============================================================
-DO $$ BEGIN
-  ALTER TABLE grant_radar_results ADD COLUMN detail_data JSONB;
-EXCEPTION WHEN duplicate_column THEN NULL;
-END $$;
-
-DO $$ BEGIN
-  ALTER TABLE grant_radar_results ADD COLUMN fetch_failed BOOLEAN DEFAULT false;
-EXCEPTION WHEN duplicate_column THEN NULL;
-END $$;
 
 -- ============================================================
 -- DONE. All missing columns added.

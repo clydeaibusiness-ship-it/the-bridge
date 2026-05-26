@@ -497,20 +497,6 @@
   border-bottom: none;
 }
 
-/* ---- GRANT RADAR ---- */
-.dash-grant-radar {
-  padding: 0;
-}
-.dash-grant-body {
-  padding: 14px 20px;
-}
-.dash-grant-body p {
-  font-family: var(--font-ui);
-  font-size: var(--text-sm);
-  color: #7a7570;
-  line-height: 1.55;
-}
-
 /* ---- RESPONSIVE ---- */
 /* Tablet */
 @media (max-width: 64em) {
