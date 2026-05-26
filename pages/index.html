@@ -6,7 +6,6 @@
   <title>The Bridge — Strategic Navigation for Small Business</title>
   <link rel="stylesheet" href="/css/global.css">
   <link rel="stylesheet" href="/css/landing.css">
-  <link rel="stylesheet" href="/css/grant-radar.css">
 </head>
 <body class="landing-body">
 
@@ -20,7 +19,6 @@
     <div class="landing-nav-links" id="landing-nav-links">
       <a href="/simulator" class="landing-nav-link">Simulator</a>
       <a href="/navigation-chart" class="landing-nav-link">Navigator</a>
-      <a href="/grant-radar" class="landing-nav-link">Grant Radar</a>
       <a href="/dashboard" class="landing-nav-link">Dashboard</a>
       <a href="/login" class="landing-nav-link" id="nav-auth-link">Sign In</a>
     </div>
@@ -37,133 +35,7 @@
   </div>
 </nav>
 
-<!-- ====== SECTION 2: HERO — PRELIMINARY GRANT SCAN ====== -->
-<section class="hero" id="hero">
-  <!-- SCAN FORM STATE -->
-  <div class="hero-scan-form" id="hero-scan-form">
-    <div class="hero-scan-label">FREE GRANT SCAN</div>
-    <h1 class="hero-scan-headline">Find out if federal grant money exists for your business. Takes 30 seconds.</h1>
-    <p class="hero-scan-sub">No account. No credit card. Just a few quick answers.</p>
-
-    <div class="hero-scan-description">
-      <label class="hero-field-label" for="scan-description">Describe your business in a few words.</label>
-      <input type="text" id="scan-description" class="hero-input" placeholder="e.g. coffee shop, nonprofit, consulting firm">
-    </div>
-
-    <div class="hero-scan-fields">
-      <div class="hero-field">
-        <label class="hero-field-label" for="scan-industry">What does your business do?</label>
-        <select id="scan-industry" class="hero-select">
-          <option value="">Select your industry</option>
-          <option value="Trades and contractors">Trades and contractors</option>
-          <option value="Restaurants and food">Restaurants and food</option>
-          <option value="Real estate and property">Real estate and property</option>
-          <option value="Beauty and wellness">Beauty and wellness</option>
-          <option value="Healthcare and therapy">Healthcare and therapy</option>
-          <option value="Software and technology">Software and technology</option>
-          <option value="Retail and e-commerce">Retail and e-commerce</option>
-          <option value="Landscaping and outdoor services">Landscaping and outdoor services</option>
-          <option value="Consulting and coaching">Consulting and coaching</option>
-          <option value="Construction and renovation">Construction and renovation</option>
-          <option value="Education and tutoring">Education and tutoring</option>
-          <option value="Logistics and delivery">Logistics and delivery</option>
-          <option value="Nonprofit organization">Nonprofit organization</option>
-          <option value="Manufacturing">Manufacturing</option>
-          <option value="Agriculture and farming">Agriculture and farming</option>
-          <option value="Other">Other</option>
-        </select>
-      </div>
-
-      <div class="hero-field">
-        <label class="hero-field-label" for="scan-state">What state are you operating in?</label>
-        <select id="scan-state" class="hero-select">
-          <option value="">Select your state</option>
-          <option>Alabama</option><option>Alaska</option><option>Arizona</option><option>Arkansas</option><option>California</option>
-          <option>Colorado</option><option>Connecticut</option><option>Delaware</option><option>Florida</option><option>Georgia</option>
-          <option>Hawaii</option><option>Idaho</option><option>Illinois</option><option>Indiana</option><option>Iowa</option>
-          <option>Kansas</option><option>Kentucky</option><option>Louisiana</option><option>Maine</option><option>Maryland</option>
-          <option>Massachusetts</option><option>Michigan</option><option>Minnesota</option><option>Mississippi</option><option>Missouri</option>
-          <option>Montana</option><option>Nebraska</option><option>Nevada</option><option>New Hampshire</option><option>New Jersey</option>
-          <option>New Mexico</option><option>New York</option><option>North Carolina</option><option>North Dakota</option><option>Ohio</option>
-          <option>Oklahoma</option><option>Oregon</option><option>Pennsylvania</option><option>Rhode Island</option><option>South Carolina</option>
-          <option>South Dakota</option><option>Tennessee</option><option>Texas</option><option>Utah</option><option>Vermont</option>
-          <option>Virginia</option><option>Washington</option><option>West Virginia</option><option>Wisconsin</option><option>Wyoming</option>
-        </select>
-      </div>
-
-      <div class="hero-field">
-        <label class="hero-field-label" for="scan-revenue">What was your approximate revenue last year?</label>
-        <select id="scan-revenue" class="hero-select">
-          <option value="">Select revenue range</option>
-          <option value="Pre-revenue (not yet earning)">Pre-revenue (not yet earning)</option>
-          <option value="Under $50,000">Under $50,000</option>
-          <option value="$50,000 to $150,000">$50,000 to $150,000</option>
-          <option value="$150,000 to $500,000">$150,000 to $500,000</option>
-          <option value="$500,000 to $1,000,000">$500,000 to $1,000,000</option>
-          <option value="Over $1,000,000">Over $1,000,000</option>
-        </select>
-      </div>
-
-      <div class="hero-field">
-        <label class="hero-field-label" for="scan-entity">How is your business legally structured?</label>
-        <select id="scan-entity" class="hero-select">
-          <option value="">Select entity type</option>
-          <option value="Sole proprietorship">Sole proprietorship</option>
-          <option value="LLC">LLC</option>
-          <option value="S-corporation">S-corporation</option>
-          <option value="C-corporation">C-corporation</option>
-          <option value="Nonprofit 501c3">Nonprofit 501c3</option>
-          <option value="Nonprofit other">Nonprofit other</option>
-          <option value="Not yet registered">Not yet registered</option>
-          <option value="I am not sure">I am not sure</option>
-        </select>
-      </div>
-
-      <div class="hero-field hero-field--full">
-        <label class="hero-field-label" for="scan-funduse">If you received a grant, what would you primarily use it for?</label>
-        <select id="scan-funduse" class="hero-select">
-          <option value="">Select fund use</option>
-          <option value="Hiring employees">Hiring employees</option>
-          <option value="Purchasing equipment or technology">Purchasing equipment or technology</option>
-          <option value="Research and development">Research and development</option>
-          <option value="Expanding or opening a location">Expanding or opening a location</option>
-          <option value="Workforce training">Workforce training</option>
-          <option value="Community service programs">Community service programs</option>
-          <option value="Export or international trade">Export or international trade</option>
-          <option value="General operating costs">General operating costs</option>
-          <option value="I am not sure yet">I am not sure yet</option>
-        </select>
-      </div>
-    </div>
-
-    <button class="hero-scan-btn" id="hero-scan-btn">Run my free grant scan →</button>
-    <p class="hero-scan-disclaimer">We search active federal grants from Grants.gov against your inputs. Results are a preliminary estimate only — your actual matches may differ once your full business profile is complete. No personal data stored.</p>
-  </div>
-
-  <!-- RESULTS STATE — HAS RESULTS -->
-  <div class="hero-scan-results" id="hero-scan-results" style="display:none;">
-    <div class="hero-scan-label">YOUR PRELIMINARY SCAN RESULTS</div>
-    <h2 class="hero-results-headline" id="results-headline"></h2>
-    <p class="hero-results-avg" id="results-avg"></p>
-    <p class="hero-results-disclaimer">These are preliminary matches based on your inputs. Results shown from a sample of active grants — your full profile may surface additional matches or further narrow results.</p>
-    <div class="hero-results-buttons">
-      <a href="/login?action=subscribe&tier=captain" class="hero-results-primary" id="results-primary-btn">See my full grant matches — $30/mo →</a>
-      <a href="/login?action=subscribe&tier=captain&interval=annual" class="hero-results-annual">or $300/year — save two months</a>
-      <a href="/login?action=subscribe&tier=navigator" class="hero-results-secondary" id="results-secondary-btn">Get strategic advice only — $15/mo</a>
-    </div>
-    <p class="hero-results-alt">Not ready to commit? Explore the free simulator at the bottom of this page.</p>
-  </div>
-
-  <!-- RESULTS STATE — NO RESULTS -->
-  <div class="hero-scan-noresults" id="hero-scan-noresults" style="display:none;">
-    <div class="hero-scan-label">YOUR PRELIMINARY SCAN RESULTS</div>
-    <h2 class="hero-results-headline">Federal grants may be limited for your current profile.</h2>
-    <p class="hero-noresults-body">Federal grants have specific eligibility rules around industry, revenue stage, and registration status. Based on your inputs we did not find strong federal matches — but that does not mean funding does not exist for your business.</p>
-    <a href="/login?action=subscribe&tier=navigator" class="hero-results-primary">Talk to the Commander — $15/mo →</a>
-    <a href="/login?action=subscribe&tier=navigator&interval=annual" class="hero-results-annual">or $150/year — save two months</a>
-    <p class="hero-noresults-below">The Commander helps you find the right strategic path regardless of grant availability. Federal and private grant sources are covered inside.</p>
-  </div>
-</section>
+ 
 
 <!-- ====== SECTION 3: STAR TREK CONTEXT ====== -->
 <section class="trek-context" id="trek-context">
@@ -271,21 +143,6 @@
         <div class="solution-card-headline">The strategic advisor who never forgets your business.</div>
         <div class="solution-card-body">The Commander is built on a framework synthesized from the twelve most important business books ever written — not their summaries, their actual operating principles. It knows your business before you type a word. It asks the hard questions before it gives a single answer. And it never runs out of context. Ever.</div>
       </div>
-
-      <!-- Card 2: Grant Radar -->
-      <div class="solution-card">
-        <div class="solution-card-icon">
-          <svg width="40" height="40" viewBox="0 0 40 40" fill="none" stroke="#0a0a0f" stroke-width="1.5">
-            <circle cx="20" cy="20" r="14" opacity="0.3"/>
-            <circle cx="20" cy="20" r="7" opacity="0.2"/>
-            <line x1="20" y1="20" x2="30" y2="10" stroke-linecap="round" opacity="0.4"/>
-            <circle cx="20" cy="20" r="2" fill="#c8a96e" stroke="none"/>
-          </svg>
-        </div>
-        <div class="solution-card-label">GRANT RADAR</div>
-        <div class="solution-card-headline">The grant money that was always yours. Finally matched to you.</div>
-        <div class="solution-card-body">Grant Radar takes your business profile — your industry, your revenue, your location, your ownership, your stage — and runs it against live federal government grant opportunities published by the U.S. government. Not a search bar. Not a keyword tool. A match. You see only the grants your business actually qualifies for, ranked by how closely they fit, with a direct link to the official government application page. The government publishes this data publicly. We do the work of reading it for you.</div>
-      </div>
     </div>
   </div>
 </section>
@@ -334,7 +191,6 @@
 
       <!-- CAPTAIN TIER -->
       <div class="pricing-card pricing-card--captain">
-        <div class="pricing-captain-chip">INCLUDES GRANT RADAR</div>
         <div class="pricing-tier">CAPTAIN TIER</div>
         <div class="pricing-amount">
           <span class="pricing-dollar">$30</span><span class="pricing-per">/month</span>
@@ -345,10 +201,6 @@
           <li class="pricing-feature">
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="#c8a96e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2 7 6 11 12 3"/></svg>
             <span class="pricing-feature-text">Everything in Navigator Tier</span>
-          </li>
-          <li class="pricing-feature">
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="#c8a96e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2 7 6 11 12 3"/></svg>
-            <span class="pricing-feature-text">Grant Radar — federal grant matching powered by your full business profile</span>
           </li>
           <li class="pricing-feature">
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="#c8a96e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2 7 6 11 12 3"/></svg>
@@ -628,110 +480,7 @@
     });
   }
 
-  // ---- HERO GRANT SCAN ----
-  const scanBtn = document.getElementById('hero-scan-btn');
-  scanBtn.addEventListener('click', async () => {
-    const description = document.getElementById('scan-description').value.trim();
-    const industry = document.getElementById('scan-industry').value;
-    const state = document.getElementById('scan-state').value;
-    const revenue = document.getElementById('scan-revenue').value;
-    const entityType = document.getElementById('scan-entity').value;
-    const fundUse = document.getElementById('scan-funduse').value;
-
-    if (!industry || !state || !revenue || !entityType || !fundUse) {
-      scanBtn.textContent = 'Please fill in all fields';
-      setTimeout(() => { scanBtn.textContent = 'Run my free grant scan →'; }, 2000);
-      return;
-    }
-
-    scanBtn.textContent = 'Scanning federal grants';
-    scanBtn.disabled = true;
-    let dots = 0;
-    const ellipsis = setInterval(() => {
-      dots = (dots + 1) % 4;
-      scanBtn.textContent = 'Scanning federal grants' + '.'.repeat(dots);
-    }, 400);
-
-    try {
-      const resp = await fetch('/api/grant-radar/preview-scan', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ industry, state, revenue_range: revenue, entity_type: entityType, fund_use: fundUse, business_description: description })
-      });
-      const data = await resp.json();
-
-      clearInterval(ellipsis);
-
-      const form = document.getElementById('hero-scan-form');
-      form.style.opacity = '0';
-      form.style.transform = 'translateY(-10px)';
-      setTimeout(() => {
-        form.style.display = 'none';
-
-        if (data.has_results && data.match_count > 0) {
-          const results = document.getElementById('hero-scan-results');
-          document.getElementById('results-headline').textContent =
-            'We found ' + data.match_count + ' federal grant programs that may apply to ' + industry + ' businesses in ' + state + '.';
-          document.getElementById('results-avg').textContent =
-            'Average award across these programs: ' + data.average_award + '.';
-          results.style.display = 'block';
-          requestAnimationFrame(() => { results.style.opacity = '1'; results.style.transform = 'translateY(0)'; });
-        } else {
-          const noresults = document.getElementById('hero-scan-noresults');
-          noresults.style.display = 'block';
-          requestAnimationFrame(() => { noresults.style.opacity = '1'; noresults.style.transform = 'translateY(0)'; });
-        }
-      }, 300);
-    } catch (e) {
-      clearInterval(ellipsis);
-      scanBtn.textContent = 'Scan failed — try again';
-      scanBtn.disabled = false;
-      setTimeout(() => { scanBtn.textContent = 'Run my free grant scan →'; }, 3000);
-    }
-  });
-</script>
-<script>
-(function() {
-  var sectionEl = document.getElementById('grant-counter');
-  if (!sectionEl) return;
-
-  function formatDollar(n) {
-    if (n >= 1000000000) { var b = n / 1000000000; if (b >= 100) return '$' + Math.round(b) + 'B'; if (b >= 10) return '$' + b.toFixed(1) + 'B'; return '$' + b.toFixed(2) + 'B'; }
-    if (n >= 1000000) { var m = n / 1000000; if (m >= 100) return '$' + Math.round(m) + 'M'; if (m >= 10) return '$' + m.toFixed(1) + 'M'; return '$' + m.toFixed(2) + 'M'; }
-    if (n >= 1000) { var k = n / 1000; if (k >= 100) return '$' + Math.round(k) + 'K'; if (k >= 10) return '$' + k.toFixed(1) + 'K'; return '$' + k.toFixed(2) + 'K'; }
-    return '$' + n.toLocaleString();
-  }
-
-  function animateCounter(el, target, formatter) {
-    var duration = 2000; var start = performance.now();
-    function step(now) {
-      var elapsed = now - start; var progress = Math.min(elapsed / duration, 1);
-      var eased = 1 - Math.pow(1 - progress, 3);
-      el.textContent = formatter(Math.round(target * eased));
-      if (progress < 1) requestAnimationFrame(step);
-    }
-    requestAnimationFrame(step);
-  }
-
-  function setupCounter(elId, fetchUrl) {
-    var el = document.getElementById(elId);
-    if (!el) return;
-    fetch(fetchUrl).then(function(r) { return r.json(); }).then(function(data) {
-      var total = data.total || 0;
-      if (total === 0) { el.textContent = '$0'; return; }
-      var animated = false;
-      var obs = new IntersectionObserver(function(entries) {
-        entries.forEach(function(entry) {
-          if (entry.isIntersecting && !animated) { animated = true; animateCounter(el, total, formatDollar); obs.disconnect(); }
-        });
-      }, { threshold: 0.3 });
-      obs.observe(sectionEl);
-    }).catch(function() {});
-  }
-
-  setupCounter('grant-available-number', '/api/grant-radar/total-available');
-  setupCounter('grant-counter-number', '/api/grant-radar/community-total');
-})();
+  
 </script>
 </body>
 </html>
