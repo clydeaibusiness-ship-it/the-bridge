@@ -96,7 +96,7 @@ CREATE POLICY "service_role_anon_events" ON anonymous_events FOR ALL
   USING (true) WITH CHECK (true);
 
 -- ============================================================
--- 5. USER INTAKE (unified onboarding + grant radar intake fields)
+-- 5. USER INTAKE (unified onboarding)
 -- ============================================================
 CREATE TABLE IF NOT EXISTS user_intake (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -122,6 +122,7 @@ CREATE TABLE IF NOT EXISTS user_intake (
   exact_revenue INTEGER,
   exact_employee_count INTEGER,
   business_basics_completed BOOLEAN DEFAULT false,
+);
 
 CREATE INDEX IF NOT EXISTS idx_intake_user ON user_intake(user_id);
 

@@ -5,7 +5,7 @@
 -- ============================================================
 
 -- ============================================================
--- user_intake — grant radar columns that CREATE TABLE IF NOT EXISTS skipped
+-- user_intake — additional columns that CREATE TABLE IF NOT EXISTS skipped
 -- ============================================================
 ALTER TABLE user_intake ADD COLUMN IF NOT EXISTS city TEXT;
 ALTER TABLE user_intake ADD COLUMN IF NOT EXISTS state TEXT;
@@ -13,11 +13,6 @@ ALTER TABLE user_intake ADD COLUMN IF NOT EXISTS county TEXT;
 ALTER TABLE user_intake ADD COLUMN IF NOT EXISTS legal_entity TEXT;
 ALTER TABLE user_intake ADD COLUMN IF NOT EXISTS granular_revenue TEXT;
 ALTER TABLE user_intake ADD COLUMN IF NOT EXISTS owner_demographics TEXT[];
-ALTER TABLE user_intake ADD COLUMN IF NOT EXISTS grant_fund_use TEXT;
-ALTER TABLE user_intake ADD COLUMN IF NOT EXISTS sam_registration TEXT;
-ALTER TABLE user_intake ADD COLUMN IF NOT EXISTS naics_code TEXT;
-ALTER TABLE user_intake ADD COLUMN IF NOT EXISTS grant_intake_complete BOOLEAN DEFAULT false;
-ALTER TABLE user_intake ADD COLUMN IF NOT EXISTS next_scan_date TIMESTAMPTZ;
 ALTER TABLE user_intake ADD COLUMN IF NOT EXISTS exact_revenue INTEGER;
 ALTER TABLE user_intake ADD COLUMN IF NOT EXISTS exact_employee_count INTEGER;
 ALTER TABLE user_intake ADD COLUMN IF NOT EXISTS business_basics_completed BOOLEAN DEFAULT false;

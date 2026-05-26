@@ -154,7 +154,7 @@ async function sendWinVerifiedEmail(email) {
         <p style="font-size: 16px; line-height: 1.6;">Your grant win has been verified. Your contribution has been added to The Bridge community total.</p>
         <p style="font-size: 16px; line-height: 1.6;">Thank you for sharing your win — it helps other captains know what is possible.</p>
         <div style="margin: 32px 0;">
-          <a href="https://captainsbridge.io/grant-radar" style="display: inline-block; background: #0a0a0f; color: #f5f0e8; padding: 14px 32px; text-decoration: none; font-size: 14px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; border-radius: 2px;">View Grant Radar</a>
+          <a href="https://captainsbridge.io/dashboard" style="display: inline-block; background: #0a0a0f; color: #f5f0e8; padding: 14px 32px; text-decoration: none; font-size: 14px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; border-radius: 2px;">View Dashboard</a>
         </div>
       </div>
     `
@@ -174,7 +174,7 @@ async function sendWinRejectedEmail(email) {
         <p style="font-size: 16px; line-height: 1.6;">We were not able to verify your grant win from the document provided. This could be a formatting issue or an incomplete document.</p>
         <p style="font-size: 16px; line-height: 1.6;">You are welcome to resubmit with a different document — award letters, grant agreements, or bank confirmation statements work best.</p>
         <div style="margin: 32px 0;">
-          <a href="https://captainsbridge.io/grant-radar" style="display: inline-block; background: #0a0a0f; color: #f5f0e8; padding: 14px 32px; text-decoration: none; font-size: 14px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; border-radius: 2px;">Go to Grant Radar</a>
+          <a href="https://captainsbridge.io/dashboard" style="display: inline-block; background: #0a0a0f; color: #f5f0e8; padding: 14px 32px; text-decoration: none; font-size: 14px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; border-radius: 2px;">Go to Dashboard</a>
         </div>
       </div>
     `

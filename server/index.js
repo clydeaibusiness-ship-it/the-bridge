@@ -64,7 +64,6 @@ app.use(express.static(path.join(__dirname, '../public')));
 app.use('/api', apiRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/payments', paymentRoutes);
-app.use('/api/admin', grantRoutes);
 app.use('/api/commander', commanderRoutes);
 
 // Auth + tier gate middleware for protected pages
@@ -131,18 +130,6 @@ app.get('/chart', requirePaidMember, (req, res) => {
 app.get('/navigation-chart', requirePaidMember, (req, res) => {
   res.sendFile(path.join(__dirname, '../pages/navigation-chart.html'));
 });
-
-// Grant Radar pages require captain tier (or legacy ensign)
-function requireCaptainTier(req, res, next) {
-  if (req.dbUser && (req.dbUser.membership_tier === 'captain' || req.dbUser.membership_tier === 'ensign')) {
-    return next();
-  }
-  // Navigator or no tier — redirect to subscribe with upgrade CTA
-  if (req.dbUser && req.dbUser.membership_tier === 'navigator') {
-    return res.redirect('/subscribe?tier=captain');
-  }
-  return res.redirect('/subscribe');
-}
 
 app.get('/terms', (req, res) => {
   res.sendFile(path.join(__dirname, '../pages/terms.html'));
