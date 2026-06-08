@@ -25,8 +25,6 @@
     <nav class="site-nav">
       <a href="/" class="site-nav-brand"><span class="site-nav-brand-text">THE BRIDGE</span><span class="beta-chip">BETA</span></a>
       <div class="site-nav-links">
-        <a href="/simulator">Simulator</a>
-        <span class="site-nav-sep">|</span>
         <a href="/navigation-chart">Navigator</a>
         <span class="site-nav-sep">|</span>
         <a href="/dashboard" class="nav-active">Dashboard</a>
@@ -37,7 +35,6 @@
         <span></span><span></span><span></span>
       </button>
       <div class="site-nav-mobile" id="mobile-menu"><button class="site-nav-mobile-close" aria-label="Close">✕</button>
-        <a href="/simulator">Simulator</a>
         <a href="/navigation-chart">Navigator</a>
         <a href="/dashboard" class="nav-active">Dashboard</a>
         <a href="/api/auth/logout">Sign Out</a>
@@ -87,7 +84,6 @@
           <div class="dash-stat-row"><span class="dash-stat-label">Switching Costs</span><span class="dash-stat-value" id="dash-switching">—</span></div>
           <div class="dash-stat-bar"><div class="dash-stat-fill" id="dash-switching-bar" style="width:0%"></div></div>
         </div>
-        <a href="/simulator" class="dash-btn-ghost">Resume Simulator</a>
       </div>
 
       <!-- CENTER: Commander -->
@@ -192,25 +188,6 @@
         const name = sessionData.businessName || sessionData.shipName;
         if (name) document.getElementById('dash-ship-name').textContent = name;
         if (sessionData.destination) document.getElementById('dash-destination').textContent = `→ ${sessionData.destination.toUpperCase()}`;
-
-        if (sessionData.simulatorResources) {
-          const r = sessionData.simulatorResources;
-          if (r.capital !== undefined) {
-            document.getElementById('dash-capital').textContent = `$${r.capital.toLocaleString()}`;
-          }
-          if (r.customers !== undefined) {
-            document.getElementById('dash-customers').textContent = `${r.customers} / 40`;
-            document.getElementById('dash-customers-bar').style.width = `${(r.customers / 40) * 100}%`;
-          }
-          if (r.positioning !== undefined) {
-            document.getElementById('dash-positioning').textContent = `${r.positioning}%`;
-            document.getElementById('dash-positioning-bar').style.width = `${r.positioning}%`;
-          }
-          if (r.switchingCosts !== undefined) {
-            document.getElementById('dash-switching').textContent = `${r.switchingCosts}%`;
-            document.getElementById('dash-switching-bar').style.width = `${r.switchingCosts}%`;
-          }
-        }
 
         if (sessionData.completedAt) {
           document.getElementById('chart-prompt').style.display = 'none';
@@ -363,11 +340,6 @@ Biggest uncertainty: ${a.uncertainty || 'unknown'}
 
       if (sc.websiteContent) context += `\n\nWebsite content:\n${sc.websiteContent}`;
       if (sc.facebookContent) context += `\n\nFacebook page content:\n${sc.facebookContent}`;
-
-      if (sessionData.simulatorResources) {
-        const r = sessionData.simulatorResources;
-        context += `\n\nLatest simulator resources: Capital $${r.capital}, Customers ${r.customers}/40, Positioning ${r.positioning}%, Switching Costs ${r.switchingCosts}%`;
-      }
 
       return context;
     }

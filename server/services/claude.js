@@ -36,7 +36,7 @@ function getSoulVersion() {
 }
 
 /**
- * Read strategy book only — used by simulator, intake, debrief, summaries.
+ * Read strategy book only — used by, intake, debrief, summaries.
  */
 function getStrategyPrompt() {
   return fs.readFileSync(
@@ -113,7 +113,7 @@ function getSystemPrompt() {
 
 /**
  * Call Claude with strategy-only system context.
- * Used by simulator, intake, debrief, summaries — NOT Commander/Chart.
+ * Used by intake, debrief, summaries — NOT Commander/Chart.
  */
 async function callClaude(userContent, additionalContext = '') {
   const systemPrompt = getStrategyPrompt();
@@ -175,125 +175,10 @@ ${JSON.stringify(intakeAnswers, null, 2)}`;
 }
 
 /**
- * Generate a single personalized situation using Claude API
- */
-async function generateSituation(businessContext, situationNumber, previousThemes) {
-  const themes = [
-    'operational crisis requiring capital vs relationship tradeoff',
-    'competitive threat requiring positioning vs price decision',
-    'growth ceiling requiring systems decision',
-    'client retention requiring information asymmetry response',
-    'pricing decision under competitive pressure'
-  ];
-
-  const availableThemes = themes.filter(t => !previousThemes.includes(t));
-
-  const prompt = `Generate a single business strategy situation for the simulator. Return ONLY a JSON object with no other text.
-
-Player's business context:
-${JSON.stringify(businessContext, null, 2)}
-
-This is situation ${situationNumber} of 5.
-
-Strategic theme for this situation: ${availableThemes[0] || themes[situationNumber - 1]}
-Themes already covered: ${previousThemes.length ? previousThemes.join(', ') : 'none'}
-
-CRITICAL RULES:
-- Use the player's specific business type ("${businessContext.businessType}") and context throughout EVERY sentence — not generic business language
-- The client type is "${businessContext.clientType}", service is "${businessContext.serviceType}", asset is "${businessContext.assetType}"
-- Present a real strategic decision with no obviously correct answer
-- Generate exactly 4 options (A, B, C, D)
-- Each option must have different lever implications
-- Include effect tags showing capital cost/gain and percentage changes to relevant levers
-- Each option gets an outcomeType: "clean", "partial", or "missed"
-- Include a case study for each option drawn from a NAMED real business or NAMED book — no unnamed statistics
-- Use ONLY Big Book of Strategy framework language in outcomes — never game language
-- At least one option should be "clean" and at least one should be "missed"
-
-Return this exact JSON structure:
-{
-  "id": ${situationNumber},
-  "title": "Short descriptive title",
-  "turnLabel": "Situation ${situationNumber} of 5",
-  "body": "2-4 sentences describing the situation using the player's specific business context",
-  "crewComment": "1-2 sentences of strategic observation",
-  "theme": "the theme string used",
-  "options": [
-    {
-      "id": "A",
-      "body": "What the player would do — 2-3 sentences using their business language",
-      "tags": [
-        { "text": "Capital +/-$X", "lever": "capital" },
-        { "text": "LeverName +/-X%", "lever": "leverKey" }
-      ],
-      "difficulty": 1 or 2,
-      "exceptional": true or false,
-      "outcomeType": "clean" or "partial" or "missed",
-      "outcomeBody": "3-5 sentences explaining what happened using framework language",
-      "caseStudy": {
-        "label": "What [Book/Source] says",
-        "body": "2-3 sentences referencing a specific named book or business"
-      },
-      "resourceChanges": { "capital": 0, "customers": 0, "positioning": 0, "switchingCosts": 0 }
-    }
-  ]
-}
-
-resourceChanges must ONLY use these 4 keys: capital, customers, positioning, switchingCosts.
-Capital changes should be realistic dollar amounts (-5000 to +5000 range).
-Percentage changes for positioning/switchingCosts should be -20 to +20 range.
-Customer changes should be -3 to +6 range.
-Tags can reference other levers (informationAsymmetry, networkEffects, systems, habitDesign) for display but those do NOT go in resourceChanges.`;
-
-  const response = await callClaude(prompt);
-
-  try {
-    const jsonMatch = response.match(/\{[\s\S]*\}/);
-    if (jsonMatch) {
-      return JSON.parse(jsonMatch[0]);
-    }
-    return JSON.parse(response);
-  } catch (e) {
-    console.error('Failed to parse generated situation:', e.message);
-    throw new Error('Parse failure');
-  }
-}
-
-/**
- * Run-end debrief — generates Navigation Chart lite
- */
-async function generateDebrief(runHistory, intakeAnswers) {
-  const prompt = `A captain's ship has been destroyed. Based on their full run history below and the Big Book of Strategy framework, produce a structured debrief in the following exact format. Be direct, specific, and compassionate. Reference their actual decisions, not generic advice.
-
-## What Destroyed Your Ship
-One paragraph. Name the specific lever gap that caused the fatal hit. Explain what that means for their real business in plain English.
-
-## The Pattern
-One paragraph. Looking across all threats they encountered, what is the underlying strategic weakness this run revealed? Name the lever. Name the consequence.
-
-## The One Thing
-One sentence. The single most important lever they should raise before their next run — and why.
-
-## A Real Business Did This
-Two to three sentences. A specific case study of a real business that faced the same lever gap, what happened to them, and what they did about it.
-
-## Your Next Run
-One paragraph. What would a smarter configuration look like given what they now know? Do not give them the answer — give them the question to ask themselves.
-
-Captain's run history:
-${JSON.stringify(runHistory, null, 2)}
-
-Captain's intake answers:
-${JSON.stringify(intakeAnswers, null, 2)}`;
-
-  return await callClaude(prompt);
-}
-
-/**
  * Commander chat — strategic advice with full business context.
  * Now supports conversation history passed as messages array.
  */
-async function commanderChat(message, gameState, runHistory, sessionContext, conversationHistory, summaryContext, sessionNotesContext) {
+async function commanderChat(message, gameState, sessionContext, conversationHistory, summaryContext, sessionNotesContext) {
   // Build pure data context — no behavioral instructions.
   // The soul file is the ONLY source of behavioral directives.
   let context = '';
@@ -305,10 +190,6 @@ async function commanderChat(message, gameState, runHistory, sessionContext, con
   }
   if (sessionContext) {
     context += sessionContext + '\n\n';
-  }
-  const hasRunHistory = runHistory && runHistory.length > 0;
-  if (hasRunHistory) {
-    context += `Previous simulator runs:\n${JSON.stringify(runHistory, null, 2)}\n\n`;
   }
 
   const systemPrompt = getSystemPrompt();
@@ -542,8 +423,6 @@ async function compressSession(conversationMessages) {
 module.exports = {
   callClaude,
   personalizeIntake,
-  generateSituation,
-  generateDebrief,
   commanderChat,
   generateConversationSummary,
   generateChart,
@@ -551,3 +430,4 @@ module.exports = {
   getSoulPrimer,
   compressSession
 };
+

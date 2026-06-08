@@ -98,10 +98,6 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '../pages/index.html'));
 });
 
-app.get('/game', (req, res) => {
-  res.sendFile(path.join(__dirname, '../pages/game.html'));
-});
-
 app.get('/login', (req, res) => {
   res.sendFile(path.join(__dirname, '../pages/login.html'));
 });
@@ -115,16 +111,8 @@ app.get('/dashboard', requirePaidMember, (req, res) => {
   res.sendFile(path.join(__dirname, '../pages/dashboard.html'));
 });
 
-app.get('/simulator', requirePaidMember, (req, res) => {
-  res.sendFile(path.join(__dirname, '../pages/simulator.html'));
-});
-
 app.get('/intake', requirePaidMember, (req, res) => {
   res.sendFile(path.join(__dirname, '../pages/intake.html'));
-});
-
-app.get('/chart', requirePaidMember, (req, res) => {
-  res.sendFile(path.join(__dirname, '../pages/navigation-chart.html'));
 });
 
 app.get('/navigation-chart', requirePaidMember, (req, res) => {

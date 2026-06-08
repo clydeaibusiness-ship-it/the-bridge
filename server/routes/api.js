@@ -1,9 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const crypto = require('crypto');
-const { personalizeIntake, generateSituation, generateDebrief, commanderChat, generateConversationSummary, generateChart, getSoulVersion, compressSession } = require('../services/claude');
+const { personalizeIntake, commanderChat, generateConversationSummary, generateChart, getSoulVersion, compressSession } = require('../services/claude');
 const { 
-  saveGameState, getGameState, saveRunHistory, getRunHistory,
   upsertAnonymousEvent, getCommanderUsage, incrementCommanderUsage,
   saveCommanderMessage, getCommanderHistory, getLatestCommanderSessionId,
   getCommanderMessagesForApi,
@@ -16,39 +15,16 @@ const { extractUser, requireAuth } = require('../middleware/auth');
 // Apply auth extraction to all routes
 router.use(extractUser);
 
-// ---- Game API (no auth required) ----
-
 /**
- * POST /api/game/personalize
- * Intake personalization — ship name, destination, flavor text
- */
-router.post('/game/personalize', async (req, res) => {
-  try {
-    const { intake } = req.body;
-    if (!intake) return res.status(400).json({ error: 'Intake data required' });
-
-    const result = await personalizeIntake(intake);
-    res.json(result);
-  } catch (e) {
-    console.error('Personalize error:', e.message);
-    res.status(500).json({
-      ship_name: 'The Venture',
-      destination_name: 'North Star',
-      flavor_text: 'Your ship awaits, Captain.'
-    });
-  }
-});
-
-/**
- * POST /api/game/intake
+ * POST /api/intake/personalize
  * Intake personalization — reads Big Book of Strategy, returns
  * personalized ship name, destination, and industry key.
  * Falls back to generic defaults on failure.
  */
-router.post('/game/intake', async (req, res) => {
+router.post('/intake/personalize', async (req, res) => {
   try {
-    const { answers } = req.body;
-    if (!answers) return res.status(400).json({ error: 'Intake answers required' });
+    const { intake: answers } = req.body;
+    if (!answers) return res.status(400).json({ error: 'Intake data required' });
 
     const result = await personalizeIntake(answers);
     if (!result.industry_key) result.industry_key = 'general';
@@ -67,118 +43,6 @@ router.post('/game/intake', async (req, res) => {
       industry_key: 'general',
       flavor_text: 'Your business is waiting. The decisions ahead are yours to make.'
     });
-  }
-});
-
-/**
- * POST /api/game/situation
- * Generate a single personalized situation using Claude API
- */
-router.post('/game/situation', async (req, res) => {
-  const { businessContext, situationNumber, previousThemes } = req.body;
-
-  if (!businessContext || !situationNumber) {
-    return res.status(400).json({ error: 'businessContext and situationNumber required' });
-  }
-
-  try {
-    const situation = await generateSituation(
-      businessContext,
-      situationNumber,
-      previousThemes || []
-    );
-    res.json(situation);
-  } catch (e) {
-    console.error(`Situation ${situationNumber} generation failed:`, e.message);
-    try {
-      const fs = require('fs');
-      const path = require('path');
-      const staticData = JSON.parse(
-        fs.readFileSync(path.join(__dirname, '../../public/data/situations.json'), 'utf8')
-      );
-      const fallback = staticData.situations[situationNumber - 1];
-      if (fallback) {
-        console.log(`Falling back to static situation ${situationNumber}`);
-        res.json(fallback);
-      } else {
-        res.status(500).json({ error: 'No fallback available' });
-      }
-    } catch (fallbackErr) {
-      console.error('Static fallback also failed:', fallbackErr.message);
-      res.status(500).json({ error: 'Generation failed' });
-    }
-  }
-});
-
-/**
- * POST /api/game/debrief
- * Run-end debrief
- */
-router.post('/game/debrief', async (req, res) => {
-  try {
-    const { run_history, intake_answers, intakeAnswers, runSummary } = req.body;
-    const history = run_history || runSummary;
-    const intake = intake_answers || intakeAnswers;
-
-    if (!history) return res.status(400).json({ error: 'Run data required' });
-
-    let debriefText;
-    if (runSummary) {
-      const { callClaude } = require('../services/claude');
-      const prompt = `
-A captain's ship has been destroyed. Based on their run data
-and the Big Book of Strategy framework, produce a concise
-strategic debrief in plain English. Be direct and specific.
-Maximum 150 words. Reference their actual lever allocation.
-
-Run data:
-${JSON.stringify(runSummary, null, 2)}
-
-Intake answers:
-${JSON.stringify(intakeAnswers || {}, null, 2)}
-
-Format:
-What destroyed your ship: [one sentence]
-The pattern: [one sentence]
-The one thing: [one sentence]
-Your next run: [one sentence and a question]
-      `;
-      debriefText = await callClaude(prompt);
-    } else {
-      debriefText = await generateDebrief(history, intake);
-    }
-
-    const id = Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
-    res.json({ id, debrief: debriefText });
-  } catch (e) {
-    console.error('Debrief error:', e.message);
-    res.status(500).json({ error: 'Failed to generate debrief' });
-  }
-});
-
-/**
- * GET /api/game/state
- */
-router.get('/game/state', async (req, res) => {
-  res.json(null);
-});
-
-/**
- * POST /api/game/state
- */
-router.post('/game/state', async (req, res) => {
-  res.json({ saved: true });
-});
-
-/**
- * POST /api/game/save
- */
-router.post('/game/save', async (req, res) => {
-  try {
-    res.json({ success: true });
-  } catch (e) {
-    console.error('Save error:', e.message);
-    res.status(500).json({ error: 'Save failed' });
   }
 });
 
@@ -347,7 +211,6 @@ router.post('/member/commander/message', async (req, res) => {
 
     // Load actual intake data and run history from database
     let intakeContext = '';
-    const runHistory = [];
     if (req.dbUser) {
       const intake = await getIntake(req.dbUser.id);
       if (intake && (intake.intake_completed_at || intake.business_name || intake.industry || intake.business_description)) {
@@ -375,15 +238,11 @@ router.post('/member/commander/message', async (req, res) => {
           } catch (e) { /* chart parse failed, skip */ }
         }
       }
-
-      const runs = await getRunHistory(req.dbUser.id);
-      if (runs && runs.length > 0) runHistory.push(...runs);
     }
 
     const response = await commanderChat(
       message,
       {},
-      runHistory,
       intakeContext,
       conversationHistory,
       summaryContext,
@@ -557,7 +416,6 @@ router.get('/intake/data', async (req, res) => {
         chartSections: intake.chart_sections,
         scannedContent: intake.scanned_content,
         completedAt: intake.intake_completed_at,
-        simulatorResources: intake.simulator_resources,
         intakeAnswers: {
           businessName: intake.business_name,
           websiteUrl: intake.website_url,
@@ -615,7 +473,7 @@ router.post('/intake/save', async (req, res) => {
 
 /**
  * POST /api/session/save
- * Save full session state (intake + personalization + chart + simulator)
+ * Save full session state (intake + personalization + chart)
  * This is the single source of truth — replaces localStorage dependency
  */
 router.post('/session/save', async (req, res) => {
@@ -639,9 +497,7 @@ router.post('/session/save', async (req, res) => {
     if (session.industryKey !== undefined) update.industry_key = session.industryKey;
     if (session.businessContext !== undefined) update.business_context = session.businessContext;
     if (session.chartSections !== undefined) update.chart_sections = session.chartSections;
-    if (session.simulatorResources !== undefined) update.simulator_resources = session.simulatorResources;
     if (session.completedAt !== undefined) update.intake_completed_at = session.completedAt;
-
     if (session.scannedContent !== undefined) {
       update.scanned_content = session.scannedContent;
       if (session.scannedContent) {

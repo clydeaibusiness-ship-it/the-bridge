@@ -27,7 +27,7 @@ CREATE TABLE IF NOT EXISTS commander_summaries (
 
 CREATE INDEX IF NOT EXISTS idx_cmdr_sum_user ON commander_summaries(user_id, created_at DESC);
 
--- 3. Unified intake table (shared between simulator + navigation chart)
+-- 3. Unified intake table (navigation chart)
 CREATE TABLE IF NOT EXISTS user_intake (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   user_id UUID REFERENCES users(id) ON DELETE CASCADE UNIQUE,

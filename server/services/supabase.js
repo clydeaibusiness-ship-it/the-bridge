@@ -69,92 +69,6 @@ async function updateStripeCustomerId(userId, stripeCustomerId) {
   if (error) throw error;
 }
 
-// ---- Game State ----
-
-async function saveGameState(userId, state) {
-  const db = getClient();
-  if (!db) return null;
-
-  const record = {
-    user_id: userId,
-    ship_name: state.shipName,
-    destination_name: state.destinationName,
-    flavor_text: state.flavorText,
-    current_sector: state.sector || 1,
-    passenger_count: state.passengerCount || 0,
-    lever_config: state.levers,
-    momentum: state.stats?.momentum,
-    resilience: state.stats?.resilience,
-    clarity: state.stats?.clarity,
-    run_number: state.runNumber || 1,
-    last_saved: new Date().toISOString()
-  };
-
-  // Upsert — update if exists for this user
-  const { data, error } = await db
-    .from('game_state')
-    .upsert(record, { onConflict: 'user_id' })
-    .select()
-    .single();
-
-  if (error) throw error;
-  return data;
-}
-
-async function getGameState(userId) {
-  const db = getClient();
-  if (!db) return null;
-
-  const { data, error } = await db
-    .from('game_state')
-    .select('*')
-    .eq('user_id', userId)
-    .single();
-
-  if (error && error.code !== 'PGRST116') throw error;
-  return data;
-}
-
-// ---- Run History ----
-
-async function saveRunHistory(userId, run) {
-  const db = getClient();
-  if (!db) return null;
-
-  const { data, error } = await db
-    .from('run_history')
-    .insert({
-      user_id: userId,
-      run_number: run.runNumber,
-      threat_log: run.threatLog,
-      lever_decisions: run.leverDecisions,
-      final_momentum: run.finalStats?.momentum,
-      final_resilience: run.finalStats?.resilience,
-      final_clarity: run.finalStats?.clarity,
-      killing_threat: run.killingThreat,
-      debrief_text: run.debriefText
-    })
-    .select()
-    .single();
-
-  if (error) throw error;
-  return data;
-}
-
-async function getRunHistory(userId) {
-  const db = getClient();
-  if (!db) return [];
-
-  const { data, error } = await db
-    .from('run_history')
-    .select('*')
-    .eq('user_id', userId)
-    .order('completed_at', { ascending: false });
-
-  if (error) throw error;
-  return data || [];
-}
-
 // ---- Anonymous Events ----
 
 async function upsertAnonymousEvent(sessionData) {
@@ -450,7 +364,6 @@ async function upsertIntake(userId, answers) {
   if (answers._chartSections) record.chart_sections = answers._chartSections;
   if (answers._scannedContent) record.scanned_content = answers._scannedContent;
   if (answers._intakeCompletedAt) record.intake_completed_at = answers._intakeCompletedAt;
-  if (answers._simulatorResources) record.simulator_resources = answers._simulatorResources;
 
   const { data, error } = await db
     .from('user_intake')
@@ -577,8 +490,6 @@ async function sessionNoteExists(userId, sessionId) {
 module.exports = {
   getClient,
   createUser, getUserByClerkId, updateMembershipTier, updateStripeCustomerId,
-  saveGameState, getGameState,
-  saveRunHistory, getRunHistory,
   upsertAnonymousEvent, getWeeklyEvents,
   getCommanderUsage, incrementCommanderUsage,
   saveCommanderMessage, getCommanderHistory, getLatestCommanderSessionId,

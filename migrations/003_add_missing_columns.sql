@@ -17,17 +17,6 @@ ALTER TABLE user_intake ADD COLUMN IF NOT EXISTS exact_revenue INTEGER;
 ALTER TABLE user_intake ADD COLUMN IF NOT EXISTS exact_employee_count INTEGER;
 ALTER TABLE user_intake ADD COLUMN IF NOT EXISTS business_basics_completed BOOLEAN DEFAULT false;
 
--- Session/simulator fields
-ALTER TABLE user_intake ADD COLUMN IF NOT EXISTS ship_name TEXT;
-ALTER TABLE user_intake ADD COLUMN IF NOT EXISTS destination_name TEXT;
-ALTER TABLE user_intake ADD COLUMN IF NOT EXISTS industry_key TEXT;
-ALTER TABLE user_intake ADD COLUMN IF NOT EXISTS flavor_text TEXT;
-ALTER TABLE user_intake ADD COLUMN IF NOT EXISTS business_context TEXT;
-ALTER TABLE user_intake ADD COLUMN IF NOT EXISTS chart_sections JSONB;
-ALTER TABLE user_intake ADD COLUMN IF NOT EXISTS scanned_content TEXT;
-ALTER TABLE user_intake ADD COLUMN IF NOT EXISTS intake_completed_at TIMESTAMPTZ;
-ALTER TABLE user_intake ADD COLUMN IF NOT EXISTS simulator_resources JSONB;
-
 -- ============================================================
 -- commander_messages — soul_version column
 -- ============================================================
