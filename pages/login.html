@@ -5,17 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>The Bridge — Sign In</title>
   <script>
-    // Clerk hosts the sign-in UI at accounts.captainsbridge.io
     const params = new URLSearchParams(window.location.search);
-    const base = 'https://accounts.captainsbridge.io/sign-up';
+    const isProd = window.location.hostname === 'captainsbridge.io' || window.location.hostname === 'www.captainsbridge.io';
+    const base = isProd
+      ? 'https://accounts.captainsbridge.io/sign-up'
+      : 'https://obliging-python-5.accounts.dev/sign-up';
 
-    // 'action=subscribe' from landing page CTA → after signup go to /subscribe
     if (params.get('action') === 'subscribe') {
-      window.location.replace(base + '?redirect_url=' + encodeURIComponent('https://captainsbridge.io/subscribe'));
+      window.location.replace(base + '?redirect_url=' + encodeURIComponent(window.location.origin + '/subscribe'));
     } else {
-      // Default: after login/signup go to dashboard (server gate will catch free users)
       const returnTo = params.get('return') || '/dashboard';
-      window.location.replace(base + '?redirect_url=' + encodeURIComponent('https://captainsbridge.io' + returnTo));
+      window.location.replace(base + '?redirect_url=' + encodeURIComponent(window.location.origin + returnTo));
     }
   </script>
 </head>
