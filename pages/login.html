@@ -9,7 +9,7 @@
     const isProd = window.location.hostname === 'captainsbridge.io' || window.location.hostname === 'www.captainsbridge.io';
     const base = isProd
       ? 'https://accounts.captainsbridge.io/sign-up'
-      : 'https://obliging-python-5.accounts.dev/sign-up';
+      : 'https://regular-hawk-84.clerk.accounts.dev/sign-up';
 
     if (params.get('action') === 'subscribe') {
       window.location.replace(base + '?redirect_url=' + encodeURIComponent(window.location.origin + '/subscribe'));
