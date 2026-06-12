@@ -4,7 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>The Bridge — Business Intake</title>
-  <script>window.__clerk_publishable_key = 'pk_live_Y2xlcmsuY2FwdGFpbnNicmlkZ2UuaW8k';</script>
+  <script>
+    (function() {
+      var isProd = window.location.hostname === 'captainsbridge.io' || window.location.hostname === 'www.captainsbridge.io';
+      window.__clerk_publishable_key = isProd
+        ? 'pk_live_Y2xlcmsuY2FwdGFpbnNicmlkZ2UuaW8k'
+        : 'pk_test_Y2xlcmsub2JsaWdpbmctcHl0aG9uLTUuYWNjb3VudHMuZGV2JA==';
+    })();
+  </script>
   <script src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@5/dist/clerk.browser.js"></script>
   <script src="/js/session.js"></script>
   <link rel="stylesheet" href="/css/global.css">
