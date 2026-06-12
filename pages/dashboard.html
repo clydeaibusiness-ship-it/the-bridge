@@ -36,6 +36,8 @@
         <span class="site-nav-sep">|</span>
         <a href="/dashboard" class="nav-active">Dashboard</a>
         <span class="site-nav-sep">|</span>
+        <a href="/progress">Progress</a>
+        <span class="site-nav-sep">|</span>
         <a href="/api/auth/logout">Sign Out</a>
       </div>
       <button class="site-nav-hamburger" aria-label="Menu">
@@ -44,6 +46,7 @@
       <div class="site-nav-mobile" id="mobile-menu"><button class="site-nav-mobile-close" aria-label="Close">✕</button>
         <a href="/navigation-chart">Navigator</a>
         <a href="/dashboard" class="nav-active">Dashboard</a>
+        <a href="/progress">Progress</a>
         <a href="/api/auth/logout">Sign Out</a>
       </div>
     </nav>
@@ -477,5 +480,6 @@ Biggest uncertainty: ${a.uncertainty || 'unknown'}
     initDashboard();
   </script>
 <script src="/js/nav.js"></script>
+<script src="/js/checkin.js"></script>
 </body>
 </html>
