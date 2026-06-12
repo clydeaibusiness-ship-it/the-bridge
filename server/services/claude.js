@@ -410,6 +410,53 @@ ${formatted}`
 }
 
 /**
+ * Periodic report (every ~28 days) — a short 3-5 sentence reflection letter
+ * from the Commander, in voice, naming what has shifted, what is still
+ * unresolved, and what it is watching for next. Built from the benchmark arc,
+ * action step history, and recent session debriefs.
+ */
+async function generatePeriodicReport({ memberName, benchmarks = [], actionSteps = [], debriefs = [] }) {
+  const benchLines = benchmarks.map(b =>
+    `- "${b.statement}" — started at ${b.starting_rating ?? '?'}/10, now ${b.current_rating ?? b.starting_rating ?? '?'}/10`
+  ).join('\n') || '(no benchmarks set yet)';
+
+  const completed = actionSteps.filter(a => a.status === 'completed');
+  const active = actionSteps.filter(a => a.status === 'active');
+  const actionSummary =
+    `Completed ${completed.length}, still open ${active.length}.` +
+    (completed.length ? '\nRecently completed: ' + completed.slice(0, 3).map(a => `"${a.step_text}"`).join('; ') : '') +
+    (active.length ? '\nStill open: ' + active.slice(0, 3).map(a => `"${a.step_text}"`).join('; ') : '');
+
+  const debriefLines = debriefs.slice(0, 6).map(d => `- ${d.summary}`).join('\n') || '(no session reflections yet)';
+
+  const prompt = `Write a short reflection letter to ${memberName || 'this member'} as the Commander. Three to five sentences. Name what has shifted since they started, what is still unresolved, and what you are watching for next. Speak in your own voice — direct, warm, specific to what you see below. Do not use headers, bullet points, or a signature. Do not mention ratings as numbers; speak to the movement behind them.
+
+Their success statements and movement:
+${benchLines}
+
+Action steps:
+${actionSummary}
+
+Recent session reflections:
+${debriefLines}`;
+
+  const soulPrimer = getSoulPrimer();
+  const messages = [
+    ...(soulPrimer ? [{ role: 'user', content: '.' }, { role: 'assistant', content: soulPrimer }] : []),
+    { role: 'user', content: prompt }
+  ];
+
+  const response = await client.messages.create({
+    model: 'claude-sonnet-4-20250514',
+    max_tokens: 400,
+    messages
+  });
+
+  const textBlock = response.content.find(b => b.type === 'text');
+  return stripMarkdown(textBlock ? textBlock.text : '');
+}
+
+/**
  * Generate a summary of a conversation for long-term context
  */
 async function generateConversationSummary(messages) {
@@ -519,6 +566,7 @@ module.exports = {
   getSoulVersion,
   getSoulPrimer,
   compressSession,
-  generateSessionDebrief
+  generateSessionDebrief,
+  generatePeriodicReport
 };
 

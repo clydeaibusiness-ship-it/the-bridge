@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const crypto = require('crypto');
-const { personalizeIntake, commanderChat, generateConversationSummary, generateChart, getSoulVersion, compressSession, generateSessionDebrief } = require('../services/claude');
+const { personalizeIntake, commanderChat, generateConversationSummary, generateChart, getSoulVersion, compressSession, generateSessionDebrief, generatePeriodicReport } = require('../services/claude');
 const {
   upsertAnonymousEvent, getCommanderUsage, incrementCommanderUsage,
   saveCommanderMessage, getCommanderHistory, getLatestCommanderSessionId,
@@ -9,7 +9,13 @@ const {
   saveCommanderSummary, getLatestCommanderSummary,
   upsertIntake, getIntake,
   getCommanderSessionMessages, saveSessionNote, getSessionNotes, sessionNoteExists,
-  upsertSessionDebrief
+  upsertSessionDebrief,
+  ensureMemberState, updateMemberState,
+  getActionSteps, getActionStep, updateActionStepStatus, updateActionStepFollowUp,
+  getBenchmarks, addBenchmarkRating, getBenchmarkRatingHistory,
+  createCheckIn, getActiveCheckIn, getLastAnsweredCheckIn, answerCheckIn, snoozeCheckIn,
+  getSessionDebriefs,
+  getLatestPeriodicReport, savePeriodicReport
 } = require('../services/supabase');
 const { extractUser, requireAuth } = require('../middleware/auth');
 
@@ -570,6 +576,252 @@ router.post('/session/save', async (req, res) => {
   } catch (e) {
     console.error('Session save error:', e.message);
     res.status(500).json({ error: 'Save failed' });
+  }
+});
+
+// ============================================================
+// COACHING — Progress systems (benchmarks, check-ins, action
+// steps, progress view, periodic report)
+// ============================================================
+
+const SUBJECTIVE_PROMPTS = [
+  { key: 'money_stress', text: 'On a scale of 1 to 10, how stressed are you about money in the business right now?' },
+  { key: 'week_ownership', text: 'On a scale of 1 to 10, how much of your week felt like yours this week?' },
+  { key: 'direction_confidence', text: 'On a scale of 1 to 10, how confident do you feel about the direction you are heading?' }
+];
+
+const CHECK_IN_CADENCE_DAYS = 3;
+const SUBJECTIVE_EVERY_DAYS = 16;        // a subjective prompt roughly every 2-3 weeks
+const PERIODIC_REPORT_DAYS = 28;
+
+function daysSince(iso) {
+  if (!iso) return Infinity;
+  return (Date.now() - new Date(iso).getTime()) / (1000 * 60 * 60 * 24);
+}
+
+/**
+ * If nothing is already waiting and the cadence has elapsed, create the next
+ * due check-in. Metric check-ins rotate through the member's benchmarks
+ * (weakest first); when no benchmarks exist yet, fall back to a subjective
+ * prompt so the heartbeat still runs. Returns the active check-in (or null).
+ */
+async function ensureDueCheckIn(userId) {
+  const active = await getActiveCheckIn(userId);
+  if (active) return active;
+
+  const last = await getLastAnsweredCheckIn(userId);
+  if (daysSince(last?.answered_at) < CHECK_IN_CADENCE_DAYS) return null;
+
+  const benchmarks = await getBenchmarks(userId);
+
+  // Occasionally ask a subjective question instead of a metric one.
+  const wantSubjective = benchmarks.length === 0 || daysSince(last?.answered_at) >= SUBJECTIVE_EVERY_DAYS;
+
+  if (wantSubjective) {
+    const pick = SUBJECTIVE_PROMPTS[Math.floor(Date.now() / (1000 * 60 * 60 * 24)) % SUBJECTIVE_PROMPTS.length];
+    return await createCheckIn(userId, {
+      type: 'subjective', prompt_text: pick.text, subjective_key: pick.key
+    });
+  }
+
+  // Metric: focus the weakest (lowest current_rating) benchmark.
+  const target = [...benchmarks].sort((a, b) =>
+    (a.current_rating ?? a.starting_rating ?? 0) - (b.current_rating ?? b.starting_rating ?? 0)
+  )[0];
+
+  return await createCheckIn(userId, {
+    type: 'metric',
+    benchmark_id: target.id,
+    prompt_text: `On a scale of 1 to 10, how close does this feel right now: "${target.statement}"?`
+  });
+}
+
+/**
+ * Generate the 28-day periodic report in the background if one is due and
+ * there is enough material to reflect on. Non-blocking.
+ */
+async function maybeGeneratePeriodicReport(userId, memberState, benchmarks, debriefs) {
+  const latest = await getLatestPeriodicReport(userId);
+  const anchorIso = latest?.created_at || memberState?.coaching_started_at;
+  if (daysSince(anchorIso) < PERIODIC_REPORT_DAYS) return;
+  if (benchmarks.length === 0 && debriefs.length === 0) return; // nothing to say yet
+
+  runBackground('periodic-report', async () => {
+    const actionSteps = await getActionSteps(userId);
+    const letter = await generatePeriodicReport({
+      memberName: null, benchmarks, actionSteps, debriefs
+    });
+    if (letter) {
+      const periodStart = anchorIso || null;
+      await savePeriodicReport(userId, letter, periodStart, new Date().toISOString());
+      await updateMemberState(userId, { last_periodic_report_at: new Date().toISOString() });
+    }
+  });
+}
+
+/**
+ * GET /api/member/progress
+ * Everything the progress view needs in one call.
+ */
+router.get('/member/progress', async (req, res) => {
+  if (!req.dbUser) return res.json({ authenticated: false });
+  try {
+    const userId = req.dbUser.id;
+    const memberState = await ensureMemberState(userId);
+    const [benchmarks, ratingHistory, actionSteps, debriefs, periodicReport] = await Promise.all([
+      getBenchmarks(userId),
+      getBenchmarkRatingHistory(userId),
+      getActionSteps(userId),
+      getSessionDebriefs(userId, 20),
+      getLatestPeriodicReport(userId)
+    ]);
+
+    // Lazy: kick off a periodic report if one is due (non-blocking).
+    maybeGeneratePeriodicReport(userId, memberState, benchmarks, debriefs);
+
+    res.json({
+      authenticated: true,
+      stages: {
+        stage_1: !!memberState?.stage_1_complete,
+        stage_2: !!memberState?.stage_2_complete,
+        stage_3: !!memberState?.stage_3_complete
+      },
+      benchmarks: benchmarks.map(b => ({
+        id: b.id, statement: b.statement, position: b.position,
+        starting_rating: b.starting_rating, current_rating: b.current_rating
+      })),
+      ratingHistory,
+      actionSteps: {
+        active: actionSteps.filter(a => a.status === 'active'),
+        completed: actionSteps.filter(a => a.status === 'completed'),
+        did_not_happen: actionSteps.filter(a => a.status === 'did_not_happen')
+      },
+      reflections: debriefs.map(d => ({ id: d.id, summary: d.summary, created_at: d.created_at })),
+      periodicReport: periodicReport
+        ? { letter: periodicReport.letter, created_at: periodicReport.created_at, read: periodicReport.read }
+        : null
+    });
+  } catch (e) {
+    console.error('Progress error:', e.message);
+    res.status(500).json({ error: 'Could not load progress' });
+  }
+});
+
+/**
+ * GET /api/member/check-in
+ * The check-in to show right now, if any. Creates one if the cadence is due.
+ */
+router.get('/member/check-in', async (req, res) => {
+  if (!req.dbUser) return res.json({ checkIn: null });
+  try {
+    const checkIn = await ensureDueCheckIn(req.dbUser.id);
+    res.json({ checkIn: checkIn || null });
+  } catch (e) {
+    console.error('Check-in fetch error:', e.message);
+    res.json({ checkIn: null });
+  }
+});
+
+/**
+ * POST /api/member/check-in/answer
+ * Body: { checkInId, rating?, choice?, text_answer? }
+ */
+router.post('/member/check-in/answer', async (req, res) => {
+  if (!req.dbUser) return res.status(401).json({ error: 'Authentication required' });
+  try {
+    const { checkInId, rating, choice, text_answer } = req.body;
+    if (!checkInId) return res.status(400).json({ error: 'checkInId required' });
+
+    const answered = await answerCheckIn(checkInId, {
+      rating: rating ?? null, choice: choice ?? null, text_answer: text_answer ?? null
+    });
+
+    // A metric rating updates the benchmark arc.
+    if (answered && answered.type === 'metric' && answered.benchmark_id && typeof rating === 'number') {
+      await addBenchmarkRating(req.dbUser.id, answered.benchmark_id, rating, 'check_in');
+    }
+    // An action follow-up records onto the action step.
+    // Status only changes on an explicit choice; a text-only "how did it go?"
+    // answer (the prompt shown after a step is already marked done) records a
+    // note without disturbing the existing status.
+    if (answered && answered.type === 'action_followup' && answered.action_step_id) {
+      if (choice === 'did_not_happen') {
+        await updateActionStepStatus(answered.action_step_id, 'did_not_happen', text_answer ?? null);
+      } else if (choice === 'done') {
+        await updateActionStepStatus(answered.action_step_id, 'completed', text_answer ?? null);
+      } else if (text_answer) {
+        await updateActionStepFollowUp(answered.action_step_id, text_answer);
+      }
+    }
+
+    res.json({ ok: true });
+  } catch (e) {
+    console.error('Check-in answer error:', e.message);
+    res.status(500).json({ error: 'Could not record answer' });
+  }
+});
+
+/**
+ * POST /api/member/check-in/snooze
+ * Body: { checkInId }
+ */
+router.post('/member/check-in/snooze', async (req, res) => {
+  if (!req.dbUser) return res.status(401).json({ error: 'Authentication required' });
+  try {
+    const { checkInId } = req.body;
+    if (!checkInId) return res.status(400).json({ error: 'checkInId required' });
+    await snoozeCheckIn(checkInId, 24);
+    res.json({ ok: true });
+  } catch (e) {
+    console.error('Check-in snooze error:', e.message);
+    res.status(500).json({ error: 'Could not snooze' });
+  }
+});
+
+/**
+ * GET /api/member/action-steps
+ */
+router.get('/member/action-steps', async (req, res) => {
+  if (!req.dbUser) return res.json({ active: [], completed: [] });
+  try {
+    const steps = await getActionSteps(req.dbUser.id);
+    res.json({
+      active: steps.filter(s => s.status === 'active'),
+      completed: steps.filter(s => s.status === 'completed'),
+      did_not_happen: steps.filter(s => s.status === 'did_not_happen')
+    });
+  } catch (e) {
+    console.error('Action steps fetch error:', e.message);
+    res.json({ active: [], completed: [] });
+  }
+});
+
+/**
+ * POST /api/member/action-steps/:id/complete
+ * Marks complete and triggers an immediate Type 2 (action follow-up) check-in.
+ */
+router.post('/member/action-steps/:id/complete', async (req, res) => {
+  if (!req.dbUser) return res.status(401).json({ error: 'Authentication required' });
+  try {
+    const stepId = req.params.id;
+    const step = await getActionStep(stepId);
+    if (!step || step.user_id !== req.dbUser.id) {
+      return res.status(404).json({ error: 'Action step not found' });
+    }
+
+    await updateActionStepStatus(stepId, 'completed');
+
+    // Immediate Type 2 check-in: "How did it go?" (optional text).
+    await createCheckIn(req.dbUser.id, {
+      type: 'action_followup',
+      action_step_id: stepId,
+      prompt_text: `You marked this done: "${step.step_text}". How did it go?`
+    });
+
+    res.json({ ok: true });
+  } catch (e) {
+    console.error('Action step complete error:', e.message);
+    res.status(500).json({ error: 'Could not complete action step' });
   }
 });
 
