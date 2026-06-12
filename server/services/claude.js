@@ -178,7 +178,7 @@ ${JSON.stringify(intakeAnswers, null, 2)}`;
  * Commander chat — strategic advice with full business context.
  * Now supports conversation history passed as messages array.
  */
-async function commanderChat(message, gameState, sessionContext, conversationHistory, summaryContext, sessionNotesContext) {
+async function commanderChat(message, gameState, sessionContext, conversationHistory, summaryContext, sessionNotesContext, persist = {}) {
   // Build pure data context — no behavioral instructions.
   // The soul file is the ONLY source of behavioral directives.
   let context = '';
@@ -213,7 +213,9 @@ async function commanderChat(message, gameState, sessionContext, conversationHis
   // Debug: log role sequence so future issues are immediately visible in Railway logs
   console.log('Commander message roles:', messages.map(m => m.role).join(' → '));
 
-  // Case study retrieval tool
+  // Tools the Commander can call.
+  // fetch_case_study: read-only retrieval, executed and returned to the model.
+  // save_action_step: side-effecting, persists the member's commitment.
   const tools = [
     {
       name: 'fetch_case_study',
@@ -234,10 +236,30 @@ async function commanderChat(message, gameState, sessionContext, conversationHis
         },
         required: ['lever_tags', 'problem_tags']
       }
+    },
+    {
+      name: 'save_action_step',
+      description: "Call this when the member commits to a specific, concrete action they will take before your next conversation. Save it in their exact words, not your paraphrase. Do not invent action steps the member did not volunteer, and never save more than two in a single conversation. After saving, confirm to the member in your own voice.",
+      input_schema: {
+        type: 'object',
+        properties: {
+          step_text: {
+            type: 'string',
+            description: "The action the member committed to, in their exact words"
+          },
+          target_date: {
+            type: 'string',
+            description: "Optional target completion date in YYYY-MM-DD form, only if the member gave one"
+          }
+        },
+        required: ['step_text']
+      }
     }
   ];
 
-  const response = await client.messages.create({
+  // Tool loop: keep returning tool results until the model produces a final
+  // text answer (or we hit the safety guard). Handles multiple tools per turn.
+  let response = await client.messages.create({
     model: 'claude-sonnet-4-20250514',
     max_tokens: 400,
     system: fullSystem,
@@ -245,78 +267,146 @@ async function commanderChat(message, gameState, sessionContext, conversationHis
     tools
   });
 
-  // Check if the Commander wants to fetch a case study
-  const toolUseBlock = response.content.find(b => b.type === 'tool_use' && b.name === 'fetch_case_study');
+  let guard = 0;
+  while (guard < 4) {
+    const toolUseBlocks = response.content.filter(b => b.type === 'tool_use');
+    if (toolUseBlocks.length === 0) break;
+    guard++;
+    const toolResults = [];
 
-  if (toolUseBlock) {
-    // Fetch the case study from Supabase
-    let caseStudyText = '';
-    try {
-      const { getClient } = require('./supabase');
-      const db = getClient();
-      if (db) {
-        const { data } = await db
-          .from('case_studies')
-          .select('title, source_book, source_author, story, lever_tags, problem_tags');
-
-        if (data && data.length > 0) {
-          const inputTags = toolUseBlock.input;
-          let bestMatch = null;
-          let bestScore = 0;
-
-          for (const cs of data) {
-            let score = 0;
-            if (inputTags.lever_tags && cs.lever_tags) {
-              for (const tag of inputTags.lever_tags) {
-                if (cs.lever_tags.some(lt => lt.toLowerCase() === tag.toLowerCase())) score += 2;
-              }
-            }
-            if (inputTags.problem_tags && cs.problem_tags) {
-              for (const tag of inputTags.problem_tags) {
-                const tagLower = tag.toLowerCase();
-                if (cs.problem_tags.some(pt => pt.toLowerCase().includes(tagLower) || tagLower.includes(pt.toLowerCase()))) score += 1;
-              }
-            }
-            if (score > bestScore) { bestScore = score; bestMatch = cs; }
-          }
-
-          if (bestMatch) {
-            caseStudyText = `[Case Study: ${bestMatch.title} — from ${bestMatch.source_book} by ${bestMatch.source_author}]\n${bestMatch.story}`;
+    for (const block of toolUseBlocks) {
+      if (block.name === 'fetch_case_study') {
+        const story = await fetchCaseStudyStory(block.input);
+        toolResults.push({
+          type: 'tool_result',
+          tool_use_id: block.id,
+          content: story || 'No matching case study found.'
+        });
+      } else if (block.name === 'save_action_step') {
+        if (persist && persist.userId) {
+          try {
+            const { saveActionStep } = require('./supabase');
+            await saveActionStep(
+              persist.userId,
+              block.input.step_text,
+              persist.sessionId || null,
+              block.input.target_date || null
+            );
+          } catch (asErr) {
+            console.error('save_action_step error:', asErr.message);
           }
         }
+        toolResults.push({
+          type: 'tool_result',
+          tool_use_id: block.id,
+          content: 'Action step saved.'
+        });
+      } else {
+        toolResults.push({
+          type: 'tool_result',
+          tool_use_id: block.id,
+          content: 'OK.'
+        });
       }
-    } catch (csErr) {
-      console.error('Case study fetch error:', csErr.message);
     }
 
-    // Send the tool result back to get the final response
-    const textBlock = response.content.find(b => b.type === 'text');
-    const followUp = await client.messages.create({
+    messages.push({ role: 'assistant', content: response.content });
+    messages.push({ role: 'user', content: toolResults });
+
+    response = await client.messages.create({
       model: 'claude-sonnet-4-20250514',
       max_tokens: 400,
       system: fullSystem,
-      messages: [
-        ...messages,
-        { role: 'assistant', content: response.content },
-        {
-          role: 'user',
-          content: [{
-            type: 'tool_result',
-            tool_use_id: toolUseBlock.id,
-            content: caseStudyText || 'No matching case study found.'
-          }]
-        }
-      ],
+      messages,
       tools
     });
-
-    const finalText = followUp.content.find(b => b.type === 'text');
-    return stripMarkdown(finalText ? finalText.text : (textBlock ? textBlock.text : ''));
   }
 
-  // No tool call — return text directly
   const textBlock = response.content.find(b => b.type === 'text');
   return stripMarkdown(textBlock ? textBlock.text : '');
+}
+
+/**
+ * Score the case study library against the model's lever/problem tags and
+ * return the best-matching story formatted for a tool_result, or '' if none.
+ */
+async function fetchCaseStudyStory(inputTags) {
+  try {
+    const { getClient } = require('./supabase');
+    const db = getClient();
+    if (!db) return '';
+
+    const { data } = await db
+      .from('case_studies')
+      .select('title, source_book, source_author, story, lever_tags, problem_tags');
+
+    if (!data || data.length === 0) return '';
+
+    let bestMatch = null;
+    let bestScore = 0;
+
+    for (const cs of data) {
+      let score = 0;
+      if (inputTags.lever_tags && cs.lever_tags) {
+        for (const tag of inputTags.lever_tags) {
+          if (cs.lever_tags.some(lt => lt.toLowerCase() === tag.toLowerCase())) score += 2;
+        }
+      }
+      if (inputTags.problem_tags && cs.problem_tags) {
+        for (const tag of inputTags.problem_tags) {
+          const tagLower = tag.toLowerCase();
+          if (cs.problem_tags.some(pt => pt.toLowerCase().includes(tagLower) || tagLower.includes(pt.toLowerCase()))) score += 1;
+        }
+      }
+      if (score > bestScore) { bestScore = score; bestMatch = cs; }
+    }
+
+    if (bestMatch && bestScore > 0) {
+      return `[Case Study: ${bestMatch.title} — from ${bestMatch.source_book} by ${bestMatch.source_author}]\n${bestMatch.story}`;
+    }
+    return '';
+  } catch (csErr) {
+    console.error('Case study fetch error:', csErr.message);
+    return '';
+  }
+}
+
+/**
+ * Background debrief (Haiku) — runs after a Commander response without
+ * blocking the member-facing reply. Produces a short member-facing summary,
+ * a meaningful-shift signal, and one unresolved thread for the next session.
+ * Returns { summary, shift_detected, unresolved_item }.
+ */
+async function generateSessionDebrief(conversationMessages) {
+  const formatted = conversationMessages.map(m => {
+    const role = (m.role || m.message_role) === 'user' ? 'Member' : 'Commander';
+    return `${role}: ${m.content || m.message_content}`;
+  }).join('\n\n');
+
+  const response = await client.messages.create({
+    model: 'claude-haiku-4-5',
+    max_tokens: 400,
+    system: 'You are quietly reflecting on a conversation between a small-business owner (Member) and their advisor (Commander). Return only a JSON object, no markdown, no backticks, no prose.',
+    messages: [{
+      role: 'user',
+      content: `From this conversation, return JSON exactly in this shape:
+{
+  "summary": "two or three sentences, written for the member, naming what was decided or uncovered",
+  "shift_detected": true or false — true only if the member reported completing something significant, described a notable change, or began asking a qualitatively different kind of question than before,
+  "unresolved_item": "one open thread to surface at the start of the next session, or null if nothing is open"
+}
+
+Conversation:
+${formatted}`
+    }]
+  });
+
+  const text = response.content[0].text;
+  const jsonMatch = text.match(/\{[\s\S]*\}/);
+  if (!jsonMatch) {
+    throw new Error('generateSessionDebrief: non-JSON response: ' + text.substring(0, 200));
+  }
+  return JSON.parse(jsonMatch[0]);
 }
 
 /**
@@ -428,6 +518,7 @@ module.exports = {
   generateChart,
   getSoulVersion,
   getSoulPrimer,
-  compressSession
+  compressSession,
+  generateSessionDebrief
 };
 

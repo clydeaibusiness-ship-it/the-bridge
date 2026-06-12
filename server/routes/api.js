@@ -1,16 +1,29 @@
 const express = require('express');
 const router = express.Router();
 const crypto = require('crypto');
-const { personalizeIntake, commanderChat, generateConversationSummary, generateChart, getSoulVersion, compressSession } = require('../services/claude');
-const { 
+const { personalizeIntake, commanderChat, generateConversationSummary, generateChart, getSoulVersion, compressSession, generateSessionDebrief } = require('../services/claude');
+const {
   upsertAnonymousEvent, getCommanderUsage, incrementCommanderUsage,
   saveCommanderMessage, getCommanderHistory, getLatestCommanderSessionId,
   getCommanderMessagesForApi,
   saveCommanderSummary, getLatestCommanderSummary,
   upsertIntake, getIntake,
-  getCommanderSessionMessages, saveSessionNote, getSessionNotes, sessionNoteExists
+  getCommanderSessionMessages, saveSessionNote, getSessionNotes, sessionNoteExists,
+  upsertSessionDebrief
 } = require('../services/supabase');
 const { extractUser, requireAuth } = require('../middleware/auth');
+
+// Keep fire-and-forget background work referenced until it resolves, so it is
+// not garbage-collected mid-flight under Railway memory pressure / redeploys.
+const _inFlight = new Set();
+function runBackground(label, fn) {
+  const p = (async () => {
+    try { await fn(); }
+    catch (e) { console.error(`Background task [${label}] failed:`, e.message); }
+    finally { _inFlight.delete(p); }
+  })();
+  _inFlight.add(p);
+}
 
 // Apply auth extraction to all routes
 router.use(extractUser);
@@ -246,13 +259,35 @@ router.post('/member/commander/message', async (req, res) => {
       intakeContext,
       conversationHistory,
       summaryContext,
-      sessionNotesContext
+      sessionNotesContext,
+      { userId: req.dbUser ? req.dbUser.id : null, sessionId }
     );
 
     // Save assistant response tagged with current soul version
     if (req.dbUser && sessionId) {
       const soulVersion = getSoulVersion();
       await saveCommanderMessage(req.dbUser.id, sessionId, 'assistant', response, soulVersion);
+
+      // Background pass (non-blocking): the second of the three API calls.
+      // A Haiku call reflects on the exchange, checks for a meaningful shift,
+      // and writes a member-facing debrief for the progress view. Never blocks
+      // or affects the response already being returned to the member.
+      const userId = req.dbUser.id;
+      const debriefMessages = [
+        ...conversationHistory,
+        { role: 'user', content: message },
+        { role: 'assistant', content: response }
+      ];
+      runBackground('session-debrief', async () => {
+        const debrief = await generateSessionDebrief(debriefMessages);
+        await upsertSessionDebrief(
+          userId,
+          sessionId,
+          debrief.summary,
+          !!debrief.shift_detected,
+          debrief.unresolved_item || null
+        );
+      });
     }
 
     res.json({ response });

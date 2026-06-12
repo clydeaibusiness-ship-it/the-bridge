@@ -487,6 +487,82 @@ async function sessionNoteExists(userId, sessionId) {
   return data && data.length > 0;
 }
 
+// ---- Action Steps (coaching system) ----
+
+/**
+ * Save an action step the member committed to during a Commander conversation.
+ * Stores the member's exact words. Called when the Commander invokes the
+ * save_action_step tool.
+ */
+async function saveActionStep(userId, stepText, sourceSessionId = null, targetDate = null) {
+  const db = getClient();
+  if (!db) return null;
+
+  const { data, error } = await db
+    .from('action_steps')
+    .insert({
+      user_id: userId,
+      step_text: stepText,
+      source_session_id: sourceSessionId,
+      target_date: targetDate,
+      status: 'active'
+    })
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Save action step error:', error.message);
+    return null;
+  }
+  return data;
+}
+
+// ---- Session Debriefs (coaching system) ----
+
+/**
+ * Insert or update the member-facing debrief for a session.
+ * One row per session_id — the latest background pass replaces the prior
+ * summary rather than flooding the table with a row per message.
+ */
+async function upsertSessionDebrief(userId, sessionId, summary, shiftDetected = false, unresolvedItem = null) {
+  const db = getClient();
+  if (!db) return null;
+
+  // Look for an existing debrief for this session
+  const { data: existing } = await db
+    .from('session_debriefs')
+    .select('id')
+    .eq('user_id', userId)
+    .eq('session_id', sessionId)
+    .limit(1);
+
+  if (existing && existing.length > 0) {
+    const { data, error } = await db
+      .from('session_debriefs')
+      .update({ summary, shift_detected: shiftDetected, unresolved_item: unresolvedItem })
+      .eq('id', existing[0].id)
+      .select()
+      .single();
+    if (error) { console.error('Update session debrief error:', error.message); return null; }
+    return data;
+  }
+
+  const { data, error } = await db
+    .from('session_debriefs')
+    .insert({
+      user_id: userId,
+      session_id: sessionId,
+      summary,
+      shift_detected: shiftDetected,
+      unresolved_item: unresolvedItem
+    })
+    .select()
+    .single();
+
+  if (error) { console.error('Insert session debrief error:', error.message); return null; }
+  return data;
+}
+
 module.exports = {
   getClient,
   createUser, getUserByClerkId, updateMembershipTier, updateStripeCustomerId,
@@ -496,5 +572,6 @@ module.exports = {
   getCommanderMessagesForApi,
   saveCommanderSummary, getLatestCommanderSummary,
   upsertIntake, getIntake,
-  getCommanderSessionMessages, saveSessionNote, getSessionNotes, sessionNoteExists
+  getCommanderSessionMessages, saveSessionNote, getSessionNotes, sessionNoteExists,
+  saveActionStep, upsertSessionDebrief
 };
