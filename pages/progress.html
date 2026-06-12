@@ -207,7 +207,34 @@
           '<div class="pg-letter-date">' + fmtDate(data.periodicReport.created_at) + '</div></div></div>';
       }
 
+      // Privacy disclosure + opt-out
+      const optedOut = !!(data.privacy && data.privacy.optOut);
+      html += '<div class="pg-block"><div class="pg-block-title">Privacy</div>' +
+        '<p style="font-family:var(--font-ui);font-size:0.75rem;color:#7a7570;line-height:1.6;margin-bottom:0.75rem;">' +
+        'Your answers are saved anonymously to help us improve The Bridge and show future members what kind of progress is possible. Nothing is tied to your name.</p>' +
+        '<button id="pg-optout" class="pg-step-check" style="background:transparent;color:#3a3530;border:1px solid #c8c0b0;">' +
+        (optedOut ? 'Opted out · turn back on' : 'Opt out of anonymous data') + '</button></div>';
+
       body.innerHTML = html;
+
+      // Wire privacy opt-out toggle
+      const optBtn = document.getElementById('pg-optout');
+      if (optBtn) {
+        let isOut = optedOut;
+        optBtn.addEventListener('click', async () => {
+          optBtn.disabled = true;
+          try {
+            const r = await fetch('/api/member/privacy/opt-out', {
+              method: 'POST', headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ optOut: !isOut })
+            });
+            const j = await r.json();
+            isOut = !!j.optOut;
+            optBtn.textContent = isOut ? 'Opted out · turn back on' : 'Opt out of anonymous data';
+          } catch (e) { /* leave as-is */ }
+          optBtn.disabled = false;
+        });
+      }
 
       // Wire "Mark done" buttons
       body.querySelectorAll('[data-complete]').forEach(btn => {

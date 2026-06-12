@@ -15,8 +15,23 @@ const {
   getBenchmarks, addBenchmarkRating, getBenchmarkRatingHistory,
   createCheckIn, getActiveCheckIn, getLastAnsweredCheckIn, answerCheckIn, snoozeCheckIn,
   getSessionDebriefs,
-  getLatestPeriodicReport, savePeriodicReport
+  getLatestPeriodicReport, savePeriodicReport,
+  insertAnonymousAggregate
 } = require('../services/supabase');
+
+/**
+ * Record a de-identified event for aggregate metrics, respecting the member's
+ * opt-out. Runs in the background; never stores a user identifier.
+ */
+function recordAnonymous(userId, eventType, payload) {
+  runBackground('anon-' + eventType, async () => {
+    const state = await ensureMemberState(userId);
+    if (!state || state.anonymous_data_opt_out) return;
+    let industry = null;
+    try { const intake = await getIntake(userId); industry = intake?.industry || null; } catch (e) {}
+    await insertAnonymousAggregate(eventType, industry, payload);
+  });
+}
 const { extractUser, requireAuth } = require('../middleware/auth');
 
 // Keep fire-and-forget background work referenced until it resolves, so it is
@@ -699,7 +714,8 @@ router.get('/member/progress', async (req, res) => {
       reflections: debriefs.map(d => ({ id: d.id, summary: d.summary, created_at: d.created_at })),
       periodicReport: periodicReport
         ? { letter: periodicReport.letter, created_at: periodicReport.created_at, read: periodicReport.read }
-        : null
+        : null,
+      privacy: { optOut: !!memberState?.anonymous_data_opt_out }
     });
   } catch (e) {
     console.error('Progress error:', e.message);
@@ -739,6 +755,10 @@ router.post('/member/check-in/answer', async (req, res) => {
     // A metric rating updates the benchmark arc.
     if (answered && answered.type === 'metric' && answered.benchmark_id && typeof rating === 'number') {
       await addBenchmarkRating(req.dbUser.id, answered.benchmark_id, rating, 'check_in');
+      recordAnonymous(req.dbUser.id, 'benchmark_progress', { rating });
+    }
+    if (answered && answered.type === 'subjective' && typeof rating === 'number') {
+      recordAnonymous(req.dbUser.id, 'subjective_rating', { key: answered.subjective_key, rating });
     }
     // An action follow-up records onto the action step.
     // Status only changes on an explicit choice; a text-only "how did it go?"
@@ -747,8 +767,10 @@ router.post('/member/check-in/answer', async (req, res) => {
     if (answered && answered.type === 'action_followup' && answered.action_step_id) {
       if (choice === 'did_not_happen') {
         await updateActionStepStatus(answered.action_step_id, 'did_not_happen', text_answer ?? null);
+        recordAnonymous(req.dbUser.id, 'action_completion', { status: 'did_not_happen' });
       } else if (choice === 'done') {
         await updateActionStepStatus(answered.action_step_id, 'completed', text_answer ?? null);
+        recordAnonymous(req.dbUser.id, 'action_completion', { status: 'completed' });
       } else if (text_answer) {
         await updateActionStepFollowUp(answered.action_step_id, text_answer);
       }
@@ -775,6 +797,24 @@ router.post('/member/check-in/snooze', async (req, res) => {
   } catch (e) {
     console.error('Check-in snooze error:', e.message);
     res.status(500).json({ error: 'Could not snooze' });
+  }
+});
+
+/**
+ * POST /api/member/privacy/opt-out
+ * Body: { optOut: boolean }. Toggles anonymous aggregate data collection.
+ * Opting out never affects access or the member's benchmark.
+ */
+router.post('/member/privacy/opt-out', async (req, res) => {
+  if (!req.dbUser) return res.status(401).json({ error: 'Authentication required' });
+  try {
+    const optOut = !!req.body.optOut;
+    await ensureMemberState(req.dbUser.id);
+    await updateMemberState(req.dbUser.id, { anonymous_data_opt_out: optOut });
+    res.json({ ok: true, optOut });
+  } catch (e) {
+    console.error('Privacy opt-out error:', e.message);
+    res.status(500).json({ error: 'Could not update preference' });
   }
 });
 
@@ -810,6 +850,7 @@ router.post('/member/action-steps/:id/complete', async (req, res) => {
     }
 
     await updateActionStepStatus(stepId, 'completed');
+    recordAnonymous(req.dbUser.id, 'action_completion', { status: 'completed' });
 
     // Immediate Type 2 check-in: "How did it go?" (optional text).
     await createCheckIn(req.dbUser.id, {

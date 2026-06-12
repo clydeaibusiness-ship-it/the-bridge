@@ -837,6 +837,23 @@ async function savePeriodicReport(userId, letter, periodStart, periodEnd) {
   return data;
 }
 
+// ---- Anonymous aggregate data (no personal identifiers) ----
+
+/**
+ * Record a de-identified event for product/social-proof metrics.
+ * Callers must check member_state.anonymous_data_opt_out first — no user_id
+ * is ever stored here.
+ */
+async function insertAnonymousAggregate(eventType, industry = null, payload = null) {
+  const db = getClient();
+  if (!db) return null;
+  const { error } = await db
+    .from('anonymous_aggregate_data')
+    .insert({ event_type: eventType, industry, payload });
+  if (error) { console.error('insertAnonymousAggregate error:', error.message); return null; }
+  return true;
+}
+
 module.exports = {
   getClient,
   createUser, getUserByClerkId, updateMembershipTier, updateStripeCustomerId,
@@ -853,5 +870,6 @@ module.exports = {
   getBenchmarks, addBenchmarkRating, getBenchmarkRatingHistory,
   createCheckIn, getActiveCheckIn, getLastAnsweredCheckIn, answerCheckIn, snoozeCheckIn,
   getSessionDebriefs,
-  getLatestPeriodicReport, savePeriodicReport
+  getLatestPeriodicReport, savePeriodicReport,
+  insertAnonymousAggregate
 };
