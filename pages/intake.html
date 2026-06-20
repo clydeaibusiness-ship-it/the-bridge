@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>The Bridge — Business Intake</title>
+  <title>The Bridge — The Interview</title>
   <script>var _isProd = location.hostname === 'captainsbridge.io' || location.hostname === 'www.captainsbridge.io'; window.__clerk_publishable_key = _isProd ? 'pk_live_Y2xlcmsuY2FwdGFpbnNicmlkZ2UuaW8k' : 'pk_test_b2JsaWdpbmctcHl0aG9uLTUuY2xlcmsuYWNjb3VudHMuZGV2JA';</script>
   <script src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@5/dist/clerk.browser.js"></script>
   <script src="/js/session.js"></script>
@@ -11,254 +11,210 @@
   <link rel="stylesheet" href="/css/nav.css">
   <style>
     html, body { overflow: visible !important; height: auto !important; background: #f5f0e8 !important; color: #0a0a0f !important; }
-    .intake-page { max-width: 520px; margin: 0 auto; padding: 48px 20px 80px; }
-    .intake-heading { font-family: var(--font-ui); font-size: var(--text-lg); font-weight: 500; color: #0a0a0f; margin-bottom: 8px; }
-    .intake-sub { font-family: var(--font-ui); font-size: var(--text-sm); color: #7a7570; line-height: 1.55; margin-bottom: 32px; }
-    .intake-form { display: flex; flex-direction: column; gap: 20px; }
-    .field { display: flex; flex-direction: column; gap: 6px; }
-    .field label { font-family: var(--font-ui); font-size: var(--text-sm); color: #0a0a0f; font-weight: 400; }
-    .field input, .field select, .field textarea {
-      font-family: var(--font-ui); font-size: var(--text-base); color: #0a0a0f;
-      background: #ece7dc; border: 1px solid #c8c0b0; border-radius: 6px;
-      padding: 12px 14px; min-height: 48px; outline: none; transition: border-color 0.2s; -webkit-appearance: none;
-    }
-    .field input::placeholder, .field textarea::placeholder { color: #7a7570; }
-    .field input:focus, .field select:focus, .field textarea:focus { border-color: #3a3530; }
-    .field textarea { resize: vertical; min-height: 72px; }
-    .btn-submit {
-      font-family: var(--font-ui); font-size: var(--text-base); font-weight: 500; letter-spacing: 0.06em;
-      color: #f0ebe0; background: #0a0a0f; border: none; border-radius: 6px;
-      padding: 14px 32px; min-height: 48px; cursor: pointer; width: 100%; margin-top: 8px;
-      transition: background 0.2s, transform 0.1s;
-    }
-    .btn-submit:active { transform: scale(0.97); background: #1e1e2a; }
-    .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; }
-    .loading-msg { font-family: var(--font-data); font-size: var(--text-xs); letter-spacing: 0.1em; color: #7a7570; text-transform: uppercase; text-align: center; margin-top: 12px; display: none; }
-    .loading-msg.visible { display: block; }
-    .prefill-notice {
-      font-family: var(--font-ui); font-size: var(--text-sm); color: #3a3530;
-      background: #ece7dc; border: 1px solid #c8c0b0; border-radius: 6px;
-      padding: 12px 14px; margin-bottom: 8px; line-height: 1.55; display: none;
-    }
+    .iv-page { max-width: 540px; margin: 0 auto; padding: 40px 20px 80px; }
+    .iv-progress { font-family: var(--font-data); font-size: 0.5625rem; letter-spacing: 0.12em; text-transform: uppercase; color: #9a948a; margin-bottom: 0.5rem; }
+    .iv-bar { height: 3px; background: #e0d8c8; border-radius: 2px; margin-bottom: 2rem; overflow: hidden; }
+    .iv-bar-fill { height: 100%; background: #8a6830; width: 0; transition: width 0.4s ease; }
+    .iv-framing { font-family: var(--font-ui); font-size: 0.875rem; color: #3a3530; line-height: 1.7; white-space: pre-line; margin-bottom: 1.75rem; }
+    .iv-q { font-family: var(--font-ui); font-size: 1.0625rem; color: #0a0a0f; line-height: 1.5; margin-bottom: 1.25rem; }
+    .iv-q-kicker { font-family: var(--font-data); font-size: 0.5625rem; letter-spacing: 0.1em; text-transform: uppercase; color: #9a948a; margin-bottom: 0.6rem; }
+    .iv-input { width: 100%; box-sizing: border-box; font-family: var(--font-ui); font-size: 1rem; color: #0a0a0f;
+      background: #ece7dc; border: 1px solid #c8c0b0; border-radius: 6px; padding: 12px 14px; min-height: 90px; outline: none; resize: vertical; }
+    .iv-input:focus { border-color: #3a3530; }
+    .iv-btn { font-family: var(--font-ui); font-size: 1rem; font-weight: 500; letter-spacing: 0.04em; color: #f0ebe0; background: #0a0a0f;
+      border: none; border-radius: 6px; padding: 13px 28px; min-height: 48px; cursor: pointer; margin-top: 1rem; }
+    .iv-btn:active { transform: scale(0.98); }
+    .iv-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .iv-btn-ghost { background: transparent; color: #3a3530; border: 1px solid #c8c0b0; margin-left: 0.6rem; }
+    .iv-msg { font-family: var(--font-ui); font-size: 0.95rem; color: #2a2520; line-height: 1.7; white-space: pre-line; margin-bottom: 1.25rem; }
+    .iv-followup-note { font-family: var(--font-data); font-size: 0.5625rem; letter-spacing: 0.1em; text-transform: uppercase; color: #8a6830; margin-bottom: 0.6rem; }
+    .iv-bench { margin-bottom: 0.9rem; }
+    .iv-bench textarea { width: 100%; box-sizing: border-box; font-family: var(--font-ui); font-size: 0.9rem; color: #0a0a0f; background: #ece7dc; border: 1px solid #c8c0b0; border-radius: 6px; padding: 10px 12px; min-height: 56px; resize: vertical; }
+    .iv-bench-remove { background: none; border: none; color: #9a7050; font-family: var(--font-data); font-size: 0.5625rem; letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; margin-top: 0.2rem; }
+    .iv-loading { font-family: var(--font-data); font-size: 0.625rem; letter-spacing: 0.1em; text-transform: uppercase; color: #9a948a; margin-top: 1rem; }
   </style>
 </head>
 <body>
-  <!-- NAV -->
   <nav class="site-nav">
     <a href="/" class="site-nav-brand"><span class="site-nav-brand-text">THE BRIDGE</span><span class="beta-chip">BETA</span></a>
     <div class="site-nav-links">
-      <a href="/navigation-chart">Navigator</a>
-      <span class="site-nav-sep">|</span>
       <a href="/dashboard">Dashboard</a>
+      <span class="site-nav-sep">|</span>
+      <a href="/progress">Progress</a>
       <span class="site-nav-sep">|</span>
       <a href="/api/auth/logout">Sign Out</a>
     </div>
-    <button class="site-nav-hamburger" aria-label="Menu">
-      <span></span><span></span><span></span>
-    </button>
+    <button class="site-nav-hamburger" aria-label="Menu"><span></span><span></span><span></span></button>
     <div class="site-nav-mobile" id="mobile-menu"><button class="site-nav-mobile-close" aria-label="Close">✕</button>
-      <a href="/navigation-chart">Navigator</a>
       <a href="/dashboard">Dashboard</a>
+      <a href="/progress">Progress</a>
       <a href="/api/auth/logout">Sign Out</a>
     </div>
   </nav>
 
-  <div class="intake-page">
-    <h1 class="intake-heading" id="heading">Tell us about your business</h1>
-    <p class="intake-sub" id="subheading">Your answers shape the Navigation Chart — a personalized strategic assessment built for your specific operation. Be specific.</p>
-
-    <div id="prefill-notice" class="prefill-notice"></div>
-    <form id="intake-form" class="intake-form">
-      <div class="field">
-        <label for="f-businessName">What is the name of your business?</label>
-        <input type="text" id="f-businessName" placeholder="e.g. Barton Consulting" required>
-      </div>
-      <div class="field">
-        <label for="f-websiteUrl">Do you have a business website? If so, paste the URL here.</label>
-        <input type="url" id="f-websiteUrl" placeholder="https://yourbusiness.com">
-      </div>
-      <div class="field">
-        <label for="f-facebookUrl">Do you have a Facebook business page? If so, paste the URL here.</label>
-        <input type="url" id="f-facebookUrl" placeholder="https://facebook.com/yourbusinesspage">
-      </div>
-      <div class="field">
-        <label for="f-description">Describe your business in one or two sentences — what you do and exactly who you do it for.</label>
-        <textarea id="f-description" rows="2" required></textarea>
-      </div>
-      <div class="field">
-        <label for="f-years">How long have you been operating?</label>
-        <select id="f-years" required>
-          <option value="" disabled selected>Select</option>
-          <option value="under_1">Less than 1 year</option>
-          <option value="1_3">1 to 3 years</option>
-          <option value="3_7">3 to 7 years</option>
-          <option value="7_plus">7 or more years</option>
-        </select>
-      </div>
-      <div class="field">
-        <label for="f-revenue">What was your total business revenue last year?</label>
-        <div style="display:flex;align-items:center;gap:4px;">
-          <span style="font-size:1rem;font-weight:500;color:#0a0a0f;">$</span>
-          <input type="number" id="f-revenue" min="0" step="1" placeholder="0" required style="flex:1;">
-        </div>
-        <div style="font-size:12px;color:#7a7570;margin-top:4px;">Enter your actual revenue in dollars. If pre-revenue enter 0.</div>
-      </div>
-      <div class="field">
-        <label for="f-employees">How many full-time equivalent employees do you have including yourself?</label>
-        <input type="number" id="f-employees" min="1" step="1" placeholder="1" required>
-      </div>
-      <div class="field">
-        <label for="f-customerType">How would you describe your customer base?</label>
-        <select id="f-customerType" required>
-          <option value="" disabled selected>Select</option>
-          <option value="mostly_repeat">Mostly repeat — they come back regularly</option>
-          <option value="mix">Mix of both</option>
-          <option value="mostly_new">Mostly one-time — acquisition is constant</option>
-        </select>
-      </div>
-      <div class="field">
-        <label for="f-switchingCosts">How easy is it for a customer to leave you for a competitor?</label>
-        <select id="f-switchingCosts" required>
-          <option value="" disabled selected>Select</option>
-          <option value="easy">Easy — nothing stops them from leaving</option>
-          <option value="some_friction">Some friction</option>
-          <option value="very_hard">Very hard — they have too much invested</option>
-        </select>
-      </div>
-      <div class="field">
-        <label for="f-systems">How dependent is the business on you personally?</label>
-        <select id="f-systems" required>
-          <option value="" disabled selected>Select</option>
-          <option value="depends_on_me">It depends on me being there</option>
-          <option value="partially_documented">Partially documented</option>
-          <option value="well_documented">Well documented — others can run it</option>
-        </select>
-      </div>
-      <div class="field">
-        <label for="f-financialState">What best describes your current financial state?</label>
-        <select id="f-financialState" required>
-          <option value="" disabled selected>Select</option>
-          <option value="profitable">Profitable with healthy runway</option>
-          <option value="breaking_even">Breaking even</option>
-          <option value="tight">Tight — watching every dollar</option>
-        </select>
-      </div>
-      <div class="field">
-        <label for="f-uncertainty">What is your single biggest business uncertainty right now?</label>
-        <textarea id="f-uncertainty" rows="2" required></textarea>
-      </div>
-      <div class="field">
-        <label for="f-goal">What does success look like for your business in one year — specifically?</label>
-        <textarea id="f-goal" rows="2" required></textarea>
-      </div>
-
-      <button type="submit" class="btn-submit" id="btn-submit">Generate my Navigation Chart →</button>
-      <div class="loading-msg" id="loading-msg">Analyzing your business…</div>
-    </form>
+  <div class="iv-page">
+    <div class="iv-progress" id="iv-progress"></div>
+    <div class="iv-bar"><div class="iv-bar-fill" id="iv-bar-fill"></div></div>
+    <div id="iv-panel">
+      <div class="iv-loading">Loading the interview…</div>
+    </div>
   </div>
 
   <script>
-    const FIELDS = ['businessName','websiteUrl','facebookUrl','description','years','revenue','employees','customerType','switchingCosts','systems','financialState','uncertainty','goal'];
+    const panel = document.getElementById('iv-panel');
+    const progressEl = document.getElementById('iv-progress');
+    const barFill = document.getElementById('iv-bar-fill');
+    const collected = {}; // field -> answer, kept locally for the dashboard signal
 
-    const isUpdate = new URLSearchParams(window.location.search).get('mode') === 'update';
+    const esc = (s) => String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 
-    // Initialize Clerk (tier gate handled server-side)
-    (async () => {
-      try {
-        const clerk = window.Clerk;
-        if (clerk && !clerk.loaded) await clerk.load();
-      } catch (e) { console.log('Clerk init:', e.message); }
-    })();
-
-    // Pre-populate from existing data — Supabase is source of truth
-    async function prefillIntake() {
-      let prefilled = false;
-
-      // Load from BridgeSession (Supabase first, cache fallback)
-      try {
-        const session = await BridgeSession.load();
-        if (session && session.intakeAnswers) {
-          const a = session.intakeAnswers;
-          FIELDS.forEach(f => {
-            const el = document.getElementById('f-' + f);
-            if (el && a[f]) el.value = a[f];
-          });
-          prefilled = true;
-        }
-      } catch (e) { console.error('Prefill failed:', e); }
-
-      if (prefilled) {
-        const notice = document.getElementById('prefill-notice');
-        if (isUpdate) {
-          notice.textContent = 'Your previous answers are loaded. Update anything that has changed.';
-        } 
-        notice.style.display = 'block';
-      }
-
-      if (isUpdate) {
-        document.getElementById('btn-submit').textContent = 'Update my profile →';
-        document.getElementById('heading').textContent = 'Update your answers';
-        document.getElementById('subheading').textContent = 'Change any answers that have shifted. Your Navigation Chart will regenerate with the new information.';
-      }
+    async function api(path, method, body) {
+      const opts = { method, headers: { 'Content-Type': 'application/json' } };
+      if (body) opts.body = JSON.stringify(body);
+      const r = await fetch(path, opts);
+      return r.ok ? r.json() : null;
     }
 
-    prefillIntake();
+    function setProgress(p) {
+      if (!p) return;
+      progressEl.textContent = 'Question ' + Math.min(p.answered + 1, p.total) + ' of ' + p.total;
+      barFill.style.width = Math.round((p.answered / p.total) * 100) + '%';
+    }
 
-    document.getElementById('intake-form').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const btn = document.getElementById('btn-submit');
-      const loading = document.getElementById('loading-msg');
-      btn.disabled = true;
-      loading.textContent = isUpdate ? 'Updating your profile…' : 'Analyzing your business…';
-      loading.classList.add('visible');
-
-      const answers = {};
-      FIELDS.forEach(f => { answers[f] = document.getElementById('f-' + f).value; });
-
-      const scanPromise = (answers.websiteUrl || answers.facebookUrl)
-        ? fetch('/api/intake/scan-urls', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ websiteUrl: answers.websiteUrl, facebookUrl: answers.facebookUrl })
-          }).then(r => r.ok ? r.json() : { websiteContent: '', facebookContent: '' })
-            .catch(() => ({ websiteContent: '', facebookContent: '' }))
-        : Promise.resolve({ websiteContent: '', facebookContent: '' });
-
+    // Signal the dashboard that the member has cleared the gate (after Stage 1).
+    async function markStarted() {
       try {
-        const [intakeResp, scannedContent] = await Promise.all([
-          fetch('/api/intake/personalize', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ intake: answers })
-          }),
-          scanPromise
-        ]);
-
-        if (!intakeResp.ok) throw new Error(`HTTP ${intakeResp.status}`);
-        const result = await intakeResp.json();
-
-        // Save full session to Supabase (source of truth) + cache
-        const sessionData = {
-          businessName: answers.businessName,
-          shipName: answers.businessName || result.ship_name,
-          destination: result.destination_name,
-          industryKey: result.industry_key,
-          businessContext: result.businessContext,
-          intakeAnswers: answers,
-          scannedContent: scannedContent,
+        await BridgeSession.save({
+          businessName: collected['business_name'] || undefined,
+          shipName: collected['business_name'] || undefined,
           completedAt: new Date().toISOString()
-        };
+        });
+      } catch (e) { /* non-fatal */ }
+    }
 
-        await BridgeSession.save(sessionData);
+    function renderQuestion(q, framing) {
+      let html = '';
+      if (framing) html += '<div class="iv-framing">' + esc(framing) + '</div>';
+      html += '<div class="iv-q-kicker">' + (q.n <= 8 ? 'Stage 1 · Quick Start' : q.n <= 20 ? 'Stage 2 · Operational Reality' : 'Stage 3 · Full Picture') + '</div>';
+      html += '<div class="iv-q">' + esc(q.text) + '</div>';
+      html += '<textarea class="iv-input" id="iv-answer" autofocus></textarea>';
+      html += '<div><button class="iv-btn" id="iv-submit">Continue</button></div>';
+      panel.innerHTML = html;
+      wireSubmit(q.field, false);
+    }
 
-        window.location.href = '/dashboard';
-      } catch (err) {
-        console.error('Intake failed:', err);
-        btn.disabled = false;
-        loading.textContent = 'Something went wrong. Please try again.';
+    function renderFollowUp(field, followUpText) {
+      let html = '<div class="iv-followup-note">One more thing</div>';
+      html += '<div class="iv-q">' + esc(followUpText) + '</div>';
+      html += '<textarea class="iv-input" id="iv-answer" autofocus></textarea>';
+      html += '<div><button class="iv-btn" id="iv-submit">Continue</button></div>';
+      panel.innerHTML = html;
+      wireSubmit(field, true);
+    }
+
+    function wireSubmit(field, isFollowUp) {
+      const btn = document.getElementById('iv-submit');
+      const ta = document.getElementById('iv-answer');
+      if (ta) ta.focus();
+      btn.addEventListener('click', async () => {
+        const answer = (ta.value || '').trim();
+        if (!answer) { ta.focus(); return; }
+        if (!isFollowUp) collected[field] = answer;
+        btn.disabled = true;
+        btn.textContent = 'Saving…';
+        const data = await api('/api/member/interview/answer', 'POST', { field, answer, isFollowUp });
+        if (!data) { btn.disabled = false; btn.textContent = 'Continue'; return; }
+        handleAnswerResult(field, data);
+      });
+    }
+
+    async function handleAnswerResult(field, data) {
+      if (data.followUp) { renderFollowUp(field, data.followUp); return; }
+
+      // Stage 1 completion opens the dashboard.
+      if (data.stageComplete && data.stages && data.stages.stage_1) await markStarted();
+
+      if (data.benchmarkReady) { renderStageBridge(data.stageComplete, () => renderBenchmarkReview()); return; }
+      if (data.stageComplete) {
+        renderStageBridge(data.stageComplete, () => {
+          if (data.done) { renderDone(); }
+          else { setProgress(null); loadState(); }
+        });
+        return;
       }
-    });
+      if (data.done) { renderDone(); return; }
+      setProgress({ answered: data.question.n - 1, total: 30 });
+      renderQuestion(data.question, data.framing);
+    }
+
+    // A transition card shown at stage boundaries with the option to stop.
+    function renderStageBridge(message, onContinue) {
+      let html = '<div class="iv-msg">' + esc(message || '') + '</div>';
+      html += '<div><button class="iv-btn" id="iv-continue">Keep going</button>';
+      html += '<button class="iv-btn iv-btn-ghost" id="iv-stop">Talk to the Commander →</button></div>';
+      panel.innerHTML = html;
+      document.getElementById('iv-continue').addEventListener('click', onContinue);
+      document.getElementById('iv-stop').addEventListener('click', () => { window.location.href = '/dashboard'; });
+    }
+
+    async function renderBenchmarkReview() {
+      panel.innerHTML = '<div class="iv-loading">Building what you are working toward…</div>';
+      const data = await api('/api/member/benchmark', 'GET');
+      const benches = (data && data.benchmarks) ? data.benchmarks : [];
+      if (!benches.length) { setProgress(null); loadState(); return; }
+
+      let html = '<div class="iv-msg">Here is what I heard you are working toward, in your words. Do these capture it? Edit anything, or remove what does not fit.</div>';
+      benches.forEach((b, i) => {
+        html += '<div class="iv-bench" data-i="' + i + '"><textarea>' + esc(b.statement) + '</textarea>' +
+          '<button class="iv-bench-remove" data-remove="' + i + '">Remove</button></div>';
+      });
+      html += '<div><button class="iv-btn" id="iv-approve">These are right</button></div>';
+      panel.innerHTML = html;
+
+      panel.querySelectorAll('[data-remove]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const row = btn.closest('.iv-bench');
+          if (row && panel.querySelectorAll('.iv-bench').length > 1) row.remove();
+        });
+      });
+
+      document.getElementById('iv-approve').addEventListener('click', async () => {
+        const statements = Array.from(panel.querySelectorAll('.iv-bench textarea'))
+          .map(t => t.value.trim()).filter(Boolean);
+        if (!statements.length) return;
+        const btn = document.getElementById('iv-approve');
+        btn.disabled = true; btn.textContent = 'Saving…';
+        await api('/api/member/benchmark/approve', 'POST', { statements });
+        // Stage 2 done — offer Stage 3 or the Commander.
+        renderStageBridge('That is locked in. Stage 3 is the most personal stage and the most important one. Take it now, or come back to it when you are ready.',
+          () => { setProgress(null); loadState(); });
+      });
+    }
+
+    function renderDone() {
+      barFill.style.width = '100%';
+      progressEl.textContent = 'Interview complete';
+      panel.innerHTML = '<div class="iv-msg">That is everything. The Commander now has the full picture. Go have a real conversation.</div>' +
+        '<div><a class="iv-btn" href="/dashboard" style="display:inline-block;text-decoration:none;">Talk to the Commander →</a></div>';
+    }
+
+    async function loadState() {
+      const data = await api('/api/member/interview/state', 'GET');
+      if (!data || data.authenticated === false) {
+        panel.innerHTML = '<div class="iv-msg">Please <a href="/login">sign in</a> to begin.</div>';
+        return;
+      }
+      if (data.done) { renderDone(); return; }
+      setProgress(data.progress);
+      renderQuestion(data.question, data.framing);
+    }
+
+    (async function () {
+      try { if (window.Clerk && !window.Clerk.loaded) await window.Clerk.load(); }
+      catch (e) { console.log('Clerk init:', e.message); }
+      loadState();
+    })();
   </script>
-<script src="/js/nav.js"></script>
+  <script src="/js/nav.js"></script>
 </body>
 </html>
