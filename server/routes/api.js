@@ -1,7 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const crypto = require('crypto');
-const { personalizeIntake, commanderChat, generateConversationSummary, generateChart, getSoulVersion, compressSession, generateSessionDebrief, generatePeriodicReport } = require('../services/claude');
+const { personalizeIntake, commanderChat, generateConversationSummary, generateChart, getSoulVersion, compressSession, generateSessionDebrief, generatePeriodicReport, generateIntakeFollowUp, generateBenchmark } = require('../services/claude');
+const {
+  QUESTIONS, STAGE_FRAMING, STAGE_COMPLETE, STAGE_BOUNDS, getQuestionByField
+} = require('../data/intake-questions');
 const {
   upsertAnonymousEvent, getCommanderUsage, incrementCommanderUsage,
   saveCommanderMessage, getCommanderHistory, getLatestCommanderSessionId,
@@ -16,7 +19,9 @@ const {
   createCheckIn, getActiveCheckIn, getLastAnsweredCheckIn, answerCheckIn, snoozeCheckIn,
   getSessionDebriefs,
   getLatestPeriodicReport, savePeriodicReport,
-  insertAnonymousAggregate
+  insertAnonymousAggregate,
+  saveIntakeResponse, updateIntakeFollowUp, getIntakeResponses,
+  saveBenchmarks, approveBenchmarks
 } = require('../services/supabase');
 
 /**
@@ -863,6 +868,232 @@ router.post('/member/action-steps/:id/complete', async (req, res) => {
   } catch (e) {
     console.error('Action step complete error:', e.message);
     res.status(500).json({ error: 'Could not complete action step' });
+  }
+});
+
+// ============================================================
+// INTERVIEWING COMMANDER — conversational intake (round 1)
+// ============================================================
+
+/** Rule-based vagueness check (stage 1 of the two-stage check). */
+function isVague(answer, check) {
+  if (!check) return false;
+  const raw = (answer || '').trim();
+  const low = raw.toLowerCase();
+  const words = raw.split(/\s+/).filter(Boolean).length;
+
+  if (check.custom === 'always_if_no') {
+    return /^(no|nope|not really|haven'?t|have not|not yet|never)\b/.test(low);
+  }
+  if (check.custom === 'depends_only') {
+    return low === 'depends' || /^(it )?depends\.?$/.test(low);
+  }
+  if (check.custom === 'both_only') {
+    return /^both( equally)?\.?$/.test(low);
+  }
+  if (check.minWords && words < check.minWords) return true;
+  if (check.banned && check.banned.some(b => low.includes(b))) return true;
+  if (check.needNumber && !/\d/.test(raw)) return true;
+  if (check.needTimeRef && !/\d|year|month|week|day|decade/.test(low)) return true;
+  return false;
+}
+
+function answeredFieldSet(responses) {
+  const set = new Set();
+  for (const r of responses) if (r.answer != null && String(r.answer).trim() !== '') set.add(r.question_field);
+  return set;
+}
+
+function nextQuestion(answered) {
+  return QUESTIONS.find(q => !answered.has(q.field)) || null;
+}
+
+function stageStatus(memberState) {
+  return {
+    stage_1: !!memberState?.stage_1_complete,
+    stage_2: !!memberState?.stage_2_complete,
+    stage_3: !!memberState?.stage_3_complete
+  };
+}
+
+/** Mark a stage complete (and after stage 2, generate the benchmark). */
+async function completeStageIfDone(userId, stage, answered) {
+  const bounds = STAGE_BOUNDS[stage];
+  const stageFields = QUESTIONS.filter(q => q.stage === stage).map(q => q.field);
+  const allAnswered = stageFields.every(f => answered.has(f));
+  if (!allAnswered) return { completed: false };
+
+  const flag = `stage_${stage}_complete`;
+  const tsField = `stage_${stage}_completed_at`;
+  const state = await ensureMemberState(userId);
+  if (state && state[flag]) return { completed: false }; // already handled
+
+  await updateMemberState(userId, { [flag]: true, [tsField]: new Date().toISOString() });
+
+  let benchmarkReady = false;
+  if (stage === 2) {
+    try {
+      const responses = await getIntakeResponses(userId, 1);
+      const answers = {};
+      for (const r of responses) answers[r.question_field] = r.follow_up_answer
+        ? `${r.answer} ${r.follow_up_answer}` : r.answer;
+      const bench = await generateBenchmark(answers);
+      if (bench.statements && bench.statements.length) {
+        await saveBenchmarks(userId, bench.statements);
+        if (bench.hidden_metrics) await updateMemberState(userId, { hidden_metrics: bench.hidden_metrics });
+        benchmarkReady = true;
+      }
+    } catch (e) {
+      console.error('Benchmark generation failed:', e.message);
+    }
+  }
+  return { completed: true, message: STAGE_COMPLETE[stage], benchmarkReady };
+}
+
+/**
+ * GET /api/member/interview/state
+ * The next question to ask (with stage framing if a stage is starting), or done.
+ */
+router.get('/member/interview/state', async (req, res) => {
+  if (!req.dbUser) return res.json({ authenticated: false });
+  try {
+    const userId = req.dbUser.id;
+    const memberState = await ensureMemberState(userId);
+    const responses = await getIntakeResponses(userId, 1);
+    const answered = answeredFieldSet(responses);
+    const q = nextQuestion(answered);
+
+    if (!q) {
+      return res.json({ authenticated: true, done: true, stages: stageStatus(memberState),
+        progress: { answered: answered.size, total: QUESTIONS.length } });
+    }
+    const framing = (q.n === STAGE_BOUNDS[q.stage].first) ? STAGE_FRAMING[q.stage] : null;
+    res.json({
+      authenticated: true, done: false,
+      stages: stageStatus(memberState),
+      progress: { answered: answered.size, total: QUESTIONS.length },
+      stage: q.stage,
+      framing,
+      question: { n: q.n, field: q.field, text: q.question }
+    });
+  } catch (e) {
+    console.error('Interview state error:', e.message);
+    res.status(500).json({ error: 'Could not load the interview' });
+  }
+});
+
+/**
+ * POST /api/member/interview/answer
+ * Body: { field, answer, isFollowUp }
+ * Saves immediately. Returns a follow-up if the answer is vague, otherwise the
+ * next step (next question / stage completion / done).
+ */
+router.post('/member/interview/answer', async (req, res) => {
+  if (!req.dbUser) return res.status(401).json({ error: 'Authentication required' });
+  try {
+    const userId = req.dbUser.id;
+    const { field, answer, isFollowUp } = req.body;
+    const q = getQuestionByField(field);
+    if (!q) return res.status(400).json({ error: 'Unknown question' });
+    if (answer == null || String(answer).trim() === '') {
+      return res.status(400).json({ error: 'Answer required' });
+    }
+
+    if (isFollowUp) {
+      // Record the follow-up answer; never re-prompt.
+      await updateIntakeFollowUp(userId, 1, field, undefined, String(answer));
+    } else {
+      await saveIntakeResponse(userId, 1, q.stage, field, String(answer));
+      recordAnonymous(userId, 'intake_answer', { field, stage: q.stage });
+
+      // Two-stage vagueness check → one follow-up, then always advance.
+      if (isVague(answer, q.check) && q.followup.kind !== 'none') {
+        let followUp;
+        if (q.followup.kind === 'string') {
+          const snippet = String(answer).trim().split(/\s+/).slice(0, 12).join(' ');
+          followUp = q.followup.template.replace('[answer]', snippet);
+        } else {
+          try {
+            followUp = await generateIntakeFollowUp(q.question, String(answer), q.followup.instruction);
+          } catch (e) {
+            followUp = null; // if generation fails, just move on
+          }
+        }
+        if (followUp) {
+          await updateIntakeFollowUp(userId, 1, field, followUp, undefined);
+          return res.json({ followUp });
+        }
+      }
+    }
+
+    // Advance.
+    const responses = await getIntakeResponses(userId, 1);
+    const answered = answeredFieldSet(responses);
+    const stageResult = await completeStageIfDone(userId, q.stage, answered);
+
+    const nq = nextQuestion(answered);
+    const memberState = await ensureMemberState(userId);
+
+    if (!nq) {
+      return res.json({
+        done: true,
+        stageComplete: stageResult.completed ? stageResult.message : null,
+        benchmarkReady: !!stageResult.benchmarkReady,
+        stages: stageStatus(memberState)
+      });
+    }
+
+    res.json({
+      done: false,
+      stageComplete: stageResult.completed ? stageResult.message : null,
+      benchmarkReady: !!stageResult.benchmarkReady,
+      framing: (nq.n === STAGE_BOUNDS[nq.stage].first && stageResult.completed) ? STAGE_FRAMING[nq.stage] : null,
+      stage: nq.stage,
+      question: { n: nq.n, field: nq.field, text: nq.question },
+      stages: stageStatus(memberState)
+    });
+  } catch (e) {
+    console.error('Interview answer error:', e.message);
+    res.status(500).json({ error: 'Could not save your answer' });
+  }
+});
+
+/**
+ * GET /api/member/benchmark
+ * Current benchmark statements (for the review screen and the progress view).
+ */
+router.get('/member/benchmark', async (req, res) => {
+  if (!req.dbUser) return res.json({ benchmarks: [] });
+  try {
+    const benches = await getBenchmarks(req.dbUser.id, false);
+    res.json({
+      benchmarks: benches.map(b => ({
+        id: b.id, statement: b.statement, position: b.position,
+        starting_rating: b.starting_rating, current_rating: b.current_rating, approved: b.approved
+      }))
+    });
+  } catch (e) {
+    console.error('Benchmark fetch error:', e.message);
+    res.json({ benchmarks: [] });
+  }
+});
+
+/**
+ * POST /api/member/benchmark/approve
+ * Body: { statements: [string] } — the member's final, reviewed list.
+ */
+router.post('/member/benchmark/approve', async (req, res) => {
+  if (!req.dbUser) return res.status(401).json({ error: 'Authentication required' });
+  try {
+    const statements = Array.isArray(req.body.statements)
+      ? req.body.statements.map(s => String(s).trim()).filter(Boolean).slice(0, 5)
+      : [];
+    if (statements.length === 0) return res.status(400).json({ error: 'At least one statement required' });
+    const saved = await approveBenchmarks(req.dbUser.id, statements);
+    res.json({ ok: true, benchmarks: saved.map(b => ({ id: b.id, statement: b.statement })) });
+  } catch (e) {
+    console.error('Benchmark approve error:', e.message);
+    res.status(500).json({ error: 'Could not save your benchmark' });
   }
 });
 

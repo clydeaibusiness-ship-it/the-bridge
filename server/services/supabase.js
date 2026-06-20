@@ -837,6 +837,114 @@ async function savePeriodicReport(userId, letter, periodStart, periodEnd) {
   return data;
 }
 
+// ---- Intake responses (Interviewing Commander) ----
+
+async function saveIntakeResponse(userId, round, stage, field, answer) {
+  const db = getClient();
+  if (!db) return null;
+  const { data, error } = await db
+    .from('intake_responses')
+    .upsert({
+      user_id: userId, round, stage, question_field: field, answer,
+      updated_at: new Date().toISOString()
+    }, { onConflict: 'user_id,round,question_field' })
+    .select()
+    .single();
+  if (error) { console.error('saveIntakeResponse error:', error.message); return null; }
+  return data;
+}
+
+async function updateIntakeFollowUp(userId, round, field, followUpQuestion, followUpAnswer) {
+  const db = getClient();
+  if (!db) return null;
+  const patch = { updated_at: new Date().toISOString() };
+  if (followUpQuestion !== undefined) patch.follow_up_question = followUpQuestion;
+  if (followUpAnswer !== undefined) patch.follow_up_answer = followUpAnswer;
+  const { data, error } = await db
+    .from('intake_responses')
+    .update(patch)
+    .eq('user_id', userId).eq('round', round).eq('question_field', field)
+    .select()
+    .single();
+  if (error) { console.error('updateIntakeFollowUp error:', error.message); return null; }
+  return data;
+}
+
+async function getIntakeResponses(userId, round = 1) {
+  const db = getClient();
+  if (!db) return [];
+  const { data, error } = await db
+    .from('intake_responses')
+    .select('*')
+    .eq('user_id', userId).eq('round', round)
+    .order('stage', { ascending: true });
+  if (error) { console.error('getIntakeResponses error:', error.message); return []; }
+  return data || [];
+}
+
+// ---- Benchmark creation + approval ----
+
+/**
+ * Replace a member's benchmark set with newly generated statements and seed
+ * the rating history. Used once after Stage 2 (and editable on review).
+ */
+async function saveBenchmarks(userId, statements) {
+  const db = getClient();
+  if (!db) return [];
+  // Clear any prior set (regeneration / re-review).
+  await db.from('member_benchmarks').delete().eq('user_id', userId);
+
+  const rows = statements.map((s, i) => ({
+    user_id: userId,
+    statement: s.statement,
+    position: i,
+    starting_rating: s.starting_rating ?? null,
+    current_rating: s.starting_rating ?? null,
+    approved: false,
+    active: true
+  }));
+  const { data, error } = await db.from('member_benchmarks').insert(rows).select();
+  if (error) { console.error('saveBenchmarks error:', error.message); return []; }
+
+  // Seed the arc with the starting rating.
+  const seed = (data || [])
+    .filter(b => b.starting_rating != null)
+    .map(b => ({ user_id: userId, benchmark_id: b.id, rating: b.starting_rating, source: 'initial' }));
+  if (seed.length) await db.from('benchmark_ratings').insert(seed);
+
+  return data || [];
+}
+
+/**
+ * Apply the member's reviewed statements (edit/add/remove) and mark approved.
+ * `statements` is the final list of strings in display order.
+ */
+async function approveBenchmarks(userId, statements) {
+  const db = getClient();
+  if (!db) return [];
+  const existing = await getBenchmarks(userId, false);
+  const byPos = existing.sort((a, b) => a.position - b.position);
+
+  // Simple reconcile: rewrite the set, preserving ratings where the statement
+  // text is unchanged so the arc is not lost on a pure approval.
+  await db.from('member_benchmarks').delete().eq('user_id', userId);
+  const rows = statements.map((text, i) => {
+    const prior = byPos.find(b => b.statement === text);
+    return {
+      user_id: userId,
+      statement: text,
+      position: i,
+      starting_rating: prior?.starting_rating ?? 1,
+      current_rating: prior?.current_rating ?? prior?.starting_rating ?? 1,
+      approved: true,
+      active: true
+    };
+  });
+  const { data, error } = await db.from('member_benchmarks').insert(rows).select();
+  if (error) { console.error('approveBenchmarks error:', error.message); return []; }
+  return data || [];
+}
+
 // ---- Anonymous aggregate data (no personal identifiers) ----
 
 /**
@@ -871,5 +979,7 @@ module.exports = {
   createCheckIn, getActiveCheckIn, getLastAnsweredCheckIn, answerCheckIn, snoozeCheckIn,
   getSessionDebriefs,
   getLatestPeriodicReport, savePeriodicReport,
-  insertAnonymousAggregate
+  insertAnonymousAggregate,
+  saveIntakeResponse, updateIntakeFollowUp, getIntakeResponses,
+  saveBenchmarks, approveBenchmarks
 };

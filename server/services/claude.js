@@ -457,6 +457,92 @@ ${debriefLines}`;
 }
 
 /**
+ * Interviewing Commander — generate one follow-up question (Haiku) in the
+ * soul voice when an answer is judged vague. No strategy library, no case
+ * studies — just the voice and the instruction.
+ */
+async function generateIntakeFollowUp(questionText, answer, instruction) {
+  const soul = getSoulPrimer();
+  const prompt = `You are interviewing a small business owner, one question at a time. You just asked: "${questionText}". They answered: "${answer}". ${instruction}
+
+Ask exactly one short follow-up question in your own voice. Output only the question — no preamble, no explanation, nothing else.`;
+
+  const messages = [
+    ...(soul ? [{ role: 'user', content: '.' }, { role: 'assistant', content: soul }] : []),
+    { role: 'user', content: prompt }
+  ];
+
+  const response = await client.messages.create({
+    model: 'claude-haiku-4-5',
+    max_tokens: 150,
+    messages
+  });
+  const t = response.content.find(b => b.type === 'text');
+  return stripMarkdown(t ? t.text : '').trim();
+}
+
+/**
+ * Generate the initial benchmark after Stage 2: 3-5 success statements in the
+ * member's own language, each with a low starting 1-10 rating, plus a hidden
+ * operational-metrics object for the Commander's context.
+ * `answers` is a { field: text } map of intake responses.
+ * Returns { statements: [{ statement, starting_rating }], hidden_metrics: {} }.
+ */
+async function generateBenchmark(answers) {
+  const get = (f) => (answers && answers[f]) ? answers[f] : '';
+
+  const prompt = `A member has completed enough of their intake to set their benchmark. Using their own words, write 3 to 5 success statements that capture what they are working toward. Each statement must be drawn directly from what they said — not reworded into abstractions. If they said "take a Saturday off without everything falling apart," that is the statement, not "operational independence."
+
+Give each statement a starting rating from 1 to 10 reflecting where they are NOW (these should be low — they reflect the current gap, not the goal).
+
+Also return a hidden_metrics object summarizing their operational baseline for internal use.
+
+Return ONLY JSON, no markdown:
+{
+  "statements": [ { "statement": "their words", "starting_rating": 3 } ],
+  "hidden_metrics": {
+    "annual_revenue": "", "knows_break_even": "", "cash_runway": "",
+    "raised_prices": "", "knows_margin": "", "customer_concentration": "",
+    "time_trapped": "", "isolation": ""
+  }
+}
+
+What they want from The Bridge: ${get('desired_outcome')}
+Their three-to-five year vision: ${get('north_star')}
+What their actual life would look like in success: ${get('life_success_definition')}
+
+Operational baseline:
+- Annual revenue: ${get('annual_revenue')}
+- Break-even known: ${get('break_even')}
+- Cash runway: ${get('cash_runway')}
+- Raised prices recently: ${get('pricing_history')}
+- Profit margin known: ${get('profit_margin')}
+- Customer concentration: ${get('customer_concentration')}
+- Time usage: ${get('time_usage')}
+- Support network: ${get('support_network')}
+- Peer network: ${get('peer_network')}`;
+
+  const response = await client.messages.create({
+    model: 'claude-sonnet-4-20250514',
+    max_tokens: 1200,
+    system: 'You extract a member benchmark from intake answers. Use the member\'s own language. Return only a JSON object — no markdown, no backticks, no prose.',
+    messages: [{ role: 'user', content: prompt }]
+  });
+
+  const text = response.content[0].text;
+  const jsonMatch = text.match(/\{[\s\S]*\}/);
+  if (!jsonMatch) throw new Error('generateBenchmark: non-JSON response: ' + text.substring(0, 200));
+  const parsed = JSON.parse(jsonMatch[0]);
+  if (!Array.isArray(parsed.statements)) parsed.statements = [];
+  // Clamp to 3-5 and sane ratings.
+  parsed.statements = parsed.statements.slice(0, 5).map(s => ({
+    statement: String(s.statement || '').trim(),
+    starting_rating: Math.min(10, Math.max(1, parseInt(s.starting_rating, 10) || 2))
+  })).filter(s => s.statement);
+  return parsed;
+}
+
+/**
  * Generate a summary of a conversation for long-term context
  */
 async function generateConversationSummary(messages) {
@@ -567,6 +653,8 @@ module.exports = {
   getSoulPrimer,
   compressSession,
   generateSessionDebrief,
-  generatePeriodicReport
+  generatePeriodicReport,
+  generateIntakeFollowUp,
+  generateBenchmark
 };
 
