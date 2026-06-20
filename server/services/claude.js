@@ -90,21 +90,42 @@ function getCaseStudyIndex() {
 }
 
 /**
- * Read Big Book of Strategy + compressed case study index.
+ * Read commander-context.md — the Commander's operational instructions
+ * (action steps, benchmark awareness, graduation signals, new-session context).
+ * Loads after soul (prefill) and before the strategy book.
+ */
+function getCommanderContext() {
+  try {
+    return fs.readFileSync(
+      path.join(__dirname, '../../system/commander-context.md'),
+      'utf8'
+    );
+  } catch (err) {
+    return '';
+  }
+}
+
+/**
+ * Read commander-context + Big Book of Strategy + compressed case study index.
  * Used as system prompt for Commander chat (soul is now in assistant prefill).
  * User context is appended by the caller.
  */
-function getSystemPrompt() {
+function getSystemPrompt(includeCommanderContext = true) {
   try {
     const strategy = fs.readFileSync(
       path.join(__dirname, '../../system/big-book-of-strategy.md'),
       'utf8'
     );
+    const commanderContext = includeCommanderContext ? getCommanderContext() : '';
     const caseStudyIndex = getCaseStudyIndex();
+
+    let prompt = '';
+    if (commanderContext) prompt += commanderContext + '\n\n---\n\n';
+    prompt += strategy;
     if (caseStudyIndex) {
-      return strategy + '\n\n---\n\nCASE STUDY LIBRARY — Available for retrieval when relevant:\n\n' + caseStudyIndex;
+      prompt += '\n\n---\n\nCASE STUDY LIBRARY — Available for retrieval when relevant:\n\n' + caseStudyIndex;
     }
-    return strategy;
+    return prompt;
   } catch (err) {
     console.error('STRATEGY PROMPT ERROR:', err.message);
     return '';
@@ -593,7 +614,7 @@ Return this exact JSON structure with 6 sections. Each section has a "title" and
 
   // Navigation Chart keeps soul in system prompt (no prefill pattern here)
   const soulContent = getSoulPrimer();
-  const strategyContent = getSystemPrompt();
+  const strategyContent = getSystemPrompt(false); // chart gen doesn't need operational context
   const chartSystemPrompt = soulContent
     ? `${soulContent}\n\n---\n\n${strategyContent}`
     : strategyContent;

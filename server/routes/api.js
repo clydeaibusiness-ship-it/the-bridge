@@ -25,6 +25,76 @@ const {
 } = require('../services/supabase');
 
 /**
+ * Build the Commander's context from the coaching system: the member's
+ * interview answers, their benchmark (as a private map), the hidden
+ * operational baseline, incomplete-intake status, and one pre-conversation
+ * thread. Returns '' for legacy-only members so the caller falls back.
+ */
+async function buildCoachingContext(userId) {
+  const [responses, benches, state] = await Promise.all([
+    getIntakeResponses(userId, 1),
+    getBenchmarks(userId),
+    ensureMemberState(userId)
+  ]);
+  if (!responses.length && !benches.length) return '';
+
+  let ctx = '';
+
+  if (responses.length) {
+    ctx += 'MEMBER PROFILE (from their interview):\n';
+    for (const r of responses) {
+      const q = getQuestionByField(r.question_field);
+      const label = (q ? q.field : r.question_field).replace(/_/g, ' ');
+      let val = r.answer || '';
+      if (r.follow_up_answer) val += ' — ' + r.follow_up_answer;
+      if (val.trim()) ctx += `- ${label}: ${val}\n`;
+    }
+  }
+
+  if (benches.length) {
+    ctx += '\nWHAT THEY ARE WORKING TOWARD (your private map — do not quote these ratings to them unprompted):\n';
+    for (const b of benches) {
+      const r = b.current_rating ?? b.starting_rating;
+      ctx += `- "${b.statement}"${r != null ? ` (now ${r}/10)` : ''}\n`;
+    }
+  }
+
+  if (state && state.hidden_metrics && typeof state.hidden_metrics === 'object') {
+    const lines = Object.entries(state.hidden_metrics).filter(([, v]) => v);
+    if (lines.length) {
+      ctx += '\nOPERATIONAL BASELINE (internal, not a talking point):\n';
+      for (const [k, v] of lines) ctx += `- ${k.replace(/_/g, ' ')}: ${v}\n`;
+    }
+  }
+
+  if (state && responses.length) {
+    const incomplete = [];
+    if (!state.stage_2_complete) incomplete.push('Stage 2 (operational reality)');
+    if (!state.stage_3_complete) incomplete.push('Stage 3 (personal context)');
+    if (incomplete.length) {
+      ctx += `\nINTAKE STATUS: They have not completed ${incomplete.join(' and ')}. Invite them back only when the missing information would meaningfully change your response.\n`;
+    }
+  }
+
+  // One pre-conversation thread from the most recent debrief.
+  try {
+    const debriefs = await getSessionDebriefs(userId, 1);
+    if (debriefs.length && debriefs[0].unresolved_item) {
+      ctx += `\nONE UNRESOLVED THREAD FROM LAST TIME: ${debriefs[0].unresolved_item}\n`;
+    }
+  } catch (e) { /* non-fatal */ }
+
+  // Surface an overdue action step, if any.
+  try {
+    const steps = await getActionSteps(userId, 'active');
+    const overdue = steps.filter(s => s.target_date && new Date(s.target_date) < new Date());
+    if (overdue.length) ctx += `\nOVERDUE ACTION STEP (raise if relevant): "${overdue[0].step_text}"\n`;
+  } catch (e) { /* non-fatal */ }
+
+  return ctx.trim();
+}
+
+/**
  * Record a de-identified event for aggregate metrics, respecting the member's
  * opt-out. Runs in the background; never stores a user identifier.
  */
@@ -277,6 +347,13 @@ router.post('/member/commander/message', async (req, res) => {
           } catch (e) { /* chart parse failed, skip */ }
         }
       }
+    }
+
+    // Prefer the new coaching context (intake_responses + benchmark + state);
+    // keep the legacy user_intake block as supplementary fallback.
+    if (req.dbUser) {
+      const coaching = await buildCoachingContext(req.dbUser.id);
+      if (coaching) intakeContext = coaching + (intakeContext ? '\n\n' + intakeContext : '');
     }
 
     const response = await commanderChat(
