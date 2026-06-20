@@ -121,7 +121,12 @@ async function buildCoachingContext(userId) {
     if (life.referralReached) {
       ctx += '\nNINE-MONTH POINT: They have been with The Bridge nine months without graduating. If progress is minimal, have the honest in-person-coaching referral conversation per your operating context.\n';
     } else if (life.milestoneReached && state && !state.six_month_milestone_handled) {
-      ctx += '\nSIX-MONTH MILESTONE: They have reached six months. Take a moment to look at where they are versus where they started, and offer the extension if meaningful progress is visible — per your operating context.\n';
+      ctx += '\nSIX-MONTH MILESTONE: They have reached six months. Take a moment to look at where they are versus where they started, and offer the extension if meaningful progress is visible — per your operating context. If they accept, call request_extension.\n';
+    }
+    if (state && state.extension_pending_confirmation && !state.extension_active) {
+      ctx += '\nEXTENSION PENDING: They accepted the extension and the owner is arranging it. Do not imply it is already active.\n';
+    } else if (state && state.extension_active) {
+      ctx += '\nEXTENSION ACTIVE: They are in their three-month extension period.\n';
     }
   } catch (e) { /* non-fatal */ }
 

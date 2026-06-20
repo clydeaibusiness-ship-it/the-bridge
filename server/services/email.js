@@ -181,8 +181,28 @@ async function sendWinRejectedEmail(email) {
   });
 }
 
+async function sendExtensionRequestEmail({ memberName, businessName } = {}) {
+  const client = getClient();
+  if (!client) return;
+  const to = process.env.OWNER_EMAIL || 'ClydeAIbusiness@gmail.com';
+  const who = businessName || memberName || 'A member';
+  await client.emails.send({
+    from: FROM,
+    to,
+    subject: `Extension request — ${who}`,
+    html: `
+      <div style="font-family: 'Space Grotesk', sans-serif; max-width: 560px; margin: 0 auto; padding: 40px 20px; color: #0a0a0f;">
+        <p style="font-size: 10px; font-family: 'Space Mono', monospace; color: #7a7570; letter-spacing: 0.15em; text-transform: uppercase;">EXTENSION REQUEST</p>
+        <p style="font-size: 16px; line-height: 1.6;"><strong>${memberName || 'A member'}</strong>${businessName ? ` (${businessName})` : ''} accepted the three-month half-price extension at their six-month milestone.</p>
+        <p style="font-size: 16px; line-height: 1.6;">Activate the half-price extension in Stripe, then set <code>extension_active = true</code> on their <code>member_state</code> row to confirm.</p>
+      </div>
+    `
+  });
+}
+
 module.exports = {
   sendWelcomeEmail,
+  sendExtensionRequestEmail,
   sendDebriefEmail,
   sendSubscriptionConfirmation,
   sendWeeklyDigest,

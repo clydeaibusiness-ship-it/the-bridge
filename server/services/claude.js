@@ -275,6 +275,11 @@ async function commanderChat(message, gameState, sessionContext, conversationHis
         },
         required: ['step_text']
       }
+    },
+    {
+      name: 'request_extension',
+      description: "Only call this when the member has been offered the three-month half-price extension at their six-month milestone AND explicitly accepts it. It notifies the owner to activate the extension in Stripe. Do not tell the member it is active immediately — tell them it is being arranged.",
+      input_schema: { type: 'object', properties: {} }
     }
   ];
 
@@ -321,6 +326,21 @@ async function commanderChat(message, gameState, sessionContext, conversationHis
           type: 'tool_result',
           tool_use_id: block.id,
           content: 'Action step saved.'
+        });
+      } else if (block.name === 'request_extension') {
+        if (persist && persist.userId) {
+          try {
+            const { flagExtensionRequest } = require('./supabase');
+            const info = await flagExtensionRequest(persist.userId);
+            try { require('./email').sendExtensionRequestEmail(info || {}); } catch (mailErr) { console.error('extension email error:', mailErr.message); }
+          } catch (exErr) {
+            console.error('request_extension error:', exErr.message);
+          }
+        }
+        toolResults.push({
+          type: 'tool_result',
+          tool_use_id: block.id,
+          content: 'The owner has been notified to activate the extension.'
         });
       } else {
         toolResults.push({

@@ -996,6 +996,36 @@ async function finalizeGraduationRecord(userId, comparison, freeAccessUntil) {
   return data;
 }
 
+// ---- Extension (six-month, owner-confirmed) ----
+
+/**
+ * Flag that the member accepted the half-price extension. Sets the
+ * owner-confirmation gate (activation is manual in Stripe) and returns the
+ * member's name/business for the owner notification.
+ */
+async function flagExtensionRequest(userId) {
+  const db = getClient();
+  if (!db) return null;
+  await db.from('member_state').update({
+    extension_offered: true,
+    extension_pending_confirmation: true,
+    six_month_milestone_handled: true,
+    updated_at: new Date().toISOString()
+  }).eq('user_id', userId);
+
+  const { data } = await db
+    .from('intake_responses')
+    .select('question_field, answer')
+    .eq('user_id', userId).eq('round', 1)
+    .in('question_field', ['member_name', 'business_name']);
+  let memberName = null, businessName = null;
+  for (const r of (data || [])) {
+    if (r.question_field === 'member_name') memberName = r.answer;
+    if (r.question_field === 'business_name') businessName = r.answer;
+  }
+  return { memberName, businessName };
+}
+
 // ---- Anonymous aggregate data (no personal identifiers) ----
 
 /**
@@ -1033,5 +1063,6 @@ module.exports = {
   insertAnonymousAggregate,
   saveIntakeResponse, updateIntakeFollowUp, getIntakeResponses,
   saveBenchmarks, approveBenchmarks,
-  getGraduationRecord, createGraduationRecord, finalizeGraduationRecord
+  getGraduationRecord, createGraduationRecord, finalizeGraduationRecord,
+  flagExtensionRequest
 };
