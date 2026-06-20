@@ -123,6 +123,10 @@ app.get('/progress', requirePaidMember, (req, res) => {
   res.sendFile(path.join(__dirname, '../pages/progress.html'));
 });
 
+app.get('/profile', requirePaidMember, (req, res) => {
+  res.sendFile(path.join(__dirname, '../pages/profile.html'));
+});
+
 app.get('/terms', (req, res) => {
   res.sendFile(path.join(__dirname, '../pages/terms.html'));
 });

@@ -949,6 +949,61 @@ router.post('/member/privacy/opt-out', async (req, res) => {
 });
 
 /**
+ * GET /api/member/intake-changes
+ * The member's editable interview answers and how many changes remain.
+ */
+router.get('/member/intake-changes', async (req, res) => {
+  if (!req.dbUser) return res.json({ authenticated: false });
+  try {
+    const state = await ensureMemberState(req.dbUser.id);
+    const responses = await getIntakeResponses(req.dbUser.id, 1);
+    const answers = responses
+      .filter(r => r.answer && String(r.answer).trim())
+      .map(r => {
+        const q = getQuestionByField(r.question_field);
+        return { field: r.question_field, label: q ? q.question : r.question_field, answer: r.answer };
+      });
+    res.json({
+      authenticated: true,
+      remaining: state?.intake_changes_remaining ?? 0,
+      contactEmail: 'ClydeAIbusiness@gmail.com',
+      answers
+    });
+  } catch (e) {
+    console.error('Intake-changes fetch error:', e.message);
+    res.status(500).json({ error: 'Could not load your answers' });
+  }
+});
+
+/**
+ * POST /api/member/intake-changes
+ * Body: { field, answer }. Updates one interview answer and decrements the
+ * allowance (3 total). Locks at zero with a contact email.
+ */
+router.post('/member/intake-changes', async (req, res) => {
+  if (!req.dbUser) return res.status(401).json({ error: 'Authentication required' });
+  try {
+    const { field, answer } = req.body;
+    const q = getQuestionByField(field);
+    if (!q) return res.status(400).json({ error: 'Unknown question' });
+    if (!answer || !String(answer).trim()) return res.status(400).json({ error: 'Answer required' });
+
+    const state = await ensureMemberState(req.dbUser.id);
+    const remaining = state?.intake_changes_remaining ?? 0;
+    if (remaining <= 0) {
+      return res.status(403).json({ error: 'no_changes_left', contactEmail: 'ClydeAIbusiness@gmail.com' });
+    }
+
+    await saveIntakeResponse(req.dbUser.id, 1, q.stage, field, String(answer).trim());
+    await updateMemberState(req.dbUser.id, { intake_changes_remaining: remaining - 1 });
+    res.json({ ok: true, remaining: remaining - 1 });
+  } catch (e) {
+    console.error('Intake-changes save error:', e.message);
+    res.status(500).json({ error: 'Could not save your change' });
+  }
+});
+
+/**
  * GET /api/member/action-steps
  */
 router.get('/member/action-steps', async (req, res) => {
