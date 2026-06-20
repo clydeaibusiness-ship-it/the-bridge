@@ -24,6 +24,39 @@ const {
   saveBenchmarks, approveBenchmarks
 } = require('../services/supabase');
 
+function monthsSince(iso) {
+  if (!iso) return 0;
+  return (Date.now() - new Date(iso).getTime()) / (1000 * 60 * 60 * 24 * 30.44);
+}
+
+/**
+ * Evaluate the data-driven lifecycle signals. Condition 1 of graduation
+ * (metric movement) is fully evaluable here; conditions 2 and 3 (member
+ * confirmation and question-quality) are the Commander's job in conversation.
+ */
+function evaluateLifecycle(benchmarks, ratingHistory, state) {
+  const result = { graduationCandidate: false, milestoneReached: false, referralReached: false };
+
+  if (benchmarks.length >= 3) {
+    const byBench = {};
+    for (const r of ratingHistory) (byBench[r.benchmark_id] = byBench[r.benchmark_id] || []).push(r);
+    const TEN_DAYS = 10 * 24 * 60 * 60 * 1000;
+    result.graduationCandidate = benchmarks.every(b => {
+      const rs = (byBench[b.id] || []).slice().sort((a, c) => new Date(a.created_at) - new Date(c.created_at));
+      if (!rs.length) return false;
+      const latest = rs[rs.length - 1];
+      if (latest.rating < 7) return false;
+      // A prior rating of 7+ at least ten days before the latest = two cycles held.
+      return rs.some(r => r.rating >= 7 && (new Date(latest.created_at) - new Date(r.created_at)) >= TEN_DAYS);
+    });
+  }
+
+  const months = monthsSince(state?.coaching_started_at);
+  if (months >= 9 && !state?.graduated_at) result.referralReached = true;
+  if (months >= 6 && !state?.graduated_at && !state?.extension_active) result.milestoneReached = true;
+  return result;
+}
+
 /**
  * Build the Commander's context from the coaching system: the member's
  * interview answers, their benchmark (as a private map), the hidden
@@ -75,6 +108,21 @@ async function buildCoachingContext(userId) {
       ctx += `\nINTAKE STATUS: They have not completed ${incomplete.join(' and ')}. Invite them back only when the missing information would meaningfully change your response.\n`;
     }
   }
+
+  // Lifecycle signals — data the Commander needs to run graduation / the
+  // six-month milestone / the nine-month referral per its operating context.
+  try {
+    const ratingHistory = await getBenchmarkRatingHistory(userId);
+    const life = evaluateLifecycle(benches, ratingHistory, state);
+    if (life.graduationCandidate) {
+      ctx += '\nGRADUATION SIGNAL: Their success metrics have held at 7 or above across check-ins (condition one is met). If their questions have shifted from survival to strategy, ask the confirming question and, only if they confirm the shift, begin the graduation conversation per your operating context.\n';
+    }
+    if (life.referralReached) {
+      ctx += '\nNINE-MONTH POINT: They have been with The Bridge nine months without graduating. If progress is minimal, have the honest in-person-coaching referral conversation per your operating context.\n';
+    } else if (life.milestoneReached && state && !state.six_month_milestone_handled) {
+      ctx += '\nSIX-MONTH MILESTONE: They have reached six months. Take a moment to look at where they are versus where they started, and offer the extension if meaningful progress is visible — per your operating context.\n';
+    }
+  } catch (e) { /* non-fatal */ }
 
   // One pre-conversation thread from the most recent debrief.
   try {
