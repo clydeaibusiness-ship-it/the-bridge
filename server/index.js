@@ -127,6 +127,10 @@ app.get('/profile', requirePaidMember, (req, res) => {
   res.sendFile(path.join(__dirname, '../pages/profile.html'));
 });
 
+app.get('/certificate', requirePaidMember, (req, res) => {
+  res.sendFile(path.join(__dirname, '../pages/certificate.html'));
+});
+
 app.get('/terms', (req, res) => {
   res.sendFile(path.join(__dirname, '../pages/terms.html'));
 });

@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const crypto = require('crypto');
-const { personalizeIntake, commanderChat, generateConversationSummary, generateChart, getSoulVersion, compressSession, generateSessionDebrief, generatePeriodicReport, generateIntakeFollowUp, generateBenchmark } = require('../services/claude');
+const { personalizeIntake, commanderChat, generateConversationSummary, generateChart, getSoulVersion, compressSession, generateSessionDebrief, generatePeriodicReport, generateIntakeFollowUp, generateBenchmark, generateGraduationComparison } = require('../services/claude');
 const {
   QUESTIONS, STAGE_FRAMING, STAGE_COMPLETE, STAGE_BOUNDS, getQuestionByField
 } = require('../data/intake-questions');
@@ -21,7 +21,8 @@ const {
   getLatestPeriodicReport, savePeriodicReport,
   insertAnonymousAggregate,
   saveIntakeResponse, updateIntakeFollowUp, getIntakeResponses,
-  saveBenchmarks, approveBenchmarks
+  saveBenchmarks, approveBenchmarks,
+  getGraduationRecord, createGraduationRecord, finalizeGraduationRecord
 } = require('../services/supabase');
 
 function monthsSince(iso) {
@@ -845,7 +846,14 @@ router.get('/member/progress', async (req, res) => {
       periodicReport: periodicReport
         ? { letter: periodicReport.letter, created_at: periodicReport.created_at, read: periodicReport.read }
         : null,
-      privacy: { optOut: !!memberState?.anonymous_data_opt_out }
+      privacy: { optOut: !!memberState?.anonymous_data_opt_out },
+      graduation: (() => {
+        const life = evaluateLifecycle(benchmarks, ratingHistory, memberState);
+        return {
+          offered: life.graduationCandidate && !memberState?.graduated_at,
+          graduated: !!memberState?.graduated_at
+        };
+      })()
     });
   } catch (e) {
     console.error('Progress error:', e.message);
@@ -1130,6 +1138,84 @@ async function completeStageIfDone(userId, stage, answered) {
   return { completed: true, message: STAGE_COMPLETE[stage], benchmarkReady };
 }
 
+/** Build a { field: answer (+follow-up) } map from a set of intake responses. */
+function answersMap(responses) {
+  const m = {};
+  for (const r of responses) {
+    m[r.question_field] = r.follow_up_answer ? `${r.answer} ${r.follow_up_answer}` : r.answer;
+  }
+  return m;
+}
+
+/** Finalize graduation after the round-2 exit interview completes. */
+async function finalizeGraduation(userId) {
+  const [r1, r2] = await Promise.all([getIntakeResponses(userId, 1), getIntakeResponses(userId, 2)]);
+  let comparison = { changes: [] };
+  try {
+    comparison = await generateGraduationComparison(answersMap(r1), answersMap(r2));
+  } catch (e) {
+    console.error('Graduation comparison failed:', e.message);
+  }
+  const freeUntil = new Date();
+  freeUntil.setMonth(freeUntil.getMonth() + 6);
+  await finalizeGraduationRecord(userId, comparison, freeUntil.toISOString().split('T')[0]);
+  await updateMemberState(userId, { graduated_at: new Date().toISOString() });
+}
+
+/**
+ * POST /api/member/graduation/start
+ * Begins the exit interview once condition 1 (metric movement) is met. The
+ * member reaches here only after the Commander's confirming conversation.
+ */
+router.post('/member/graduation/start', async (req, res) => {
+  if (!req.dbUser) return res.status(401).json({ error: 'Authentication required' });
+  try {
+    const userId = req.dbUser.id;
+    const [benches, ratingHistory, state] = await Promise.all([
+      getBenchmarks(userId), getBenchmarkRatingHistory(userId), ensureMemberState(userId)
+    ]);
+    if (state?.graduated_at) return res.status(400).json({ error: 'already_graduated' });
+    const life = evaluateLifecycle(benches, ratingHistory, state);
+    if (!life.graduationCandidate) return res.status(403).json({ error: 'not_eligible' });
+
+    const startedOn = state?.coaching_started_at
+      ? new Date(state.coaching_started_at).toISOString().split('T')[0] : null;
+    await createGraduationRecord(userId, startedOn);
+    res.json({ ok: true });
+  } catch (e) {
+    console.error('Graduation start error:', e.message);
+    res.status(500).json({ error: 'Could not start the exit interview' });
+  }
+});
+
+/**
+ * GET /api/member/graduation
+ * The graduation record + certificate content (for the certificate page).
+ */
+router.get('/member/graduation', async (req, res) => {
+  if (!req.dbUser) return res.json({ record: null });
+  try {
+    const rec = await getGraduationRecord(req.dbUser.id);
+    const r1 = await getIntakeResponses(req.dbUser.id, 1);
+    let memberName = null, businessName = null;
+    for (const r of r1) {
+      if (r.question_field === 'member_name') memberName = r.answer;
+      if (r.question_field === 'business_name') businessName = r.answer;
+    }
+    res.json({
+      memberName, businessName,
+      record: rec ? {
+        comparison: rec.comparison, started_on: rec.started_on,
+        graduated_on: rec.graduated_on, free_access_until: rec.free_access_until,
+        certificate_issued: rec.certificate_issued
+      } : null
+    });
+  } catch (e) {
+    console.error('Graduation fetch error:', e.message);
+    res.json({ record: null });
+  }
+});
+
 /**
  * GET /api/member/interview/state
  * The next question to ask (with stage framing if a stage is starting), or done.
@@ -1138,18 +1224,19 @@ router.get('/member/interview/state', async (req, res) => {
   if (!req.dbUser) return res.json({ authenticated: false });
   try {
     const userId = req.dbUser.id;
+    const round = parseInt(req.query.round, 10) === 2 ? 2 : 1;
     const memberState = await ensureMemberState(userId);
-    const responses = await getIntakeResponses(userId, 1);
+    const responses = await getIntakeResponses(userId, round);
     const answered = answeredFieldSet(responses);
     const q = nextQuestion(answered);
 
     if (!q) {
-      return res.json({ authenticated: true, done: true, stages: stageStatus(memberState),
+      return res.json({ authenticated: true, done: true, round, stages: stageStatus(memberState),
         progress: { answered: answered.size, total: QUESTIONS.length } });
     }
     const framing = (q.n === STAGE_BOUNDS[q.stage].first) ? STAGE_FRAMING[q.stage] : null;
     res.json({
-      authenticated: true, done: false,
+      authenticated: true, done: false, round,
       stages: stageStatus(memberState),
       progress: { answered: answered.size, total: QUESTIONS.length },
       stage: q.stage,
@@ -1173,6 +1260,7 @@ router.post('/member/interview/answer', async (req, res) => {
   try {
     const userId = req.dbUser.id;
     const { field, answer, isFollowUp } = req.body;
+    const round = parseInt(req.body.round, 10) === 2 ? 2 : 1;
     const q = getQuestionByField(field);
     if (!q) return res.status(400).json({ error: 'Unknown question' });
     if (answer == null || String(answer).trim() === '') {
@@ -1181,10 +1269,10 @@ router.post('/member/interview/answer', async (req, res) => {
 
     if (isFollowUp) {
       // Record the follow-up answer; never re-prompt.
-      await updateIntakeFollowUp(userId, 1, field, undefined, String(answer));
+      await updateIntakeFollowUp(userId, round, field, undefined, String(answer));
     } else {
-      await saveIntakeResponse(userId, 1, q.stage, field, String(answer));
-      recordAnonymous(userId, 'intake_answer', { field, stage: q.stage });
+      await saveIntakeResponse(userId, round, q.stage, field, String(answer));
+      if (round === 1) recordAnonymous(userId, 'intake_answer', { field, stage: q.stage });
 
       // Two-stage vagueness check → one follow-up, then always advance.
       if (isVague(answer, q.check) && q.followup.kind !== 'none') {
@@ -1200,17 +1288,33 @@ router.post('/member/interview/answer', async (req, res) => {
           }
         }
         if (followUp) {
-          await updateIntakeFollowUp(userId, 1, field, followUp, undefined);
+          await updateIntakeFollowUp(userId, round, field, followUp, undefined);
           return res.json({ followUp });
         }
       }
     }
 
     // Advance.
-    const responses = await getIntakeResponses(userId, 1);
+    const responses = await getIntakeResponses(userId, round);
     const answered = answeredFieldSet(responses);
-    const stageResult = await completeStageIfDone(userId, q.stage, answered);
 
+    // Round 2 = graduation exit interview: no stage flags, no benchmark.
+    // On full completion, finalize graduation and issue the certificate.
+    if (round === 2) {
+      const nq2 = nextQuestion(answered);
+      if (!nq2) {
+        await finalizeGraduation(userId);
+        return res.json({ done: true, round: 2, graduated: true });
+      }
+      return res.json({
+        done: false, round: 2,
+        framing: (nq2.n === STAGE_BOUNDS[nq2.stage].first) ? STAGE_FRAMING[nq2.stage] : null,
+        stage: nq2.stage,
+        question: { n: nq2.n, field: nq2.field, text: nq2.question }
+      });
+    }
+
+    const stageResult = await completeStageIfDone(userId, q.stage, answered);
     const nq = nextQuestion(answered);
     const memberState = await ensureMemberState(userId);
 

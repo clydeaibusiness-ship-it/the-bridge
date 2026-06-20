@@ -564,6 +564,41 @@ Operational baseline:
 }
 
 /**
+ * Graduation certificate content — compare a member's round-1 and round-2
+ * interview answers and name 3-5 concrete, plain-language changes in their
+ * own terms. `before`/`after` are { field: text } maps.
+ * Returns { changes: [string] }.
+ */
+async function generateGraduationComparison(before, after) {
+  let pairs = '';
+  for (const field of Object.keys(after)) {
+    if (before[field] || after[field]) {
+      pairs += `\n[${field.replace(/_/g, ' ')}]\nBEFORE: ${before[field] || '(no answer)'}\nAFTER: ${after[field] || '(no answer)'}\n`;
+    }
+  }
+
+  const prompt = `A member started The Bridge and has now completed a second interview at graduation. Compare their before and after answers and name 3 to 5 specific, concrete things that changed — in plain language, in their own terms. No grades, no scores, no flattery. Each item is one or two sentences describing the shift from where they were to where they are now.
+
+Return ONLY JSON: { "changes": ["...", "..."] }
+${pairs}`;
+
+  const response = await client.messages.create({
+    model: 'claude-sonnet-4-20250514',
+    max_tokens: 1200,
+    system: 'You write a plain-language before/after comparison for a graduation certificate. Return only a JSON object — no markdown, no backticks.',
+    messages: [{ role: 'user', content: prompt }]
+  });
+
+  const text = response.content[0].text;
+  const m = text.match(/\{[\s\S]*\}/);
+  if (!m) throw new Error('generateGraduationComparison: non-JSON response: ' + text.substring(0, 200));
+  const parsed = JSON.parse(m[0]);
+  if (!Array.isArray(parsed.changes)) parsed.changes = [];
+  parsed.changes = parsed.changes.slice(0, 5).map(c => String(c).trim()).filter(Boolean);
+  return parsed;
+}
+
+/**
  * Generate a summary of a conversation for long-term context
  */
 async function generateConversationSummary(messages) {
@@ -676,6 +711,7 @@ module.exports = {
   generateSessionDebrief,
   generatePeriodicReport,
   generateIntakeFollowUp,
-  generateBenchmark
+  generateBenchmark,
+  generateGraduationComparison
 };
 

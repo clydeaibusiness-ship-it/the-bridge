@@ -65,6 +65,7 @@
     const progressEl = document.getElementById('iv-progress');
     const barFill = document.getElementById('iv-bar-fill');
     const collected = {}; // field -> answer, kept locally for the dashboard signal
+    const ROUND = new URLSearchParams(location.search).get('round') === '2' ? 2 : 1;
 
     const esc = (s) => String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 
@@ -122,7 +123,7 @@
         if (!isFollowUp) collected[field] = answer;
         btn.disabled = true;
         btn.textContent = 'Saving…';
-        const data = await api('/api/member/interview/answer', 'POST', { field, answer, isFollowUp });
+        const data = await api('/api/member/interview/answer', 'POST', { field, answer, isFollowUp, round: ROUND });
         if (!data) { btn.disabled = false; btn.textContent = 'Continue'; return; }
         handleAnswerResult(field, data);
       });
@@ -130,6 +131,15 @@
 
     async function handleAnswerResult(field, data) {
       if (data.followUp) { renderFollowUp(field, data.followUp); return; }
+
+      // Exit interview (round 2): no stages or benchmark — go straight to the
+      // certificate when finished.
+      if (ROUND === 2) {
+        if (data.done) { window.location.href = '/certificate'; return; }
+        setProgress({ answered: data.question.n - 1, total: 30 });
+        renderQuestion(data.question, data.framing);
+        return;
+      }
 
       // Stage 1 completion opens the dashboard.
       if (data.stageComplete && data.stages && data.stages.stage_1) await markStarted();
@@ -199,12 +209,25 @@
     }
 
     async function loadState() {
-      const data = await api('/api/member/interview/state', 'GET');
+      const data = await api('/api/member/interview/state' + (ROUND === 2 ? '?round=2' : ''), 'GET');
       if (!data || data.authenticated === false) {
         panel.innerHTML = '<div class="iv-msg">Please <a href="/login">sign in</a> to begin.</div>';
         return;
       }
-      if (data.done) { renderDone(); return; }
+      if (data.done) {
+        if (ROUND === 2) { window.location.href = '/certificate'; return; }
+        renderDone(); return;
+      }
+      if (ROUND === 2 && data.question && data.question.n === 1) {
+        // Exit-interview preamble before the first question.
+        panel.innerHTML = '<div class="iv-msg">This is the same interview you started with — the same questions, a fresh set of answers. Do not look back at what you said before. Just answer as you are today. When you finish, you will see how far you have come.</div>' +
+          '<div><button class="iv-btn" id="iv-begin">Begin</button></div>';
+        document.getElementById('iv-begin').addEventListener('click', () => {
+          setProgress(data.progress);
+          renderQuestion(data.question, null);
+        });
+        return;
+      }
       setProgress(data.progress);
       renderQuestion(data.question, data.framing);
     }

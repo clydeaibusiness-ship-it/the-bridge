@@ -945,6 +945,57 @@ async function approveBenchmarks(userId, statements) {
   return data || [];
 }
 
+// ---- Graduation ----
+
+async function getGraduationRecord(userId) {
+  const db = getClient();
+  if (!db) return null;
+  const { data } = await db
+    .from('graduation_records')
+    .select('*')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
+    .limit(1);
+  return (data && data.length > 0) ? data[0] : null;
+}
+
+/** Create the graduation record at the start of the exit interview (if none open). */
+async function createGraduationRecord(userId, startedOn) {
+  const db = getClient();
+  if (!db) return null;
+  const existing = await getGraduationRecord(userId);
+  if (existing && !existing.graduated_on) return existing; // already in progress
+  const { data, error } = await db
+    .from('graduation_records')
+    .insert({ user_id: userId, before_round: 1, started_on: startedOn || null })
+    .select()
+    .single();
+  if (error) { console.error('createGraduationRecord error:', error.message); return null; }
+  return data;
+}
+
+/** Finalize after the exit interview: store the comparison and issue the certificate. */
+async function finalizeGraduationRecord(userId, comparison, freeAccessUntil) {
+  const db = getClient();
+  if (!db) return null;
+  const rec = await getGraduationRecord(userId);
+  if (!rec) return null;
+  const { data, error } = await db
+    .from('graduation_records')
+    .update({
+      after_round: 2,
+      comparison,
+      graduated_on: new Date().toISOString().split('T')[0],
+      certificate_issued: true,
+      free_access_until: freeAccessUntil
+    })
+    .eq('id', rec.id)
+    .select()
+    .single();
+  if (error) { console.error('finalizeGraduationRecord error:', error.message); return null; }
+  return data;
+}
+
 // ---- Anonymous aggregate data (no personal identifiers) ----
 
 /**
@@ -981,5 +1032,6 @@ module.exports = {
   getLatestPeriodicReport, savePeriodicReport,
   insertAnonymousAggregate,
   saveIntakeResponse, updateIntakeFollowUp, getIntakeResponses,
-  saveBenchmarks, approveBenchmarks
+  saveBenchmarks, approveBenchmarks,
+  getGraduationRecord, createGraduationRecord, finalizeGraduationRecord
 };

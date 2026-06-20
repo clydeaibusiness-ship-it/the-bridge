@@ -135,6 +135,16 @@
 
       let html = '';
 
+      // Graduation
+      if (data.graduation && data.graduation.graduated) {
+        html += '<div class="pg-block"><div class="pg-block-title">Graduation</div>' +
+          '<p style="font-family:var(--font-ui);font-size:0.8125rem;color:#3a3530;line-height:1.6;">You have graduated. <a href="/certificate" style="color:#8a6830;">View your certificate →</a></p></div>';
+      } else if (data.graduation && data.graduation.offered) {
+        html += '<div class="pg-block"><div class="pg-block-title">Graduation</div>' +
+          '<p style="font-family:var(--font-ui);font-size:0.8125rem;color:#3a3530;line-height:1.6;margin-bottom:0.75rem;">You may be ready to graduate. When you are, begin your exit interview — the same questions you started with, answered fresh. It becomes your certificate.</p>' +
+          '<button id="pg-grad-start" class="pg-step-check">Begin exit interview</button></div>';
+      }
+
       // Stages
       const st = data.stages || {};
       html += '<div class="pg-block"><div class="pg-block-title">Interview Stages</div><div class="pg-stages">';
@@ -212,6 +222,19 @@
         (optedOut ? 'Opted out · turn back on' : 'Opt out of anonymous data') + '</button></div>';
 
       body.innerHTML = html;
+
+      // Wire "Begin exit interview"
+      const gradBtn = document.getElementById('pg-grad-start');
+      if (gradBtn) {
+        gradBtn.addEventListener('click', async () => {
+          gradBtn.disabled = true; gradBtn.textContent = 'Starting…';
+          try {
+            const r = await fetch('/api/member/graduation/start', { method: 'POST' });
+            if (r.ok) { window.location.href = '/intake?round=2'; return; }
+          } catch (e) {}
+          gradBtn.disabled = false; gradBtn.textContent = 'Begin exit interview';
+        });
+      }
 
       // Wire privacy opt-out toggle
       const optBtn = document.getElementById('pg-optout');
