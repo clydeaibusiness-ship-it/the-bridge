@@ -28,6 +28,50 @@ async function createUser(clerkId, email) {
   return data;
 }
 
+/**
+ * Resolve a user idempotently. Order:
+ *   1. existing row for this clerk_id → return it
+ *   2. existing row for this email (created under a different/old Clerk
+ *      instance) → reclaim it by updating its clerk_id → return it
+ *   3. otherwise insert a new row
+ * This prevents the users_email_key unique-constraint collisions that occur
+ * when the Clerk instance issuing IDs changes (dev/prod or instance swaps).
+ */
+async function getOrCreateUser(clerkId, email) {
+  const db = getClient();
+  if (!db) return null;
+
+  const byId = await db.from('users').select('*').eq('clerk_id', clerkId).limit(1);
+  if (byId.data && byId.data.length) return byId.data[0];
+
+  if (email) {
+    const byEmail = await db.from('users').select('*').eq('email', email).limit(1);
+    if (byEmail.data && byEmail.data.length) {
+      const upd = await db.from('users')
+        .update({ clerk_id: clerkId })
+        .eq('id', byEmail.data[0].id)
+        .select()
+        .single();
+      if (upd.error) { console.error('Reclaim user by email failed:', upd.error.message); return byEmail.data[0]; }
+      return upd.data;
+    }
+  }
+
+  const ins = await db.from('users').insert({ clerk_id: clerkId, email }).select().single();
+  if (ins.error) {
+    // Race or residual collision — re-fetch by clerk_id, then by email.
+    const r1 = await db.from('users').select('*').eq('clerk_id', clerkId).limit(1);
+    if (r1.data && r1.data.length) return r1.data[0];
+    if (email) {
+      const r2 = await db.from('users').select('*').eq('email', email).limit(1);
+      if (r2.data && r2.data.length) return r2.data[0];
+    }
+    console.error('getOrCreateUser insert failed:', ins.error.message);
+    return null;
+  }
+  return ins.data;
+}
+
 async function getUserByClerkId(clerkId) {
   const db = getClient();
   if (!db) return null;
@@ -1045,7 +1089,7 @@ async function insertAnonymousAggregate(eventType, industry = null, payload = nu
 
 module.exports = {
   getClient,
-  createUser, getUserByClerkId, updateMembershipTier, updateStripeCustomerId,
+  createUser, getOrCreateUser, getUserByClerkId, updateMembershipTier, updateStripeCustomerId,
   upsertAnonymousEvent, getWeeklyEvents,
   getCommanderUsage, incrementCommanderUsage,
   saveCommanderMessage, getCommanderHistory, getLatestCommanderSessionId,
