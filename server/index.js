@@ -128,11 +128,11 @@ app.get('/subscribe', (req, res) => {
 
 // Protected pages — must be logged in + paid. The member pages below also
 // require Stage 1 of the interview to be complete (else → /intake).
+// The chat-first shell is now the default landing after login.
 app.get('/dashboard', requirePaidMember, requireInterviewStarted, (req, res) => {
-  res.sendFile(path.join(__dirname, '../pages/dashboard.html'));
+  res.sendFile(path.join(__dirname, '../pages/app.html'));
 });
 
-// New chat-first shell (Commander home + swipeable Chart/Progress panels).
 app.get('/app', requirePaidMember, requireInterviewStarted, (req, res) => {
   res.sendFile(path.join(__dirname, '../pages/app.html'));
 });

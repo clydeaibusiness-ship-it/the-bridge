@@ -50,12 +50,12 @@
     .chart-sec:last-child { border-bottom: none; }
     .chart-sec-t { font-family: var(--font-data); font-size: 0.625rem; letter-spacing: 0.1em; text-transform: uppercase; color: #7a7570; margin-bottom: 6px; }
     .chart-sec-b { font-family: var(--font-ui); font-size: 0.8125rem; color: #3a3530; line-height: 1.65; }
-    /* Bottom slider */
-    .slider { flex: 0 0 auto; display: flex; padding: 8px 10px calc(8px + env(safe-area-inset-bottom)); border-top: 1px solid #d8d0c0; background: #f5f0e8; }
-    .slider button { flex: 1; background: none; border: none; cursor: pointer; padding: 6px 0; font-family: var(--font-data); font-size: 0.625rem; letter-spacing: 0.08em; text-transform: uppercase; color: #9a948a; }
-    .slider button .lab { display: inline-block; padding-bottom: 5px; border-bottom: 2px solid transparent; }
-    .slider button.active { color: #0a0a0f; }
-    .slider button.active .lab { border-bottom-color: #8a6830; }
+    /* Bottom slider with a sliding pill */
+    .slider { flex: 0 0 auto; padding: 10px 12px calc(10px + env(safe-area-inset-bottom)); border-top: 1px solid #d8d0c0; background: #f5f0e8; }
+    .slider-inner { position: relative; display: flex; height: 42px; background: #ece7dc; border-radius: 999px; }
+    .slider-pill { position: absolute; top: 4px; left: 0; height: calc(100% - 8px); width: 33.3333%; background: #0a0a0f; border-radius: 999px; transition: transform 0.32s cubic-bezier(0.4,0,0.2,1); z-index: 0; transform: translateX(0); }
+    .slider-inner button { position: relative; z-index: 1; flex: 1; background: none; border: none; cursor: pointer; font-family: var(--font-data); font-size: 0.625rem; letter-spacing: 0.08em; text-transform: uppercase; color: #7a7570; transition: color 0.2s; }
+    .slider-inner button.active { color: #f0ebe0; }
     /* Menu sheet */
     .scrim { position: absolute; inset: 0; background: rgba(10,10,15,0.4); opacity: 0; pointer-events: none; transition: opacity 0.25s; z-index: 20; }
     .scrim.open { opacity: 1; pointer-events: auto; }
@@ -112,10 +112,13 @@
       </div>
     </div>
 
-    <div class="slider" id="slider">
-      <button data-i="0"><span class="lab">Chart</span></button>
-      <button data-i="1" class="active"><span class="lab">Commander</span></button>
-      <button data-i="2"><span class="lab">Progress</span></button>
+    <div class="slider">
+      <div class="slider-inner" id="slider">
+        <div class="slider-pill" id="slider-pill"></div>
+        <button data-i="0">Chart</button>
+        <button data-i="1" class="active">Commander</button>
+        <button data-i="2">Progress</button>
+      </div>
     </div>
 
     <div class="scrim" id="scrim"></div>
@@ -132,15 +135,18 @@
     const track = document.getElementById('track');
     const tbTitle = document.getElementById('tb-title');
     const sliderBtns = Array.from(document.querySelectorAll('#slider button'));
+    const pill = document.getElementById('slider-pill');
     let current = 1;
 
     function goTo(i) {
       current = Math.max(0, Math.min(2, i));
       track.style.transform = `translateX(-${current * 33.3333}%)`;
+      pill.style.transform = `translateX(${current * 100}%)`;
       tbTitle.textContent = TITLES[current];
       sliderBtns.forEach(b => b.classList.toggle('active', Number(b.dataset.i) === current));
     }
     sliderBtns.forEach(b => b.addEventListener('click', () => goTo(Number(b.dataset.i))));
+    goTo(1); // start on the Commander immediately
 
     // Touch swipe between panels (ignored while swiping inside the message list horizontally)
     let sx = 0, sy = 0, swiping = false;
