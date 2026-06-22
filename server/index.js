@@ -149,9 +149,8 @@ app.get('/progress', requirePaidMember, requireInterviewStarted, (req, res) => {
   res.sendFile(path.join(__dirname, '../pages/progress.html'));
 });
 
-app.get('/profile', requirePaidMember, requireInterviewStarted, (req, res) => {
-  res.sendFile(path.join(__dirname, '../pages/profile.html'));
-});
+// Profile is now a modal inside the app shell — redirect the old page.
+app.get('/profile', (req, res) => res.redirect('/app'));
 
 app.get('/certificate', requirePaidMember, requireInterviewStarted, (req, res) => {
   res.sendFile(path.join(__dirname, '../pages/certificate.html'));
