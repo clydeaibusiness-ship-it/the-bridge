@@ -415,14 +415,26 @@
     async function loadChart() {
       const body = document.getElementById('chart-body');
       const { data } = await api('/api/intake/data');
-      const sections = data && data.session && data.session.chartSections;
-      let arr = sections;
+      let arr = data && data.session && data.session.chartSections;
       if (typeof arr === 'string') { try { arr = JSON.parse(arr); } catch (e) { arr = null; } }
-      if (!arr || !arr.length) {
-        body.innerHTML = '<p class="sp-empty">Your Navigation Chart builds as you complete the interview. Finish a stage and it appears here.</p>';
-        return;
-      }
-      body.innerHTML = arr.map(s => `<div class="chart-sec"><div class="chart-sec-t">${esc(s.title)}</div><div class="chart-sec-b">${esc(s.body)}</div></div>`).join('');
+
+      let html = (!arr || !arr.length)
+        ? '<p class="sp-empty">Your Navigation Chart builds as you complete the interview. Finish a stage and it appears here.</p>'
+        : arr.map(s => `<div class="chart-sec"><div class="chart-sec-t">${esc(s.title)}</div><div class="chart-sec-b">${esc(s.body)}</div></div>`).join('');
+
+      // Ongoing appended note: how the benchmark ratings have moved since the start.
+      try {
+        const pr = await api('/api/member/progress');
+        const moved = ((pr.data && pr.data.benchmarks) || [])
+          .filter(b => b.current_rating != null && b.starting_rating != null && b.current_rating !== b.starting_rating);
+        if (moved.length) {
+          html += '<div class="chart-sec"><div class="chart-sec-t">Since you started</div><div class="chart-sec-b">' +
+            moved.map(b => `&#8226; ${esc(b.statement)} — moved from ${b.starting_rating} to ${b.current_rating}.`).join('<br>') +
+            '</div></div>';
+        }
+      } catch (e) { /* non-fatal */ }
+
+      body.innerHTML = html;
     }
 
     // ---- Init ----
