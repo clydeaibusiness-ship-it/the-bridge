@@ -200,6 +200,17 @@
         }
       } catch (e) {}
 
+      // Onboarding: a member who has not finished Stage 1 of the interview
+      // goes straight into it — no parked dashboard, no "Start" button.
+      try {
+        const pr = await fetch('/api/member/progress');
+        const pdata = await pr.json();
+        if (pdata && pdata.authenticated !== false && pdata.stages && !pdata.stages.stage_1) {
+          window.location.replace('/intake');
+          return;
+        }
+      } catch (e) {}
+
       // Load session — Supabase is source of truth, localStorage is cache
       sessionData = await BridgeSession.load();
 
