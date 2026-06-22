@@ -132,6 +132,11 @@ app.get('/dashboard', requirePaidMember, requireInterviewStarted, (req, res) => 
   res.sendFile(path.join(__dirname, '../pages/dashboard.html'));
 });
 
+// New chat-first shell (Commander home + swipeable Chart/Progress panels).
+app.get('/app', requirePaidMember, requireInterviewStarted, (req, res) => {
+  res.sendFile(path.join(__dirname, '../pages/app.html'));
+});
+
 app.get('/intake', requirePaidMember, (req, res) => {
   res.sendFile(path.join(__dirname, '../pages/intake.html'));
 });
