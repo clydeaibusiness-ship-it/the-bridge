@@ -24,6 +24,7 @@
     .dash-bench-stmt { font-family: var(--font-ui); font-size: 0.8125rem; color: #1a1a1f; line-height: 1.45; }
     .dash-bench-rate { font-family: var(--font-data); font-size: 0.625rem; color: #8a6830; margin-top: 3px; }
     .dash-progress-link { display: inline-block; margin-top: 14px; font-family: var(--font-data); font-size: 0.625rem; letter-spacing: 0.08em; text-transform: uppercase; color: #8a6830; text-decoration: none; }
+    .dash-msg-system { color: #9a7a4a; font-size: 0.8125rem; font-style: italic; text-align: center; margin: 8px 0; line-height: 1.5; }
   </style>
   <script>var _isProd = location.hostname === 'captainsbridge.io' || location.hostname === 'www.captainsbridge.io'; window.__clerk_publishable_key = _isProd ? 'pk_live_Y2xlcmsuY2FwdGFpbnNicmlkZ2UuaW8k' : 'pk_test_b2JsaWdpbmctcHl0aG9uLTUuY2xlcmsuYWNjb3VudHMuZGV2JA';</script>
   <script src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@5/dist/clerk.browser.js"></script>
@@ -405,6 +406,9 @@ Biggest uncertainty: ${a.uncertainty || 'unknown'}
       commanderMessages.appendChild(loadingMsg);
       commanderMessages.scrollTop = commanderMessages.scrollHeight;
 
+      // Keep the Clerk session fresh so an idle gap doesn't drop context.
+      try { if (window.Clerk && window.Clerk.session) await window.Clerk.session.getToken(); } catch (e) {}
+
       try {
         const resp = await fetch('/api/member/commander/message', {
           method: 'POST',
@@ -412,18 +416,26 @@ Biggest uncertainty: ${a.uncertainty || 'unknown'}
           body: JSON.stringify({ message: text, sessionContext: getSessionContext() })
         });
 
-        const data = await resp.json();
+        let data = {};
+        try { data = await resp.json(); } catch (e) {}
         commanderMessages.removeChild(loadingMsg);
 
-        if (!resp.ok || data.error) {
-          // Issue 1, Cause C: friendly error instead of "temporarily unavailable"
-          addMessage(data.error || 'I was not able to process that just now. Could you rephrase or try again in a moment?', 'commander');
-        } else {
+        if (resp.ok && data.response) {
           addMessage(data.response, 'commander');
+        } else {
+          // Server was reached but returned an error — not the Commander's voice.
+          addMessage('The Commander hit a snag on that one. Give it another try in a moment.', 'system');
+          commanderInput.value = text; // preserve so they can retry without retyping
         }
       } catch (err) {
         commanderMessages.removeChild(loadingMsg);
-        addMessage('I was not able to process that just now. Could you rephrase or try again in a moment?', 'commander');
+        // Network failure — make it clearly a connection issue, not a build fault.
+        if (!navigator.onLine) {
+          addMessage('You appear to be offline. Your message was not sent — try again once your connection is back.', 'system');
+        } else {
+          addMessage('Could not reach the Commander just now. Check your connection and try again.', 'system');
+        }
+        commanderInput.value = text;
       }
       commanderSend.disabled = false;
       commanderInput.focus();
