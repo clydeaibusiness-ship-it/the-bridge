@@ -285,6 +285,14 @@
           data.messages.forEach(m => addMsg(m.content, m.role === 'user' ? 'user' : 'commander'));
           prompts.style.display = 'none';
         }
+        // Quiet pre-conversation note (cleared on the next send).
+        if (data.preConversation) {
+          const note = document.createElement('div');
+          note.className = 'm m-system pre-note';
+          note.textContent = 'Last time, this was left open: ' + data.preConversation;
+          msgs.appendChild(note);
+          msgs.scrollTop = msgs.scrollHeight;
+        }
       }
     }
 
@@ -293,6 +301,7 @@
       if (!text) return;
       input.value = '';
       prompts.style.display = 'none';
+      const pre = msgs.querySelector('.pre-note'); if (pre) pre.remove();
       addMsg(text, 'user');
       sendBtn.disabled = true;
 

@@ -279,6 +279,14 @@ router.get('/member/commander/history', async (req, res) => {
       }
     }
 
+    // One unresolved thread from last time, to show as a quiet note before
+    // the member types (the pre-conversation prompt).
+    let preConversation = null;
+    try {
+      const debriefs = await getSessionDebriefs(req.dbUser.id, 1);
+      if (debriefs.length && debriefs[0].unresolved_item) preConversation = debriefs[0].unresolved_item;
+    } catch (e) { /* non-fatal */ }
+
     res.json({
       messages: messages.map(m => ({
         role: m.message_role,
@@ -286,7 +294,8 @@ router.get('/member/commander/history', async (req, res) => {
         timestamp: m.created_at
       })),
       sessionId: sessionInfo?.sessionId || null,
-      summary
+      summary,
+      preConversation
     });
   } catch (e) {
     console.error('Commander history error:', e.message);
@@ -445,6 +454,20 @@ router.post('/member/commander/message', async (req, res) => {
           !!debrief.shift_detected,
           debrief.unresolved_item || null
         );
+
+        // On a meaningful shift, trigger an immediate metric check-in on the
+        // weakest benchmark (per the benchmarking spec), if one isn't already up.
+        if (debrief.shift_detected) {
+          const benchmarks = await getBenchmarks(userId);
+          if (benchmarks.length && !(await getActiveCheckIn(userId))) {
+            const target = [...benchmarks].sort((a, b) =>
+              (a.current_rating ?? a.starting_rating ?? 0) - (b.current_rating ?? b.starting_rating ?? 0))[0];
+            await createCheckIn(userId, {
+              type: 'metric', benchmark_id: target.id,
+              prompt_text: `On a scale of 1 to 10, how close does this feel right now: "${target.statement}"?`
+            });
+          }
+        }
       });
     }
 
