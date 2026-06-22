@@ -143,7 +143,7 @@ async function callClaude(userContent, additionalContext = '') {
     : systemPrompt;
 
   const response = await client.messages.create({
-    model: 'claude-sonnet-4-20250514',
+    model: 'claude-sonnet-4-6',
     max_tokens: 4000,
     system: fullSystem,
     messages: [{ role: 'user', content: userContent }]
@@ -286,7 +286,7 @@ async function commanderChat(message, gameState, sessionContext, conversationHis
   // Tool loop: keep returning tool results until the model produces a final
   // text answer (or we hit the safety guard). Handles multiple tools per turn.
   let response = await client.messages.create({
-    model: 'claude-sonnet-4-20250514',
+    model: 'claude-sonnet-4-6',
     max_tokens: 400,
     system: fullSystem,
     messages,
@@ -355,7 +355,7 @@ async function commanderChat(message, gameState, sessionContext, conversationHis
     messages.push({ role: 'user', content: toolResults });
 
     response = await client.messages.create({
-      model: 'claude-sonnet-4-20250514',
+      model: 'claude-sonnet-4-6',
       max_tokens: 400,
       system: fullSystem,
       messages,
@@ -488,7 +488,7 @@ ${debriefLines}`;
   ];
 
   const response = await client.messages.create({
-    model: 'claude-sonnet-4-20250514',
+    model: 'claude-sonnet-4-6',
     max_tokens: 400,
     messages
   });
@@ -564,7 +564,7 @@ Operational baseline:
 - Peer network: ${get('peer_network')}`;
 
   const response = await client.messages.create({
-    model: 'claude-sonnet-4-20250514',
+    model: 'claude-sonnet-4-6',
     max_tokens: 1200,
     system: 'You extract a member benchmark from intake answers. Use the member\'s own language. Return only a JSON object — no markdown, no backticks, no prose.',
     messages: [{ role: 'user', content: prompt }]
@@ -603,7 +603,7 @@ Return ONLY JSON: { "changes": ["...", "..."] }
 ${pairs}`;
 
   const response = await client.messages.create({
-    model: 'claude-sonnet-4-20250514',
+    model: 'claude-sonnet-4-6',
     max_tokens: 1200,
     system: 'You write a plain-language before/after comparison for a graduation certificate. Return only a JSON object — no markdown, no backticks.',
     messages: [{ role: 'user', content: prompt }]
@@ -678,7 +678,7 @@ Return this exact JSON structure with 6 sections. Each section has a "title" and
     : chartSystemPrompt;
 
   const response = await client.messages.create({
-    model: 'claude-sonnet-4-20250514',
+    model: 'claude-sonnet-4-6',
     max_tokens: 4000,
     system: fullSystem,
     messages: [{ role: 'user', content: prompt }]
@@ -702,7 +702,7 @@ async function compressSession(conversationMessages) {
   }).join('\n\n');
 
   const response = await client.messages.create({
-    model: 'claude-sonnet-4-20250514',
+    model: 'claude-sonnet-4-6',
     max_tokens: 1500,
     system: 'You are extracting meaningful knowledge from a business advisory conversation. Be precise and brief. Return only a JSON object with no markdown, no backticks, no prose.',
     messages: [{

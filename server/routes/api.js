@@ -757,10 +757,11 @@ function daysSince(iso) {
  * prompt so the heartbeat still runs. Returns the active check-in (or null).
  */
 async function ensureDueCheckIn(userId) {
-  // No check-ins before the member has onboarded (completed Stage 1 intake).
-  // Otherwise a brand-new member gets a generic prompt on first load.
-  const state = await ensureMemberState(userId);
-  if (!state || !state.stage_1_complete) return null;
+  // Check-ins track the member's benchmark, so none appear until benchmarks
+  // exist (generated after Stage 2). This keeps the prompts tailored to their
+  // own success statements rather than firing a generic question early.
+  const benchmarks = await getBenchmarks(userId);
+  if (!benchmarks.length) return null;
 
   const active = await getActiveCheckIn(userId);
   if (active) return active;
@@ -768,10 +769,9 @@ async function ensureDueCheckIn(userId) {
   const last = await getLastAnsweredCheckIn(userId);
   if (daysSince(last?.answered_at) < CHECK_IN_CADENCE_DAYS) return null;
 
-  const benchmarks = await getBenchmarks(userId);
-
-  // Occasionally ask a subjective question instead of a metric one.
-  const wantSubjective = benchmarks.length === 0 || daysSince(last?.answered_at) >= SUBJECTIVE_EVERY_DAYS;
+  // Mostly tailored metric check-ins; a subjective state question every
+  // couple of weeks, interspersed.
+  const wantSubjective = daysSince(last?.answered_at) >= SUBJECTIVE_EVERY_DAYS;
 
   if (wantSubjective) {
     const pick = SUBJECTIVE_PROMPTS[Math.floor(Date.now() / (1000 * 60 * 60 * 24)) % SUBJECTIVE_PROMPTS.length];
