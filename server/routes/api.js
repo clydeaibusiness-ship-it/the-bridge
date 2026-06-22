@@ -757,6 +757,11 @@ function daysSince(iso) {
  * prompt so the heartbeat still runs. Returns the active check-in (or null).
  */
 async function ensureDueCheckIn(userId) {
+  // No check-ins before the member has onboarded (completed Stage 1 intake).
+  // Otherwise a brand-new member gets a generic prompt on first load.
+  const state = await ensureMemberState(userId);
+  if (!state || !state.stage_1_complete) return null;
+
   const active = await getActiveCheckIn(userId);
   if (active) return active;
 
