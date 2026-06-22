@@ -68,6 +68,7 @@ app.use('/api/commander', commanderRoutes);
 
 // Auth + tier gate middleware for protected pages
 const { extractUser } = require('./middleware/auth');
+const { ensureMemberState } = require('./services/supabase');
 
 async function requirePaidMember(req, res, next) {
   // Check if there's a session cookie — if not, serve the page
@@ -93,6 +94,25 @@ async function requirePaidMember(req, res, next) {
   next();
 }
 
+/**
+ * Force a member who has not completed Stage 1 of the interview into /intake.
+ * Runs after requirePaidMember (which populates req.dbUser when a valid cookie
+ * exists). When req.dbUser is absent (no cookie yet) it lets the page load and
+ * the client-side guard handles it once Clerk sets the cookie.
+ */
+async function requireInterviewStarted(req, res, next) {
+  if (!req.dbUser) return next();
+  try {
+    const state = await ensureMemberState(req.dbUser.id);
+    if (!state || !state.stage_1_complete) {
+      return res.redirect('/intake');
+    }
+  } catch (e) {
+    // On any error, don't block access.
+  }
+  next();
+}
+
 // Public pages — no gate
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '../pages/index.html'));
@@ -106,8 +126,9 @@ app.get('/subscribe', (req, res) => {
   res.sendFile(path.join(__dirname, '../pages/subscribe.html'));
 });
 
-// Protected pages — must be logged in + paid
-app.get('/dashboard', requirePaidMember, (req, res) => {
+// Protected pages — must be logged in + paid. The member pages below also
+// require Stage 1 of the interview to be complete (else → /intake).
+app.get('/dashboard', requirePaidMember, requireInterviewStarted, (req, res) => {
   res.sendFile(path.join(__dirname, '../pages/dashboard.html'));
 });
 
@@ -115,19 +136,19 @@ app.get('/intake', requirePaidMember, (req, res) => {
   res.sendFile(path.join(__dirname, '../pages/intake.html'));
 });
 
-app.get('/navigation-chart', requirePaidMember, (req, res) => {
+app.get('/navigation-chart', requirePaidMember, requireInterviewStarted, (req, res) => {
   res.sendFile(path.join(__dirname, '../pages/navigation-chart.html'));
 });
 
-app.get('/progress', requirePaidMember, (req, res) => {
+app.get('/progress', requirePaidMember, requireInterviewStarted, (req, res) => {
   res.sendFile(path.join(__dirname, '../pages/progress.html'));
 });
 
-app.get('/profile', requirePaidMember, (req, res) => {
+app.get('/profile', requirePaidMember, requireInterviewStarted, (req, res) => {
   res.sendFile(path.join(__dirname, '../pages/profile.html'));
 });
 
-app.get('/certificate', requirePaidMember, (req, res) => {
+app.get('/certificate', requirePaidMember, requireInterviewStarted, (req, res) => {
   res.sendFile(path.join(__dirname, '../pages/certificate.html'));
 });
 
