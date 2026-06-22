@@ -989,6 +989,25 @@ async function approveBenchmarks(userId, statements) {
   return data || [];
 }
 
+/**
+ * Persist the Navigation Chart (regenerated from the interview) on the
+ * member's user_intake row so the existing chart display reads it.
+ */
+async function saveChartSections(userId, sections) {
+  const db = getClient();
+  if (!db) return null;
+  const { error } = await db
+    .from('user_intake')
+    .upsert({
+      user_id: userId,
+      chart_sections: sections,
+      intake_completed_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    }, { onConflict: 'user_id' });
+  if (error) { console.error('saveChartSections error:', error.message); return null; }
+  return true;
+}
+
 // ---- Graduation ----
 
 async function getGraduationRecord(userId) {
@@ -1108,5 +1127,6 @@ module.exports = {
   saveIntakeResponse, updateIntakeFollowUp, getIntakeResponses,
   saveBenchmarks, approveBenchmarks,
   getGraduationRecord, createGraduationRecord, finalizeGraduationRecord,
-  flagExtensionRequest
+  flagExtensionRequest,
+  saveChartSections
 };

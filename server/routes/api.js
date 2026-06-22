@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const crypto = require('crypto');
-const { personalizeIntake, commanderChat, generateConversationSummary, generateChart, getSoulVersion, compressSession, generateSessionDebrief, generatePeriodicReport, generateIntakeFollowUp, generateBenchmark, generateGraduationComparison } = require('../services/claude');
+const { personalizeIntake, commanderChat, generateConversationSummary, generateChart, getSoulVersion, compressSession, generateSessionDebrief, generatePeriodicReport, generateIntakeFollowUp, generateBenchmark, generateGraduationComparison, generateChartFromInterview } = require('../services/claude');
 const {
   QUESTIONS, STAGE_FRAMING, STAGE_COMPLETE, STAGE_BOUNDS, getQuestionByField
 } = require('../data/intake-questions');
@@ -22,7 +22,8 @@ const {
   insertAnonymousAggregate,
   saveIntakeResponse, updateIntakeFollowUp, getIntakeResponses,
   saveBenchmarks, approveBenchmarks,
-  getGraduationRecord, createGraduationRecord, finalizeGraduationRecord
+  getGraduationRecord, createGraduationRecord, finalizeGraduationRecord,
+  saveChartSections
 } = require('../services/supabase');
 
 function monthsSince(iso) {
@@ -1145,6 +1146,15 @@ async function completeStageIfDone(userId, stage, answered) {
       console.error('Benchmark generation failed:', e.message);
     }
   }
+
+  // Regenerate the Navigation Chart from the interview so far (background,
+  // non-blocking). Fires on every stage completion, per spec.
+  runBackground('chart-regen', async () => {
+    const all = await getIntakeResponses(userId, 1);
+    const sections = await generateChartFromInterview(answersMap(all));
+    if (sections && sections.length) await saveChartSections(userId, sections);
+  });
+
   return { completed: true, message: STAGE_COMPLETE[stage], benchmarkReady };
 }
 

@@ -691,6 +691,53 @@ Return this exact JSON structure with 6 sections. Each section has a "title" and
 }
 
 /**
+ * Generate the Navigation Chart from the conversational interview answers
+ * (intake_responses), replacing the legacy businessContext path. `answers`
+ * is a { field: text } map. Returns the array of 6 sections.
+ */
+async function generateChartFromInterview(answers) {
+  const lines = Object.entries(answers)
+    .filter(([, v]) => v && String(v).trim())
+    .map(([k, v]) => `- ${k.replace(/_/g, ' ')}: ${v}`)
+    .join('\n');
+
+  const prompt = `Generate a Navigation Chart — a strategic assessment for this business owner — from their interview answers below. Return ONLY a JSON object, no other text.
+
+Interview answers:
+${lines}
+
+Return this exact JSON structure with 6 sections. Each section has a "title" and "body". Write 3-5 sentences per body. Be direct, specific, and reference their actual business. Use Big Book of Strategy framework language.
+
+{
+  "sections": [
+    { "title": "Ship Status", "body": "Current state of the business based on everything they told you" },
+    { "title": "Kill Risk", "body": "The single most dangerous vulnerability that could destroy this business in the next 12 months" },
+    { "title": "Lever Map", "body": "Which of the 8 strategic levers are strong, which are weak, and which are missing entirely" },
+    { "title": "Leverage Sequence", "body": "The specific order in which they should address their lever gaps" },
+    { "title": "What to Stop", "body": "What they are currently doing that is actively hurting their strategic position" },
+    { "title": "90-Day Focus", "body": "Exactly one thing to focus on for the next 90 days and what measurable outcome to target" }
+  ]
+}`;
+
+  const soulContent = getSoulPrimer();
+  const strategyContent = getSystemPrompt(false); // strategy only, no operational context
+  const system = soulContent ? `${soulContent}\n\n---\n\n${strategyContent}` : strategyContent;
+
+  const response = await client.messages.create({
+    model: 'claude-sonnet-4-6',
+    max_tokens: 4000,
+    system,
+    messages: [{ role: 'user', content: prompt }]
+  });
+
+  const text = response.content[0].text;
+  const jsonMatch = text.match(/\{[\s\S]*\}/);
+  if (!jsonMatch) throw new Error('generateChartFromInterview: non-JSON response: ' + text.substring(0, 200));
+  const parsed = JSON.parse(jsonMatch[0]);
+  return Array.isArray(parsed.sections) ? parsed.sections : [];
+}
+
+/**
  * Extract structured knowledge from a completed Commander session.
  * Called when 30+ minutes of inactivity ends a session.
  * Returns { operator_insights, strategic_ground, unresolved_threads }
@@ -732,6 +779,7 @@ module.exports = {
   generatePeriodicReport,
   generateIntakeFollowUp,
   generateBenchmark,
-  generateGraduationComparison
+  generateGraduationComparison,
+  generateChartFromInterview
 };
 
