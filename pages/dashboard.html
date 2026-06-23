@@ -63,7 +63,7 @@
     <div class="dash-onboarding-gate" id="onboarding-gate" style="display:none;">
       <div class="dash-onboarding-overlay"></div>
       <div class="dash-onboarding-modal">
-        <p style="font-family:var(--font-ui);font-size:var(--text-sm);color:#3a3530;line-height:1.6;margin-bottom:20px;">Before your Navigation Chart can be generated and the Commander can advise you, we need to understand your business. This takes about three minutes.</p>
+        <p style="font-family:var(--font-ui);font-size:var(--text-sm);color:#3a3530;line-height:1.6;margin-bottom:20px;">Before your Navigation Chart can be generated and Earl can advise you, we need to understand your business. This takes about three minutes.</p>
         <a href="/intake" class="dash-btn-primary" style="display:inline-block;text-decoration:none;">Start →</a>
       </div>
     </div>
@@ -78,15 +78,15 @@
       <div class="dash-panel dash-progress">
         <div class="dash-progress-title">Your Progress</div>
         <div id="dash-progress-content">
-          <p class="dash-progress-empty">Complete your interview and the Commander will start tracking what you are working toward here.</p>
+          <p class="dash-progress-empty">Complete your interview and Earl will start tracking what you are working toward here.</p>
         </div>
         <a href="/progress" class="dash-progress-link">Open full progress →</a>
       </div>
 
-      <!-- CENTER: Commander -->
+      <!-- CENTER: Earl -->
       <div class="dash-panel dash-commander" id="commander-panel">
         <div class="dash-commander-header">
-          <h2 class="dash-commander-title">The Commander</h2>
+          <h2 class="dash-commander-title">Earl</h2>
           <button class="commander-fullscreen-btn" id="commander-fullscreen-btn" aria-label="Toggle fullscreen">
             <svg id="fullscreen-expand-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#7a7570" stroke-width="1.5" stroke-linecap="round">
               <line x1="1" y1="1" x2="5" y2="5"/><line x1="1" y1="1" x2="5" y2="1"/><line x1="1" y1="1" x2="1" y2="5"/>
@@ -107,7 +107,7 @@
           <button class="prompt-pill" data-prompt="What do you think is the biggest unvalidated assumption currently baked into my business strategy? Ask me questions until you are confident enough to name it.">What is my biggest assumption?</button>
         </div>
         <div class="dash-commander-input">
-          <input type="text" id="commander-input" placeholder="Ask the Commander anything about your business...">
+          <input type="text" id="commander-input" placeholder="Ask Earl anything about your business...">
           <button class="dash-btn-send" id="commander-send">Send</button>
         </div>
         <div class="commander-fullscreen-hint" id="fullscreen-hint" style="display:none;">Press Esc to exit fullscreen</div>
@@ -192,12 +192,10 @@
         if (tierResp.ok) {
           const tierData = await tierResp.json();
           userTier = tierData.membershipTier;
-          if (userTier === 'free') {
+          if (!userTier || userTier === 'free') {
             window.location.href = '/subscribe';
             return;
           }
-          // Map legacy ensign to captain
-          if (userTier === 'ensign') userTier = 'captain';
         }
       } catch (e) {}
 
@@ -239,15 +237,15 @@
         }
       }
 
-      // Load Commander history from server, then set welcome
-      await loadCommanderHistory();
+      // Load Earl history from server, then set welcome
+      await loadEarlHistory();
 
       // Bind fullscreen
       bindFullscreen();
     }
 
-    // ---- Commander History (Issue 2) ----
-    async function loadCommanderHistory() {
+    // ---- Earl History (Issue 2) ----
+    async function loadEarlHistory() {
       const el = document.getElementById('commander-messages');
 
       try {
@@ -278,10 +276,10 @@
       }
 
       // No history — show welcome message
-      setCommanderWelcome();
+      setEarlWelcome();
     }
 
-    function setCommanderWelcome() {
+    function setEarlWelcome() {
       const el = document.getElementById('commander-messages');
       if (sessionData && sessionData.businessContext) {
         const ctx = sessionData.businessContext;
@@ -336,7 +334,7 @@
       }
     }
 
-    // ---- Commander Chat (Issues 1 + 2) ----
+    // ---- Earl Chat (Issues 1 + 2) ----
     const commanderInput = document.getElementById('commander-input');
     const commanderSend = document.getElementById('commander-send');
     const commanderMessages = document.getElementById('commander-messages');
@@ -388,7 +386,7 @@ Biggest uncertainty: ${a.uncertainty || 'unknown'}
       commanderMessages.scrollTop = commanderMessages.scrollHeight;
     }
 
-    async function sendCommanderMessage() {
+    async function sendEarlMessage() {
       const text = commanderInput.value.trim();
       if (!text) return;
       commanderInput.value = '';
@@ -423,8 +421,8 @@ Biggest uncertainty: ${a.uncertainty || 'unknown'}
         if (resp.ok && data.response) {
           addMessage(data.response, 'commander');
         } else {
-          // Server was reached but returned an error — not the Commander's voice.
-          addMessage('The Commander hit a snag on that one. Give it another try in a moment.', 'system');
+          // Server was reached but returned an error — not Earl's voice.
+          addMessage('Earl hit a snag on that one. Give it another try in a moment.', 'system');
           commanderInput.value = text; // preserve so they can retry without retyping
         }
       } catch (err) {
@@ -433,7 +431,7 @@ Biggest uncertainty: ${a.uncertainty || 'unknown'}
         if (!navigator.onLine) {
           addMessage('You appear to be offline. Your message was not sent — try again once your connection is back.', 'system');
         } else {
-          addMessage('Could not reach the Commander just now. Check your connection and try again.', 'system');
+          addMessage('Could not reach Earl just now. Check your connection and try again.', 'system');
         }
         commanderInput.value = text;
       }
@@ -441,18 +439,18 @@ Biggest uncertainty: ${a.uncertainty || 'unknown'}
       commanderInput.focus();
     }
 
-    commanderSend.addEventListener('click', sendCommanderMessage);
-    commanderInput.addEventListener('keydown', e => { if (e.key === 'Enter') sendCommanderMessage(); });
+    commanderSend.addEventListener('click', sendEarlMessage);
+    commanderInput.addEventListener('keydown', e => { if (e.key === 'Enter') sendEarlMessage(); });
 
     // Quick prompt buttons
     document.querySelectorAll('.prompt-pill').forEach(btn => {
       btn.addEventListener('click', () => {
         commanderInput.value = btn.dataset.prompt;
-        sendCommanderMessage();
+        sendEarlMessage();
       });
     });
 
-    // ---- Fullscreen Commander (Issue 4) ----
+    // ---- Fullscreen Earl (Issue 4) ----
     function bindFullscreen() {
       const btn = document.getElementById('commander-fullscreen-btn');
       btn.addEventListener('click', toggleFullscreen);

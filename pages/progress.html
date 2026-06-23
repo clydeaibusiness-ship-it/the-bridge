@@ -153,7 +153,7 @@
       html += '<span class="pg-stage ' + (st.stage_3 ? 'pg-stage-done' : '') + '">Stage 3 · Full Picture</span>';
       html += '</div>';
       if (!st.stage_2 || !st.stage_3) {
-        html += '<div class="pg-stage-cta">There is more the Commander can learn about you. <a href="/intake">Continue the interview →</a></div>';
+        html += '<div class="pg-stage-cta">There is more Earl can learn about you. <a href="/intake">Continue the interview →</a></div>';
       }
       html += '</div>';
 
@@ -208,7 +208,7 @@
 
       // Periodic report
       if (data.periodicReport && data.periodicReport.letter) {
-        html += '<div class="pg-block"><div class="pg-block-title">A Note From the Commander</div>' +
+        html += '<div class="pg-block"><div class="pg-block-title">A Note From Earl</div>' +
           '<div class="pg-letter">' + esc(data.periodicReport.letter) +
           '<div class="pg-letter-date">' + fmtDate(data.periodicReport.created_at) + '</div></div></div>';
       }

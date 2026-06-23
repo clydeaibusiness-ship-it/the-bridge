@@ -1,5 +1,5 @@
 /**
- * The Interviewing Commander — question set and flow control.
+ * The Interviewing Earl — question set and flow control.
  *
  * Source of truth for the conversational intake. Each question maps to exactly
  * one field saved in intake_responses. The server drives the flow from this
@@ -14,26 +14,26 @@
 
 // Stage framing messages (shown once before the first question of each stage).
 const STAGE_FRAMING = {
-  1: `Before anything else, a few basics. These first questions are straightforward and take about five minutes. Once you finish this stage you can start talking with the Commander right away.
+  1: `Before anything else, a few basics. These first questions are straightforward and take about five minutes. Once you finish this stage you can start talking with Earl right away.
 
-The more honest your answers are throughout this entire interview, the less likely the Commander is to give you advice that sounds good on paper but does not fit your actual situation. There is no right answer to any of these questions. The goal is accuracy, not impressiveness.`,
+The more honest your answers are throughout this entire interview, the less likely Earl is to give you advice that sounds good on paper but does not fit your actual situation. There is no right answer to any of these questions. The goal is accuracy, not impressiveness.`,
   2: `This stage goes into the operational reality of your business. Some of these questions will ask you to look at numbers you might not look at often. Some will ask you to be honest about things that are not working.
 
-That discomfort is the point. The Commander cannot help you with what it cannot see. The people who tend to get the most out of their conversations are the ones who are straight here, even when the answers are not what they wish they were.
+That discomfort is the point. Earl cannot help you with what it cannot see. The people who tend to get the most out of their conversations are the ones who are straight here, even when the answers are not what they wish they were.
 
 Take your time with these.`,
   3: `This last stage is the most personal. These questions go deeper than most business tools ever ask, and some of them may take a moment to sit with before you answer honestly.
 
-The Commander uses what you share here to understand the fuller context of who you are and what you are actually carrying, not to give you life advice, but so that the business advice it gives you fits your real life rather than some version of it that looks good on a strategy document.
+Earl uses what you share here to understand the fuller context of who you are and what you are actually carrying, not to give you life advice, but so that the business advice it gives you fits your real life rather than some version of it that looks good on a strategy document.
 
-The more honest you are here, the less generic the Commander becomes. Take your time.`
+The more honest you are here, the less generic Earl becomes. Take your time.`
 };
 
 // Stage completion messages (shown after the last question of each stage).
 const STAGE_COMPLETE = {
-  1: `That is enough to get started. Your Navigation Chart is being built from what you just shared. Head to the Commander. It is ready for you. Whenever you want to go deeper, Stage 2 is waiting here.`,
-  2: `Your Navigation Chart just got significantly more complete. The Commander now has the operational context it needs to give you specific direction. Stage 3 is the most personal stage and the most important one. Take it when you are ready.`,
-  3: `That is everything. Your Navigation Chart is complete. The Commander now has the full picture. Go have a real conversation.`
+  1: `That is enough to get started. Your Navigation Chart is being built from what you just shared. Head to Earl. It is ready for you. Whenever you want to go deeper, Stage 2 is waiting here.`,
+  2: `Your Navigation Chart just got significantly more complete. Earl now has the operational context it needs to give you specific direction. Stage 3 is the most personal stage and the most important one. Take it when you are ready.`,
+  3: `That is everything. Your Navigation Chart is complete. Earl now has the full picture. Go have a real conversation.`
 };
 
 /**
@@ -194,7 +194,7 @@ const QUESTIONS = [
     followup: { kind: 'string', template: 'When did you last talk to one of them about what you are actually going through right now?' } },
 
   { n: 30, stage: 3, field: 'additional_context',
-    question: 'Is there anything else about your situation, your business, the context of your life, or what you are carrying right now, that you think would help the Commander understand where you actually are?',
+    question: 'Is there anything else about your situation, your business, the context of your life, or what you are carrying right now, that you think would help Earl understand where you actually are?',
     check: null, followup: { kind: 'none' } }
 ];
 

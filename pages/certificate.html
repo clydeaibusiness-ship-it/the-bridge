@@ -66,7 +66,7 @@
 
       const rec = data && data.record;
       if (!rec || !rec.certificate_issued) {
-        root.innerHTML = '<div class="ct-empty">You have not graduated yet. When the Commander decides the time is right, your exit interview unlocks here.<br><br><a href="/progress">Back to your progress →</a></div>';
+        root.innerHTML = '<div class="ct-empty">You have not graduated yet. When Earl decides the time is right, your exit interview unlocks here.<br><br><a href="/progress">Back to your progress →</a></div>';
         return;
       }
 
@@ -79,11 +79,11 @@
       html += '<div class="ct-lead">Here is what changed, in your own words, from where you started to where you are now.</div>';
       changes.forEach(c => { html += '<div class="ct-change"><span class="mark">→</span><span>' + esc(c) + '</span></div>'; });
       if (rec.free_access_until) {
-        html += '<div class="ct-free">Your access continues at no charge through ' + esc(fmt(rec.free_access_until)) + '. The Commander remains here whenever you want it.</div>';
+        html += '<div class="ct-free">Your access continues at no charge through ' + esc(fmt(rec.free_access_until)) + '. Earl remains here whenever you want it.</div>';
       }
       html += '</div>';
       html += '<div class="ct-actions"><button class="ct-btn" onclick="window.print()">Download / Print</button>' +
-        '<a class="ct-btn ct-btn-ghost" href="/dashboard">Back to the Commander</a></div>';
+        '<a class="ct-btn ct-btn-ghost" href="/dashboard">Back to Earl</a></div>';
       root.innerHTML = html;
     })();
   </script>
