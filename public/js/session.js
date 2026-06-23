@@ -3,7 +3,6 @@
  *
  * Usage:
  *   const session = await BridgeSession.load();
- *   session.simulatorResources = { ... };
  *   await BridgeSession.save(session);
  */
 window.BridgeSession = (function () {
@@ -103,7 +102,7 @@ window.BridgeSession = (function () {
   }
 
   /**
-   * Save only to cache (for high-frequency updates like simulator ticks)
+   * Save only to cache (for high-frequency updates)
    * Call save() periodically to sync to Supabase
    */
   function saveLocal(session) {

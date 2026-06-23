@@ -3,7 +3,7 @@
  * Sets req.userId (Clerk user ID) and req.dbUser (Supabase users row) if authenticated.
  * Does NOT block unauthenticated requests — routes decide that.
  */
-const { getUserByClerkId, createUser } = require('../services/supabase');
+const { getUserByClerkId, getOrCreateUser } = require('../services/supabase');
 
 // verifyToken is a top-level export in @clerk/backend, NOT a method on clerkClient
 let verifyTokenFn = null;
@@ -39,13 +39,15 @@ async function extractUser(req, res, next) {
 
     req.userId = sub;
 
-    // Look up or auto-create Supabase user
+    // Look up or auto-create Supabase user. getOrCreateUser is idempotent on
+    // email, so a row created under a previous Clerk instance is reclaimed
+    // (its clerk_id updated) rather than colliding on the unique email.
     let dbUser = await getUserByClerkId(sub);
     if (!dbUser && clerkClient) {
       try {
         const clerkUser = await clerkClient.users.getUser(sub);
         const email = clerkUser.emailAddresses?.[0]?.emailAddress || '';
-        dbUser = await createUser(sub, email);
+        dbUser = await getOrCreateUser(sub, email);
       } catch (createErr) {
         console.error('Auto-create user failed:', createErr.message);
       }

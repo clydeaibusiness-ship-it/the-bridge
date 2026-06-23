@@ -20,10 +20,7 @@
       padding: 2rem;
     }
     .subscribe-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1.5rem;
-      max-width: 56rem;
+      max-width: 28rem;
       width: 100%;
     }
     .subscribe-card {
@@ -127,7 +124,7 @@
       text-decoration: none;
     }
     @media (max-width: 48em) {
-      .subscribe-grid { grid-template-columns: 1fr; max-width: 24rem; }
+      .subscribe-grid { max-width: 22rem; }
     }
   </style>
 </head>
@@ -135,50 +132,26 @@
   <a href="/" class="subscribe-back">← Back</a>
   <div class="subscribe-page">
     <div class="subscribe-grid">
-      <!-- Navigator -->
-      <div class="subscribe-card" id="card-navigator">
-        <div class="subscribe-tier">NAVIGATOR TIER</div>
-        <div class="subscribe-price">$15<span> /month</span></div>
-        <div class="subscribe-annual">$150 / year — save two months</div>
+      <!-- Earl -->
+      <div class="subscribe-card subscribe-card--captain" id="card-earl">
+        <div class="subscribe-tier">EARL MEMBERSHIP</div>
+        <div class="subscribe-price">$300<span> one-time</span></div>
+        <div class="subscribe-annual">6 months of full access</div>
         <ul class="subscribe-features">
-          <li>The Commander — unlimited AI strategic advisor</li>
+          <li>Earl — unlimited AI strategic advisor</li>
           <li>Navigation Chart — personalized strategic assessment</li>
-          <li>The Simulator — unlimited sessions</li>
+          <li>Priority access to new features as they ship</li>
         </ul>
-        <button class="subscribe-btn subscribe-btn--ghost" id="btn-navigator">Start Navigating</button>
-      </div>
-
-      <!-- Captain -->
-      <div class="subscribe-card subscribe-card--captain" id="card-captain">
-        <div class="subscribe-chip">INCLUDES GRANT RADAR</div>
-        <div class="subscribe-tier">CAPTAIN TIER</div>
-        <div class="subscribe-price">$30<span> /month</span></div>
-        <div class="subscribe-annual">$300 / year — save two months</div>
-        <ul class="subscribe-features">
-          <li>Everything in Navigator Tier</li>
-          <li>Grant Radar — federal grant matching</li>
-          <li>Priority access to new features</li>
-        </ul>
-        <button class="subscribe-btn" id="btn-captain">Become a Captain</button>
+        <button class="subscribe-btn" id="btn-earl">Get Access</button>
       </div>
     </div>
     <p class="subscribe-status" id="subscribe-status"></p>
   </div>
 
-  <script>window.__clerk_publishable_key = 'pk_live_Y2xlcmsuY2FwdGFpbnNicmlkZ2UuaW8k';</script>
+  <script>var _isProd = location.hostname === 'captainsbridge.io' || location.hostname === 'www.captainsbridge.io'; window.__clerk_publishable_key = _isProd ? 'pk_live_Y2xlcmsuY2FwdGFpbnNicmlkZ2UuaW8k' : 'pk_test_b2JsaWdpbmctcHl0aG9uLTUuY2xlcmsuYWNjb3VudHMuZGV2JA';</script>
   <script src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@5/dist/clerk.browser.js"></script>
   <script>
     let clerk = null;
-
-    // Check URL params for pre-selected tier
-    const params = new URLSearchParams(window.location.search);
-    const preselected = params.get('tier');
-    const preselectedInterval = params.get('interval') || 'monthly';
-    if (preselected === 'navigator') {
-      document.getElementById('card-navigator').classList.add('subscribe-card--selected');
-    } else if (preselected === 'captain') {
-      document.getElementById('card-captain').classList.add('subscribe-card--selected');
-    }
 
     async function init() {
       try {
@@ -186,37 +159,30 @@
         if (clerk && !clerk.loaded) await clerk.load();
 
         if (!clerk || !clerk.user) {
-          window.location.href = '/login?return=/subscribe' + (preselected ? '&tier=' + preselected : '');
+          window.location.href = '/login?return=/subscribe';
           return;
         }
 
-        // If already paid, skip to dashboard
+        // If already a member, skip to dashboard
         try {
           const tierResp = await fetch('/api/auth/me');
           if (tierResp.ok) {
             const tierData = await tierResp.json();
-            if (tierData.membershipTier === 'ensign' || tierData.membershipTier === 'navigator' || tierData.membershipTier === 'captain') {
+            if (tierData.membershipTier === 'captain' || tierData.membershipTier === 'ensign') {
               window.location.href = '/dashboard';
               return;
             }
           }
         } catch(e) {}
 
-        document.getElementById('btn-navigator').addEventListener('click', () => startCheckout('navigator', 'monthly'));
-        document.getElementById('btn-captain').addEventListener('click', () => startCheckout('captain', 'monthly'));
-
-        // If pre-selected with annual interval, auto-start checkout
-        if (preselected && preselectedInterval === 'annual') {
-          startCheckout(preselected, 'annual');
-        }
+        document.getElementById('btn-earl').addEventListener('click', startCheckout);
       } catch (e) {
         document.getElementById('subscribe-status').textContent = 'Unable to verify your account. Please try again.';
       }
     }
 
-    async function startCheckout(tier, interval) {
-      interval = interval || 'monthly';
-      const btn = document.getElementById('btn-' + tier);
+    async function startCheckout() {
+      const btn = document.getElementById('btn-earl');
       const status = document.getElementById('subscribe-status');
 
       btn.disabled = true;
@@ -228,8 +194,6 @@
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            tier,
-            interval,
             email: clerk.user.primaryEmailAddress?.emailAddress,
             clerkId: clerk.user.id
           })
@@ -242,12 +206,12 @@
         } else {
           status.textContent = data.error || 'Something went wrong. Please try again.';
           btn.disabled = false;
-          btn.textContent = tier === 'captain' ? 'Become a Captain' : 'Start Navigating';
+          btn.textContent = 'Get Access';
         }
       } catch (e) {
         status.textContent = 'Connection failed. Please try again.';
         btn.disabled = false;
-        btn.textContent = tier === 'captain' ? 'Become a Captain' : 'Start Navigating';
+        btn.textContent = 'Get Access';
       }
     }
 

@@ -6,7 +6,6 @@
   <title>The Bridge — Strategic Navigation for Small Business</title>
   <link rel="stylesheet" href="/css/global.css">
   <link rel="stylesheet" href="/css/landing.css">
-  <link rel="stylesheet" href="/css/grant-radar.css">
 </head>
 <body class="landing-body">
 
@@ -18,9 +17,7 @@
       <span class="beta-chip">BETA</span>
     </div>
     <div class="landing-nav-links" id="landing-nav-links">
-      <a href="/simulator" class="landing-nav-link">Simulator</a>
       <a href="/navigation-chart" class="landing-nav-link">Navigator</a>
-      <a href="/grant-radar" class="landing-nav-link">Grant Radar</a>
       <a href="/dashboard" class="landing-nav-link">Dashboard</a>
       <a href="/login" class="landing-nav-link" id="nav-auth-link">Sign In</a>
     </div>
@@ -29,141 +26,13 @@
     </button>
   </div>
   <div class="landing-mobile-menu" id="landing-mobile-menu">
-    <a href="/simulator">Simulator</a>
     <a href="/navigation-chart">Navigator</a>
-    <a href="/grant-radar">Grant Radar</a>
     <a href="/dashboard">Dashboard</a>
     <a href="/login" id="nav-auth-link-mobile">Sign In</a>
   </div>
 </nav>
 
-<!-- ====== SECTION 2: HERO — PRELIMINARY GRANT SCAN ====== -->
-<section class="hero" id="hero">
-  <!-- SCAN FORM STATE -->
-  <div class="hero-scan-form" id="hero-scan-form">
-    <div class="hero-scan-label">FREE GRANT SCAN</div>
-    <h1 class="hero-scan-headline">Find out if federal grant money exists for your business. Takes 30 seconds.</h1>
-    <p class="hero-scan-sub">No account. No credit card. Just a few quick answers.</p>
-
-    <div class="hero-scan-description">
-      <label class="hero-field-label" for="scan-description">Describe your business in a few words.</label>
-      <input type="text" id="scan-description" class="hero-input" placeholder="e.g. coffee shop, nonprofit, consulting firm">
-    </div>
-
-    <div class="hero-scan-fields">
-      <div class="hero-field">
-        <label class="hero-field-label" for="scan-industry">What does your business do?</label>
-        <select id="scan-industry" class="hero-select">
-          <option value="">Select your industry</option>
-          <option value="Trades and contractors">Trades and contractors</option>
-          <option value="Restaurants and food">Restaurants and food</option>
-          <option value="Real estate and property">Real estate and property</option>
-          <option value="Beauty and wellness">Beauty and wellness</option>
-          <option value="Healthcare and therapy">Healthcare and therapy</option>
-          <option value="Software and technology">Software and technology</option>
-          <option value="Retail and e-commerce">Retail and e-commerce</option>
-          <option value="Landscaping and outdoor services">Landscaping and outdoor services</option>
-          <option value="Consulting and coaching">Consulting and coaching</option>
-          <option value="Construction and renovation">Construction and renovation</option>
-          <option value="Education and tutoring">Education and tutoring</option>
-          <option value="Logistics and delivery">Logistics and delivery</option>
-          <option value="Nonprofit organization">Nonprofit organization</option>
-          <option value="Manufacturing">Manufacturing</option>
-          <option value="Agriculture and farming">Agriculture and farming</option>
-          <option value="Other">Other</option>
-        </select>
-      </div>
-
-      <div class="hero-field">
-        <label class="hero-field-label" for="scan-state">What state are you operating in?</label>
-        <select id="scan-state" class="hero-select">
-          <option value="">Select your state</option>
-          <option>Alabama</option><option>Alaska</option><option>Arizona</option><option>Arkansas</option><option>California</option>
-          <option>Colorado</option><option>Connecticut</option><option>Delaware</option><option>Florida</option><option>Georgia</option>
-          <option>Hawaii</option><option>Idaho</option><option>Illinois</option><option>Indiana</option><option>Iowa</option>
-          <option>Kansas</option><option>Kentucky</option><option>Louisiana</option><option>Maine</option><option>Maryland</option>
-          <option>Massachusetts</option><option>Michigan</option><option>Minnesota</option><option>Mississippi</option><option>Missouri</option>
-          <option>Montana</option><option>Nebraska</option><option>Nevada</option><option>New Hampshire</option><option>New Jersey</option>
-          <option>New Mexico</option><option>New York</option><option>North Carolina</option><option>North Dakota</option><option>Ohio</option>
-          <option>Oklahoma</option><option>Oregon</option><option>Pennsylvania</option><option>Rhode Island</option><option>South Carolina</option>
-          <option>South Dakota</option><option>Tennessee</option><option>Texas</option><option>Utah</option><option>Vermont</option>
-          <option>Virginia</option><option>Washington</option><option>West Virginia</option><option>Wisconsin</option><option>Wyoming</option>
-        </select>
-      </div>
-
-      <div class="hero-field">
-        <label class="hero-field-label" for="scan-revenue">What was your approximate revenue last year?</label>
-        <select id="scan-revenue" class="hero-select">
-          <option value="">Select revenue range</option>
-          <option value="Pre-revenue (not yet earning)">Pre-revenue (not yet earning)</option>
-          <option value="Under $50,000">Under $50,000</option>
-          <option value="$50,000 to $150,000">$50,000 to $150,000</option>
-          <option value="$150,000 to $500,000">$150,000 to $500,000</option>
-          <option value="$500,000 to $1,000,000">$500,000 to $1,000,000</option>
-          <option value="Over $1,000,000">Over $1,000,000</option>
-        </select>
-      </div>
-
-      <div class="hero-field">
-        <label class="hero-field-label" for="scan-entity">How is your business legally structured?</label>
-        <select id="scan-entity" class="hero-select">
-          <option value="">Select entity type</option>
-          <option value="Sole proprietorship">Sole proprietorship</option>
-          <option value="LLC">LLC</option>
-          <option value="S-corporation">S-corporation</option>
-          <option value="C-corporation">C-corporation</option>
-          <option value="Nonprofit 501c3">Nonprofit 501c3</option>
-          <option value="Nonprofit other">Nonprofit other</option>
-          <option value="Not yet registered">Not yet registered</option>
-          <option value="I am not sure">I am not sure</option>
-        </select>
-      </div>
-
-      <div class="hero-field hero-field--full">
-        <label class="hero-field-label" for="scan-funduse">If you received a grant, what would you primarily use it for?</label>
-        <select id="scan-funduse" class="hero-select">
-          <option value="">Select fund use</option>
-          <option value="Hiring employees">Hiring employees</option>
-          <option value="Purchasing equipment or technology">Purchasing equipment or technology</option>
-          <option value="Research and development">Research and development</option>
-          <option value="Expanding or opening a location">Expanding or opening a location</option>
-          <option value="Workforce training">Workforce training</option>
-          <option value="Community service programs">Community service programs</option>
-          <option value="Export or international trade">Export or international trade</option>
-          <option value="General operating costs">General operating costs</option>
-          <option value="I am not sure yet">I am not sure yet</option>
-        </select>
-      </div>
-    </div>
-
-    <button class="hero-scan-btn" id="hero-scan-btn">Run my free grant scan →</button>
-    <p class="hero-scan-disclaimer">We search active federal grants from Grants.gov against your inputs. Results are a preliminary estimate only — your actual matches may differ once your full business profile is complete. No personal data stored.</p>
-  </div>
-
-  <!-- RESULTS STATE — HAS RESULTS -->
-  <div class="hero-scan-results" id="hero-scan-results" style="display:none;">
-    <div class="hero-scan-label">YOUR PRELIMINARY SCAN RESULTS</div>
-    <h2 class="hero-results-headline" id="results-headline"></h2>
-    <p class="hero-results-avg" id="results-avg"></p>
-    <p class="hero-results-disclaimer">These are preliminary matches based on your inputs. Results shown from a sample of active grants — your full profile may surface additional matches or further narrow results.</p>
-    <div class="hero-results-buttons">
-      <a href="/login?action=subscribe&tier=captain" class="hero-results-primary" id="results-primary-btn">See my full grant matches — $30/mo →</a>
-      <a href="/login?action=subscribe&tier=captain&interval=annual" class="hero-results-annual">or $300/year — save two months</a>
-      <a href="/login?action=subscribe&tier=navigator" class="hero-results-secondary" id="results-secondary-btn">Get strategic advice only — $15/mo</a>
-    </div>
-    <p class="hero-results-alt">Not ready to commit? Explore the free simulator at the bottom of this page.</p>
-  </div>
-
-  <!-- RESULTS STATE — NO RESULTS -->
-  <div class="hero-scan-noresults" id="hero-scan-noresults" style="display:none;">
-    <div class="hero-scan-label">YOUR PRELIMINARY SCAN RESULTS</div>
-    <h2 class="hero-results-headline">Federal grants may be limited for your current profile.</h2>
-    <p class="hero-noresults-body">Federal grants have specific eligibility rules around industry, revenue stage, and registration status. Based on your inputs we did not find strong federal matches — but that does not mean funding does not exist for your business.</p>
-    <a href="/login?action=subscribe&tier=navigator" class="hero-results-primary">Talk to the Commander — $15/mo →</a>
-    <a href="/login?action=subscribe&tier=navigator&interval=annual" class="hero-results-annual">or $150/year — save two months</a>
-    <p class="hero-noresults-below">The Commander helps you find the right strategic path regardless of grant availability. Federal and private grant sources are covered inside.</p>
-  </div>
-</section>
+ 
 
 <!-- ====== SECTION 3: STAR TREK CONTEXT ====== -->
 <section class="trek-context" id="trek-context">
@@ -228,20 +97,6 @@
   </div>
 </section>
 
-<!-- ====== SECTION 5: GRANT MONEY COUNTER ====== -->
-<section class="grant-counter-section" id="grant-counter">
-  <div class="grant-counter-inner">
-    <div class="grant-counter-label">FEDERAL GRANT FUNDING IDENTIFIED FOR BRIDGE MEMBERS</div>
-    <div class="grant-counter-number" id="grant-available-number">$0</div>
-    <div class="grant-counter-desc">In active federal grants matched to businesses like yours.</div>
-    <div class="grant-counter-divider"></div>
-    <div class="grant-counter-label">GRANT MONEY SECURED BY THE BRIDGE COMMUNITY</div>
-    <div class="grant-counter-number" id="grant-counter-number">$0</div>
-    <div class="grant-counter-desc">In free government grant money that Bridge members found, applied for, and won.</div>
-    <div class="grant-counter-verified">Verified. Real. Theirs to keep.</div>
-  </div>
-</section>
-
 <!-- ====== SECTION 6: PRODUCT DESCRIPTION CARDS ====== -->
 <section class="solution" id="solution">
   <div class="stars-field">
@@ -254,11 +109,11 @@
   </div>
   <div class="landing-container">
     <div class="solution-label">THE BRIDGE</div>
-    <h2 class="solution-headline">Your business has always deserved a Commander.</h2>
+    <h2 class="solution-headline">Your business has always deserved a Earl.</h2>
     <p class="solution-sub">A human business consultant is brilliant — and forgets half of what you told them between sessions. They cannot hold every case study, every lever, every strategic principle in their head simultaneously while thinking about your specific situation at 11pm on a Wednesday when you cannot sleep. We built something that can.</p>
 
     <div class="solution-cards" id="solution-cards">
-      <!-- Card 1: The Commander (featured) -->
+      <!-- Card 1: Earl (featured) -->
       <div class="solution-card featured">
         <div class="solution-card-icon">
           <svg width="40" height="40" viewBox="0 0 40 40" fill="none" stroke="#0a0a0f" stroke-width="1.5">
@@ -269,22 +124,7 @@
         </div>
         <div class="solution-card-label">THE COMMANDER</div>
         <div class="solution-card-headline">The strategic advisor who never forgets your business.</div>
-        <div class="solution-card-body">The Commander is built on a framework synthesized from the twelve most important business books ever written — not their summaries, their actual operating principles. It knows your business before you type a word. It asks the hard questions before it gives a single answer. And it never runs out of context. Ever.</div>
-      </div>
-
-      <!-- Card 2: Grant Radar -->
-      <div class="solution-card">
-        <div class="solution-card-icon">
-          <svg width="40" height="40" viewBox="0 0 40 40" fill="none" stroke="#0a0a0f" stroke-width="1.5">
-            <circle cx="20" cy="20" r="14" opacity="0.3"/>
-            <circle cx="20" cy="20" r="7" opacity="0.2"/>
-            <line x1="20" y1="20" x2="30" y2="10" stroke-linecap="round" opacity="0.4"/>
-            <circle cx="20" cy="20" r="2" fill="#c8a96e" stroke="none"/>
-          </svg>
-        </div>
-        <div class="solution-card-label">GRANT RADAR</div>
-        <div class="solution-card-headline">The grant money that was always yours. Finally matched to you.</div>
-        <div class="solution-card-body">Grant Radar takes your business profile — your industry, your revenue, your location, your ownership, your stage — and runs it against live federal government grant opportunities published by the U.S. government. Not a search bar. Not a keyword tool. A match. You see only the grants your business actually qualifies for, ranked by how closely they fit, with a direct link to the official government application page. The government publishes this data publicly. We do the work of reading it for you.</div>
+        <div class="solution-card-body">Earl is built on a framework synthesized from the twelve most important business books ever written — not their summaries, their actual operating principles. It knows your business before you type a word. It asks the hard questions before it gives a single answer. And it never runs out of context. Ever.</div>
       </div>
     </div>
   </div>
@@ -301,54 +141,26 @@
   </div>
   <div class="landing-container">
     <div class="pricing-label">THE MEMBERSHIP</div>
-    <h2 class="pricing-headline">Beta pricing. Full access. No fluff.</h2>
-    <p class="pricing-sub">We are building this in the open. You get access while we improve it. When pricing changes, early members lock in what they paid.</p>
+    <h2 class="pricing-headline">One price. Full access. No recurring billing.</h2>
+    <p class="pricing-sub">Pay once, get six months of everything. No surprises.</p>
 
     <div class="pricing-grid">
-      <!-- NAVIGATOR TIER -->
-      <div class="pricing-card pricing-card--navigator">
-        <div class="pricing-tier">NAVIGATOR TIER</div>
-        <div class="pricing-amount">
-          <span class="pricing-dollar">$15</span><span class="pricing-per">/month</span>
-        </div>
-        <div class="pricing-annual">$150 / year — save two months</div>
-
-        <ul class="pricing-features">
-          <li class="pricing-feature">
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="#c8a96e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2 7 6 11 12 3"/></svg>
-            <span class="pricing-feature-text">The Commander — unlimited access to your AI strategic advisor</span>
-          </li>
-          <li class="pricing-feature">
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="#c8a96e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2 7 6 11 12 3"/></svg>
-            <span class="pricing-feature-text">The Navigation Chart — your personalized strategic assessment</span>
-          </li>
-          <li class="pricing-feature">
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="#c8a96e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2 7 6 11 12 3"/></svg>
-            <span class="pricing-feature-text">The Simulator — unlimited sessions</span>
-          </li>
-        </ul>
-
-        <a href="/login?action=subscribe&tier=navigator" class="btn-pricing-ghost">START NAVIGATING →</a>
-        <a href="/login?action=subscribe&tier=navigator&interval=annual" class="pricing-annual-link">or $150/year — save two months</a>
-      </div>
-
-      <!-- CAPTAIN TIER -->
+      <!-- EARL MEMBERSHIP -->
       <div class="pricing-card pricing-card--captain">
-        <div class="pricing-captain-chip">INCLUDES GRANT RADAR</div>
-        <div class="pricing-tier">CAPTAIN TIER</div>
+        <div class="pricing-tier">EARL MEMBERSHIP</div>
         <div class="pricing-amount">
-          <span class="pricing-dollar">$30</span><span class="pricing-per">/month</span>
+          <span class="pricing-dollar">$300</span><span class="pricing-per"> one-time</span>
         </div>
-        <div class="pricing-annual">$300 / year — save two months</div>
+        <div class="pricing-annual">6 months of full access</div>
 
         <ul class="pricing-features">
           <li class="pricing-feature">
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="#c8a96e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2 7 6 11 12 3"/></svg>
-            <span class="pricing-feature-text">Everything in Navigator Tier</span>
+            <span class="pricing-feature-text">Earl — unlimited AI strategic advisor</span>
           </li>
           <li class="pricing-feature">
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="#c8a96e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2 7 6 11 12 3"/></svg>
-            <span class="pricing-feature-text">Grant Radar — federal grant matching powered by your full business profile</span>
+            <span class="pricing-feature-text">Navigation Chart — personalized strategic assessment</span>
           </li>
           <li class="pricing-feature">
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="#c8a96e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2 7 6 11 12 3"/></svg>
@@ -356,12 +168,9 @@
           </li>
         </ul>
 
-        <a href="/login?action=subscribe&tier=captain" class="btn-pricing">BECOME A CAPTAIN →</a>
-        <a href="/login?action=subscribe&tier=captain&interval=annual" class="pricing-annual-link">or $300/year — save two months</a>
+        <a href="/login?action=subscribe" class="btn-pricing">GET ACCESS →</a>
       </div>
     </div>
-
-    <div class="pricing-beta-note">Both tiers are beta pricing. Early members keep their rate when we raise prices.</div>
   </div>
 </section>
 
@@ -446,71 +255,6 @@
   </div>
 </section>
 
-<!-- ====== SECTION 9: SIMULATOR SPOTLIGHT ====== -->
-<section class="spotlight" id="spotlight">
-  <div class="stars-field">
-    <div class="star star--sm star--drift1" style="top:15%;left:92%"></div>
-    <div class="star star--md star--drift3" style="top:50%;left:3%"></div>
-    <div class="star star--sm star--drift2" style="top:80%;left:60%"></div>
-    <div class="star star--lg star--drift1" style="top:30%;left:48%"></div>
-  </div>
-  <div class="landing-container">
-    <div class="spotlight-grid">
-      <div class="spotlight-text">
-        <div class="spotlight-label">THE FREE SIMULATOR</div>
-        <h2 class="spotlight-headline">What if you could make the mistake before it costs you anything?</h2>
-        <div class="spotlight-body">
-          <p>The simulator is not a game. It is a mirror.</p>
-          <p>You put in your business — what you do, who you serve, where you are right now. The simulator builds your situation around those answers. Then it throws real problems at you. A competitor undercuts your price. A key client goes quiet. You hit a ceiling you did not see coming.</p>
-          <p>You pick a response. You see what happens — not in theory, not in someone else's case study, but in your business, your numbers, your relationships. You find out which decisions build something durable and which ones bleed you slowly without you noticing.</p>
-          <p>People who do not own businesses play it because it is genuinely addictive. People who do own businesses play it and suddenly understand in twenty minutes what took them years to learn by accident.</p>
-          <p>It is free. It always will be. Because we want you to know — before you spend a dollar — exactly what you are getting into.</p>
-        </div>
-        <a href="/simulator" class="btn-spotlight">Role-play your business — free</a>
-      </div>
-      <div class="spotlight-graphic">
-        <div class="spotlight-mockup" id="sim-mockup">
-          <svg viewBox="0 0 400 340" width="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <text x="10" y="18" font-family="Space Mono, monospace" font-size="8" fill="#7a7570" letter-spacing="0.1em">CAPITAL</text>
-            <rect x="10" y="24" width="180" height="6" rx="1" fill="#c8c0b0" opacity="0.3"/>
-            <rect x="10" y="24" width="0" height="6" rx="1" fill="#0a0a0f" class="sim-bar-fill" data-width="130"/>
-            <text x="210" y="18" font-family="Space Mono, monospace" font-size="8" fill="#7a7570" letter-spacing="0.1em">CUSTOMERS</text>
-            <rect x="210" y="24" width="180" height="6" rx="1" fill="#c8c0b0" opacity="0.3"/>
-            <rect x="210" y="24" width="0" height="6" rx="1" fill="#0a0a0f" class="sim-bar-fill" data-width="108"/>
-            <text x="10" y="50" font-family="Space Mono, monospace" font-size="8" fill="#7a7570" letter-spacing="0.1em">POSITIONING</text>
-            <rect x="10" y="56" width="180" height="6" rx="1" fill="#c8c0b0" opacity="0.3"/>
-            <rect x="10" y="56" width="0" height="6" rx="1" fill="#0a0a0f" class="sim-bar-fill" data-width="112"/>
-            <text x="210" y="50" font-family="Space Mono, monospace" font-size="8" fill="#7a7570" letter-spacing="0.1em">SWITCHING COSTS</text>
-            <rect x="210" y="56" width="180" height="6" rx="1" fill="#c8c0b0" opacity="0.3"/>
-            <rect x="210" y="56" width="0" height="6" rx="1" fill="#0a0a0f" class="sim-bar-fill" data-width="68"/>
-            <line x1="10" y1="80" x2="390" y2="80" stroke="#c8c0b0" stroke-width="0.5" opacity="0.4"/>
-            <text x="10" y="106" font-family="Space Mono, monospace" font-size="7" fill="#7a7570" letter-spacing="0.12em">SITUATION 3 OF 5</text>
-            <rect x="10" y="116" width="260" height="10" rx="2" fill="#c8c0b0" opacity="0.2"/>
-            <rect x="10" y="132" width="360" height="8" rx="2" fill="#c8c0b0" opacity="0.12"/>
-            <rect x="10" y="146" width="320" height="8" rx="2" fill="#c8c0b0" opacity="0.12"/>
-            <rect x="10" y="172" width="185" height="70" rx="3" stroke="#c8c0b0" stroke-width="1" opacity="0.4"/>
-            <text x="22" y="194" font-family="Space Mono, monospace" font-size="8" fill="#7a7570">OPTION A</text>
-            <rect x="22" y="202" width="140" height="6" rx="1" fill="#c8c0b0" opacity="0.15"/>
-            <rect x="22" y="214" width="120" height="6" rx="1" fill="#c8c0b0" opacity="0.15"/>
-            <rect x="205" y="172" width="185" height="70" rx="3" stroke="#c8c0b0" stroke-width="1" opacity="0.4"/>
-            <text x="217" y="194" font-family="Space Mono, monospace" font-size="8" fill="#7a7570">OPTION B</text>
-            <rect x="217" y="202" width="140" height="6" rx="1" fill="#c8c0b0" opacity="0.15"/>
-            <rect x="217" y="214" width="120" height="6" rx="1" fill="#c8c0b0" opacity="0.15"/>
-            <rect x="10" y="252" width="185" height="70" rx="3" stroke="#c8c0b0" stroke-width="1" opacity="0.4"/>
-            <text x="22" y="274" font-family="Space Mono, monospace" font-size="8" fill="#7a7570">OPTION C</text>
-            <rect x="22" y="282" width="140" height="6" rx="1" fill="#c8c0b0" opacity="0.15"/>
-            <rect x="22" y="294" width="120" height="6" rx="1" fill="#c8c0b0" opacity="0.15"/>
-            <rect x="205" y="252" width="185" height="70" rx="3" stroke="#c8c0b0" stroke-width="1" opacity="0.4"/>
-            <text x="217" y="274" font-family="Space Mono, monospace" font-size="8" fill="#7a7570">OPTION D</text>
-            <rect x="217" y="282" width="140" height="6" rx="1" fill="#c8c0b0" opacity="0.15"/>
-            <rect x="217" y="294" width="120" height="6" rx="1" fill="#c8c0b0" opacity="0.15"/>
-          </svg>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
 <!-- ====== SECTION 10: SHARE ====== -->
 <!-- ====== SECTION 11: FOOTER ====== -->
 <footer class="landing-footer" id="footer">
@@ -590,21 +334,6 @@
     observer.observe(el);
   });
 
-  // Simulator mockup bars
-  const mockupObserver = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        entry.target.querySelectorAll('.sim-bar-fill').forEach(bar => {
-          const targetWidth = bar.getAttribute('data-width');
-          bar.setAttribute('width', targetWidth);
-        });
-        mockupObserver.unobserve(entry.target);
-      }
-    });
-  }, { threshold: 0.3 });
-  const mockup = document.getElementById('sim-mockup');
-  if (mockup) mockupObserver.observe(mockup);
-
   // Share button
   const shareBtn = document.getElementById('share-btn');
   if (shareBtn) {
@@ -628,110 +357,7 @@
     });
   }
 
-  // ---- HERO GRANT SCAN ----
-  const scanBtn = document.getElementById('hero-scan-btn');
-  scanBtn.addEventListener('click', async () => {
-    const description = document.getElementById('scan-description').value.trim();
-    const industry = document.getElementById('scan-industry').value;
-    const state = document.getElementById('scan-state').value;
-    const revenue = document.getElementById('scan-revenue').value;
-    const entityType = document.getElementById('scan-entity').value;
-    const fundUse = document.getElementById('scan-funduse').value;
-
-    if (!industry || !state || !revenue || !entityType || !fundUse) {
-      scanBtn.textContent = 'Please fill in all fields';
-      setTimeout(() => { scanBtn.textContent = 'Run my free grant scan →'; }, 2000);
-      return;
-    }
-
-    scanBtn.textContent = 'Scanning federal grants';
-    scanBtn.disabled = true;
-    let dots = 0;
-    const ellipsis = setInterval(() => {
-      dots = (dots + 1) % 4;
-      scanBtn.textContent = 'Scanning federal grants' + '.'.repeat(dots);
-    }, 400);
-
-    try {
-      const resp = await fetch('/api/grant-radar/preview-scan', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ industry, state, revenue_range: revenue, entity_type: entityType, fund_use: fundUse, business_description: description })
-      });
-      const data = await resp.json();
-
-      clearInterval(ellipsis);
-
-      const form = document.getElementById('hero-scan-form');
-      form.style.opacity = '0';
-      form.style.transform = 'translateY(-10px)';
-      setTimeout(() => {
-        form.style.display = 'none';
-
-        if (data.has_results && data.match_count > 0) {
-          const results = document.getElementById('hero-scan-results');
-          document.getElementById('results-headline').textContent =
-            'We found ' + data.match_count + ' federal grant programs that may apply to ' + industry + ' businesses in ' + state + '.';
-          document.getElementById('results-avg').textContent =
-            'Average award across these programs: ' + data.average_award + '.';
-          results.style.display = 'block';
-          requestAnimationFrame(() => { results.style.opacity = '1'; results.style.transform = 'translateY(0)'; });
-        } else {
-          const noresults = document.getElementById('hero-scan-noresults');
-          noresults.style.display = 'block';
-          requestAnimationFrame(() => { noresults.style.opacity = '1'; noresults.style.transform = 'translateY(0)'; });
-        }
-      }, 300);
-    } catch (e) {
-      clearInterval(ellipsis);
-      scanBtn.textContent = 'Scan failed — try again';
-      scanBtn.disabled = false;
-      setTimeout(() => { scanBtn.textContent = 'Run my free grant scan →'; }, 3000);
-    }
-  });
-</script>
-<script>
-(function() {
-  var sectionEl = document.getElementById('grant-counter');
-  if (!sectionEl) return;
-
-  function formatDollar(n) {
-    if (n >= 1000000000) { var b = n / 1000000000; if (b >= 100) return '$' + Math.round(b) + 'B'; if (b >= 10) return '$' + b.toFixed(1) + 'B'; return '$' + b.toFixed(2) + 'B'; }
-    if (n >= 1000000) { var m = n / 1000000; if (m >= 100) return '$' + Math.round(m) + 'M'; if (m >= 10) return '$' + m.toFixed(1) + 'M'; return '$' + m.toFixed(2) + 'M'; }
-    if (n >= 1000) { var k = n / 1000; if (k >= 100) return '$' + Math.round(k) + 'K'; if (k >= 10) return '$' + k.toFixed(1) + 'K'; return '$' + k.toFixed(2) + 'K'; }
-    return '$' + n.toLocaleString();
-  }
-
-  function animateCounter(el, target, formatter) {
-    var duration = 2000; var start = performance.now();
-    function step(now) {
-      var elapsed = now - start; var progress = Math.min(elapsed / duration, 1);
-      var eased = 1 - Math.pow(1 - progress, 3);
-      el.textContent = formatter(Math.round(target * eased));
-      if (progress < 1) requestAnimationFrame(step);
-    }
-    requestAnimationFrame(step);
-  }
-
-  function setupCounter(elId, fetchUrl) {
-    var el = document.getElementById(elId);
-    if (!el) return;
-    fetch(fetchUrl).then(function(r) { return r.json(); }).then(function(data) {
-      var total = data.total || 0;
-      if (total === 0) { el.textContent = '$0'; return; }
-      var animated = false;
-      var obs = new IntersectionObserver(function(entries) {
-        entries.forEach(function(entry) {
-          if (entry.isIntersecting && !animated) { animated = true; animateCounter(el, total, formatDollar); obs.disconnect(); }
-        });
-      }, { threshold: 0.3 });
-      obs.observe(sectionEl);
-    }).catch(function() {});
-  }
-
-  setupCounter('grant-available-number', '/api/grant-radar/total-available');
-  setupCounter('grant-counter-number', '/api/grant-radar/community-total');
-})();
+  
 </script>
 </body>
 </html>

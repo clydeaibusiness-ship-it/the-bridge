@@ -22,17 +22,14 @@ async function sendWelcomeEmail(email, shipName) {
     html: `
       <div style="font-family: 'Space Grotesk', sans-serif; max-width: 560px; margin: 0 auto; padding: 40px 20px; color: #0a0a0f;">
         <p style="font-size: 16px; line-height: 1.6;">
-          ${shipName} has been docked safely. Your game state is saved — pick up where you left off anytime.
+          Welcome to The Bridge, ${shipName}. Your account is set up and ready.
         </p>
         <p style="font-size: 16px; line-height: 1.6;">
-          Every run teaches you something about your real business. The patterns the simulator reveals are the same patterns that play out in real markets.
+          Head to your dashboard to complete your business intake and generate your Navigation Chart — your personalised strategic foundation.
         </p>
         <div style="margin: 32px 0;">
-          <a href="https://captainsbridge.io/game" style="display: inline-block; background: #0a0a0f; color: #f5f0e8; padding: 14px 32px; text-decoration: none; font-size: 14px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; border-radius: 2px;">Resume Your Run</a>
+          <a href="https://captainsbridge.io/dashboard" style="display: inline-block; background: #0a0a0f; color: #f5f0e8; padding: 14px 32px; text-decoration: none; font-size: 14px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; border-radius: 2px;">Go to Dashboard</a>
         </div>
-        <p style="font-size: 13px; color: #8a8a96;">
-          Want deeper strategic insight? <a href="https://captainsbridge.io/#pricing" style="color: #0a0a0f;">Become an Ensign member</a> for your full Navigation Chart, the Commander advisor, and more.
-        </p>
       </div>
     `
   });
@@ -71,11 +68,11 @@ async function sendSubscriptionConfirmation(email) {
   await client.emails.send({
     from: FROM,
     to: email,
-    subject: 'Welcome to The Bridge, Ensign.',
+    subject: 'Welcome to The Bridge.',
     html: `
       <div style="font-family: 'Space Grotesk', sans-serif; max-width: 560px; margin: 0 auto; padding: 40px 20px; color: #0a0a0f;">
         <p style="font-size: 16px; line-height: 1.6;">
-          Your Ensign membership is active. You now have full access to The Bridge.
+          Your Earl membership is active. You now have full access to The Bridge.
         </p>
         <p style="font-size: 16px; line-height: 1.6;">
           <strong>Start here:</strong> Head to your dashboard and complete the full Navigation Chart intake. That's your strategic foundation — everything else builds on it.
@@ -103,7 +100,7 @@ async function sendWeeklyDigest(emailList, digestContent) {
             <p style="font-size: 16px; line-height: 1.6;">${digestContent}</p>
             <hr style="border: none; border-top: 1px solid #d4cfc5; margin: 32px 0;">
             <div style="text-align: center;">
-              <a href="https://captainsbridge.io/game" style="display: inline-block; background: #0a0a0f; color: #f5f0e8; padding: 14px 32px; text-decoration: none; font-size: 14px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; border-radius: 2px;">Launch the Simulator</a>
+              <a href="https://captainsbridge.io/dashboard" style="display: inline-block; background: #0a0a0f; color: #f5f0e8; padding: 14px 32px; text-decoration: none; font-size: 14px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; border-radius: 2px;">Go to Dashboard</a>
             </div>
           </div>
         `
@@ -154,7 +151,7 @@ async function sendWinVerifiedEmail(email) {
         <p style="font-size: 16px; line-height: 1.6;">Your grant win has been verified. Your contribution has been added to The Bridge community total.</p>
         <p style="font-size: 16px; line-height: 1.6;">Thank you for sharing your win — it helps other captains know what is possible.</p>
         <div style="margin: 32px 0;">
-          <a href="https://captainsbridge.io/grant-radar" style="display: inline-block; background: #0a0a0f; color: #f5f0e8; padding: 14px 32px; text-decoration: none; font-size: 14px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; border-radius: 2px;">View Grant Radar</a>
+          <a href="https://captainsbridge.io/dashboard" style="display: inline-block; background: #0a0a0f; color: #f5f0e8; padding: 14px 32px; text-decoration: none; font-size: 14px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; border-radius: 2px;">View Dashboard</a>
         </div>
       </div>
     `
@@ -174,8 +171,27 @@ async function sendWinRejectedEmail(email) {
         <p style="font-size: 16px; line-height: 1.6;">We were not able to verify your grant win from the document provided. This could be a formatting issue or an incomplete document.</p>
         <p style="font-size: 16px; line-height: 1.6;">You are welcome to resubmit with a different document — award letters, grant agreements, or bank confirmation statements work best.</p>
         <div style="margin: 32px 0;">
-          <a href="https://captainsbridge.io/grant-radar" style="display: inline-block; background: #0a0a0f; color: #f5f0e8; padding: 14px 32px; text-decoration: none; font-size: 14px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; border-radius: 2px;">Go to Grant Radar</a>
+          <a href="https://captainsbridge.io/dashboard" style="display: inline-block; background: #0a0a0f; color: #f5f0e8; padding: 14px 32px; text-decoration: none; font-size: 14px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; border-radius: 2px;">Go to Dashboard</a>
         </div>
+      </div>
+    `
+  });
+}
+
+async function sendExtensionRequestEmail({ memberName, businessName } = {}) {
+  const client = getClient();
+  if (!client) return;
+  const to = process.env.OWNER_EMAIL || 'ClydeAIbusiness@gmail.com';
+  const who = businessName || memberName || 'A member';
+  await client.emails.send({
+    from: FROM,
+    to,
+    subject: `Extension request — ${who}`,
+    html: `
+      <div style="font-family: 'Space Grotesk', sans-serif; max-width: 560px; margin: 0 auto; padding: 40px 20px; color: #0a0a0f;">
+        <p style="font-size: 10px; font-family: 'Space Mono', monospace; color: #7a7570; letter-spacing: 0.15em; text-transform: uppercase;">EXTENSION REQUEST</p>
+        <p style="font-size: 16px; line-height: 1.6;"><strong>${memberName || 'A member'}</strong>${businessName ? ` (${businessName})` : ''} accepted the three-month half-price extension at their six-month milestone.</p>
+        <p style="font-size: 16px; line-height: 1.6;">Activate the half-price extension in Stripe, then set <code>extension_active = true</code> on their <code>member_state</code> row to confirm.</p>
       </div>
     `
   });
@@ -183,6 +199,7 @@ async function sendWinRejectedEmail(email) {
 
 module.exports = {
   sendWelcomeEmail,
+  sendExtensionRequestEmail,
   sendDebriefEmail,
   sendSubscriptionConfirmation,
   sendWeeklyDigest,

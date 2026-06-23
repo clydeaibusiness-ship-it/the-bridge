@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>The Bridge</title>
+  <script>var _isProd = location.hostname === 'captainsbridge.io' || location.hostname === 'www.captainsbridge.io'; window.__clerk_publishable_key = _isProd ? 'pk_live_Y2xlcmsuY2FwdGFpbnNicmlkZ2UuaW8k' : 'pk_test_b2JsaWdpbmctcHl0aG9uLTUuY2xlcmsuYWNjb3VudHMuZGV2JA';</script>
+  <script src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@5/dist/clerk.browser.js"></script>
+  <script src="/js/session.js"></script>
+  <link rel="stylesheet" href="/css/global.css">
+  <style>
+    html, body { height: 100%; margin: 0; background: #e8e2d6; overflow: hidden; }
+    .shell { position: relative; display: flex; flex-direction: column; height: 100dvh; max-width: 480px; margin: 0 auto;
+      background: #f5f0e8; color: #0a0a0f; box-shadow: 0 0 40px rgba(0,0,0,0.08); overflow: hidden; }
+    /* Top bar */
+    .tb { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; border-bottom: 1px solid #d8d0c0; flex: 0 0 auto; }
+    .tb-btn { background: none; border: none; cursor: pointer; color: #3a3530; font-size: 1.2rem; line-height: 1; padding: 4px; }
+    .tb-title { font-family: var(--font-data); font-size: 0.7rem; font-weight: 700; letter-spacing: 0.14em; color: #0a0a0f; }
+    /* Panels */
+    .panels { flex: 1 1 auto; overflow: hidden; position: relative; }
+    .track { display: flex; width: 300%; height: 100%; transition: transform 0.32s cubic-bezier(0.4,0,0.2,1); }
+    .panel { width: 33.3333%; height: 100%; display: flex; flex-direction: column; overflow: hidden; }
+    .panel-scroll { flex: 1 1 auto; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 16px; }
+    /* Earl */
+    .msgs { flex: 1 1 auto; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 16px 14px; display: flex; flex-direction: column; gap: 10px; }
+    .m { max-width: 82%; padding: 9px 12px; font-size: 0.875rem; line-height: 1.5; border-radius: 12px; word-wrap: break-word; }
+    .m-user { align-self: flex-end; background: #0a0a0f; color: #f0ebe0; border-bottom-right-radius: 3px; }
+    .m-commander { align-self: flex-start; background: #ece7dc; color: #2a2520; border-bottom-left-radius: 3px; }
+    .m-system { align-self: center; color: #9a7a4a; font-style: italic; font-size: 0.8125rem; text-align: center; }
+    .prompts { display: flex; flex-direction: column; gap: 8px; padding: 4px 14px 0; }
+    .pill { text-align: left; font-family: var(--font-ui); font-size: 0.8125rem; color: #3a3530; background: #ece7dc; border: 1px solid #d8d0c0; border-radius: 10px; padding: 10px 12px; cursor: pointer; }
+    .composer { flex: 0 0 auto; padding: 10px 12px; border-top: 1px solid #d8d0c0; }
+    .composer-row { display: flex; align-items: center; gap: 8px; background: #fff; border: 1px solid #c8c0b0; border-radius: 22px; padding: 7px 8px 7px 14px; }
+    .composer input { flex: 1; border: none; outline: none; font-family: var(--font-ui); font-size: 0.95rem; background: transparent; color: #0a0a0f; }
+    .send { width: 34px; height: 34px; flex: 0 0 auto; border: none; border-radius: 50%; background: #0a0a0f; color: #f0ebe0; font-size: 1rem; cursor: pointer; }
+    .send:disabled { opacity: 0.4; }
+    /* Side panel content */
+    .sp-title { font-family: var(--font-data); font-size: 0.625rem; letter-spacing: 0.1em; text-transform: uppercase; color: #7a7570; margin: 0 0 12px; border-bottom: 1px solid #c8c0b0; padding-bottom: 6px; }
+    .sp-empty { font-family: var(--font-ui); font-size: 0.8125rem; color: #7a7570; line-height: 1.6; }
+    .stages { display: flex; gap: 6px; align-items: center; margin-bottom: 18px; }
+    .stage { width: 22px; height: 22px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-family: var(--font-data); font-size: 0.65rem; color: #9a948a; border: 1px solid #c8c0b0; }
+    .stage.on { background: #0a0a0f; color: #f0ebe0; border-color: #0a0a0f; }
+    .bench { margin-bottom: 14px; }
+    .bench-stmt { font-family: var(--font-ui); font-size: 0.85rem; color: #1a1a1f; line-height: 1.45; margin-bottom: 5px; }
+    .bench-row { display: flex; align-items: center; gap: 10px; }
+    .bench-now { font-family: var(--font-data); font-size: 0.6rem; color: #7a7570; }
+    .step { display: flex; gap: 8px; padding: 8px 0; border-bottom: 1px solid #e0d8c8; font-size: 0.8125rem; color: #1a1a1f; line-height: 1.45; }
+    .step.done { color: #9a948a; text-decoration: line-through; }
+    .sp-block-title { font-family: var(--font-data); font-size: 0.625rem; letter-spacing: 0.1em; text-transform: uppercase; color: #7a7570; margin: 22px 0 10px; }
+    .pg-letter { background: #efe8dc; border-left: 2px solid #8a6830; padding: 14px 16px; font-size: 0.82rem; color: #2a2520; line-height: 1.65; }
+    .pg-letter-date { font-family: var(--font-data); font-size: 0.5rem; letter-spacing: 0.08em; text-transform: uppercase; color: #9a948a; margin-top: 8px; }
+    .pg-refl { font-size: 0.8125rem; color: #3a3530; line-height: 1.6; padding: 9px 0; border-bottom: 1px solid #e0d8c8; }
+    .pg-refl:last-child { border-bottom: none; }
+    .pg-grad { background: #efe8dc; border-radius: 10px; padding: 14px; margin-bottom: 18px; }
+    .pg-grad p { font-size: 0.8125rem; color: #2a2520; line-height: 1.55; margin: 0 0 10px; }
+    .pg-grad p:last-child { margin-bottom: 0; }
+    .pg-grad a { color: #8a6830; }
+    .pg-grad-btn { font-family: var(--font-data); font-size: 0.6rem; letter-spacing: 0.08em; text-transform: uppercase; color: #f0ebe0; background: #0a0a0f; border: none; border-radius: 6px; padding: 9px 14px; cursor: pointer; }
+    .pg-continue { display: inline-block; margin: 2px 0 6px; font-family: var(--font-data); font-size: 0.6rem; letter-spacing: 0.08em; text-transform: uppercase; color: #f0ebe0; background: #0a0a0f; border-radius: 6px; padding: 10px 14px; text-decoration: none; }
+    .chart-sec { margin-bottom: 18px; padding-bottom: 14px; border-bottom: 1px solid #d8d0c0; }
+    .chart-sec:last-child { border-bottom: none; }
+    .chart-sec-t { font-family: var(--font-data); font-size: 0.625rem; letter-spacing: 0.1em; text-transform: uppercase; color: #7a7570; margin-bottom: 6px; }
+    .chart-sec-b { font-family: var(--font-ui); font-size: 0.8125rem; color: #3a3530; line-height: 1.65; }
+    /* Bottom slider with a sliding pill */
+    .slider { flex: 0 0 auto; padding: 10px 12px calc(10px + env(safe-area-inset-bottom)); border-top: 1px solid #d8d0c0; background: #f5f0e8; }
+    .slider-inner { position: relative; display: flex; height: 42px; background: #ece7dc; border-radius: 999px; }
+    .slider-pill { position: absolute; top: 4px; left: 0; height: calc(100% - 8px); width: 33.3333%; background: #0a0a0f; border-radius: 999px; transition: transform 0.32s cubic-bezier(0.4,0,0.2,1); z-index: 0; transform: translateX(0); }
+    .slider-inner button { position: relative; z-index: 1; flex: 1; background: none; border: none; cursor: pointer; font-family: var(--font-data); font-size: 0.625rem; letter-spacing: 0.08em; text-transform: uppercase; color: #7a7570; transition: color 0.2s; }
+    .slider-inner button.active { color: #f0ebe0; }
+    /* Menu sheet */
+    .scrim { position: absolute; inset: 0; background: rgba(10,10,15,0.4); opacity: 0; pointer-events: none; transition: opacity 0.25s; z-index: 20; }
+    .scrim.open { opacity: 1; pointer-events: auto; }
+    .menu { position: absolute; top: 0; left: 0; bottom: 0; width: 76%; max-width: 320px; background: #f5f0e8; transform: translateX(-100%); transition: transform 0.28s cubic-bezier(0.4,0,0.2,1); z-index: 21; box-shadow: 2px 0 30px rgba(0,0,0,0.15); padding: 20px; }
+    .menu.open { transform: translateX(0); }
+    .menu-head { font-family: var(--font-data); font-size: 0.7rem; font-weight: 700; letter-spacing: 0.14em; color: #0a0a0f; margin-bottom: 24px; }
+    .menu a { display: block; font-family: var(--font-ui); font-size: 0.95rem; color: #2a2520; text-decoration: none; padding: 14px 0; border-bottom: 1px solid #e0d8c8; }
+    .menu a.danger { color: #8a4a3a; }
+    /* Settings block on the Chart panel */
+    .settings { margin-top: 28px; padding-top: 8px; border-top: 1px solid #d8d0c0; }
+    .settings-row { display: block; width: 100%; text-align: left; background: none; border: none; cursor: pointer; font-family: var(--font-ui); font-size: 0.875rem; color: #2a2520; text-decoration: none; padding: 13px 0; border-bottom: 1px solid #e0d8c8; }
+    .settings-row.danger { color: #8a4a3a; }
+    /* Change-answer modal */
+    .modal-scrim { position: absolute; inset: 0; background: rgba(10,10,15,0.45); display: none; align-items: center; justify-content: center; z-index: 30; padding: 16px; }
+    .modal-scrim.open { display: flex; }
+    .modal { background: #f5f0e8; border-radius: 14px; width: 100%; max-width: 380px; max-height: 84%; overflow-y: auto; padding: 20px; }
+    .modal h3 { font-family: var(--font-data); font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: #7a7570; margin: 0 0 14px; }
+    .modal label { display: block; font-size: 0.8125rem; color: #3a3530; margin-bottom: 5px; }
+    .modal select, .modal textarea { width: 100%; box-sizing: border-box; font-family: var(--font-ui); font-size: 0.9rem; background: #ece7dc; border: 1px solid #c8c0b0; border-radius: 8px; padding: 10px; margin-bottom: 12px; color: #0a0a0f; }
+    .modal textarea { min-height: 90px; resize: vertical; }
+    .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 4px; }
+    .modal-btn { font-family: var(--font-data); font-size: 0.625rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 9px 14px; border-radius: 6px; border: none; cursor: pointer; }
+    .modal-btn.primary { background: #0a0a0f; color: #f0ebe0; }
+    .modal-btn.ghost { background: transparent; border: 1px solid #c8c0b0; color: #3a3530; }
+    .modal-note { font-size: 0.82rem; color: #7a7570; line-height: 1.55; }
+    .modal-note a { color: #8a6830; }
+    /* Hamburger only on phones; on laptop the settings live on the Chart panel */
+    @media (min-width: 768px) { #menu-open { visibility: hidden; } }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <div class="tb">
+      <button class="tb-btn" id="menu-open" aria-label="Menu">&#9776;</button>
+      <span class="tb-title" id="tb-title">THE COMMANDER</span>
+      <button class="tb-btn" id="history-btn" aria-label="History" style="font-size:1rem;">&#8635;</button>
+    </div>
+
+    <div class="panels">
+      <div class="track" id="track">
+
+        <!-- LEFT: Navigation Chart -->
+        <section class="panel">
+          <div class="panel-scroll" id="chart-panel">
+            <div class="sp-title">Navigation Chart</div>
+            <div id="chart-body"><p class="sp-empty">Loading your chart&#8230;</p></div>
+            <div class="settings">
+              <button class="settings-row" data-change-answer>Change an interview answer</button>
+              <a class="settings-row" href="/subscribe">Manage subscription</a>
+              <a class="settings-row danger" href="/api/auth/logout">Sign out</a>
+            </div>
+          </div>
+        </section>
+
+        <!-- CENTER: Earl -->
+        <section class="panel">
+          <div class="msgs" id="msgs"></div>
+          <div class="prompts" id="prompts">
+            <button class="pill" data-p="What is the one move I could make right now that would save me the most money? Ask me whatever you need first.">What's the one move that saves me money?</button>
+            <button class="pill" data-p="What do you think is the biggest unvalidated assumption baked into my business right now? Ask me questions until you can name it.">What's my biggest assumption?</button>
+            <button class="pill" data-p="Based on what you know about me, what should I focus on for the next 90 days?">What should I focus on next?</button>
+          </div>
+          <div class="composer">
+            <div class="composer-row">
+              <input id="composer-input" type="text" placeholder="Ask Earl&#8230;" autocomplete="off">
+              <button class="send" id="composer-send" aria-label="Send">&#8593;</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- RIGHT: Progress -->
+        <section class="panel">
+          <div class="panel-scroll" id="progress-panel">
+            <div class="sp-title">Your Progress</div>
+            <div id="progress-body"><p class="sp-empty">Loading your progress&#8230;</p></div>
+          </div>
+        </section>
+
+      </div>
+    </div>
+
+    <div class="slider">
+      <div class="slider-inner" id="slider">
+        <div class="slider-pill" id="slider-pill"></div>
+        <button data-i="0">Chart</button>
+        <button data-i="1" class="active">Earl</button>
+        <button data-i="2">Progress</button>
+      </div>
+    </div>
+
+    <div class="scrim" id="scrim"></div>
+    <nav class="menu" id="menu">
+      <div class="menu-head">THE BRIDGE</div>
+      <a href="#" data-change-answer>Change an interview answer</a>
+      <a href="/subscribe">Manage subscription</a>
+      <a href="/api/auth/logout" class="danger">Sign out</a>
+    </nav>
+
+    <div class="modal-scrim" id="ca-scrim">
+      <div class="modal">
+        <h3>Change an interview answer</h3>
+        <div id="ca-body"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const TITLES = ['NAVIGATION CHART', 'THE COMMANDER', 'YOUR PROGRESS'];
+    const track = document.getElementById('track');
+    const tbTitle = document.getElementById('tb-title');
+    const sliderBtns = Array.from(document.querySelectorAll('#slider button'));
+    const pill = document.getElementById('slider-pill');
+    let current = 1;
+
+    function goTo(i) {
+      current = Math.max(0, Math.min(2, i));
+      track.style.transform = `translateX(-${current * 33.3333}%)`;
+      pill.style.transform = `translateX(${current * 100}%)`;
+      tbTitle.textContent = TITLES[current];
+      sliderBtns.forEach(b => b.classList.toggle('active', Number(b.dataset.i) === current));
+    }
+    sliderBtns.forEach(b => b.addEventListener('click', () => goTo(Number(b.dataset.i))));
+    goTo(1); // start on Earl immediately
+
+    // Touch swipe between panels (ignored while swiping inside the message list horizontally)
+    let sx = 0, sy = 0, swiping = false;
+    const panels = document.querySelector('.panels');
+    panels.addEventListener('touchstart', e => { sx = e.touches[0].clientX; sy = e.touches[0].clientY; swiping = true; }, { passive: true });
+    panels.addEventListener('touchend', e => {
+      if (!swiping) return; swiping = false;
+      const dx = e.changedTouches[0].clientX - sx;
+      const dy = e.changedTouches[0].clientY - sy;
+      if (Math.abs(dx) > 55 && Math.abs(dx) > Math.abs(dy) * 1.5) goTo(current + (dx < 0 ? 1 : -1));
+    }, { passive: true });
+
+    // Menu
+    const menu = document.getElementById('menu'), scrim = document.getElementById('scrim');
+    function setMenu(open) { menu.classList.toggle('open', open); scrim.classList.toggle('open', open); }
+    document.getElementById('menu-open').addEventListener('click', () => setMenu(true));
+    scrim.addEventListener('click', () => setMenu(false));
+
+    // Change-an-answer modal (replaces the old /profile page)
+    const caScrim = document.getElementById('ca-scrim');
+    const caBody = document.getElementById('ca-body');
+    function closeCA() { caScrim.classList.remove('open'); }
+    caScrim.addEventListener('click', e => { if (e.target === caScrim) closeCA(); });
+
+    async function openChangeAnswer() {
+      setMenu(false);
+      caBody.innerHTML = '<p class="modal-note">Loading&#8230;</p>';
+      caScrim.classList.add('open');
+      const { ok, data } = await api('/api/member/intake-changes');
+      if (!ok || !data || data.authenticated === false) { caBody.innerHTML = '<p class="modal-note">Please sign in.</p>'; return; }
+      const answers = data.answers || [];
+      const remaining = data.remaining || 0;
+      const email = data.contactEmail || 'ClydeAIbusiness@gmail.com';
+      if (!answers.length) {
+        caBody.innerHTML = '<p class="modal-note">You have not completed the interview yet.</p><div class="modal-actions"><button class="modal-btn ghost" id="ca-x">Close</button></div>';
+        document.getElementById('ca-x').onclick = closeCA; return;
+      }
+      if (remaining <= 0) {
+        caBody.innerHTML = '<p class="modal-note">You have used all of your interview changes. For another, email <a href="mailto:' + esc(email) + '">' + esc(email) + '</a>.</p><div class="modal-actions"><button class="modal-btn ghost" id="ca-x">Close</button></div>';
+        document.getElementById('ca-x').onclick = closeCA; return;
+      }
+      const opts = answers.map((a, i) => '<option value="' + i + '">' + esc(a.label) + '</option>').join('');
+      caBody.innerHTML =
+        '<p class="modal-note" style="margin-bottom:14px;">You have <b>' + remaining + '</b> change' + (remaining === 1 ? '' : 's') + ' left.</p>' +
+        '<label>Which answer do you want to change?</label><select id="ca-sel">' + opts + '</select>' +
+        '<label>Your answer</label><textarea id="ca-text"></textarea>' +
+        '<div class="modal-actions"><button class="modal-btn ghost" id="ca-x">Cancel</button><button class="modal-btn primary" id="ca-save">Save change</button></div>';
+      const sel = document.getElementById('ca-sel'), txt = document.getElementById('ca-text');
+      const fill = () => { txt.value = answers[sel.value] ? answers[sel.value].answer : ''; };
+      sel.onchange = fill; fill();
+      document.getElementById('ca-x').onclick = closeCA;
+      document.getElementById('ca-save').onclick = async () => {
+        const a = answers[sel.value], val = txt.value.trim();
+        if (!a || !val) return;
+        const btn = document.getElementById('ca-save'); btn.disabled = true; btn.textContent = 'Saving…';
+        await api('/api/member/intake-changes', 'POST', { field: a.field, answer: val });
+        closeCA();
+        loadChart();
+      };
+    }
+    document.querySelectorAll('[data-change-answer]').forEach(el =>
+      el.addEventListener('click', e => { e.preventDefault(); openChangeAnswer(); }));
+
+    // ---- Helpers ----
+    const esc = (s) => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    const fmtDate = (iso) => { if (!iso) return ''; try { return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }); } catch (e) { return ''; } };
+    async function api(path, method, body) {
+      const opts = { method: method || 'GET', headers: { 'Content-Type': 'application/json' } };
+      if (body) opts.body = JSON.stringify(body);
+      const r = await fetch(path, opts);
+      let data = null; try { data = await r.json(); } catch (e) {}
+      return { ok: r.ok, status: r.status, data };
+    }
+
+    // ---- Earl ----
+    const msgs = document.getElementById('msgs');
+    const prompts = document.getElementById('prompts');
+    const input = document.getElementById('composer-input');
+    const sendBtn = document.getElementById('composer-send');
+
+    function addMsg(text, type) {
+      const d = document.createElement('div');
+      d.className = 'm m-' + type;
+      d.textContent = text;
+      msgs.appendChild(d);
+      msgs.scrollTop = msgs.scrollHeight;
+    }
+
+    async function loadHistory() {
+      const { ok, data } = await api('/api/member/commander/history');
+      if (ok && data) {
+        if (data.summary) addMsg('Previous session summary: ' + data.summary, 'system');
+        if (data.messages && data.messages.length) {
+          data.messages.forEach(m => addMsg(m.content, m.role === 'user' ? 'user' : 'commander'));
+          prompts.style.display = 'none';
+        }
+        // Quiet pre-conversation note (cleared on the next send).
+        if (data.preConversation) {
+          const note = document.createElement('div');
+          note.className = 'm m-system pre-note';
+          note.textContent = 'Last time, this was left open: ' + data.preConversation;
+          msgs.appendChild(note);
+          msgs.scrollTop = msgs.scrollHeight;
+        }
+      }
+    }
+
+    async function send() {
+      const text = input.value.trim();
+      if (!text) return;
+      input.value = '';
+      prompts.style.display = 'none';
+      const pre = msgs.querySelector('.pre-note'); if (pre) pre.remove();
+      addMsg(text, 'user');
+      sendBtn.disabled = true;
+
+      const loading = document.createElement('div');
+      loading.className = 'm m-commander'; loading.textContent = 'Thinking…'; loading.style.opacity = '0.5';
+      msgs.appendChild(loading); msgs.scrollTop = msgs.scrollHeight;
+
+      try { if (window.Clerk && window.Clerk.session) await window.Clerk.session.getToken(); } catch (e) {}
+
+      try {
+        const { ok, data } = await api('/api/member/commander/message', 'POST', { message: text });
+        loading.remove();
+        if (ok && data && data.response) {
+          addMsg(data.response, 'commander');
+          loadProgress();
+        } else {
+          addMsg('Earl hit a snag on that one. Give it another try in a moment.', 'system');
+          input.value = text;
+        }
+      } catch (err) {
+        loading.remove();
+        addMsg(navigator.onLine ? 'Could not reach Earl just now. Check your connection and try again.' : 'You appear to be offline. Your message was not sent — try again once you are back.', 'system');
+        input.value = text;
+      }
+      sendBtn.disabled = false;
+      input.focus();
+    }
+    sendBtn.addEventListener('click', send);
+    input.addEventListener('keydown', e => { if (e.key === 'Enter') send(); });
+    prompts.querySelectorAll('.pill').forEach(p => p.addEventListener('click', () => { input.value = p.dataset.p; send(); }));
+    document.getElementById('history-btn').addEventListener('click', () => goTo(1));
+
+    // ---- Progress ----
+    async function loadProgress() {
+      const { data } = await api('/api/member/progress');
+      const body = document.getElementById('progress-body');
+      if (!data || data.authenticated === false) return;
+      let html = '';
+
+      // Graduation
+      const g = data.graduation || {};
+      if (g.graduated) {
+        html += '<div class="pg-grad"><p>You have graduated. <a href="/certificate">View your certificate &#8594;</a></p></div>';
+      } else if (g.offered) {
+        html += '<div class="pg-grad"><p>You may be ready to graduate. When you are, begin your exit interview — the same questions you started with, answered fresh.</p><button class="pg-grad-btn" id="pg-grad-start">Begin exit interview</button></div>';
+      }
+
+      // Stages (+ resume the interview if not finished)
+      const st = data.stages || {};
+      html += '<div class="stages">' +
+        ['stage_1', 'stage_2', 'stage_3'].map((k, i) => `<span class="stage ${st[k] ? 'on' : ''}">${i + 1}</span>`).join('') +
+        '</div>';
+      if (!st.stage_3) {
+        html += `<a class="pg-continue" href="/intake">${st.stage_2 ? 'Continue to Stage 3' : 'Continue your interview'} &#8594;</a>`;
+      }
+
+      // Benchmarks
+      const benches = data.benchmarks || [];
+      if (benches.length) {
+        const hist = {};
+        (data.ratingHistory || []).forEach(r => { (hist[r.benchmark_id] = hist[r.benchmark_id] || []).push(r); });
+        html += '<div class="sp-block-title">What you are working toward</div>';
+        benches.forEach(b => {
+          const now = b.current_rating != null ? b.current_rating : b.starting_rating;
+          html += `<div class="bench"><div class="bench-stmt">${esc(b.statement)}</div><div class="bench-row">${arc(hist[b.id], now)}<span class="bench-now">${now != null ? 'now ' + now + ' / 10' : 'not yet rated'}</span></div></div>`;
+        });
+      } else {
+        html += '<p class="sp-empty">Finish stage two of your interview and the things you are working toward show up here.</p>';
+      }
+
+      // Action steps
+      const steps = (data.actionSteps || {});
+      const active = steps.active || [], done = steps.completed || [];
+      if (active.length || done.length) {
+        html += '<div class="sp-block-title">Action steps</div>';
+        active.forEach(s => html += `<div class="step">${esc(s.step_text)}</div>`);
+        done.forEach(s => html += `<div class="step done">${esc(s.step_text)}</div>`);
+      }
+
+      // Session reflections
+      const refl = data.reflections || [];
+      if (refl.length) {
+        html += '<div class="sp-block-title">Session reflections</div>';
+        refl.slice(0, 8).forEach(r => html += `<div class="pg-refl">${esc(r.summary)}</div>`);
+      }
+
+      // Periodic report
+      if (data.periodicReport && data.periodicReport.letter) {
+        html += '<div class="sp-block-title">A note from Earl</div>' +
+          `<div class="pg-letter">${esc(data.periodicReport.letter)}<div class="pg-letter-date">${fmtDate(data.periodicReport.created_at)}</div></div>`;
+      }
+
+      body.innerHTML = html;
+
+      const gb = document.getElementById('pg-grad-start');
+      if (gb) gb.addEventListener('click', async () => {
+        gb.disabled = true; gb.textContent = 'Starting…';
+        const { ok } = await api('/api/member/graduation/start', 'POST');
+        if (ok) location.href = '/intake?round=2';
+        else { gb.disabled = false; gb.textContent = 'Begin exit interview'; }
+      });
+    }
+    function arc(history, now) {
+      const pts = (history && history.length) ? history.map(p => p.rating) : (now ? [now] : []);
+      if (!pts.length) return '';
+      const w = 100, h = 22, pad = 3, maxI = Math.max(pts.length - 1, 1);
+      const c = pts.map((v, i) => [pad + (i / maxI) * (w - 2 * pad), h - pad - ((v - 1) / 9) * (h - 2 * pad)]);
+      const line = c.map((p, i) => (i ? 'L' : 'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join(' ');
+      const last = c[c.length - 1];
+      return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">${c.length > 1 ? `<path d="${line}" fill="none" stroke="#8a6830" stroke-width="1.5"/>` : ''}<circle cx="${last[0].toFixed(1)}" cy="${last[1].toFixed(1)}" r="2.4" fill="#0a0a0f"/></svg>`;
+    }
+
+    // ---- Chart ----
+    async function loadChart() {
+      const body = document.getElementById('chart-body');
+      const { data } = await api('/api/intake/data');
+      let arr = data && data.session && data.session.chartSections;
+      if (typeof arr === 'string') { try { arr = JSON.parse(arr); } catch (e) { arr = null; } }
+
+      let html = (!arr || !arr.length)
+        ? '<p class="sp-empty">Your Navigation Chart builds as you complete the interview. Finish a stage and it appears here.</p>'
+        : arr.map(s => `<div class="chart-sec"><div class="chart-sec-t">${esc(s.title)}</div><div class="chart-sec-b">${esc(s.body)}</div></div>`).join('');
+
+      // Ongoing appended note: how the benchmark ratings have moved since the start.
+      try {
+        const pr = await api('/api/member/progress');
+        const moved = ((pr.data && pr.data.benchmarks) || [])
+          .filter(b => b.current_rating != null && b.starting_rating != null && b.current_rating !== b.starting_rating);
+        if (moved.length) {
+          html += '<div class="chart-sec"><div class="chart-sec-t">Since you started</div><div class="chart-sec-b">' +
+            moved.map(b => `&#8226; ${esc(b.statement)} — moved from ${b.starting_rating} to ${b.current_rating}.`).join('<br>') +
+            '</div></div>';
+        }
+      } catch (e) { /* non-fatal */ }
+
+      body.innerHTML = html;
+    }
+
+    // ---- Init ----
+    (async function () {
+      try { if (window.Clerk && !window.Clerk.loaded) await window.Clerk.load(); }
+      catch (e) { location.href = '/login'; return; }
+
+      // Tier + onboarding gates (client-side; server also guards).
+      try {
+        const me = await api('/api/auth/me');
+        if (me.ok && me.data && me.data.membershipTier === 'free') { location.href = '/subscribe'; return; }
+      } catch (e) {}
+      try {
+        const pr = await api('/api/member/progress');
+        if (pr.data && pr.data.authenticated !== false && pr.data.stages && !pr.data.stages.stage_1) { location.replace('/intake'); return; }
+      } catch (e) {}
+
+      goTo(1);
+      loadHistory();
+      loadProgress();
+      loadChart();
+    })();
+  </script>
+  <script src="/js/checkin.js"></script>
+</body>
+</html>

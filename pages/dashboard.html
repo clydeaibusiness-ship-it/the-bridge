@@ -13,8 +13,20 @@
     .dash-onboarding-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(245,240,232,0.92); }
     .dash-onboarding-modal { position: relative; z-index: 1; background: #f5f0e8; border: 1px solid #c8c0b0; border-radius: 8px; padding: 32px; max-width: 440px; text-align: center; box-shadow: 0 4px 24px rgba(0,0,0,0.08); }
     .dash-grayed .dash-grid { opacity: 0.3; pointer-events: none; }
+    .dash-progress-title { font-family: var(--font-data); font-size: 0.625rem; letter-spacing: 0.1em; text-transform: uppercase; color: #7a7570; margin-bottom: 14px; }
+    .dash-progress-empty { font-family: var(--font-ui); font-size: 0.8125rem; color: #7a7570; line-height: 1.55; }
+    .dash-stages { display: flex; align-items: center; gap: 6px; margin-bottom: 16px; }
+    .dash-stage { width: 22px; height: 22px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-family: var(--font-data); font-size: 0.6875rem; color: #7a7570; border: 1px solid #c8c0b0; }
+    .dash-stage.on { background: #0a0a0f; color: #f0ebe0; border-color: #0a0a0f; }
+    .dash-stage-label { font-family: var(--font-data); font-size: 0.5625rem; letter-spacing: 0.08em; text-transform: uppercase; color: #9a948a; margin-left: 4px; }
+    .dash-bench { padding: 8px 0; border-bottom: 1px solid #e0d8c8; }
+    .dash-bench:last-child { border-bottom: none; }
+    .dash-bench-stmt { font-family: var(--font-ui); font-size: 0.8125rem; color: #1a1a1f; line-height: 1.45; }
+    .dash-bench-rate { font-family: var(--font-data); font-size: 0.625rem; color: #8a6830; margin-top: 3px; }
+    .dash-progress-link { display: inline-block; margin-top: 14px; font-family: var(--font-data); font-size: 0.625rem; letter-spacing: 0.08em; text-transform: uppercase; color: #8a6830; text-decoration: none; }
+    .dash-msg-system { color: #9a7a4a; font-size: 0.8125rem; font-style: italic; text-align: center; margin: 8px 0; line-height: 1.5; }
   </style>
-  <script>window.__clerk_publishable_key = 'pk_live_Y2xlcmsuY2FwdGFpbnNicmlkZ2UuaW8k';</script>
+  <script>var _isProd = location.hostname === 'captainsbridge.io' || location.hostname === 'www.captainsbridge.io'; window.__clerk_publishable_key = _isProd ? 'pk_live_Y2xlcmsuY2FwdGFpbnNicmlkZ2UuaW8k' : 'pk_test_b2JsaWdpbmctcHl0aG9uLTUuY2xlcmsuYWNjb3VudHMuZGV2JA';</script>
   <script src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@5/dist/clerk.browser.js"></script>
   <script src="/js/session.js"></script>
 </head>
@@ -25,13 +37,13 @@
     <nav class="site-nav">
       <a href="/" class="site-nav-brand"><span class="site-nav-brand-text">THE BRIDGE</span><span class="beta-chip">BETA</span></a>
       <div class="site-nav-links">
-        <a href="/simulator">Simulator</a>
-        <span class="site-nav-sep">|</span>
         <a href="/navigation-chart">Navigator</a>
         <span class="site-nav-sep">|</span>
-        <a href="/grant-radar">Grant Radar</a>
-        <span class="site-nav-sep">|</span>
         <a href="/dashboard" class="nav-active">Dashboard</a>
+        <span class="site-nav-sep">|</span>
+        <a href="/progress">Progress</a>
+        <span class="site-nav-sep">|</span>
+        <a href="/profile">Profile</a>
         <span class="site-nav-sep">|</span>
         <a href="/api/auth/logout">Sign Out</a>
       </div>
@@ -39,10 +51,10 @@
         <span></span><span></span><span></span>
       </button>
       <div class="site-nav-mobile" id="mobile-menu"><button class="site-nav-mobile-close" aria-label="Close">✕</button>
-        <a href="/simulator">Simulator</a>
         <a href="/navigation-chart">Navigator</a>
-        <a href="/grant-radar">Grant Radar</a>
         <a href="/dashboard" class="nav-active">Dashboard</a>
+        <a href="/progress">Progress</a>
+        <a href="/profile">Profile</a>
         <a href="/api/auth/logout">Sign Out</a>
       </div>
     </nav>
@@ -51,7 +63,7 @@
     <div class="dash-onboarding-gate" id="onboarding-gate" style="display:none;">
       <div class="dash-onboarding-overlay"></div>
       <div class="dash-onboarding-modal">
-        <p style="font-family:var(--font-ui);font-size:var(--text-sm);color:#3a3530;line-height:1.6;margin-bottom:20px;">Before your Navigation Chart can be generated and the Commander can advise you, we need to understand your business. This takes about three minutes.</p>
+        <p style="font-family:var(--font-ui);font-size:var(--text-sm);color:#3a3530;line-height:1.6;margin-bottom:20px;">Before your Navigation Chart can be generated and Earl can advise you, we need to understand your business. This takes about three minutes.</p>
         <a href="/intake" class="dash-btn-primary" style="display:inline-block;text-decoration:none;">Start →</a>
       </div>
     </div>
@@ -62,41 +74,19 @@
 
     <div class="dash-grid">
 
-      <!-- LEFT: Ship Status -->
-      <div class="dash-panel dash-ship">
-        <div class="dash-ship-header">
-          <div class="dash-ship-name" id="dash-ship-name">Your Business</div>
-          <div class="dash-ship-dest" id="dash-destination"></div>
+      <!-- LEFT: Your Progress -->
+      <div class="dash-panel dash-progress">
+        <div class="dash-progress-title">Your Progress</div>
+        <div id="dash-progress-content">
+          <p class="dash-progress-empty">Complete your interview and Earl will start tracking what you are working toward here.</p>
         </div>
-        <div class="dash-ship-display">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 80" width="60" height="80">
-            <defs>
-              <filter id="dsg"><feGaussianBlur stdDeviation="2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-              <linearGradient id="det" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#c8b89a" stop-opacity="0.6"/><stop offset="100%" stop-color="#c8b89a" stop-opacity="0"/></linearGradient>
-            </defs>
-            <rect x="22" y="60" width="16" height="30" fill="url(#det)" opacity="0.4"/>
-            <path d="M30,4 L48,60 L30,52 L12,60 Z" fill="#e8e3d8" stroke="#c8c0b0" stroke-width="0.5" filter="url(#dsg)"/>
-            <path d="M12,60 L2,72 L18,64 Z" fill="#c8c0b0"/>
-            <path d="M48,60 L58,72 L42,64 Z" fill="#c8c0b0"/>
-            <ellipse cx="30" cy="28" rx="5" ry="7" fill="#1a1a26" stroke="#c8b89a" stroke-width="1"/>
-          </svg>
-        </div>
-        <div class="dash-stats">
-          <div class="dash-stat-row"><span class="dash-stat-label">Capital</span><span class="dash-stat-value" id="dash-capital">—</span></div>
-          <div class="dash-stat-row"><span class="dash-stat-label">Customers</span><span class="dash-stat-value" id="dash-customers">—</span></div>
-          <div class="dash-stat-bar"><div class="dash-stat-fill" id="dash-customers-bar" style="width:0%"></div></div>
-          <div class="dash-stat-row"><span class="dash-stat-label">Positioning</span><span class="dash-stat-value" id="dash-positioning">—</span></div>
-          <div class="dash-stat-bar"><div class="dash-stat-fill" id="dash-positioning-bar" style="width:0%"></div></div>
-          <div class="dash-stat-row"><span class="dash-stat-label">Switching Costs</span><span class="dash-stat-value" id="dash-switching">—</span></div>
-          <div class="dash-stat-bar"><div class="dash-stat-fill" id="dash-switching-bar" style="width:0%"></div></div>
-        </div>
-        <a href="/simulator" class="dash-btn-ghost">Resume Simulator</a>
+        <a href="/progress" class="dash-progress-link">Open full progress →</a>
       </div>
 
-      <!-- CENTER: Commander -->
+      <!-- CENTER: Earl -->
       <div class="dash-panel dash-commander" id="commander-panel">
         <div class="dash-commander-header">
-          <h2 class="dash-commander-title">The Commander</h2>
+          <h2 class="dash-commander-title">Earl</h2>
           <button class="commander-fullscreen-btn" id="commander-fullscreen-btn" aria-label="Toggle fullscreen">
             <svg id="fullscreen-expand-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#7a7570" stroke-width="1.5" stroke-linecap="round">
               <line x1="1" y1="1" x2="5" y2="5"/><line x1="1" y1="1" x2="5" y2="1"/><line x1="1" y1="1" x2="1" y2="5"/>
@@ -117,7 +107,7 @@
           <button class="prompt-pill" data-prompt="What do you think is the biggest unvalidated assumption currently baked into my business strategy? Ask me questions until you are confident enough to name it.">What is my biggest assumption?</button>
         </div>
         <div class="dash-commander-input">
-          <input type="text" id="commander-input" placeholder="Ask the Commander anything about your business...">
+          <input type="text" id="commander-input" placeholder="Ask Earl anything about your business...">
           <button class="dash-btn-send" id="commander-send">Send</button>
         </div>
         <div class="commander-fullscreen-hint" id="fullscreen-hint" style="display:none;">Press Esc to exit fullscreen</div>
@@ -139,13 +129,6 @@
             <a href="/intake?mode=update" class="dash-btn-update">Update your answers</a>
           </div>
         </div>
-        <div class="dash-panel dash-grant-radar">
-          <div class="dash-section-title">GRANT RADAR</div>
-          <div class="dash-grant-body" id="dash-grant-body">
-            <p id="dash-grant-text">Answer a curated set of questions about your business to find federal grants you qualify for. Takes 5 to 10 minutes.</p>
-            <a href="/grant-radar/intake" class="dash-btn-ghost" id="dash-grant-btn">Start Grant Radar intake →</a>
-          </div>
-        </div>
       </div>
     </div>
   </div>
@@ -153,6 +136,36 @@
   <script>
     let sessionData = null;
     let isFullscreen = false;
+
+    // Left panel: a live snapshot from the coaching system (replaces the old
+    // game Ship Status panel). Stage progress + benchmark statements.
+    async function loadDashboardProgress() {
+      const el = document.getElementById('dash-progress-content');
+      if (!el) return;
+      try {
+        const r = await fetch('/api/member/progress');
+        const data = await r.json();
+        if (!data || data.authenticated === false) return;
+        const esc = (s) => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        const st = data.stages || {};
+        let html = '<div class="dash-stages">' +
+          '<span class="dash-stage ' + (st.stage_1 ? 'on' : '') + '">1</span>' +
+          '<span class="dash-stage ' + (st.stage_2 ? 'on' : '') + '">2</span>' +
+          '<span class="dash-stage ' + (st.stage_3 ? 'on' : '') + '">3</span>' +
+          '<span class="dash-stage-label">interview stages</span></div>';
+        const benches = data.benchmarks || [];
+        if (benches.length) {
+          benches.forEach(b => {
+            const now = b.current_rating != null ? b.current_rating : b.starting_rating;
+            html += '<div class="dash-bench"><div class="dash-bench-stmt">' + esc(b.statement) + '</div>' +
+              '<div class="dash-bench-rate">' + (now != null ? now + ' / 10' : 'not yet rated') + '</div></div>';
+          });
+        } else {
+          html += '<p class="dash-progress-empty">Once you finish stage two of your interview, the things you are working toward show up here.</p>';
+        }
+        el.innerHTML = html;
+      } catch (e) { /* keep the default empty state */ }
+    }
 
     async function initDashboard() {
       // Initialize Clerk — CDN creates window.Clerk with __clerk_publishable_key
@@ -179,27 +192,23 @@
         if (tierResp.ok) {
           const tierData = await tierResp.json();
           userTier = tierData.membershipTier;
-          if (userTier === 'free') {
+          if (!userTier || userTier === 'free') {
             window.location.href = '/subscribe';
             return;
           }
-          // Map legacy ensign to captain
-          if (userTier === 'ensign') userTier = 'captain';
         }
       } catch (e) {}
 
-      // Grant Radar tier gating — navigator sees locked state
-      if (userTier === 'navigator') {
-        const grantBody = document.getElementById('dash-grant-body');
-        if (grantBody) {
-          grantBody.innerHTML = '<div style="opacity:0.5;pointer-events:none;text-align:center;padding:1rem 0;">' +
-            '<svg width="32" height="32" viewBox="0 0 32 32" fill="none" stroke="#9a9590" stroke-width="1.5" stroke-linecap="round" style="display:block;margin:0 auto 0.75rem auto;"><rect x="6" y="14" width="20" height="14" rx="2"/><path d="M10 14V10C10 6.7 12.7 4 16 4C19.3 4 22 6.7 22 10V14"/><circle cx="16" cy="22" r="2"/></svg>' +
-            '<p style="font-family:var(--font-ui);font-size:0.875rem;color:#3a3530;margin-bottom:0.5rem;">Grant Radar is available on the Captain Tier.</p>' +
-            '<p style="font-family:var(--font-ui);font-size:0.8125rem;color:#9a9590;margin-bottom:1rem;">Upgrade to unlock federal grant matching powered by your full business profile.</p>' +
-            '</div>' +
-            '<a href="/subscribe?tier=captain" class="dash-btn-primary" style="display:inline-block;text-decoration:none;">Upgrade to Captain — $30/mo</a>';
+      // Onboarding: a member who has not finished Stage 1 of the interview
+      // goes straight into it — no parked dashboard, no "Start" button.
+      try {
+        const pr = await fetch('/api/member/progress');
+        const pdata = await pr.json();
+        if (pdata && pdata.authenticated !== false && pdata.stages && !pdata.stages.stage_1) {
+          window.location.replace('/intake');
+          return;
         }
-      }
+      } catch (e) {}
 
       // Load session — Supabase is source of truth, localStorage is cache
       sessionData = await BridgeSession.load();
@@ -211,30 +220,9 @@
         // Still render the rest of the dashboard (grayed out)
       }
 
+      loadDashboardProgress();
+
       if (sessionData) {
-        const name = sessionData.businessName || sessionData.shipName;
-        if (name) document.getElementById('dash-ship-name').textContent = name;
-        if (sessionData.destination) document.getElementById('dash-destination').textContent = `→ ${sessionData.destination.toUpperCase()}`;
-
-        if (sessionData.simulatorResources) {
-          const r = sessionData.simulatorResources;
-          if (r.capital !== undefined) {
-            document.getElementById('dash-capital').textContent = `$${r.capital.toLocaleString()}`;
-          }
-          if (r.customers !== undefined) {
-            document.getElementById('dash-customers').textContent = `${r.customers} / 40`;
-            document.getElementById('dash-customers-bar').style.width = `${(r.customers / 40) * 100}%`;
-          }
-          if (r.positioning !== undefined) {
-            document.getElementById('dash-positioning').textContent = `${r.positioning}%`;
-            document.getElementById('dash-positioning-bar').style.width = `${r.positioning}%`;
-          }
-          if (r.switchingCosts !== undefined) {
-            document.getElementById('dash-switching').textContent = `${r.switchingCosts}%`;
-            document.getElementById('dash-switching-bar').style.width = `${r.switchingCosts}%`;
-          }
-        }
-
         if (sessionData.completedAt) {
           document.getElementById('chart-prompt').style.display = 'none';
           const chartCard = document.getElementById('chart-card');
@@ -249,15 +237,15 @@
         }
       }
 
-      // Load Commander history from server, then set welcome
-      await loadCommanderHistory();
+      // Load Earl history from server, then set welcome
+      await loadEarlHistory();
 
       // Bind fullscreen
       bindFullscreen();
     }
 
-    // ---- Commander History (Issue 2) ----
-    async function loadCommanderHistory() {
+    // ---- Earl History (Issue 2) ----
+    async function loadEarlHistory() {
       const el = document.getElementById('commander-messages');
 
       try {
@@ -288,10 +276,10 @@
       }
 
       // No history — show welcome message
-      setCommanderWelcome();
+      setEarlWelcome();
     }
 
-    function setCommanderWelcome() {
+    function setEarlWelcome() {
       const el = document.getElementById('commander-messages');
       if (sessionData && sessionData.businessContext) {
         const ctx = sessionData.businessContext;
@@ -346,7 +334,7 @@
       }
     }
 
-    // ---- Commander Chat (Issues 1 + 2) ----
+    // ---- Earl Chat (Issues 1 + 2) ----
     const commanderInput = document.getElementById('commander-input');
     const commanderSend = document.getElementById('commander-send');
     const commanderMessages = document.getElementById('commander-messages');
@@ -387,11 +375,6 @@ Biggest uncertainty: ${a.uncertainty || 'unknown'}
       if (sc.websiteContent) context += `\n\nWebsite content:\n${sc.websiteContent}`;
       if (sc.facebookContent) context += `\n\nFacebook page content:\n${sc.facebookContent}`;
 
-      if (sessionData.simulatorResources) {
-        const r = sessionData.simulatorResources;
-        context += `\n\nLatest simulator resources: Capital $${r.capital}, Customers ${r.customers}/40, Positioning ${r.positioning}%, Switching Costs ${r.switchingCosts}%`;
-      }
-
       return context;
     }
 
@@ -403,7 +386,7 @@ Biggest uncertainty: ${a.uncertainty || 'unknown'}
       commanderMessages.scrollTop = commanderMessages.scrollHeight;
     }
 
-    async function sendCommanderMessage() {
+    async function sendEarlMessage() {
       const text = commanderInput.value.trim();
       if (!text) return;
       commanderInput.value = '';
@@ -421,6 +404,9 @@ Biggest uncertainty: ${a.uncertainty || 'unknown'}
       commanderMessages.appendChild(loadingMsg);
       commanderMessages.scrollTop = commanderMessages.scrollHeight;
 
+      // Keep the Clerk session fresh so an idle gap doesn't drop context.
+      try { if (window.Clerk && window.Clerk.session) await window.Clerk.session.getToken(); } catch (e) {}
+
       try {
         const resp = await fetch('/api/member/commander/message', {
           method: 'POST',
@@ -428,35 +414,43 @@ Biggest uncertainty: ${a.uncertainty || 'unknown'}
           body: JSON.stringify({ message: text, sessionContext: getSessionContext() })
         });
 
-        const data = await resp.json();
+        let data = {};
+        try { data = await resp.json(); } catch (e) {}
         commanderMessages.removeChild(loadingMsg);
 
-        if (!resp.ok || data.error) {
-          // Issue 1, Cause C: friendly error instead of "temporarily unavailable"
-          addMessage(data.error || 'I was not able to process that just now. Could you rephrase or try again in a moment?', 'commander');
-        } else {
+        if (resp.ok && data.response) {
           addMessage(data.response, 'commander');
+        } else {
+          // Server was reached but returned an error — not Earl's voice.
+          addMessage('Earl hit a snag on that one. Give it another try in a moment.', 'system');
+          commanderInput.value = text; // preserve so they can retry without retyping
         }
       } catch (err) {
         commanderMessages.removeChild(loadingMsg);
-        addMessage('I was not able to process that just now. Could you rephrase or try again in a moment?', 'commander');
+        // Network failure — make it clearly a connection issue, not a build fault.
+        if (!navigator.onLine) {
+          addMessage('You appear to be offline. Your message was not sent — try again once your connection is back.', 'system');
+        } else {
+          addMessage('Could not reach Earl just now. Check your connection and try again.', 'system');
+        }
+        commanderInput.value = text;
       }
       commanderSend.disabled = false;
       commanderInput.focus();
     }
 
-    commanderSend.addEventListener('click', sendCommanderMessage);
-    commanderInput.addEventListener('keydown', e => { if (e.key === 'Enter') sendCommanderMessage(); });
+    commanderSend.addEventListener('click', sendEarlMessage);
+    commanderInput.addEventListener('keydown', e => { if (e.key === 'Enter') sendEarlMessage(); });
 
     // Quick prompt buttons
     document.querySelectorAll('.prompt-pill').forEach(btn => {
       btn.addEventListener('click', () => {
         commanderInput.value = btn.dataset.prompt;
-        sendCommanderMessage();
+        sendEarlMessage();
       });
     });
 
-    // ---- Fullscreen Commander (Issue 4) ----
+    // ---- Fullscreen Earl (Issue 4) ----
     function bindFullscreen() {
       const btn = document.getElementById('commander-fullscreen-btn');
       btn.addEventListener('click', toggleFullscreen);
@@ -518,36 +512,9 @@ Biggest uncertainty: ${a.uncertainty || 'unknown'}
       commanderMessages.scrollTop = commanderMessages.scrollHeight;
     }
 
-    // ---- Grant Radar Status ----
-    async function loadGrantRadarStatus() {
-      try {
-        const res = await fetch('/api/grant-radar/results');
-        if (!res.ok) return;
-        const data = await res.json();
-        const textEl = document.getElementById('dash-grant-text');
-        const btnEl = document.getElementById('dash-grant-btn');
-        if (data.results) {
-          const federal = (data.results.federal || []).length;
-          const state = (data.results.state || []).length;
-          const local = (data.results.local || []).length;
-          const total = federal + state + local;
-          const open = [...(data.results.federal || []), ...(data.results.state || []), ...(data.results.local || [])].filter(function(g) { return g.status && g.status.toLowerCase().indexOf('open') >= 0 || g.status && g.status.toLowerCase().indexOf('rolling') >= 0; }).length;
-          textEl.textContent = 'Your last scan found ' + total + ' grants matched to your business profile. ' + open + ' are currently accepting applications.';
-          btnEl.textContent = 'View matched grants \u2192';
-          btnEl.href = '/grant-radar';
-          if (data.scanDate) {
-            var dateNote = document.createElement('div');
-            dateNote.style.cssText = 'font-family:var(--font-data);font-size:10px;color:#7a7570;margin-top:6px;';
-            dateNote.textContent = 'Last scanned ' + new Date(data.scanDate).toLocaleDateString();
-            document.getElementById('dash-grant-body').appendChild(dateNote);
-          }
-        }
-      } catch (e) {}
-    }
-    loadGrantRadarStatus();
-
     initDashboard();
   </script>
 <script src="/js/nav.js"></script>
+<script src="/js/checkin.js"></script>
 </body>
 </html>

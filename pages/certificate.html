@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Bridge — Graduation</title>
+  <script>var _isProd = location.hostname === 'captainsbridge.io' || location.hostname === 'www.captainsbridge.io'; window.__clerk_publishable_key = _isProd ? 'pk_live_Y2xlcmsuY2FwdGFpbnNicmlkZ2UuaW8k' : 'pk_test_b2JsaWdpbmctcHl0aG9uLTUuY2xlcmsuYWNjb3VudHMuZGV2JA';</script>
+  <script src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@5/dist/clerk.browser.js"></script>
+  <script src="/js/session.js"></script>
+  <link rel="stylesheet" href="/css/global.css">
+  <link rel="stylesheet" href="/css/nav.css">
+  <style>
+    html, body { overflow: visible !important; height: auto !important; background: #f5f0e8 !important; color: #0a0a0f !important; }
+    .ct-page { max-width: 640px; margin: 0 auto; padding: 40px 20px 80px; }
+    .ct-cert { background: #fbf8f1; border: 1px solid #c8b88a; border-radius: 4px; padding: 48px 44px; box-shadow: 0 6px 28px rgba(0,0,0,0.07); }
+    .ct-kicker { font-family: var(--font-data); font-size: 0.5625rem; letter-spacing: 0.2em; text-transform: uppercase; color: #8a6830; text-align: center; margin-bottom: 1.5rem; }
+    .ct-name { font-family: var(--font-ui); font-size: 1.75rem; font-weight: 500; text-align: center; color: #0a0a0f; margin-bottom: 0.25rem; }
+    .ct-biz { font-family: var(--font-ui); font-size: 0.95rem; color: #7a7570; text-align: center; margin-bottom: 1.75rem; }
+    .ct-dates { font-family: var(--font-data); font-size: 0.625rem; letter-spacing: 0.08em; text-transform: uppercase; color: #9a8a6a; text-align: center; margin-bottom: 2rem; }
+    .ct-lead { font-family: var(--font-ui); font-size: 0.9rem; color: #3a3530; line-height: 1.6; text-align: center; margin-bottom: 1.75rem; }
+    .ct-change { font-family: var(--font-ui); font-size: 0.9rem; color: #2a2520; line-height: 1.65; padding: 0.85rem 0; border-bottom: 1px solid #e6dcc4; display: flex; gap: 0.7rem; }
+    .ct-change:last-child { border-bottom: none; }
+    .ct-change .mark { color: #8a6830; flex: 0 0 auto; }
+    .ct-free { font-family: var(--font-ui); font-size: 0.8125rem; color: #7a7570; line-height: 1.6; text-align: center; margin-top: 2rem; }
+    .ct-actions { display: flex; gap: 0.75rem; justify-content: center; margin-top: 1.75rem; }
+    .ct-btn { font-family: var(--font-data); font-size: 0.625rem; letter-spacing: 0.1em; text-transform: uppercase; color: #f0ebe0; background: #0a0a0f; border: none; border-radius: 2px; padding: 0.7rem 1.2rem; cursor: pointer; text-decoration: none; }
+    .ct-btn-ghost { background: transparent; color: #3a3530; border: 1px solid #c8c0b0; }
+    .ct-empty { font-family: var(--font-ui); font-size: 0.875rem; color: #7a7570; text-align: center; padding: 3rem 1rem; line-height: 1.6; }
+    .ct-empty a { color: #8a6830; }
+    @media print { .site-nav, .ct-actions { display: none !important; } body { background: #fff !important; } .ct-cert { box-shadow: none; border-color: #c8b88a; } }
+  </style>
+</head>
+<body>
+  <nav class="site-nav">
+    <a href="/" class="site-nav-brand"><span class="site-nav-brand-text">THE BRIDGE</span><span class="beta-chip">BETA</span></a>
+    <div class="site-nav-links">
+      <a href="/dashboard">Dashboard</a>
+      <span class="site-nav-sep">|</span>
+      <a href="/progress">Progress</a>
+      <span class="site-nav-sep">|</span>
+      <a href="/api/auth/logout">Sign Out</a>
+    </div>
+    <button class="site-nav-hamburger" aria-label="Menu"><span></span><span></span><span></span></button>
+    <div class="site-nav-mobile" id="mobile-menu"><button class="site-nav-mobile-close" aria-label="Close">✕</button>
+      <a href="/dashboard">Dashboard</a>
+      <a href="/progress">Progress</a>
+      <a href="/api/auth/logout">Sign Out</a>
+    </div>
+  </nav>
+
+  <div class="ct-page" id="ct-root">
+    <div class="ct-empty">Loading…</div>
+  </div>
+
+  <script>
+    const root = document.getElementById('ct-root');
+    const esc = (s) => String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    const fmt = (d) => { if (!d) return ''; try { return new Date(d).toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'}); } catch(e){ return d; } };
+
+    (async function () {
+      try { if (window.Clerk && !window.Clerk.loaded) await window.Clerk.load(); } catch (e) {}
+
+      let data;
+      try { const r = await fetch('/api/member/graduation'); data = await r.json(); }
+      catch (e) { root.innerHTML = '<div class="ct-empty">Could not load this right now. Please refresh.</div>'; return; }
+
+      const rec = data && data.record;
+      if (!rec || !rec.certificate_issued) {
+        root.innerHTML = '<div class="ct-empty">You have not graduated yet. When Earl decides the time is right, your exit interview unlocks here.<br><br><a href="/progress">Back to your progress →</a></div>';
+        return;
+      }
+
+      const changes = Array.isArray(rec.comparison && rec.comparison.changes) ? rec.comparison.changes : [];
+      let html = '<div class="ct-cert">';
+      html += '<div class="ct-kicker">The Bridge · Certificate of Completion</div>';
+      html += '<div class="ct-name">' + esc(data.memberName || 'A Captain') + '</div>';
+      if (data.businessName) html += '<div class="ct-biz">' + esc(data.businessName) + '</div>';
+      html += '<div class="ct-dates">Started ' + esc(fmt(rec.started_on)) + ' &nbsp;·&nbsp; Graduated ' + esc(fmt(rec.graduated_on)) + '</div>';
+      html += '<div class="ct-lead">Here is what changed, in your own words, from where you started to where you are now.</div>';
+      changes.forEach(c => { html += '<div class="ct-change"><span class="mark">→</span><span>' + esc(c) + '</span></div>'; });
+      if (rec.free_access_until) {
+        html += '<div class="ct-free">Your access continues at no charge through ' + esc(fmt(rec.free_access_until)) + '. Earl remains here whenever you want it.</div>';
+      }
+      html += '</div>';
+      html += '<div class="ct-actions"><button class="ct-btn" onclick="window.print()">Download / Print</button>' +
+        '<a class="ct-btn ct-btn-ghost" href="/dashboard">Back to Earl</a></div>';
+      root.innerHTML = html;
+    })();
+  </script>
+  <script src="/js/nav.js"></script>
+</body>
+</html>

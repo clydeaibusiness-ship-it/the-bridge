@@ -156,27 +156,6 @@
   transition: width 0.5s ease;
 }
 
-/* Ghost button (Resume Simulator) */
-.dash-btn-ghost {
-  display: block;
-  width: 100%;
-  text-align: center;
-  font-family: var(--font-data);
-  font-size: 11px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: #3a3530;
-  background: transparent;
-  border: 1px solid #c8c0b0;
-  border-radius: 2px;
-  padding: 9px 16px;
-  text-decoration: none;
-  cursor: pointer;
-}
-.dash-btn-ghost:hover {
-  border-color: #3a3530;
-}
-
 /* Primary button */
 .dash-btn-primary {
   display: inline-block;
@@ -497,20 +476,6 @@
   border-bottom: none;
 }
 
-/* ---- GRANT RADAR ---- */
-.dash-grant-radar {
-  padding: 0;
-}
-.dash-grant-body {
-  padding: 14px 20px;
-}
-.dash-grant-body p {
-  font-family: var(--font-ui);
-  font-size: var(--text-sm);
-  color: #7a7570;
-  line-height: 1.55;
-}
-
 /* ---- RESPONSIVE ---- */
 /* Tablet */
 @media (max-width: 64em) {
@@ -572,9 +537,6 @@
     padding: 0.625rem 0.875rem;
   }
   .dash-run-list {
-    padding: 0.75rem 0.875rem;
-  }
-  .dash-grant-body {
     padding: 0.75rem 0.875rem;
   }
   .dash-section-title {

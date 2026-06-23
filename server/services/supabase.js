@@ -28,6 +28,50 @@ async function createUser(clerkId, email) {
   return data;
 }
 
+/**
+ * Resolve a user idempotently. Order:
+ *   1. existing row for this clerk_id → return it
+ *   2. existing row for this email (created under a different/old Clerk
+ *      instance) → reclaim it by updating its clerk_id → return it
+ *   3. otherwise insert a new row
+ * This prevents the users_email_key unique-constraint collisions that occur
+ * when the Clerk instance issuing IDs changes (dev/prod or instance swaps).
+ */
+async function getOrCreateUser(clerkId, email) {
+  const db = getClient();
+  if (!db) return null;
+
+  const byId = await db.from('users').select('*').eq('clerk_id', clerkId).limit(1);
+  if (byId.data && byId.data.length) return byId.data[0];
+
+  if (email) {
+    const byEmail = await db.from('users').select('*').eq('email', email).limit(1);
+    if (byEmail.data && byEmail.data.length) {
+      const upd = await db.from('users')
+        .update({ clerk_id: clerkId })
+        .eq('id', byEmail.data[0].id)
+        .select()
+        .single();
+      if (upd.error) { console.error('Reclaim user by email failed:', upd.error.message); return byEmail.data[0]; }
+      return upd.data;
+    }
+  }
+
+  const ins = await db.from('users').insert({ clerk_id: clerkId, email }).select().single();
+  if (ins.error) {
+    // Race or residual collision — re-fetch by clerk_id, then by email.
+    const r1 = await db.from('users').select('*').eq('clerk_id', clerkId).limit(1);
+    if (r1.data && r1.data.length) return r1.data[0];
+    if (email) {
+      const r2 = await db.from('users').select('*').eq('email', email).limit(1);
+      if (r2.data && r2.data.length) return r2.data[0];
+    }
+    console.error('getOrCreateUser insert failed:', ins.error.message);
+    return null;
+  }
+  return ins.data;
+}
+
 async function getUserByClerkId(clerkId) {
   const db = getClient();
   if (!db) return null;
@@ -67,92 +111,6 @@ async function updateStripeCustomerId(userId, stripeCustomerId) {
     .eq('id', userId);
 
   if (error) throw error;
-}
-
-// ---- Game State ----
-
-async function saveGameState(userId, state) {
-  const db = getClient();
-  if (!db) return null;
-
-  const record = {
-    user_id: userId,
-    ship_name: state.shipName,
-    destination_name: state.destinationName,
-    flavor_text: state.flavorText,
-    current_sector: state.sector || 1,
-    passenger_count: state.passengerCount || 0,
-    lever_config: state.levers,
-    momentum: state.stats?.momentum,
-    resilience: state.stats?.resilience,
-    clarity: state.stats?.clarity,
-    run_number: state.runNumber || 1,
-    last_saved: new Date().toISOString()
-  };
-
-  // Upsert — update if exists for this user
-  const { data, error } = await db
-    .from('game_state')
-    .upsert(record, { onConflict: 'user_id' })
-    .select()
-    .single();
-
-  if (error) throw error;
-  return data;
-}
-
-async function getGameState(userId) {
-  const db = getClient();
-  if (!db) return null;
-
-  const { data, error } = await db
-    .from('game_state')
-    .select('*')
-    .eq('user_id', userId)
-    .single();
-
-  if (error && error.code !== 'PGRST116') throw error;
-  return data;
-}
-
-// ---- Run History ----
-
-async function saveRunHistory(userId, run) {
-  const db = getClient();
-  if (!db) return null;
-
-  const { data, error } = await db
-    .from('run_history')
-    .insert({
-      user_id: userId,
-      run_number: run.runNumber,
-      threat_log: run.threatLog,
-      lever_decisions: run.leverDecisions,
-      final_momentum: run.finalStats?.momentum,
-      final_resilience: run.finalStats?.resilience,
-      final_clarity: run.finalStats?.clarity,
-      killing_threat: run.killingThreat,
-      debrief_text: run.debriefText
-    })
-    .select()
-    .single();
-
-  if (error) throw error;
-  return data;
-}
-
-async function getRunHistory(userId) {
-  const db = getClient();
-  if (!db) return [];
-
-  const { data, error } = await db
-    .from('run_history')
-    .select('*')
-    .eq('user_id', userId)
-    .order('completed_at', { ascending: false });
-
-  if (error) throw error;
-  return data || [];
 }
 
 // ---- Anonymous Events ----
@@ -450,7 +408,6 @@ async function upsertIntake(userId, answers) {
   if (answers._chartSections) record.chart_sections = answers._chartSections;
   if (answers._scannedContent) record.scanned_content = answers._scannedContent;
   if (answers._intakeCompletedAt) record.intake_completed_at = answers._intakeCompletedAt;
-  if (answers._simulatorResources) record.simulator_resources = answers._simulatorResources;
 
   const { data, error } = await db
     .from('user_intake')
@@ -574,16 +531,602 @@ async function sessionNoteExists(userId, sessionId) {
   return data && data.length > 0;
 }
 
+// ---- Action Steps (coaching system) ----
+
+/**
+ * Save an action step the member committed to during a Commander conversation.
+ * Stores the member's exact words. Called when the Commander invokes the
+ * save_action_step tool.
+ */
+async function saveActionStep(userId, stepText, sourceSessionId = null, targetDate = null) {
+  const db = getClient();
+  if (!db) return null;
+
+  const { data, error } = await db
+    .from('action_steps')
+    .insert({
+      user_id: userId,
+      step_text: stepText,
+      source_session_id: sourceSessionId,
+      target_date: targetDate,
+      status: 'active'
+    })
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Save action step error:', error.message);
+    return null;
+  }
+  return data;
+}
+
+// ---- Session Debriefs (coaching system) ----
+
+/**
+ * Insert or update the member-facing debrief for a session.
+ * One row per session_id — the latest background pass replaces the prior
+ * summary rather than flooding the table with a row per message.
+ */
+async function upsertSessionDebrief(userId, sessionId, summary, shiftDetected = false, unresolvedItem = null) {
+  const db = getClient();
+  if (!db) return null;
+
+  // Look for an existing debrief for this session
+  const { data: existing } = await db
+    .from('session_debriefs')
+    .select('id')
+    .eq('user_id', userId)
+    .eq('session_id', sessionId)
+    .limit(1);
+
+  if (existing && existing.length > 0) {
+    const { data, error } = await db
+      .from('session_debriefs')
+      .update({ summary, shift_detected: shiftDetected, unresolved_item: unresolvedItem })
+      .eq('id', existing[0].id)
+      .select()
+      .single();
+    if (error) { console.error('Update session debrief error:', error.message); return null; }
+    return data;
+  }
+
+  const { data, error } = await db
+    .from('session_debriefs')
+    .insert({
+      user_id: userId,
+      session_id: sessionId,
+      summary,
+      shift_detected: shiftDetected,
+      unresolved_item: unresolvedItem
+    })
+    .select()
+    .single();
+
+  if (error) { console.error('Insert session debrief error:', error.message); return null; }
+  return data;
+}
+
+// ---- Member State (coaching lifecycle spine) ----
+
+/**
+ * Get the member_state row, creating it on first access. One row per member.
+ */
+async function ensureMemberState(userId) {
+  const db = getClient();
+  if (!db) return null;
+
+  const { data: existing } = await db
+    .from('member_state')
+    .select('*')
+    .eq('user_id', userId)
+    .limit(1);
+
+  if (existing && existing.length > 0) return existing[0];
+
+  const { data, error } = await db
+    .from('member_state')
+    .insert({ user_id: userId })
+    .select()
+    .single();
+
+  if (error) {
+    // Another request may have created it concurrently — read it back.
+    const { data: race } = await db
+      .from('member_state').select('*').eq('user_id', userId).limit(1);
+    if (race && race.length > 0) return race[0];
+    console.error('ensureMemberState error:', error.message);
+    return null;
+  }
+  return data;
+}
+
+async function updateMemberState(userId, patch) {
+  const db = getClient();
+  if (!db) return null;
+  const { data, error } = await db
+    .from('member_state')
+    .update({ ...patch, updated_at: new Date().toISOString() })
+    .eq('user_id', userId)
+    .select()
+    .single();
+  if (error) { console.error('updateMemberState error:', error.message); return null; }
+  return data;
+}
+
+// ---- Action Steps: reads + status ----
+
+async function getActionSteps(userId, status = null) {
+  const db = getClient();
+  if (!db) return [];
+  let q = db.from('action_steps').select('*').eq('user_id', userId);
+  if (status) q = q.eq('status', status);
+  const { data, error } = await q.order('created_at', { ascending: false });
+  if (error) { console.error('getActionSteps error:', error.message); return []; }
+  return data || [];
+}
+
+async function getActionStep(actionStepId) {
+  const db = getClient();
+  if (!db) return null;
+  const { data, error } = await db
+    .from('action_steps').select('*').eq('id', actionStepId).single();
+  if (error && error.code !== 'PGRST116') console.error('getActionStep error:', error.message);
+  return data || null;
+}
+
+/**
+ * Update an action step's status. Sets completed_at when completed.
+ * Optionally records the check-in follow-up answer.
+ */
+async function updateActionStepStatus(actionStepId, status, followUpAnswer = null) {
+  const db = getClient();
+  if (!db) return null;
+  const patch = { status };
+  if (status === 'completed') patch.completed_at = new Date().toISOString();
+  if (followUpAnswer !== null) patch.follow_up_answer = followUpAnswer;
+  const { data, error } = await db
+    .from('action_steps').update(patch).eq('id', actionStepId).select().single();
+  if (error) { console.error('updateActionStepStatus error:', error.message); return null; }
+  return data;
+}
+
+/**
+ * Record a check-in follow-up note on an action step without changing its status.
+ */
+async function updateActionStepFollowUp(actionStepId, followUpAnswer) {
+  const db = getClient();
+  if (!db) return null;
+  const { data, error } = await db
+    .from('action_steps')
+    .update({ follow_up_answer: followUpAnswer })
+    .eq('id', actionStepId)
+    .select()
+    .single();
+  if (error) { console.error('updateActionStepFollowUp error:', error.message); return null; }
+  return data;
+}
+
+// ---- Benchmarks + ratings ----
+
+async function getBenchmarks(userId, activeOnly = true) {
+  const db = getClient();
+  if (!db) return [];
+  let q = db.from('member_benchmarks').select('*').eq('user_id', userId);
+  if (activeOnly) q = q.eq('active', true);
+  const { data, error } = await q.order('position', { ascending: true });
+  if (error) { console.error('getBenchmarks error:', error.message); return []; }
+  return data || [];
+}
+
+/**
+ * Record a rating for a benchmark in the history table and update the
+ * benchmark's current_rating. Returns the updated benchmark.
+ */
+async function addBenchmarkRating(userId, benchmarkId, rating, source = 'check_in') {
+  const db = getClient();
+  if (!db) return null;
+
+  await db.from('benchmark_ratings').insert({
+    user_id: userId, benchmark_id: benchmarkId, rating, source
+  });
+
+  const { data, error } = await db
+    .from('member_benchmarks')
+    .update({ current_rating: rating, updated_at: new Date().toISOString() })
+    .eq('id', benchmarkId)
+    .select()
+    .single();
+  if (error) { console.error('addBenchmarkRating update error:', error.message); return null; }
+  return data;
+}
+
+/**
+ * All ratings for a member (for the progress arc), oldest first.
+ */
+async function getBenchmarkRatingHistory(userId) {
+  const db = getClient();
+  if (!db) return [];
+  const { data, error } = await db
+    .from('benchmark_ratings')
+    .select('benchmark_id, rating, source, created_at')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: true });
+  if (error) { console.error('getBenchmarkRatingHistory error:', error.message); return []; }
+  return data || [];
+}
+
+// ---- Check-ins ----
+
+async function createCheckIn(userId, fields) {
+  const db = getClient();
+  if (!db) return null;
+  const { data, error } = await db
+    .from('check_ins')
+    .insert({ user_id: userId, status: 'pending', ...fields })
+    .select()
+    .single();
+  if (error) { console.error('createCheckIn error:', error.message); return null; }
+  return data;
+}
+
+/**
+ * The single check-in to surface now: a pending one, or a snoozed one whose
+ * snooze has elapsed. Most recent first.
+ */
+async function getActiveCheckIn(userId) {
+  const db = getClient();
+  if (!db) return null;
+  const nowIso = new Date().toISOString();
+  const { data, error } = await db
+    .from('check_ins')
+    .select('*')
+    .eq('user_id', userId)
+    .neq('status', 'answered')
+    .order('created_at', { ascending: false })
+    .limit(10);
+  if (error) { console.error('getActiveCheckIn error:', error.message); return null; }
+  const list = data || [];
+  // A snoozed check-in is hidden until snoozed_until passes.
+  const due = list.find(c =>
+    c.status === 'pending' ||
+    (c.status === 'snoozed' && (!c.snoozed_until || c.snoozed_until <= nowIso))
+  );
+  return due || null;
+}
+
+async function getLastAnsweredCheckIn(userId) {
+  const db = getClient();
+  if (!db) return null;
+  const { data } = await db
+    .from('check_ins')
+    .select('answered_at, type')
+    .eq('user_id', userId)
+    .eq('status', 'answered')
+    .order('answered_at', { ascending: false })
+    .limit(1);
+  return (data && data.length > 0) ? data[0] : null;
+}
+
+async function answerCheckIn(checkInId, { rating = null, choice = null, text_answer = null }) {
+  const db = getClient();
+  if (!db) return null;
+  const { data, error } = await db
+    .from('check_ins')
+    .update({
+      status: 'answered',
+      answered_at: new Date().toISOString(),
+      rating, choice, text_answer
+    })
+    .eq('id', checkInId)
+    .select()
+    .single();
+  if (error) { console.error('answerCheckIn error:', error.message); return null; }
+  return data;
+}
+
+async function snoozeCheckIn(checkInId, hours = 24) {
+  const db = getClient();
+  if (!db) return null;
+  const until = new Date(Date.now() + hours * 3600 * 1000).toISOString();
+  const { data, error } = await db
+    .from('check_ins')
+    .update({ status: 'snoozed', snoozed_until: until })
+    .eq('id', checkInId)
+    .select()
+    .single();
+  if (error) { console.error('snoozeCheckIn error:', error.message); return null; }
+  return data;
+}
+
+// ---- Session debriefs: reads ----
+
+async function getSessionDebriefs(userId, limit = 20) {
+  const db = getClient();
+  if (!db) return [];
+  const { data, error } = await db
+    .from('session_debriefs')
+    .select('*')
+    .eq('user_id', userId)
+    .eq('dismissed', false)
+    .order('created_at', { ascending: false })
+    .limit(limit);
+  if (error) { console.error('getSessionDebriefs error:', error.message); return []; }
+  return data || [];
+}
+
+// ---- Periodic reports ----
+
+async function getLatestPeriodicReport(userId) {
+  const db = getClient();
+  if (!db) return null;
+  const { data } = await db
+    .from('periodic_reports')
+    .select('*')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
+    .limit(1);
+  return (data && data.length > 0) ? data[0] : null;
+}
+
+async function savePeriodicReport(userId, letter, periodStart, periodEnd) {
+  const db = getClient();
+  if (!db) return null;
+  const { data, error } = await db
+    .from('periodic_reports')
+    .insert({ user_id: userId, letter, period_start: periodStart, period_end: periodEnd })
+    .select()
+    .single();
+  if (error) { console.error('savePeriodicReport error:', error.message); return null; }
+  return data;
+}
+
+// ---- Intake responses (Interviewing Commander) ----
+
+async function saveIntakeResponse(userId, round, stage, field, answer) {
+  const db = getClient();
+  if (!db) return null;
+  const { data, error } = await db
+    .from('intake_responses')
+    .upsert({
+      user_id: userId, round, stage, question_field: field, answer,
+      updated_at: new Date().toISOString()
+    }, { onConflict: 'user_id,round,question_field' })
+    .select()
+    .single();
+  if (error) { console.error('saveIntakeResponse error:', error.message); return null; }
+  return data;
+}
+
+async function updateIntakeFollowUp(userId, round, field, followUpQuestion, followUpAnswer) {
+  const db = getClient();
+  if (!db) return null;
+  const patch = { updated_at: new Date().toISOString() };
+  if (followUpQuestion !== undefined) patch.follow_up_question = followUpQuestion;
+  if (followUpAnswer !== undefined) patch.follow_up_answer = followUpAnswer;
+  const { data, error } = await db
+    .from('intake_responses')
+    .update(patch)
+    .eq('user_id', userId).eq('round', round).eq('question_field', field)
+    .select()
+    .single();
+  if (error) { console.error('updateIntakeFollowUp error:', error.message); return null; }
+  return data;
+}
+
+async function getIntakeResponses(userId, round = 1) {
+  const db = getClient();
+  if (!db) return [];
+  const { data, error } = await db
+    .from('intake_responses')
+    .select('*')
+    .eq('user_id', userId).eq('round', round)
+    .order('stage', { ascending: true });
+  if (error) { console.error('getIntakeResponses error:', error.message); return []; }
+  return data || [];
+}
+
+// ---- Benchmark creation + approval ----
+
+/**
+ * Replace a member's benchmark set with newly generated statements and seed
+ * the rating history. Used once after Stage 2 (and editable on review).
+ */
+async function saveBenchmarks(userId, statements) {
+  const db = getClient();
+  if (!db) return [];
+  // Clear any prior set (regeneration / re-review).
+  await db.from('member_benchmarks').delete().eq('user_id', userId);
+
+  const rows = statements.map((s, i) => ({
+    user_id: userId,
+    statement: s.statement,
+    position: i,
+    starting_rating: s.starting_rating ?? null,
+    current_rating: s.starting_rating ?? null,
+    approved: false,
+    active: true
+  }));
+  const { data, error } = await db.from('member_benchmarks').insert(rows).select();
+  if (error) { console.error('saveBenchmarks error:', error.message); return []; }
+
+  // Seed the arc with the starting rating.
+  const seed = (data || [])
+    .filter(b => b.starting_rating != null)
+    .map(b => ({ user_id: userId, benchmark_id: b.id, rating: b.starting_rating, source: 'initial' }));
+  if (seed.length) await db.from('benchmark_ratings').insert(seed);
+
+  return data || [];
+}
+
+/**
+ * Apply the member's reviewed statements (edit/add/remove) and mark approved.
+ * `statements` is the final list of strings in display order.
+ */
+async function approveBenchmarks(userId, statements) {
+  const db = getClient();
+  if (!db) return [];
+  const existing = await getBenchmarks(userId, false);
+  const byPos = existing.sort((a, b) => a.position - b.position);
+
+  // Simple reconcile: rewrite the set, preserving ratings where the statement
+  // text is unchanged so the arc is not lost on a pure approval.
+  await db.from('member_benchmarks').delete().eq('user_id', userId);
+  const rows = statements.map((text, i) => {
+    const prior = byPos.find(b => b.statement === text);
+    return {
+      user_id: userId,
+      statement: text,
+      position: i,
+      starting_rating: prior?.starting_rating ?? 1,
+      current_rating: prior?.current_rating ?? prior?.starting_rating ?? 1,
+      approved: true,
+      active: true
+    };
+  });
+  const { data, error } = await db.from('member_benchmarks').insert(rows).select();
+  if (error) { console.error('approveBenchmarks error:', error.message); return []; }
+  return data || [];
+}
+
+/**
+ * Persist the Navigation Chart (regenerated from the interview) on the
+ * member's user_intake row so the existing chart display reads it.
+ */
+async function saveChartSections(userId, sections) {
+  const db = getClient();
+  if (!db) return null;
+  const { error } = await db
+    .from('user_intake')
+    .upsert({
+      user_id: userId,
+      chart_sections: sections,
+      intake_completed_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    }, { onConflict: 'user_id' });
+  if (error) { console.error('saveChartSections error:', error.message); return null; }
+  return true;
+}
+
+// ---- Graduation ----
+
+async function getGraduationRecord(userId) {
+  const db = getClient();
+  if (!db) return null;
+  const { data } = await db
+    .from('graduation_records')
+    .select('*')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
+    .limit(1);
+  return (data && data.length > 0) ? data[0] : null;
+}
+
+/** Create the graduation record at the start of the exit interview (if none open). */
+async function createGraduationRecord(userId, startedOn) {
+  const db = getClient();
+  if (!db) return null;
+  const existing = await getGraduationRecord(userId);
+  if (existing && !existing.graduated_on) return existing; // already in progress
+  const { data, error } = await db
+    .from('graduation_records')
+    .insert({ user_id: userId, before_round: 1, started_on: startedOn || null })
+    .select()
+    .single();
+  if (error) { console.error('createGraduationRecord error:', error.message); return null; }
+  return data;
+}
+
+/** Finalize after the exit interview: store the comparison and issue the certificate. */
+async function finalizeGraduationRecord(userId, comparison, freeAccessUntil) {
+  const db = getClient();
+  if (!db) return null;
+  const rec = await getGraduationRecord(userId);
+  if (!rec) return null;
+  const { data, error } = await db
+    .from('graduation_records')
+    .update({
+      after_round: 2,
+      comparison,
+      graduated_on: new Date().toISOString().split('T')[0],
+      certificate_issued: true,
+      free_access_until: freeAccessUntil
+    })
+    .eq('id', rec.id)
+    .select()
+    .single();
+  if (error) { console.error('finalizeGraduationRecord error:', error.message); return null; }
+  return data;
+}
+
+// ---- Extension (six-month, owner-confirmed) ----
+
+/**
+ * Flag that the member accepted the half-price extension. Sets the
+ * owner-confirmation gate (activation is manual in Stripe) and returns the
+ * member's name/business for the owner notification.
+ */
+async function flagExtensionRequest(userId) {
+  const db = getClient();
+  if (!db) return null;
+  await db.from('member_state').update({
+    extension_offered: true,
+    extension_pending_confirmation: true,
+    six_month_milestone_handled: true,
+    updated_at: new Date().toISOString()
+  }).eq('user_id', userId);
+
+  const { data } = await db
+    .from('intake_responses')
+    .select('question_field, answer')
+    .eq('user_id', userId).eq('round', 1)
+    .in('question_field', ['member_name', 'business_name']);
+  let memberName = null, businessName = null;
+  for (const r of (data || [])) {
+    if (r.question_field === 'member_name') memberName = r.answer;
+    if (r.question_field === 'business_name') businessName = r.answer;
+  }
+  return { memberName, businessName };
+}
+
+// ---- Anonymous aggregate data (no personal identifiers) ----
+
+/**
+ * Record a de-identified event for product/social-proof metrics.
+ * Callers must check member_state.anonymous_data_opt_out first — no user_id
+ * is ever stored here.
+ */
+async function insertAnonymousAggregate(eventType, industry = null, payload = null) {
+  const db = getClient();
+  if (!db) return null;
+  const { error } = await db
+    .from('anonymous_aggregate_data')
+    .insert({ event_type: eventType, industry, payload });
+  if (error) { console.error('insertAnonymousAggregate error:', error.message); return null; }
+  return true;
+}
+
 module.exports = {
   getClient,
-  createUser, getUserByClerkId, updateMembershipTier, updateStripeCustomerId,
-  saveGameState, getGameState,
-  saveRunHistory, getRunHistory,
+  createUser, getOrCreateUser, getUserByClerkId, updateMembershipTier, updateStripeCustomerId,
   upsertAnonymousEvent, getWeeklyEvents,
   getCommanderUsage, incrementCommanderUsage,
   saveCommanderMessage, getCommanderHistory, getLatestCommanderSessionId,
   getCommanderMessagesForApi,
   saveCommanderSummary, getLatestCommanderSummary,
   upsertIntake, getIntake,
-  getCommanderSessionMessages, saveSessionNote, getSessionNotes, sessionNoteExists
+  getCommanderSessionMessages, saveSessionNote, getSessionNotes, sessionNoteExists,
+  saveActionStep, upsertSessionDebrief,
+  ensureMemberState, updateMemberState,
+  getActionSteps, getActionStep, updateActionStepStatus, updateActionStepFollowUp,
+  getBenchmarks, addBenchmarkRating, getBenchmarkRatingHistory,
+  createCheckIn, getActiveCheckIn, getLastAnsweredCheckIn, answerCheckIn, snoozeCheckIn,
+  getSessionDebriefs,
+  getLatestPeriodicReport, savePeriodicReport,
+  insertAnonymousAggregate,
+  saveIntakeResponse, updateIntakeFollowUp, getIntakeResponses,
+  saveBenchmarks, approveBenchmarks,
+  getGraduationRecord, createGraduationRecord, finalizeGraduationRecord,
+  flagExtensionRequest,
+  saveChartSections
 };

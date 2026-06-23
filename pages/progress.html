@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Bridge — Your Progress</title>
+  <script>var _isProd = location.hostname === 'captainsbridge.io' || location.hostname === 'www.captainsbridge.io'; window.__clerk_publishable_key = _isProd ? 'pk_live_Y2xlcmsuY2FwdGFpbnNicmlkZ2UuaW8k' : 'pk_test_b2JsaWdpbmctcHl0aG9uLTUuY2xlcmsuYWNjb3VudHMuZGV2JA';</script>
+  <script src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@5/dist/clerk.browser.js"></script>
+  <script src="/js/session.js"></script>
+  <link rel="stylesheet" href="/css/global.css">
+  <link rel="stylesheet" href="/css/nav.css">
+  <style>
+    html, body { overflow: visible !important; height: auto !important; background: #f5f0e8 !important; color: #0a0a0f !important; }
+    .pg-page { max-width: 60em; margin: 0 auto; padding: 2rem 1.5rem 5rem; }
+    .pg-heading { font-family: var(--font-data); font-size: 0.625rem; letter-spacing: 0.12em; text-transform: uppercase; color: #7a7570; margin-bottom: 0.5rem; }
+    .pg-title { font-family: var(--font-ui); font-size: 1.375rem; font-weight: 500; color: #0a0a0f; margin-bottom: 2rem; }
+    .pg-loading { font-family: var(--font-data); font-size: 0.6875rem; letter-spacing: 0.1em; text-transform: uppercase; color: #7a7570; text-align: center; padding: 4rem 0; }
+    .pg-empty { font-family: var(--font-ui); font-size: 0.8125rem; color: #7a7570; line-height: 1.6; text-align: center; padding: 3rem 1rem; }
+    .pg-empty a { color: #8a6830; }
+    .pg-block { margin-bottom: 2.5rem; }
+    .pg-block-title { font-family: var(--font-data); font-size: 0.625rem; letter-spacing: 0.1em; text-transform: uppercase; color: #7a7570; margin-bottom: 1rem; border-bottom: 1px solid #c8c0b0; padding-bottom: 0.5rem; }
+    /* Benchmarks */
+    .pg-bench { margin-bottom: 1.25rem; }
+    .pg-bench-stmt { font-family: var(--font-ui); font-size: 0.875rem; color: #1a1a1f; line-height: 1.5; margin-bottom: 0.4rem; }
+    .pg-bench-row { display: flex; align-items: center; gap: 0.75rem; }
+    .pg-bench-arc { flex: 0 0 auto; }
+    .pg-bench-now { font-family: var(--font-data); font-size: 0.625rem; letter-spacing: 0.08em; color: #7a7570; }
+    /* Action steps */
+    .pg-step { display: flex; align-items: flex-start; gap: 0.6rem; padding: 0.6rem 0; border-bottom: 1px solid #e0d8c8; }
+    .pg-step:last-child { border-bottom: none; }
+    .pg-step-text { font-family: var(--font-ui); font-size: 0.8125rem; color: #1a1a1f; line-height: 1.5; flex: 1; }
+    .pg-step-done .pg-step-text { color: #9a948a; text-decoration: line-through; }
+    .pg-step-check { font-family: var(--font-data); font-size: 0.5625rem; letter-spacing: 0.08em; text-transform: uppercase; color: #f0ebe0; background: #0a0a0f; border: none; border-radius: 2px; padding: 0.4rem 0.7rem; cursor: pointer; flex: 0 0 auto; }
+    .pg-step-check:hover { background: #1e1e2a; }
+    .pg-step-mark { flex: 0 0 auto; color: #6a8a5a; font-size: 0.9rem; line-height: 1.6; }
+    /* Reflections */
+    .pg-refl { font-family: var(--font-ui); font-size: 0.8125rem; color: #3a3530; line-height: 1.6; padding: 0.75rem 0; border-bottom: 1px solid #e0d8c8; }
+    .pg-refl:last-child { border-bottom: none; }
+    .pg-refl-date { font-family: var(--font-data); font-size: 0.5rem; letter-spacing: 0.08em; text-transform: uppercase; color: #9a948a; margin-top: 0.3rem; }
+    /* Periodic report */
+    .pg-letter { background: #efe8dc; border-left: 2px solid #8a6830; padding: 1.25rem 1.4rem; font-family: var(--font-ui); font-size: 0.875rem; color: #2a2520; line-height: 1.7; }
+    .pg-letter-date { font-family: var(--font-data); font-size: 0.5rem; letter-spacing: 0.08em; text-transform: uppercase; color: #9a948a; margin-top: 0.75rem; }
+    /* Stages */
+    .pg-stages { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    .pg-stage { font-family: var(--font-data); font-size: 0.5625rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 0.4rem 0.7rem; border-radius: 2px; border: 1px solid #c8c0b0; color: #7a7570; }
+    .pg-stage-done { background: #0a0a0f; color: #f0ebe0; border-color: #0a0a0f; }
+    .pg-stage-cta { font-family: var(--font-ui); font-size: 0.75rem; color: #8a6830; margin-top: 0.75rem; }
+    .pg-stage-cta a { color: #8a6830; }
+  </style>
+</head>
+<body>
+  <!-- NAV -->
+  <nav class="site-nav">
+    <a href="/" class="site-nav-brand"><span class="site-nav-brand-text">THE BRIDGE</span><span class="beta-chip">BETA</span></a>
+    <div class="site-nav-links">
+      <a href="/dashboard">Dashboard</a>
+      <span class="site-nav-sep">|</span>
+      <a href="/navigation-chart">Navigator</a>
+      <span class="site-nav-sep">|</span>
+      <a href="/progress" class="nav-active">Progress</a>
+      <span class="site-nav-sep">|</span>
+      <a href="/profile">Profile</a>
+      <span class="site-nav-sep">|</span>
+      <a href="/api/auth/logout" id="nav-auth">Sign Out</a>
+    </div>
+    <button class="site-nav-hamburger" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="site-nav-mobile" id="mobile-menu"><button class="site-nav-mobile-close" aria-label="Close">✕</button>
+      <a href="/dashboard">Dashboard</a>
+      <a href="/navigation-chart">Navigator</a>
+      <a href="/progress" class="nav-active">Progress</a>
+      <a href="/profile">Profile</a>
+      <a href="/api/auth/logout" id="nav-auth-mobile">Sign Out</a>
+    </div>
+  </nav>
+
+  <div class="pg-page">
+    <div class="pg-heading">Where You Are</div>
+    <div class="pg-title">Your Progress</div>
+    <div id="pg-body">
+      <p class="pg-loading">Loading your progress…</p>
+    </div>
+  </div>
+
+  <script>
+    (async function () {
+      try {
+        const clerk = window.Clerk;
+        if (clerk && !clerk.loaded) await clerk.load();
+      } catch (e) { console.log('Clerk init:', e.message); }
+
+      const body = document.getElementById('pg-body');
+
+      let data;
+      try {
+        const r = await fetch('/api/member/progress');
+        data = await r.json();
+      } catch (e) {
+        body.innerHTML = '<p class="pg-empty">Could not load your progress right now. Please refresh.</p>';
+        return;
+      }
+
+      if (!data || data.authenticated === false) {
+        body.innerHTML = '<p class="pg-empty">Please <a href="/login">sign in</a> to see your progress.</p>';
+        return;
+      }
+
+      const esc = (s) => String(s == null ? '' : s)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+      const fmtDate = (iso) => {
+        if (!iso) return '';
+        try { return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }); }
+        catch (e) { return ''; }
+      };
+
+      // Build a tiny SVG arc for a benchmark's rating history (or a single dot).
+      function arcSvg(history, currentRating) {
+        const w = 120, h = 28, pad = 3;
+        const pts = (history && history.length) ? history.map(p => p.rating) : (currentRating ? [currentRating] : []);
+        if (pts.length === 0) return '';
+        const maxI = Math.max(pts.length - 1, 1);
+        const coords = pts.map((v, i) => {
+          const x = pad + (i / maxI) * (w - 2 * pad);
+          const y = h - pad - ((v - 1) / 9) * (h - 2 * pad);
+          return [x, y];
+        });
+        const line = coords.map((c, i) => (i === 0 ? 'M' : 'L') + c[0].toFixed(1) + ' ' + c[1].toFixed(1)).join(' ');
+        const last = coords[coords.length - 1];
+        return '<svg class="pg-bench-arc" width="' + w + '" height="' + h + '" viewBox="0 0 ' + w + ' ' + h + '">' +
+          (coords.length > 1 ? '<path d="' + line + '" fill="none" stroke="#8a6830" stroke-width="1.5"/>' : '') +
+          '<circle cx="' + last[0].toFixed(1) + '" cy="' + last[1].toFixed(1) + '" r="2.5" fill="#0a0a0f"/></svg>';
+      }
+
+      let html = '';
+
+      // Graduation
+      if (data.graduation && data.graduation.graduated) {
+        html += '<div class="pg-block"><div class="pg-block-title">Graduation</div>' +
+          '<p style="font-family:var(--font-ui);font-size:0.8125rem;color:#3a3530;line-height:1.6;">You have graduated. <a href="/certificate" style="color:#8a6830;">View your certificate →</a></p></div>';
+      } else if (data.graduation && data.graduation.offered) {
+        html += '<div class="pg-block"><div class="pg-block-title">Graduation</div>' +
+          '<p style="font-family:var(--font-ui);font-size:0.8125rem;color:#3a3530;line-height:1.6;margin-bottom:0.75rem;">You may be ready to graduate. When you are, begin your exit interview — the same questions you started with, answered fresh. It becomes your certificate.</p>' +
+          '<button id="pg-grad-start" class="pg-step-check">Begin exit interview</button></div>';
+      }
+
+      // Stages
+      const st = data.stages || {};
+      html += '<div class="pg-block"><div class="pg-block-title">Interview Stages</div><div class="pg-stages">';
+      html += '<span class="pg-stage ' + (st.stage_1 ? 'pg-stage-done' : '') + '">Stage 1 · Quick Start</span>';
+      html += '<span class="pg-stage ' + (st.stage_2 ? 'pg-stage-done' : '') + '">Stage 2 · Operations</span>';
+      html += '<span class="pg-stage ' + (st.stage_3 ? 'pg-stage-done' : '') + '">Stage 3 · Full Picture</span>';
+      html += '</div>';
+      if (!st.stage_2 || !st.stage_3) {
+        html += '<div class="pg-stage-cta">There is more Earl can learn about you. <a href="/intake">Continue the interview →</a></div>';
+      }
+      html += '</div>';
+
+      // Benchmarks + arc
+      const benches = data.benchmarks || [];
+      const histByBench = {};
+      (data.ratingHistory || []).forEach(rh => {
+        (histByBench[rh.benchmark_id] = histByBench[rh.benchmark_id] || []).push(rh);
+      });
+      if (benches.length) {
+        html += '<div class="pg-block"><div class="pg-block-title">What You Are Working Toward</div>';
+        benches.forEach(b => {
+          const hist = histByBench[b.id] || [];
+          const now = b.current_rating != null ? b.current_rating : b.starting_rating;
+          html += '<div class="pg-bench">' +
+            '<div class="pg-bench-stmt">' + esc(b.statement) + '</div>' +
+            '<div class="pg-bench-row">' + arcSvg(hist, now) +
+            '<span class="pg-bench-now">' + (now != null ? ('now ' + now + ' / 10') : 'not yet rated') + '</span>' +
+            '</div></div>';
+        });
+        html += '</div>';
+      }
+
+      // Action steps
+      const steps = data.actionSteps || { active: [], completed: [] };
+      html += '<div class="pg-block"><div class="pg-block-title">Action Steps</div>';
+      if (!(steps.active || []).length && !(steps.completed || []).length) {
+        html += '<p class="pg-empty" style="text-align:left;padding:0.5rem 0;">No action steps yet. When you commit to something specific in a conversation, it shows up here.</p>';
+      } else {
+        (steps.active || []).forEach(s => {
+          html += '<div class="pg-step" data-step="' + esc(s.id) + '">' +
+            '<div class="pg-step-text">' + esc(s.step_text) + '</div>' +
+            '<button class="pg-step-check" data-complete="' + esc(s.id) + '">Mark done</button></div>';
+        });
+        (steps.completed || []).forEach(s => {
+          html += '<div class="pg-step pg-step-done"><span class="pg-step-mark">✓</span>' +
+            '<div class="pg-step-text">' + esc(s.step_text) + '</div></div>';
+        });
+      }
+      html += '</div>';
+
+      // Reflections
+      const refl = data.reflections || [];
+      if (refl.length) {
+        html += '<div class="pg-block"><div class="pg-block-title">Session Reflections</div>';
+        refl.forEach(r => {
+          html += '<div class="pg-refl">' + esc(r.summary) +
+            '<div class="pg-refl-date">' + fmtDate(r.created_at) + '</div></div>';
+        });
+        html += '</div>';
+      }
+
+      // Periodic report
+      if (data.periodicReport && data.periodicReport.letter) {
+        html += '<div class="pg-block"><div class="pg-block-title">A Note From Earl</div>' +
+          '<div class="pg-letter">' + esc(data.periodicReport.letter) +
+          '<div class="pg-letter-date">' + fmtDate(data.periodicReport.created_at) + '</div></div></div>';
+      }
+
+      // Privacy disclosure + opt-out
+      const optedOut = !!(data.privacy && data.privacy.optOut);
+      html += '<div class="pg-block"><div class="pg-block-title">Privacy</div>' +
+        '<p style="font-family:var(--font-ui);font-size:0.75rem;color:#7a7570;line-height:1.6;margin-bottom:0.75rem;">' +
+        'Your answers are saved anonymously to help us improve The Bridge and show future members what kind of progress is possible. Nothing is tied to your name.</p>' +
+        '<button id="pg-optout" class="pg-step-check" style="background:transparent;color:#3a3530;border:1px solid #c8c0b0;">' +
+        (optedOut ? 'Opted out · turn back on' : 'Opt out of anonymous data') + '</button></div>';
+
+      body.innerHTML = html;
+
+      // Wire "Begin exit interview"
+      const gradBtn = document.getElementById('pg-grad-start');
+      if (gradBtn) {
+        gradBtn.addEventListener('click', async () => {
+          gradBtn.disabled = true; gradBtn.textContent = 'Starting…';
+          try {
+            const r = await fetch('/api/member/graduation/start', { method: 'POST' });
+            if (r.ok) { window.location.href = '/intake?round=2'; return; }
+          } catch (e) {}
+          gradBtn.disabled = false; gradBtn.textContent = 'Begin exit interview';
+        });
+      }
+
+      // Wire privacy opt-out toggle
+      const optBtn = document.getElementById('pg-optout');
+      if (optBtn) {
+        let isOut = optedOut;
+        optBtn.addEventListener('click', async () => {
+          optBtn.disabled = true;
+          try {
+            const r = await fetch('/api/member/privacy/opt-out', {
+              method: 'POST', headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ optOut: !isOut })
+            });
+            const j = await r.json();
+            isOut = !!j.optOut;
+            optBtn.textContent = isOut ? 'Opted out · turn back on' : 'Opt out of anonymous data';
+          } catch (e) { /* leave as-is */ }
+          optBtn.disabled = false;
+        });
+      }
+
+      // Wire "Mark done" buttons
+      body.querySelectorAll('[data-complete]').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const id = btn.getAttribute('data-complete');
+          btn.disabled = true;
+          btn.textContent = 'Saving…';
+          try {
+            await fetch('/api/member/action-steps/' + id + '/complete', { method: 'POST' });
+            // Move the row to done visually; the follow-up check-in will surface next.
+            const row = body.querySelector('[data-step="' + id + '"]');
+            if (row) {
+              row.classList.add('pg-step-done');
+              row.innerHTML = '<span class="pg-step-mark">✓</span><div class="pg-step-text">' +
+                row.querySelector('.pg-step-text').textContent + '</div>';
+            }
+          } catch (e) {
+            btn.disabled = false;
+            btn.textContent = 'Mark done';
+          }
+        });
+      });
+    })();
+  </script>
+  <script src="/js/checkin.js"></script>
+  <script src="/js/nav.js"></script>
+</body>
+</html>

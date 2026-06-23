@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>The Bridge — Navigation Chart</title>
-  <script>window.__clerk_publishable_key = 'pk_live_Y2xlcmsuY2FwdGFpbnNicmlkZ2UuaW8k';</script>
+  <script>var _isProd = location.hostname === 'captainsbridge.io' || location.hostname === 'www.captainsbridge.io'; window.__clerk_publishable_key = _isProd ? 'pk_live_Y2xlcmsuY2FwdGFpbnNicmlkZ2UuaW8k' : 'pk_test_b2JsaWdpbmctcHl0aG9uLTUuY2xlcmsuYWNjb3VudHMuZGV2JA';</script>
   <script src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@5/dist/clerk.browser.js"></script>
   <script src="/js/session.js"></script>
   <link rel="stylesheet" href="/css/global.css">
@@ -42,11 +42,7 @@
   <nav class="site-nav">
     <a href="/" class="site-nav-brand"><span class="site-nav-brand-text">THE BRIDGE</span><span class="beta-chip">BETA</span></a>
     <div class="site-nav-links">
-      <a href="/simulator">Simulator</a>
-      <span class="site-nav-sep">|</span>
       <a href="/navigation-chart" class="nav-active">Navigator</a>
-      <span class="site-nav-sep">|</span>
-      <a href="/grant-radar">Grant Radar</a>
       <span class="site-nav-sep">|</span>
       <a href="/dashboard">Dashboard</a>
       <span class="site-nav-sep">|</span>
@@ -56,9 +52,7 @@
       <span></span><span></span><span></span>
     </button>
     <div class="site-nav-mobile" id="mobile-menu"><button class="site-nav-mobile-close" aria-label="Close">✕</button>
-      <a href="/simulator">Simulator</a>
       <a href="/navigation-chart" class="nav-active">Navigator</a>
-      <a href="/grant-radar">Grant Radar</a>
       <a href="/dashboard">Dashboard</a>
       <a href="/api/auth/logout" id="nav-auth-mobile">Sign Out</a>
     </div>

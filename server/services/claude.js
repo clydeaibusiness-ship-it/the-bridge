@@ -36,7 +36,7 @@ function getSoulVersion() {
 }
 
 /**
- * Read strategy book only — used by simulator, intake, debrief, summaries.
+ * Read strategy book only — used by, intake, debrief, summaries.
  */
 function getStrategyPrompt() {
   return fs.readFileSync(
@@ -90,21 +90,42 @@ function getCaseStudyIndex() {
 }
 
 /**
- * Read Big Book of Strategy + compressed case study index.
+ * Read commander-context.md — the Commander's operational instructions
+ * (action steps, benchmark awareness, graduation signals, new-session context).
+ * Loads after soul (prefill) and before the strategy book.
+ */
+function getCommanderContext() {
+  try {
+    return fs.readFileSync(
+      path.join(__dirname, '../../system/commander-context.md'),
+      'utf8'
+    );
+  } catch (err) {
+    return '';
+  }
+}
+
+/**
+ * Read commander-context + Big Book of Strategy + compressed case study index.
  * Used as system prompt for Commander chat (soul is now in assistant prefill).
  * User context is appended by the caller.
  */
-function getSystemPrompt() {
+function getSystemPrompt(includeCommanderContext = true) {
   try {
     const strategy = fs.readFileSync(
       path.join(__dirname, '../../system/big-book-of-strategy.md'),
       'utf8'
     );
+    const commanderContext = includeCommanderContext ? getCommanderContext() : '';
     const caseStudyIndex = getCaseStudyIndex();
+
+    let prompt = '';
+    if (commanderContext) prompt += commanderContext + '\n\n---\n\n';
+    prompt += strategy;
     if (caseStudyIndex) {
-      return strategy + '\n\n---\n\nCASE STUDY LIBRARY — Available for retrieval when relevant:\n\n' + caseStudyIndex;
+      prompt += '\n\n---\n\nCASE STUDY LIBRARY — Available for retrieval when relevant:\n\n' + caseStudyIndex;
     }
-    return strategy;
+    return prompt;
   } catch (err) {
     console.error('STRATEGY PROMPT ERROR:', err.message);
     return '';
@@ -113,7 +134,7 @@ function getSystemPrompt() {
 
 /**
  * Call Claude with strategy-only system context.
- * Used by simulator, intake, debrief, summaries — NOT Commander/Chart.
+ * Used by intake, debrief, summaries — NOT Commander/Chart.
  */
 async function callClaude(userContent, additionalContext = '') {
   const systemPrompt = getStrategyPrompt();
@@ -132,7 +153,7 @@ async function callClaude(userContent, additionalContext = '') {
   }
 
   const response = await client.messages.create({
-    model: 'claude-sonnet-4-20250514',
+    model: 'claude-sonnet-4-6',
     max_tokens: 4000,
     system: systemBlocks,
     messages: [{ role: 'user', content: userContent }]
@@ -185,125 +206,10 @@ ${JSON.stringify(intakeAnswers, null, 2)}`;
 }
 
 /**
- * Generate a single personalized situation using Claude API
- */
-async function generateSituation(businessContext, situationNumber, previousThemes) {
-  const themes = [
-    'operational crisis requiring capital vs relationship tradeoff',
-    'competitive threat requiring positioning vs price decision',
-    'growth ceiling requiring systems decision',
-    'client retention requiring information asymmetry response',
-    'pricing decision under competitive pressure'
-  ];
-
-  const availableThemes = themes.filter(t => !previousThemes.includes(t));
-
-  const prompt = `Generate a single business strategy situation for the simulator. Return ONLY a JSON object with no other text.
-
-Player's business context:
-${JSON.stringify(businessContext, null, 2)}
-
-This is situation ${situationNumber} of 5.
-
-Strategic theme for this situation: ${availableThemes[0] || themes[situationNumber - 1]}
-Themes already covered: ${previousThemes.length ? previousThemes.join(', ') : 'none'}
-
-CRITICAL RULES:
-- Use the player's specific business type ("${businessContext.businessType}") and context throughout EVERY sentence — not generic business language
-- The client type is "${businessContext.clientType}", service is "${businessContext.serviceType}", asset is "${businessContext.assetType}"
-- Present a real strategic decision with no obviously correct answer
-- Generate exactly 4 options (A, B, C, D)
-- Each option must have different lever implications
-- Include effect tags showing capital cost/gain and percentage changes to relevant levers
-- Each option gets an outcomeType: "clean", "partial", or "missed"
-- Include a case study for each option drawn from a NAMED real business or NAMED book — no unnamed statistics
-- Use ONLY Big Book of Strategy framework language in outcomes — never game language
-- At least one option should be "clean" and at least one should be "missed"
-
-Return this exact JSON structure:
-{
-  "id": ${situationNumber},
-  "title": "Short descriptive title",
-  "turnLabel": "Situation ${situationNumber} of 5",
-  "body": "2-4 sentences describing the situation using the player's specific business context",
-  "crewComment": "1-2 sentences of strategic observation",
-  "theme": "the theme string used",
-  "options": [
-    {
-      "id": "A",
-      "body": "What the player would do — 2-3 sentences using their business language",
-      "tags": [
-        { "text": "Capital +/-$X", "lever": "capital" },
-        { "text": "LeverName +/-X%", "lever": "leverKey" }
-      ],
-      "difficulty": 1 or 2,
-      "exceptional": true or false,
-      "outcomeType": "clean" or "partial" or "missed",
-      "outcomeBody": "3-5 sentences explaining what happened using framework language",
-      "caseStudy": {
-        "label": "What [Book/Source] says",
-        "body": "2-3 sentences referencing a specific named book or business"
-      },
-      "resourceChanges": { "capital": 0, "customers": 0, "positioning": 0, "switchingCosts": 0 }
-    }
-  ]
-}
-
-resourceChanges must ONLY use these 4 keys: capital, customers, positioning, switchingCosts.
-Capital changes should be realistic dollar amounts (-5000 to +5000 range).
-Percentage changes for positioning/switchingCosts should be -20 to +20 range.
-Customer changes should be -3 to +6 range.
-Tags can reference other levers (informationAsymmetry, networkEffects, systems, habitDesign) for display but those do NOT go in resourceChanges.`;
-
-  const response = await callClaude(prompt);
-
-  try {
-    const jsonMatch = response.match(/\{[\s\S]*\}/);
-    if (jsonMatch) {
-      return JSON.parse(jsonMatch[0]);
-    }
-    return JSON.parse(response);
-  } catch (e) {
-    console.error('Failed to parse generated situation:', e.message);
-    throw new Error('Parse failure');
-  }
-}
-
-/**
- * Run-end debrief — generates Navigation Chart lite
- */
-async function generateDebrief(runHistory, intakeAnswers) {
-  const prompt = `A captain's ship has been destroyed. Based on their full run history below and the Big Book of Strategy framework, produce a structured debrief in the following exact format. Be direct, specific, and compassionate. Reference their actual decisions, not generic advice.
-
-## What Destroyed Your Ship
-One paragraph. Name the specific lever gap that caused the fatal hit. Explain what that means for their real business in plain English.
-
-## The Pattern
-One paragraph. Looking across all threats they encountered, what is the underlying strategic weakness this run revealed? Name the lever. Name the consequence.
-
-## The One Thing
-One sentence. The single most important lever they should raise before their next run — and why.
-
-## A Real Business Did This
-Two to three sentences. A specific case study of a real business that faced the same lever gap, what happened to them, and what they did about it.
-
-## Your Next Run
-One paragraph. What would a smarter configuration look like given what they now know? Do not give them the answer — give them the question to ask themselves.
-
-Captain's run history:
-${JSON.stringify(runHistory, null, 2)}
-
-Captain's intake answers:
-${JSON.stringify(intakeAnswers, null, 2)}`;
-
-  return await callClaude(prompt);
-}
-
-/**
  * Commander chat — strategic advice with full business context.
  * Now supports conversation history passed as messages array.
  */
-async function commanderChat(message, gameState, runHistory, sessionContext, conversationHistory, summaryContext, sessionNotesContext) {
+async function commanderChat(message, gameState, sessionContext, conversationHistory, summaryContext, sessionNotesContext, persist = {}) {
   // Build pure data context — no behavioral instructions.
   // The soul file is the ONLY source of behavioral directives.
   let context = '';
@@ -315,10 +221,6 @@ async function commanderChat(message, gameState, runHistory, sessionContext, con
   }
   if (sessionContext) {
     context += sessionContext + '\n\n';
-  }
-  const hasRunHistory = runHistory && runHistory.length > 0;
-  if (hasRunHistory) {
-    context += `Previous simulator runs:\n${JSON.stringify(runHistory, null, 2)}\n\n`;
   }
 
   const systemPrompt = getSystemPrompt();
@@ -363,7 +265,9 @@ async function commanderChat(message, gameState, runHistory, sessionContext, con
   // Debug: log role sequence so future issues are immediately visible in Railway logs
   console.log('Commander message roles:', messages.map(m => m.role).join(' → '));
 
-  // Case study retrieval tool
+  // Tools the Commander can call.
+  // fetch_case_study: read-only retrieval, executed and returned to the model.
+  // save_action_step: side-effecting, persists the member's commitment.
   const tools = [
     {
       name: 'fetch_case_study',
@@ -384,89 +288,365 @@ async function commanderChat(message, gameState, runHistory, sessionContext, con
         },
         required: ['lever_tags', 'problem_tags']
       }
+    },
+    {
+      name: 'save_action_step',
+      description: "Call this when the member commits to a specific, concrete action they will take before your next conversation. Save it in their exact words, not your paraphrase. Do not invent action steps the member did not volunteer, and never save more than two in a single conversation. After saving, confirm to the member in your own voice.",
+      input_schema: {
+        type: 'object',
+        properties: {
+          step_text: {
+            type: 'string',
+            description: "The action the member committed to, in their exact words"
+          },
+          target_date: {
+            type: 'string',
+            description: "Optional target completion date in YYYY-MM-DD form, only if the member gave one"
+          }
+        },
+        required: ['step_text']
+      }
+    },
+    {
+      name: 'request_extension',
+      description: "Only call this when the member has been offered the three-month half-price extension at their six-month milestone AND explicitly accepts it. It notifies the owner to activate the extension in Stripe. Do not tell the member it is active immediately — tell them it is being arranged.",
+      input_schema: { type: 'object', properties: {} }
     }
   ];
 
-  const response = await client.messages.create({
-    model: 'claude-sonnet-4-20250514',
+  // Tool loop: keep returning tool results until the model produces a final
+  // text answer (or we hit the safety guard). Handles multiple tools per turn.
+  let response = await client.messages.create({
+    model: 'claude-sonnet-4-6',
     max_tokens: 400,
     system: systemBlocks,
     messages,
     tools
   });
 
-  // Check if the Commander wants to fetch a case study
-  const toolUseBlock = response.content.find(b => b.type === 'tool_use' && b.name === 'fetch_case_study');
+  let guard = 0;
+  while (guard < 4) {
+    const toolUseBlocks = response.content.filter(b => b.type === 'tool_use');
+    if (toolUseBlocks.length === 0) break;
+    guard++;
+    const toolResults = [];
 
-  if (toolUseBlock) {
-    // Fetch the case study from Supabase
-    let caseStudyText = '';
-    try {
-      const { getClient } = require('./supabase');
-      const db = getClient();
-      if (db) {
-        const { data } = await db
-          .from('case_studies')
-          .select('title, source_book, source_author, story, lever_tags, problem_tags');
-
-        if (data && data.length > 0) {
-          const inputTags = toolUseBlock.input;
-          let bestMatch = null;
-          let bestScore = 0;
-
-          for (const cs of data) {
-            let score = 0;
-            if (inputTags.lever_tags && cs.lever_tags) {
-              for (const tag of inputTags.lever_tags) {
-                if (cs.lever_tags.some(lt => lt.toLowerCase() === tag.toLowerCase())) score += 2;
-              }
-            }
-            if (inputTags.problem_tags && cs.problem_tags) {
-              for (const tag of inputTags.problem_tags) {
-                const tagLower = tag.toLowerCase();
-                if (cs.problem_tags.some(pt => pt.toLowerCase().includes(tagLower) || tagLower.includes(pt.toLowerCase()))) score += 1;
-              }
-            }
-            if (score > bestScore) { bestScore = score; bestMatch = cs; }
-          }
-
-          if (bestMatch) {
-            caseStudyText = `[Case Study: ${bestMatch.title} — from ${bestMatch.source_book} by ${bestMatch.source_author}]\n${bestMatch.story}`;
+    for (const block of toolUseBlocks) {
+      if (block.name === 'fetch_case_study') {
+        const story = await fetchCaseStudyStory(block.input);
+        toolResults.push({
+          type: 'tool_result',
+          tool_use_id: block.id,
+          content: story || 'No matching case study found.'
+        });
+      } else if (block.name === 'save_action_step') {
+        if (persist && persist.userId) {
+          try {
+            const { saveActionStep } = require('./supabase');
+            await saveActionStep(
+              persist.userId,
+              block.input.step_text,
+              persist.sessionId || null,
+              block.input.target_date || null
+            );
+          } catch (asErr) {
+            console.error('save_action_step error:', asErr.message);
           }
         }
+        toolResults.push({
+          type: 'tool_result',
+          tool_use_id: block.id,
+          content: 'Action step saved.'
+        });
+      } else if (block.name === 'request_extension') {
+        if (persist && persist.userId) {
+          try {
+            const { flagExtensionRequest } = require('./supabase');
+            const info = await flagExtensionRequest(persist.userId);
+            try { require('./email').sendExtensionRequestEmail(info || {}); } catch (mailErr) { console.error('extension email error:', mailErr.message); }
+          } catch (exErr) {
+            console.error('request_extension error:', exErr.message);
+          }
+        }
+        toolResults.push({
+          type: 'tool_result',
+          tool_use_id: block.id,
+          content: 'The owner has been notified to activate the extension.'
+        });
+      } else {
+        toolResults.push({
+          type: 'tool_result',
+          tool_use_id: block.id,
+          content: 'OK.'
+        });
       }
-    } catch (csErr) {
-      console.error('Case study fetch error:', csErr.message);
     }
 
-    // Send the tool result back to get the final response
-    const textBlock = response.content.find(b => b.type === 'text');
-    const followUp = await client.messages.create({
-      model: 'claude-sonnet-4-20250514',
+    messages.push({ role: 'assistant', content: response.content });
+    messages.push({ role: 'user', content: toolResults });
+
+    response = await client.messages.create({
+      model: 'claude-sonnet-4-6',
       max_tokens: 400,
-      system: systemBlocks,
-      messages: [
-        ...messages,
-        { role: 'assistant', content: response.content },
-        {
-          role: 'user',
-          content: [{
-            type: 'tool_result',
-            tool_use_id: toolUseBlock.id,
-            content: caseStudyText || 'No matching case study found.'
-          }]
-        }
-      ],
+      system: fullSystem,
+      messages,
       tools
     });
-
-    const finalText = followUp.content.find(b => b.type === 'text');
-    return stripMarkdown(finalText ? finalText.text : (textBlock ? textBlock.text : ''));
   }
 
-  // No tool call — return text directly
   const textBlock = response.content.find(b => b.type === 'text');
   return stripMarkdown(textBlock ? textBlock.text : '');
+}
+
+/**
+ * Score the case study library against the model's lever/problem tags and
+ * return the best-matching story formatted for a tool_result, or '' if none.
+ */
+async function fetchCaseStudyStory(inputTags) {
+  try {
+    const { getClient } = require('./supabase');
+    const db = getClient();
+    if (!db) return '';
+
+    const { data } = await db
+      .from('case_studies')
+      .select('title, source_book, source_author, story, lever_tags, problem_tags');
+
+    if (!data || data.length === 0) return '';
+
+    let bestMatch = null;
+    let bestScore = 0;
+
+    for (const cs of data) {
+      let score = 0;
+      if (inputTags.lever_tags && cs.lever_tags) {
+        for (const tag of inputTags.lever_tags) {
+          if (cs.lever_tags.some(lt => lt.toLowerCase() === tag.toLowerCase())) score += 2;
+        }
+      }
+      if (inputTags.problem_tags && cs.problem_tags) {
+        for (const tag of inputTags.problem_tags) {
+          const tagLower = tag.toLowerCase();
+          if (cs.problem_tags.some(pt => pt.toLowerCase().includes(tagLower) || tagLower.includes(pt.toLowerCase()))) score += 1;
+        }
+      }
+      if (score > bestScore) { bestScore = score; bestMatch = cs; }
+    }
+
+    if (bestMatch && bestScore > 0) {
+      return `[Case Study: ${bestMatch.title} — from ${bestMatch.source_book} by ${bestMatch.source_author}]\n${bestMatch.story}`;
+    }
+    return '';
+  } catch (csErr) {
+    console.error('Case study fetch error:', csErr.message);
+    return '';
+  }
+}
+
+/**
+ * Background debrief (Haiku) — runs after a Commander response without
+ * blocking the member-facing reply. Produces a short member-facing summary,
+ * a meaningful-shift signal, and one unresolved thread for the next session.
+ * Returns { summary, shift_detected, unresolved_item }.
+ */
+async function generateSessionDebrief(conversationMessages) {
+  const formatted = conversationMessages.map(m => {
+    const role = (m.role || m.message_role) === 'user' ? 'Member' : 'Earl';
+    return `${role}: ${m.content || m.message_content}`;
+  }).join('\n\n');
+
+  const response = await client.messages.create({
+    model: 'claude-haiku-4-5',
+    max_tokens: 400,
+    system: 'You are quietly reflecting on a conversation between a small-business owner (Member) and their advisor (Earl). Return only a JSON object, no markdown, no backticks, no prose.',
+    messages: [{
+      role: 'user',
+      content: `From this conversation, return JSON exactly in this shape:
+{
+  "summary": "two or three sentences, written for the member, naming what was decided or uncovered",
+  "shift_detected": true or false — true only if the member reported completing something significant, described a notable change, or began asking a qualitatively different kind of question than before,
+  "unresolved_item": "one open thread to surface at the start of the next session, or null if nothing is open"
+}
+
+Conversation:
+${formatted}`
+    }]
+  });
+
+  const text = response.content[0].text;
+  const jsonMatch = text.match(/\{[\s\S]*\}/);
+  if (!jsonMatch) {
+    throw new Error('generateSessionDebrief: non-JSON response: ' + text.substring(0, 200));
+  }
+  return JSON.parse(jsonMatch[0]);
+}
+
+/**
+ * Periodic report (every ~28 days) — a short 3-5 sentence reflection letter
+ * from the Commander, in voice, naming what has shifted, what is still
+ * unresolved, and what it is watching for next. Built from the benchmark arc,
+ * action step history, and recent session debriefs.
+ */
+async function generatePeriodicReport({ memberName, benchmarks = [], actionSteps = [], debriefs = [] }) {
+  const benchLines = benchmarks.map(b =>
+    `- "${b.statement}" — started at ${b.starting_rating ?? '?'}/10, now ${b.current_rating ?? b.starting_rating ?? '?'}/10`
+  ).join('\n') || '(no benchmarks set yet)';
+
+  const completed = actionSteps.filter(a => a.status === 'completed');
+  const active = actionSteps.filter(a => a.status === 'active');
+  const actionSummary =
+    `Completed ${completed.length}, still open ${active.length}.` +
+    (completed.length ? '\nRecently completed: ' + completed.slice(0, 3).map(a => `"${a.step_text}"`).join('; ') : '') +
+    (active.length ? '\nStill open: ' + active.slice(0, 3).map(a => `"${a.step_text}"`).join('; ') : '');
+
+  const debriefLines = debriefs.slice(0, 6).map(d => `- ${d.summary}`).join('\n') || '(no session reflections yet)';
+
+  const prompt = `Write a short reflection letter to ${memberName || 'this member'} as Earl. Three to five sentences. Name what has shifted since they started, what is still unresolved, and what you are watching for next. Speak in your own voice — direct, warm, specific to what you see below. Do not use headers, bullet points, or a signature. Do not mention ratings as numbers; speak to the movement behind them.
+
+Their success statements and movement:
+${benchLines}
+
+Action steps:
+${actionSummary}
+
+Recent session reflections:
+${debriefLines}`;
+
+  const soulPrimer = getSoulPrimer();
+  const messages = [
+    ...(soulPrimer ? [{ role: 'user', content: '.' }, { role: 'assistant', content: soulPrimer }] : []),
+    { role: 'user', content: prompt }
+  ];
+
+  const response = await client.messages.create({
+    model: 'claude-sonnet-4-6',
+    max_tokens: 400,
+    messages
+  });
+
+  const textBlock = response.content.find(b => b.type === 'text');
+  return stripMarkdown(textBlock ? textBlock.text : '');
+}
+
+/**
+ * Interviewing Commander — generate one follow-up question (Haiku) in the
+ * soul voice when an answer is judged vague. No strategy library, no case
+ * studies — just the voice and the instruction.
+ */
+async function generateIntakeFollowUp(questionText, answer, instruction) {
+  const soul = getSoulPrimer();
+  const prompt = `You are interviewing a small business owner, one question at a time. You just asked: "${questionText}". They answered: "${answer}". ${instruction}
+
+Ask exactly one short follow-up question in your own voice. Output only the question — no preamble, no explanation, nothing else.`;
+
+  const messages = [
+    ...(soul ? [{ role: 'user', content: '.' }, { role: 'assistant', content: soul }] : []),
+    { role: 'user', content: prompt }
+  ];
+
+  const response = await client.messages.create({
+    model: 'claude-haiku-4-5',
+    max_tokens: 150,
+    messages
+  });
+  const t = response.content.find(b => b.type === 'text');
+  return stripMarkdown(t ? t.text : '').trim();
+}
+
+/**
+ * Generate the initial benchmark after Stage 2: 3-5 success statements in the
+ * member's own language, each with a low starting 1-10 rating, plus a hidden
+ * operational-metrics object for the Commander's context.
+ * `answers` is a { field: text } map of intake responses.
+ * Returns { statements: [{ statement, starting_rating }], hidden_metrics: {} }.
+ */
+async function generateBenchmark(answers) {
+  const get = (f) => (answers && answers[f]) ? answers[f] : '';
+
+  const prompt = `A member has completed enough of their intake to set their benchmark. Using their own words, write 3 to 5 success statements that capture what they are working toward. Each statement must be drawn directly from what they said — not reworded into abstractions. If they said "take a Saturday off without everything falling apart," that is the statement, not "operational independence."
+
+Give each statement a starting rating from 1 to 10 reflecting where they are NOW (these should be low — they reflect the current gap, not the goal).
+
+Also return a hidden_metrics object summarizing their operational baseline for internal use.
+
+Return ONLY JSON, no markdown:
+{
+  "statements": [ { "statement": "their words", "starting_rating": 3 } ],
+  "hidden_metrics": {
+    "annual_revenue": "", "knows_break_even": "", "cash_runway": "",
+    "raised_prices": "", "knows_margin": "", "customer_concentration": "",
+    "time_trapped": "", "isolation": ""
+  }
+}
+
+What they want from The Bridge: ${get('desired_outcome')}
+Their three-to-five year vision: ${get('north_star')}
+What their actual life would look like in success: ${get('life_success_definition')}
+
+Operational baseline:
+- Annual revenue: ${get('annual_revenue')}
+- Break-even known: ${get('break_even')}
+- Cash runway: ${get('cash_runway')}
+- Raised prices recently: ${get('pricing_history')}
+- Profit margin known: ${get('profit_margin')}
+- Customer concentration: ${get('customer_concentration')}
+- Time usage: ${get('time_usage')}
+- Support network: ${get('support_network')}
+- Peer network: ${get('peer_network')}`;
+
+  const response = await client.messages.create({
+    model: 'claude-sonnet-4-6',
+    max_tokens: 1200,
+    system: 'You extract a member benchmark from intake answers. Use the member\'s own language. Return only a JSON object — no markdown, no backticks, no prose.',
+    messages: [{ role: 'user', content: prompt }]
+  });
+
+  const text = response.content[0].text;
+  const jsonMatch = text.match(/\{[\s\S]*\}/);
+  if (!jsonMatch) throw new Error('generateBenchmark: non-JSON response: ' + text.substring(0, 200));
+  const parsed = JSON.parse(jsonMatch[0]);
+  if (!Array.isArray(parsed.statements)) parsed.statements = [];
+  // Clamp to 3-5 and sane ratings.
+  parsed.statements = parsed.statements.slice(0, 5).map(s => ({
+    statement: String(s.statement || '').trim(),
+    starting_rating: Math.min(10, Math.max(1, parseInt(s.starting_rating, 10) || 2))
+  })).filter(s => s.statement);
+  return parsed;
+}
+
+/**
+ * Graduation certificate content — compare a member's round-1 and round-2
+ * interview answers and name 3-5 concrete, plain-language changes in their
+ * own terms. `before`/`after` are { field: text } maps.
+ * Returns { changes: [string] }.
+ */
+async function generateGraduationComparison(before, after) {
+  let pairs = '';
+  for (const field of Object.keys(after)) {
+    if (before[field] || after[field]) {
+      pairs += `\n[${field.replace(/_/g, ' ')}]\nBEFORE: ${before[field] || '(no answer)'}\nAFTER: ${after[field] || '(no answer)'}\n`;
+    }
+  }
+
+  const prompt = `A member started The Bridge and has now completed a second interview at graduation. Compare their before and after answers and name 3 to 5 specific, concrete things that changed — in plain language, in their own terms. No grades, no scores, no flattery. Each item is one or two sentences describing the shift from where they were to where they are now.
+
+Return ONLY JSON: { "changes": ["...", "..."] }
+${pairs}`;
+
+  const response = await client.messages.create({
+    model: 'claude-sonnet-4-6',
+    max_tokens: 1200,
+    system: 'You write a plain-language before/after comparison for a graduation certificate. Return only a JSON object — no markdown, no backticks.',
+    messages: [{ role: 'user', content: prompt }]
+  });
+
+  const text = response.content[0].text;
+  const m = text.match(/\{[\s\S]*\}/);
+  if (!m) throw new Error('generateGraduationComparison: non-JSON response: ' + text.substring(0, 200));
+  const parsed = JSON.parse(m[0]);
+  if (!Array.isArray(parsed.changes)) parsed.changes = [];
+  parsed.changes = parsed.changes.slice(0, 5).map(c => String(c).trim()).filter(Boolean);
+  return parsed;
 }
 
 /**
@@ -474,10 +654,10 @@ async function commanderChat(message, gameState, runHistory, sessionContext, con
  */
 async function generateConversationSummary(messages) {
   const formatted = messages.map(m =>
-    `${m.role === 'user' ? 'Member' : 'Commander'}: ${m.content}`
+    `${m.role === 'user' ? 'Member' : 'Earl'}: ${m.content}`
   ).join('\n\n');
 
-  const prompt = `Summarize this conversation between a business owner (Member) and their strategic advisor (Commander) in exactly three sentences. Focus on: what was discussed, what was decided or recommended, and any action items. Be specific to their business.\n\nConversation:\n${formatted}`;
+  const prompt = `Summarize this conversation between a business owner (Member) and their strategic advisor (Earl) in exactly three sentences. Focus on: what was discussed, what was decided or recommended, and any action items. Be specific to their business.\n\nConversation:\n${formatted}`;
 
   return await callClaude(prompt);
 }
@@ -541,7 +721,7 @@ Return this exact JSON structure with 6 sections. Each section has a "title" and
   }
 
   const response = await client.messages.create({
-    model: 'claude-sonnet-4-20250514',
+    model: 'claude-sonnet-4-6',
     max_tokens: 4000,
     system: chartSystemBlocks,
     messages: [{ role: 'user', content: prompt }]
@@ -554,18 +734,65 @@ Return this exact JSON structure with 6 sections. Each section has a "title" and
 }
 
 /**
+ * Generate the Navigation Chart from the conversational interview answers
+ * (intake_responses), replacing the legacy businessContext path. `answers`
+ * is a { field: text } map. Returns the array of 6 sections.
+ */
+async function generateChartFromInterview(answers) {
+  const lines = Object.entries(answers)
+    .filter(([, v]) => v && String(v).trim())
+    .map(([k, v]) => `- ${k.replace(/_/g, ' ')}: ${v}`)
+    .join('\n');
+
+  const prompt = `Generate a Navigation Chart — a strategic assessment for this business owner — from their interview answers below. Return ONLY a JSON object, no other text.
+
+Interview answers:
+${lines}
+
+Return this exact JSON structure with 6 sections. Each section has a "title" and "body". Write 3-5 sentences per body. Be direct, specific, and reference their actual business. Use Big Book of Strategy framework language.
+
+{
+  "sections": [
+    { "title": "Ship Status", "body": "Current state of the business based on everything they told you" },
+    { "title": "Kill Risk", "body": "The single most dangerous vulnerability that could destroy this business in the next 12 months" },
+    { "title": "Lever Map", "body": "Which of the 8 strategic levers are strong, which are weak, and which are missing entirely" },
+    { "title": "Leverage Sequence", "body": "The specific order in which they should address their lever gaps" },
+    { "title": "What to Stop", "body": "What they are currently doing that is actively hurting their strategic position" },
+    { "title": "90-Day Focus", "body": "Exactly one thing to focus on for the next 90 days and what measurable outcome to target" }
+  ]
+}`;
+
+  const soulContent = getSoulPrimer();
+  const strategyContent = getSystemPrompt(false); // strategy only, no operational context
+  const system = soulContent ? `${soulContent}\n\n---\n\n${strategyContent}` : strategyContent;
+
+  const response = await client.messages.create({
+    model: 'claude-sonnet-4-6',
+    max_tokens: 4000,
+    system,
+    messages: [{ role: 'user', content: prompt }]
+  });
+
+  const text = response.content[0].text;
+  const jsonMatch = text.match(/\{[\s\S]*\}/);
+  if (!jsonMatch) throw new Error('generateChartFromInterview: non-JSON response: ' + text.substring(0, 200));
+  const parsed = JSON.parse(jsonMatch[0]);
+  return Array.isArray(parsed.sections) ? parsed.sections : [];
+}
+
+/**
  * Extract structured knowledge from a completed Commander session.
  * Called when 30+ minutes of inactivity ends a session.
  * Returns { operator_insights, strategic_ground, unresolved_threads }
  */
 async function compressSession(conversationMessages) {
   const formatted = conversationMessages.map(m => {
-    const role = m.message_role === 'user' ? 'Member' : 'Commander';
+    const role = m.message_role === 'user' ? 'Member' : 'Earl';
     return `${role}: ${m.message_content}`;
   }).join('\n\n');
 
   const response = await client.messages.create({
-    model: 'claude-sonnet-4-20250514',
+    model: 'claude-sonnet-4-6',
     max_tokens: 1500,
     system: 'You are extracting meaningful knowledge from a business advisory conversation. Be precise and brief. Return only a JSON object with no markdown, no backticks, no prose.',
     messages: [{
@@ -585,12 +812,17 @@ async function compressSession(conversationMessages) {
 module.exports = {
   callClaude,
   personalizeIntake,
-  generateSituation,
-  generateDebrief,
   commanderChat,
   generateConversationSummary,
   generateChart,
   getSoulVersion,
   getSoulPrimer,
-  compressSession
+  compressSession,
+  generateSessionDebrief,
+  generatePeriodicReport,
+  generateIntakeFollowUp,
+  generateBenchmark,
+  generateGraduationComparison,
+  generateChartFromInterview
 };
+
