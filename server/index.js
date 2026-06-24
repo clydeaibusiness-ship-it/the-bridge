@@ -13,6 +13,7 @@ const commanderRoutes = require('./routes/commander');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const SERVER_STARTED = new Date();
 
 // Security
 app.use(helmet({
@@ -167,6 +168,12 @@ app.get('/config-panel', (req, res) => {
 // Health check
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
+// Version
+app.get('/api/version', (req, res) => {
+  const opts = { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'America/Chicago' };
+  res.json({ version: SERVER_STARTED.toLocaleString('en-US', opts) });
 });
 
 // 404

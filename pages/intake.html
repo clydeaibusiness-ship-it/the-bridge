@@ -12,9 +12,15 @@
   <style>
     html, body { overflow: visible !important; height: auto !important; background: #f5f0e8 !important; color: #0a0a0f !important; }
     .iv-page { max-width: 540px; margin: 0 auto; padding: 40px 20px 80px; }
-    .iv-progress { font-family: var(--font-data); font-size: 0.5625rem; letter-spacing: 0.12em; text-transform: uppercase; color: #9a948a; margin-bottom: 0.5rem; }
-    .iv-bar { height: 3px; background: #e0d8c8; border-radius: 2px; margin-bottom: 2rem; overflow: hidden; }
-    .iv-bar-fill { height: 100%; background: #8a6830; width: 0; transition: width 0.4s ease; }
+    .iv-stages { display: flex; gap: 10px; margin-bottom: 2rem; }
+    .iv-stage { flex: 1; }
+    .iv-stage-meta { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 5px; }
+    .iv-stage-name { font-family: var(--font-data); font-size: 0.5625rem; letter-spacing: 0.1em; text-transform: uppercase; color: #3a3530; font-weight: 600; }
+    .iv-stage-time { font-family: var(--font-data); font-size: 0.5rem; letter-spacing: 0.06em; color: #b0a898; }
+    .iv-stage-track { height: 4px; background: #e0d8c8; border-radius: 2px; overflow: hidden; margin-bottom: 5px; }
+    .iv-stage-fill { height: 100%; background: #8a6830; width: 0; transition: width 0.4s ease; }
+    .iv-stage.complete .iv-stage-fill { background: #5a7a50; }
+    .iv-stage-sub { font-family: var(--font-data); font-size: 0.5rem; letter-spacing: 0.06em; text-transform: uppercase; color: #b0a898; }
     .iv-framing { font-family: var(--font-ui); font-size: 0.875rem; color: #3a3530; line-height: 1.7; white-space: pre-line; margin-bottom: 1.75rem; }
     .iv-q { font-family: var(--font-ui); font-size: 1.0625rem; color: #0a0a0f; line-height: 1.5; margin-bottom: 1.25rem; }
     .iv-q-kicker { font-family: var(--font-data); font-size: 0.5625rem; letter-spacing: 0.1em; text-transform: uppercase; color: #9a948a; margin-bottom: 0.6rem; }
@@ -53,8 +59,23 @@
   </nav>
 
   <div class="iv-page">
-    <div class="iv-progress" id="iv-progress"></div>
-    <div class="iv-bar"><div class="iv-bar-fill" id="iv-bar-fill"></div></div>
+    <div class="iv-stages" id="iv-stages">
+      <div class="iv-stage" id="iv-s1">
+        <div class="iv-stage-meta"><span class="iv-stage-name">Stage 1</span><span class="iv-stage-time">~5 min</span></div>
+        <div class="iv-stage-track"><div class="iv-stage-fill" id="iv-s1-fill"></div></div>
+        <div class="iv-stage-sub">Quick Start</div>
+      </div>
+      <div class="iv-stage" id="iv-s2">
+        <div class="iv-stage-meta"><span class="iv-stage-name">Stage 2</span><span class="iv-stage-time">~10 min</span></div>
+        <div class="iv-stage-track"><div class="iv-stage-fill" id="iv-s2-fill"></div></div>
+        <div class="iv-stage-sub">Operational Reality</div>
+      </div>
+      <div class="iv-stage" id="iv-s3">
+        <div class="iv-stage-meta"><span class="iv-stage-name">Stage 3</span><span class="iv-stage-time">~8 min</span></div>
+        <div class="iv-stage-track"><div class="iv-stage-fill" id="iv-s3-fill"></div></div>
+        <div class="iv-stage-sub">Full Picture</div>
+      </div>
+    </div>
     <div id="iv-panel">
       <div class="iv-loading">Loading the interview…</div>
     </div>
@@ -62,8 +83,9 @@
 
   <script>
     const panel = document.getElementById('iv-panel');
-    const progressEl = document.getElementById('iv-progress');
-    const barFill = document.getElementById('iv-bar-fill');
+    const s1El = document.getElementById('iv-s1');
+    const s2El = document.getElementById('iv-s2');
+    const s3El = document.getElementById('iv-s3');
     const collected = {}; // field -> answer, kept locally for the dashboard signal
     const ROUND = new URLSearchParams(location.search).get('round') === '2' ? 2 : 1;
 
@@ -78,8 +100,13 @@
 
     function setProgress(p) {
       if (!p) return;
-      progressEl.textContent = 'Question ' + Math.min(p.answered + 1, p.total) + ' of ' + p.total;
-      barFill.style.width = Math.round((p.answered / p.total) * 100) + '%';
+      const a = p.answered;
+      document.getElementById('iv-s1-fill').style.width = Math.round(Math.min(a, 8) / 8 * 100) + '%';
+      document.getElementById('iv-s2-fill').style.width = Math.round(Math.max(0, Math.min(a - 8, 12)) / 12 * 100) + '%';
+      document.getElementById('iv-s3-fill').style.width = Math.round(Math.max(0, Math.min(a - 20, 10)) / 10 * 100) + '%';
+      if (a >= 8)  s1El.classList.add('complete');
+      if (a >= 20) s2El.classList.add('complete');
+      if (a >= 30) s3El.classList.add('complete');
     }
 
     // Signal the dashboard that the member has cleared the gate (after Stage 1).
@@ -202,8 +229,7 @@
     }
 
     function renderDone() {
-      barFill.style.width = '100%';
-      progressEl.textContent = 'Interview complete';
+      setProgress({ answered: 30 });
       panel.innerHTML = '<div class="iv-msg">That is everything. Earl now has the full picture. Go have a real conversation.</div>' +
         '<div><a class="iv-btn" href="/dashboard" style="display:inline-block;text-decoration:none;">Talk to Earl →</a></div>';
     }

@@ -3,66 +3,253 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>The Bridge — Strategic Navigation for Small Business</title>
+  <title>Earl — AI Business Mentor for Small Business Owners</title>
+  <meta name="description" content="Earl is an AI business mentor that learns your specific business, asks hard questions before giving answers, and helps you make better decisions. $300 for 6 months. No recurring billing.">
+  <meta name="keywords" content="AI business mentor, small business coach, business advisor for entrepreneurs, AI business coaching, affordable business coaching, small business strategy, business decision help, entrepreneur mentor">
+  <meta property="og:title" content="Earl — AI Business Mentor for Small Business Owners">
+  <meta property="og:description" content="Earl learns your business from scratch and thinks through every decision with you. Not a chatbot. A mentor that knows you.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://captainsbridge.io">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://captainsbridge.io">
   <link rel="stylesheet" href="/css/global.css">
   <link rel="stylesheet" href="/css/landing.css">
+  <style>
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 24px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: #f5f0e8;
+      border-bottom: 1px solid #c8c0b0;
+    }
+    .top-bar-brand {
+      font-family: var(--font-data);
+      font-size: 0.75rem;
+      letter-spacing: 0.1em;
+      font-weight: 700;
+      color: #0a0a0f;
+      text-decoration: none;
+    }
+    .top-bar-signin {
+      font-family: var(--font-data);
+      font-size: 0.6875rem;
+      letter-spacing: 0.08em;
+      color: #3a3530;
+      text-decoration: none;
+      border: 1px solid #c8c0b0;
+      border-radius: 2px;
+      padding: 6px 14px;
+      transition: border-color 0.15s, color 0.15s;
+    }
+    .top-bar-signin:hover { border-color: #3a3530; color: #0a0a0f; }
+
+    .hero-split {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      min-height: 520px;
+      border-bottom: 1px solid #c8c0b0;
+      position: relative;
+    }
+    .hero-split-text {
+      padding: 4rem 3rem 4rem 2rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      position: relative;
+      z-index: 1;
+    }
+    .hero-split-img { overflow: hidden; }
+    .hero-split-img img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center top;
+      display: block;
+    }
+    .hero-kicker {
+      font-family: var(--font-data);
+      font-size: 0.625rem;
+      color: #c8a96e;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      margin-bottom: 1rem;
+    }
+    .hero-h1 {
+      font-family: var(--font-ui);
+      font-size: clamp(1.6rem, 3.2vw, 2.4rem);
+      font-weight: 700;
+      color: #0a0a0f;
+      line-height: 1.2;
+      margin-bottom: 1.25rem;
+    }
+    .hero-sub {
+      font-family: var(--font-ui);
+      font-size: 1rem;
+      color: #5a5650;
+      line-height: 1.7;
+      margin-bottom: 2rem;
+      max-width: 400px;
+    }
+    .hero-cta {
+      display: inline-block;
+      background: #0a0a0f;
+      color: #f5f0e8;
+      font-family: var(--font-data);
+      font-size: 0.75rem;
+      letter-spacing: 0.1em;
+      padding: 0.875rem 1.75rem;
+      border-radius: 2px;
+      text-decoration: none;
+      transition: background 0.15s;
+      align-self: flex-start;
+    }
+    .hero-cta:hover { background: #1e1e2a; }
+    .hero-fine {
+      font-family: var(--font-ui);
+      font-size: 0.75rem;
+      color: #9a9590;
+      margin-top: 0.75rem;
+    }
+
+    .steps-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+      max-width: 820px;
+      margin: 0 auto;
+    }
+    .step {
+      text-align: center;
+      padding: 1.5rem;
+    }
+    .step-num {
+      font-family: var(--font-data);
+      font-size: 2.5rem;
+      color: #c8c0b0;
+      margin-bottom: 0.5rem;
+    }
+    .step-title {
+      font-family: var(--font-ui);
+      font-size: 1rem;
+      font-weight: 600;
+      color: #0a0a0f;
+      margin-bottom: 0.5rem;
+    }
+    .step-body {
+      font-family: var(--font-ui);
+      font-size: 0.9375rem;
+      color: #5a5650;
+      line-height: 1.65;
+    }
+
+    .earl-acronym {
+      margin: 1.5rem auto 0;
+      max-width: 36rem;
+      text-align: left;
+      background: #ece7dc;
+      border: 1px solid #d8d0c0;
+      border-radius: 4px;
+      padding: 1.25rem 1.5rem;
+    }
+    .earl-acronym-title {
+      font-family: var(--font-data);
+      font-size: 0.5625rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #c8a96e;
+      margin-bottom: 0.75rem;
+    }
+    .earl-acronym-row {
+      display: flex;
+      gap: 0.75rem;
+      align-items: baseline;
+      margin-bottom: 0.4rem;
+    }
+    .earl-letter {
+      font-family: var(--font-data);
+      font-size: 1rem;
+      font-weight: 700;
+      color: #0a0a0f;
+      min-width: 1.25rem;
+    }
+    .earl-word {
+      font-family: var(--font-ui);
+      font-size: 0.9375rem;
+      color: #3a3530;
+      line-height: 1.5;
+    }
+    .earl-word em { font-style: normal; color: #0a0a0f; font-weight: 600; }
+
+    @media (max-width: 48em) {
+      .hero-split { grid-template-columns: 1fr; }
+      .hero-split-img { height: 240px; order: -1; }
+      .hero-split-text { padding: 2.5rem 1.5rem; }
+      .steps-grid { grid-template-columns: 1fr; gap: 0; }
+      .step { padding: 1.25rem 0.5rem; border-bottom: 1px solid #e0d8c8; }
+      .step:last-child { border-bottom: none; }
+    }
+  </style>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    "name": "Earl",
+    "description": "AI business mentor for small business owners. Personalized coaching based on your specific business, goals, and challenges.",
+    "provider": { "@type": "Organization", "name": "Earl", "url": "https://captainsbridge.io" },
+    "offers": { "@type": "Offer", "price": "300", "priceCurrency": "USD", "description": "6 months of full access, one-time payment" },
+    "serviceType": "AI Business Mentorship",
+    "audience": { "@type": "Audience", "audienceType": "Small business owners and entrepreneurs" }
+  }
+  </script>
 </head>
 <body class="landing-body">
 
-<!-- ====== SECTION 1: STICKY NAVIGATION BAR ====== -->
-<nav class="landing-nav">
-  <div class="landing-nav-inner">
-    <div class="landing-nav-brand">
-      <a href="/" class="landing-nav-wordmark">THE BRIDGE</a>
-      <span class="beta-chip">BETA</span>
-    </div>
-    <div class="landing-nav-links" id="landing-nav-links">
-      <a href="/navigation-chart" class="landing-nav-link">Navigator</a>
-      <a href="/dashboard" class="landing-nav-link">Dashboard</a>
-      <a href="/login" class="landing-nav-link" id="nav-auth-link">Sign In</a>
-    </div>
-    <button class="landing-hamburger" id="landing-hamburger" aria-label="Menu">
-      <span></span><span></span><span></span>
-    </button>
+<header class="top-bar">
+  <a href="/" class="top-bar-brand">EARL</a>
+  <a href="/login" class="top-bar-signin" id="nav-auth-link">Sign In</a>
+</header>
+
+<!-- HERO -->
+<section class="hero-split">
+  <div class="stars-field">
+    <div class="star star--sm star--drift2" style="top:20%;left:5%"></div>
+    <div class="star star--sm star--drift1" style="top:70%;left:8%"></div>
+    <div class="star star--md star--drift3" style="top:45%;left:3%"></div>
   </div>
-  <div class="landing-mobile-menu" id="landing-mobile-menu">
-    <a href="/navigation-chart">Navigator</a>
-    <a href="/dashboard">Dashboard</a>
-    <a href="/login" id="nav-auth-link-mobile">Sign In</a>
+  <div class="hero-split-text">
+    <div class="hero-kicker">AI BUSINESS MENTOR</div>
+    <h1 class="hero-h1">You built a real business. You deserve an adviser that actually understands.</h1>
+    <p class="hero-sub">Earl learns your business from scratch, asks hard questions before giving answers, and helps you build toward your definition of success.</p>
+    <a href="/login?action=subscribe" class="hero-cta">Get Access — $300</a>
+    <p class="hero-fine">One-time payment. Six months of full access. No recurring billing.</p>
   </div>
-</nav>
-
- 
-
-<!-- ====== SECTION 3: STAR TREK CONTEXT ====== -->
-<section class="trek-context" id="trek-context">
-  <div class="trek-context-inner">
-    <!-- Ship's helm SVG -->
-    <svg class="trek-helm" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" width="90" height="90">
-      <circle cx="50" cy="50" r="35" stroke="#3a3530" stroke-width="1.5"/>
-      <circle cx="50" cy="50" r="6" stroke="#c8a96e" stroke-width="1.5"/>
-      <!-- 8 spokes -->
-      <line x1="50" y1="15" x2="50" y2="30" stroke="#3a3530" stroke-width="1.5" stroke-linecap="round"/>
-      <line x1="50" y1="70" x2="50" y2="85" stroke="#3a3530" stroke-width="1.5" stroke-linecap="round"/>
-      <line x1="15" y1="50" x2="30" y2="50" stroke="#3a3530" stroke-width="1.5" stroke-linecap="round"/>
-      <line x1="70" y1="50" x2="85" y2="50" stroke="#3a3530" stroke-width="1.5" stroke-linecap="round"/>
-      <line x1="25.25" y1="25.25" x2="35.61" y2="35.61" stroke="#3a3530" stroke-width="1.5" stroke-linecap="round"/>
-      <line x1="64.39" y1="64.39" x2="74.75" y2="74.75" stroke="#3a3530" stroke-width="1.5" stroke-linecap="round"/>
-      <line x1="74.75" y1="25.25" x2="64.39" y2="35.61" stroke="#3a3530" stroke-width="1.5" stroke-linecap="round"/>
-      <line x1="35.61" y1="64.39" x2="25.25" y2="74.75" stroke="#3a3530" stroke-width="1.5" stroke-linecap="round"/>
-      <!-- Spoke handles (knobs) -->
-      <circle cx="50" cy="13" r="3" stroke="#3a3530" stroke-width="1.5"/>
-      <circle cx="50" cy="87" r="3" stroke="#3a3530" stroke-width="1.5"/>
-      <circle cx="13" cy="50" r="3" stroke="#3a3530" stroke-width="1.5"/>
-      <circle cx="87" cy="50" r="3" stroke="#3a3530" stroke-width="1.5"/>
-    </svg>
-
-    <div class="trek-context-label">WHY A BRIDGE</div>
-    <p class="trek-context-body">Captain Kirk did not navigate the Enterprise alone. He stood at the bridge — a room designed to give him every lever, every reading, and every voice he needed to make the right call under pressure. Small business owners are running ships with no bridge. No instruments. No levers. No one calling out what is ahead. The Bridge is the room you were always supposed to have.</p>
+  <div class="hero-split-img">
+    <img src="/assets/hero.jpg" alt="Small business owner overwhelmed by decisions, papers, and late nights — Earl helps you think more clearly.">
   </div>
 </section>
 
-<!-- ====== SECTION 4: THE PROBLEM ====== -->
+<!-- MEET EARL -->
+<section class="trek-context">
+  <div class="trek-context-inner">
+    <div class="trek-context-label">MEET EARL</div>
+    <p class="trek-context-body">Most business advice is built for an imaginary owner. Clean books, six hours a day to read, a team that executes on its own. Earl is built for the real one. Good at the work, uncertain about the next decision, tired of being told to scale when what they actually want is to breathe.</p>
+    <p class="trek-context-body" style="margin-top:1rem;">Earl has no agenda. No pushing growth. No steering you toward an exit. No upsells. Your definition of success is what matters, and Earl's job is to help you get there.</p>
+
+    <div class="earl-acronym">
+      <div class="earl-acronym-title">What E.A.R.L. stands for</div>
+      <div class="earl-acronym-row"><span class="earl-letter">E</span><span class="earl-word"><em>Every</em> mentor who built something real</span></div>
+      <div class="earl-acronym-row"><span class="earl-letter">A</span><span class="earl-word"><em>Advisor's</em> hard-won knowledge</span></div>
+      <div class="earl-acronym-row"><span class="earl-letter">R</span><span class="earl-word"><em>Relevant</em> to your specific situation</span></div>
+      <div class="earl-acronym-row"><span class="earl-letter">L</span><span class="earl-word"><em>Lessons</em>, not theories or sales pitches</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- THE PROBLEM -->
 <section class="problem" id="problem">
   <div class="stars-field">
     <div class="star star--sm star--drift2" style="top:10%;left:5%"></div>
@@ -72,109 +259,87 @@
     <div class="star star--sm star--drift1" style="top:85%;left:45%"></div>
   </div>
   <div class="landing-container">
-    <div class="problem-label">THE PROBLEM WITH RUNNING A BUSINESS ALONE</div>
-    <div class="problem-opening">You know more about your industry than most people will ever know. You have outworked, outlearned, and out-sacrificed people twice your age. And yet — on a Tuesday afternoon when it is quiet enough to actually think — you sit there with the same question you cannot shake:<br><br><strong>Am I doing this right?</strong></div>
+    <div class="problem-label">WHY BUSINESS OWNERS NEED EARL</div>
+    <div class="problem-opening">You know your industry better than most. You have outworked people twice your age. And yet on a quiet afternoon you sit with the same question you cannot shake:<br><br><strong>Am I doing this right?</strong></div>
 
     <div class="problem-grid">
       <div class="problem-item fade-in">
         <div class="problem-number">01</div>
-        <div class="problem-headline">You are the best at what you do and somehow still losing sleep.</div>
-        <div class="problem-body">The problem has never been your craft. It has been the forty decisions between you and the next level that nobody ever taught you how to make.</div>
+        <div class="problem-headline">Good at the work. Still losing sleep.</div>
+        <div class="problem-body">Not because of your craft. Because of the forty decisions nobody ever taught you how to make.</div>
       </div>
       <div class="problem-item fade-in">
         <div class="problem-number">02</div>
-        <div class="problem-headline">You have read the books. Listened to the podcasts. Hired the coach.</div>
-        <div class="problem-body">And every one of them gave you frameworks that sounded brilliant in a hotel conference room and disappeared by the time you got back to the shop.</div>
+        <div class="problem-headline">Every piece of advice was built for someone else.</div>
+        <div class="problem-body">Books, podcasts, coaches. None of it was designed around what you are actually trying to do.</div>
       </div>
       <div class="problem-item fade-in">
         <div class="problem-number">03</div>
-        <div class="problem-headline">And the government has been sitting on free money with your name on it.</div>
-        <div class="problem-body">Grants specifically designed for businesses exactly like yours — for what you do, where you do it, who you hire. Most of it goes unclaimed every year because finding it requires six hours you do not have on a website designed by someone who has never run a business.</div>
+        <div class="problem-headline">The decisions that matter most get made alone.</div>
+        <div class="problem-body">Pricing. Hiring. That contract. Each one shapes the next three years, made in five minutes with no one to think it through with.</div>
       </div>
     </div>
 
-    <div class="problem-closing">None of this is your fault. You were handed a ship and told to sail it. Nobody gave you the bridge.</div>
+    <div class="problem-closing">You have been making these calls alone. Earl changes that.</div>
   </div>
 </section>
 
-<!-- ====== SECTION 6: PRODUCT DESCRIPTION CARDS ====== -->
+<!-- EARL -->
 <section class="solution" id="solution">
   <div class="stars-field">
     <div class="star star--md star--drift3" style="top:8%;left:12%"></div>
     <div class="star star--sm star--drift1" style="top:25%;left:88%"></div>
     <div class="star star--lg star--drift2" style="top:60%;left:6%"></div>
     <div class="star star--sm star--drift3" style="top:45%;left:50%"></div>
-    <div class="star star--sm star--drift1" style="top:80%;left:75%"></div>
     <div class="star star--md star--drift2" style="top:90%;left:30%"></div>
   </div>
   <div class="landing-container">
-    <div class="solution-label">THE BRIDGE</div>
-    <h2 class="solution-headline">Your business has always deserved a Earl.</h2>
-    <p class="solution-sub">A human business consultant is brilliant — and forgets half of what you told them between sessions. They cannot hold every case study, every lever, every strategic principle in their head simultaneously while thinking about your specific situation at 11pm on a Wednesday when you cannot sleep. We built something that can.</p>
+    <div class="solution-label">EARL</div>
+    <h2 class="solution-headline">A mentor who knows your business before the conversation starts.</h2>
+    <p class="solution-sub">When you join, Earl interviews you. Thirty questions about your business and goals. That becomes the foundation. Every conversation after starts from what Earl already knows about you.</p>
 
-    <div class="solution-cards" id="solution-cards">
-      <!-- Card 1: Earl (featured) -->
-      <div class="solution-card featured">
-        <div class="solution-card-icon">
-          <svg width="40" height="40" viewBox="0 0 40 40" fill="none" stroke="#0a0a0f" stroke-width="1.5">
-            <path d="M20 6L8 16V34H32V16L20 6Z" stroke-linejoin="round" opacity="0.3"/>
-            <rect x="16" y="22" width="8" height="12" opacity="0.2"/>
-            <circle cx="20" cy="14" r="3" fill="#c8a96e" stroke="none"/>
-          </svg>
-        </div>
-        <div class="solution-card-label">THE COMMANDER</div>
-        <div class="solution-card-headline">The strategic advisor who never forgets your business.</div>
-        <div class="solution-card-body">Earl is built on a framework synthesized from the twelve most important business books ever written — not their summaries, their actual operating principles. It knows your business before you type a word. It asks the hard questions before it gives a single answer. And it never runs out of context. Ever.</div>
+    <div class="solution-cards" style="grid-template-columns:1fr;" id="solution-cards">
+      <div class="solution-card featured" style="max-width:620px;margin:0 auto;">
+        <div class="solution-card-label">WHAT MAKES EARL DIFFERENT</div>
+        <div class="solution-card-headline">Full context. Every conversation. Pointed at your goals.</div>
+        <div class="solution-card-body">A human consultant forgets half of what you told them. Influencers and programs sell you their path. Earl does neither. It carries your full business context into every conversation, draws on real-world experience from people who built businesses like yours, and points every response toward what you said you are working toward. Not scale. Not exit. Yours.</div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ====== SECTION 7: PRICING ====== -->
-<section class="pricing" id="pricing">
-  <div class="stars-field">
-    <div class="star star--sm star--drift2" style="top:10%;left:10%"></div>
-    <div class="star star--md star--drift1" style="top:35%;left:85%"></div>
-    <div class="star star--sm star--drift3" style="top:70%;left:22%"></div>
-    <div class="star star--lg star--drift2" style="top:55%;left:65%"></div>
-    <div class="star star--sm star--drift1" style="top:85%;left:50%"></div>
-  </div>
+<!-- HOW IT WORKS -->
+<section class="captains" id="how-it-works" style="background:#f5f0e8;">
   <div class="landing-container">
-    <div class="pricing-label">THE MEMBERSHIP</div>
-    <h2 class="pricing-headline">One price. Full access. No recurring billing.</h2>
-    <p class="pricing-sub">Pay once, get six months of everything. No surprises.</p>
+    <div class="captains-label">HOW EARL WORKS</div>
+    <h2 class="captains-headline">One conversation to set up. Six months to use.</h2>
+    <p class="captains-sub">It all starts with one interview.</p>
 
-    <div class="pricing-grid">
-      <!-- EARL MEMBERSHIP -->
-      <div class="pricing-card pricing-card--captain">
-        <div class="pricing-tier">EARL MEMBERSHIP</div>
-        <div class="pricing-amount">
-          <span class="pricing-dollar">$300</span><span class="pricing-per"> one-time</span>
-        </div>
-        <div class="pricing-annual">6 months of full access</div>
-
-        <ul class="pricing-features">
-          <li class="pricing-feature">
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="#c8a96e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2 7 6 11 12 3"/></svg>
-            <span class="pricing-feature-text">Earl — unlimited AI strategic advisor</span>
-          </li>
-          <li class="pricing-feature">
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="#c8a96e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2 7 6 11 12 3"/></svg>
-            <span class="pricing-feature-text">Navigation Chart — personalized strategic assessment</span>
-          </li>
-          <li class="pricing-feature">
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="#c8a96e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2 7 6 11 12 3"/></svg>
-            <span class="pricing-feature-text">Priority access to new features as they ship</span>
-          </li>
-        </ul>
-
-        <a href="/login?action=subscribe" class="btn-pricing">GET ACCESS →</a>
+    <div class="steps-grid">
+      <div class="step">
+        <div class="step-num">01</div>
+        <div class="step-title">Answer the interview</div>
+        <div class="step-body">Thirty questions about your business and goals. About twenty-five minutes. Done once.</div>
       </div>
+      <div class="step">
+        <div class="step-num">02</div>
+        <div class="step-title">Get your Navigation Chart</div>
+        <div class="step-body">Earl builds a personalized strategic map from your answers. Your situation, your words, your goals.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">03</div>
+        <div class="step-title">Talk to Earl</div>
+        <div class="step-body">Bring any decision or concern. Earl asks before it answers. Every response points back to what you are building.</div>
+      </div>
+    </div>
+
+    <div style="text-align:center;margin-top:2.5rem;">
+      <a href="/login?action=subscribe" class="hero-scan-btn" style="text-decoration:none;display:inline-block;">Get Access — $300</a>
     </div>
   </div>
 </section>
 
-<!-- ====== SECTION 8: CAPTAINS WE SERVE ====== -->
+<!-- WHO IT'S FOR -->
 <section class="captains" id="captains">
   <div class="stars-field">
     <div class="star star--sm star--drift3" style="top:12%;left:88%"></div>
@@ -184,79 +349,75 @@
     <div class="star star--sm star--drift1" style="top:90%;left:15%"></div>
   </div>
   <div class="landing-container">
-    <div class="captains-label">THE CAPTAINS WE SERVE</div>
-    <h2 class="captains-headline">You do not have to be in tech. You just have to be serious.</h2>
-    <p class="captains-sub">The levers that build a durable business are the same whether you are making software or making sandwiches. Strategy does not care about your industry. Only your willingness to think clearly about it.</p>
+    <div class="captains-label">WHO EARL IS FOR</div>
+    <h2 class="captains-headline">Any industry. Any stage. Any definition of success.</h2>
+    <p class="captains-sub">The principles behind a durable business are the same across industries. What changes is your situation. Earl applies them to yours.</p>
 
     <div class="captains-grid">
-      <!-- 1. Trades — wrench -->
-      <div class="captain-card">
-        <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="#8a6830" stroke-width="1.5" stroke-linecap="round"><path d="M21 4C18.8 4 17 5.8 17 8C17 8.7 17.2 9.3 17.5 9.9L9.9 17.5C9.3 17.2 8.7 17 8 17C5.8 17 4 18.8 4 21C4 23.2 5.8 25 8 25C10.2 25 12 23.2 12 21C12 20.3 11.8 19.7 11.5 19.1L19.1 11.5C19.7 11.8 20.3 12 21 12C23.2 12 25 10.2 25 8C25 7.3 24.8 6.6 24.4 6L22 8.4L20.6 7L23 4.6C22.4 4.2 21.7 4 21 4Z"/></svg>
-        <div class="captain-card-label">Trades and contractors</div>
-      </div>
-      <!-- 2. Restaurants — plate with utensils -->
-      <div class="captain-card">
-        <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="#8a6830" stroke-width="1.5" stroke-linecap="round"><circle cx="14" cy="14" r="9"/><path d="M8 4V12C8 14 10 16 14 16C18 16 20 14 20 12V4"/><line x1="14" y1="16" x2="14" y2="24"/></svg>
-        <div class="captain-card-label">Restaurants and food</div>
-      </div>
-      <!-- 3. Real estate — house -->
-      <div class="captain-card">
-        <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="#8a6830" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 24V12L14 4L24 12V24H4Z"/><rect x="11" y="16" width="6" height="8"/></svg>
-        <div class="captain-card-label">Real estate and property</div>
-      </div>
-      <!-- 4. Beauty — scissors -->
-      <div class="captain-card">
-        <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="#8a6830" stroke-width="1.5" stroke-linecap="round"><circle cx="8" cy="20" r="4"/><circle cx="20" cy="20" r="4"/><line x1="8" y1="16" x2="20" y2="4"/><line x1="20" y1="16" x2="8" y2="4"/></svg>
-        <div class="captain-card-label">Beauty and wellness</div>
-      </div>
-      <!-- 5. Healthcare — cross -->
-      <div class="captain-card">
-        <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="#8a6830" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="10" y="4" width="8" height="20" rx="1"/><rect x="4" y="10" width="20" height="8" rx="1"/></svg>
-        <div class="captain-card-label">Healthcare and therapy</div>
-      </div>
-      <!-- 6. Software — monitor with code -->
-      <div class="captain-card">
-        <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="#8a6830" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="20" height="14" rx="2"/><line x1="10" y1="22" x2="18" y2="22"/><line x1="14" y1="18" x2="14" y2="22"/><path d="M10 9L8 11L10 13"/><path d="M18 9L20 11L18 13"/></svg>
-        <div class="captain-card-label">Software and SaaS</div>
-      </div>
-      <!-- 7. Retail — shopping bag -->
-      <div class="captain-card">
-        <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="#8a6830" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8H22L20 24H8L6 8Z"/><path d="M10 8V6C10 4 12 2 14 2C16 2 18 4 18 6V8"/></svg>
-        <div class="captain-card-label">Retail and e-commerce</div>
-      </div>
-      <!-- 8. Landscaping — tree -->
-      <div class="captain-card">
-        <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="#8a6830" stroke-width="1.5" stroke-linecap="round"><path d="M14 4C10 4 6 8 6 14C6 18 10 22 14 22C18 22 22 18 22 14C22 8 18 4 14 4Z"/><line x1="14" y1="22" x2="14" y2="26"/></svg>
-        <div class="captain-card-label">Landscaping and outdoor services</div>
-      </div>
-      <!-- 9. Consulting — clipboard -->
-      <div class="captain-card">
-        <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="#8a6830" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="6" width="16" height="18" rx="1"/><line x1="6" y1="10" x2="22" y2="10"/><line x1="10" y1="14" x2="18" y2="14"/><line x1="10" y1="18" x2="16" y2="18"/></svg>
-        <div class="captain-card-label">Consulting and coaching</div>
-      </div>
-      <!-- 10. Construction — hard hat -->
-      <div class="captain-card">
-        <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="#8a6830" stroke-width="1.5" stroke-linecap="round"><path d="M6 18C6 12 9 6 14 6C19 6 22 12 22 18"/><line x1="4" y1="18" x2="24" y2="18"/><line x1="14" y1="6" x2="14" y2="18"/></svg>
-        <div class="captain-card-label">Construction and renovation</div>
-      </div>
-      <!-- 11. Education — graduation cap -->
-      <div class="captain-card">
-        <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="#8a6830" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12L14 6L26 12L14 18Z"/><path d="M6 14V22L14 26L22 22V14"/><line x1="26" y1="12" x2="26" y2="22"/></svg>
-        <div class="captain-card-label">Education and tutoring</div>
-      </div>
-      <!-- 12. Logistics — delivery truck -->
-      <div class="captain-card">
-        <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="#8a6830" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="8" width="16" height="14"/><path d="M18 12H24L26 18V22H18V12Z"/><circle cx="8" cy="24" r="2"/><circle cx="22" cy="24" r="2"/></svg>
-        <div class="captain-card-label">Logistics and delivery</div>
-      </div>
+      <div class="captain-card"><svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="#8a6830" stroke-width="1.5" stroke-linecap="round"><path d="M21 4C18.8 4 17 5.8 17 8C17 8.7 17.2 9.3 17.5 9.9L9.9 17.5C9.3 17.2 8.7 17 8 17C5.8 17 4 18.8 4 21C4 23.2 5.8 25 8 25C10.2 25 12 23.2 12 21C12 20.3 11.8 19.7 11.5 19.1L19.1 11.5C19.7 11.8 20.3 12 21 12C23.2 12 25 10.2 25 8C25 7.3 24.8 6.6 24.4 6L22 8.4L20.6 7L23 4.6C22.4 4.2 21.7 4 21 4Z"/></svg><div class="captain-card-label">Trades and contractors</div></div>
+      <div class="captain-card"><svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="#8a6830" stroke-width="1.5" stroke-linecap="round"><circle cx="14" cy="14" r="9"/><path d="M8 4V12C8 14 10 16 14 16C18 16 20 14 20 12V4"/><line x1="14" y1="16" x2="14" y2="24"/></svg><div class="captain-card-label">Restaurants and food</div></div>
+      <div class="captain-card"><svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="#8a6830" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 24V12L14 4L24 12V24H4Z"/><rect x="11" y="16" width="6" height="8"/></svg><div class="captain-card-label">Real estate and property</div></div>
+      <div class="captain-card"><svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="#8a6830" stroke-width="1.5" stroke-linecap="round"><circle cx="8" cy="20" r="4"/><circle cx="20" cy="20" r="4"/><line x1="8" y1="16" x2="20" y2="4"/><line x1="20" y1="16" x2="8" y2="4"/></svg><div class="captain-card-label">Beauty and wellness</div></div>
+      <div class="captain-card"><svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="#8a6830" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="10" y="4" width="8" height="20" rx="1"/><rect x="4" y="10" width="20" height="8" rx="1"/></svg><div class="captain-card-label">Healthcare and therapy</div></div>
+      <div class="captain-card"><svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="#8a6830" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="20" height="14" rx="2"/><line x1="10" y1="22" x2="18" y2="22"/><line x1="14" y1="18" x2="14" y2="22"/><path d="M10 9L8 11L10 13"/><path d="M18 9L20 11L18 13"/></svg><div class="captain-card-label">Software and SaaS</div></div>
+      <div class="captain-card"><svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="#8a6830" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8H22L20 24H8L6 8Z"/><path d="M10 8V6C10 4 12 2 14 2C16 2 18 4 18 6V8"/></svg><div class="captain-card-label">Retail and e-commerce</div></div>
+      <div class="captain-card"><svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="#8a6830" stroke-width="1.5" stroke-linecap="round"><path d="M14 4C10 4 6 8 6 14C6 18 10 22 14 22C18 22 22 18 22 14C22 8 18 4 14 4Z"/><line x1="14" y1="22" x2="14" y2="26"/></svg><div class="captain-card-label">Landscaping and outdoor services</div></div>
+      <div class="captain-card"><svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="#8a6830" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="6" width="16" height="18" rx="1"/><line x1="6" y1="10" x2="22" y2="10"/><line x1="10" y1="14" x2="18" y2="14"/><line x1="10" y1="18" x2="16" y2="18"/></svg><div class="captain-card-label">Consulting and coaching</div></div>
+      <div class="captain-card"><svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="#8a6830" stroke-width="1.5" stroke-linecap="round"><path d="M6 18C6 12 9 6 14 6C19 6 22 12 22 18"/><line x1="4" y1="18" x2="24" y2="18"/><line x1="14" y1="6" x2="14" y2="18"/></svg><div class="captain-card-label">Construction and renovation</div></div>
+      <div class="captain-card"><svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="#8a6830" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12L14 6L26 12L14 18Z"/><path d="M6 14V22L14 26L22 22V14"/><line x1="26" y1="12" x2="26" y2="22"/></svg><div class="captain-card-label">Education and tutoring</div></div>
+      <div class="captain-card"><svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="#8a6830" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="8" width="16" height="14"/><path d="M18 12H24L26 18V22H18V12Z"/><circle cx="8" cy="24" r="2"/><circle cx="22" cy="24" r="2"/></svg><div class="captain-card-label">Logistics and delivery</div></div>
     </div>
 
-    <div class="captains-closing">If you pay employees, serve customers, and lie awake wondering if you are making the right calls — you belong here.</div>
+    <div class="captains-closing">If you pay employees, serve customers, and lie awake wondering if you are making the right calls, you belong here.</div>
   </div>
 </section>
 
-<!-- ====== SECTION 10: SHARE ====== -->
-<!-- ====== SECTION 11: FOOTER ====== -->
+<!-- PRICING -->
+<section class="pricing" id="pricing">
+  <div class="stars-field">
+    <div class="star star--sm star--drift2" style="top:10%;left:10%"></div>
+    <div class="star star--md star--drift1" style="top:35%;left:85%"></div>
+    <div class="star star--sm star--drift3" style="top:70%;left:22%"></div>
+    <div class="star star--lg star--drift2" style="top:55%;left:65%"></div>
+    <div class="star star--sm star--drift1" style="top:85%;left:50%"></div>
+  </div>
+  <div class="landing-container">
+    <div class="pricing-label">PRICING</div>
+    <h2 class="pricing-headline">One price. Full access. No recurring billing.</h2>
+    <p class="pricing-sub">Pay once, get six months of everything. No subscriptions. No surprises.</p>
+
+    <div class="pricing-grid" style="grid-template-columns:1fr;max-width:28rem;margin:0 auto;">
+      <div class="pricing-card pricing-card--captain">
+        <div class="pricing-tier">EARL MEMBERSHIP</div>
+        <div class="pricing-amount">
+          <span class="pricing-dollar">$300</span><span class="pricing-per"> one-time</span>
+        </div>
+        <div class="pricing-annual">6 months of full access</div>
+        <ul class="pricing-features">
+          <li class="pricing-feature">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="#c8a96e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2 7 6 11 12 3"/></svg>
+            <span class="pricing-feature-text">Unlimited conversations with Earl</span>
+          </li>
+          <li class="pricing-feature">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="#c8a96e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2 7 6 11 12 3"/></svg>
+            <span class="pricing-feature-text">Navigation Chart — your personalized strategic foundation</span>
+          </li>
+          <li class="pricing-feature">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="#c8a96e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2 7 6 11 12 3"/></svg>
+            <span class="pricing-feature-text">Progress tracking on benchmarks you set</span>
+          </li>
+          <li class="pricing-feature">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="#c8a96e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2 7 6 11 12 3"/></svg>
+            <span class="pricing-feature-text">Action steps tracked between sessions</span>
+          </li>
+        </ul>
+        <a href="/login?action=subscribe" class="btn-pricing">GET ACCESS</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
 <footer class="landing-footer" id="footer">
   <div class="stars-field">
     <div class="star star--sm star--drift1" style="top:15%;left:80%"></div>
@@ -266,22 +427,21 @@
   </div>
   <div class="landing-container">
     <div class="footer-story">
-      <p>Here is the truth about every business owner we have ever met.</p>
-      <p>They are not lazy. They are not untalented. They are not failing because they do not care enough. They are failing — or plateauing, or grinding without gaining — because they are doing something genuinely hard without the tools the job actually requires.</p>
-      <p>You would not navigate a ship across the ocean with a tourist map and a guess. But that is what most business advice asks you to do. Here is a framework. Here are some principles. Good luck.</p>
-      <p>The Bridge is different not because we have smarter people — it is because we built a system that holds everything. Every principle from every book. Every lever. Every case study. All of it available the moment you need it, applied to your specific situation, asked in the form of a question that makes you think rather than told in the form of advice you forget.</p>
-      <p>You built something real. You deserve a bridge that gets you somewhere.</p>
-      <div class="footer-cta-line">Come aboard, Captain.</div>
+      <p>The business owners we have worked with are not lazy. Not lacking effort. They are doing something genuinely hard without the right tools.</p>
+      <p>Not because those tools do not exist. Until now, the tool that could hold your entire business in its head, draw from everything ever written about building one, and ask the right question at the right moment simply did not exist.</p>
+      <p>Six months from now you will know exactly what you were afraid to admit about your business, what actually matters, and what to do about it.</p>
+      <p>Or you keep figuring it out alone.</p>
+      <div class="footer-cta-line">Earl has been waiting for you.</div>
     </div>
 
     <div class="footer-share">
-      <div class="footer-share-prompt">Know someone who needs this?</div>
-      <button class="btn-share" id="share-btn">Share The Bridge with a friend</button>
-      <div class="footer-share-sub">If you are not a business owner, you almost certainly know one. Send them this. It costs nothing and it might change everything for them.</div>
+      <div class="footer-share-prompt">Know a business owner who needs this?</div>
+      <button class="btn-share" id="share-btn">Share Earl with someone who needs it</button>
+      <div class="footer-share-sub">Send them this. It costs nothing and it might change everything for them.</div>
     </div>
 
     <div class="footer-bottom">
-      <div class="footer-copy">THE BRIDGE © 2025</div>
+      <div class="footer-copy">EARL © 2025</div>
       <div class="footer-links">
         <a href="#">Privacy</a>
         <a href="/terms">Terms</a>
@@ -291,14 +451,7 @@
   </div>
 </footer>
 
-<!-- ====== SCRIPTS ====== -->
 <script>
-  // Mobile menu toggle
-  document.getElementById('landing-hamburger').addEventListener('click', () => {
-    document.getElementById('landing-mobile-menu').classList.toggle('open');
-  });
-
-  // Auth state — toggle Sign In / Sign Out
   (async function checkAuth() {
     try {
       const resp = await fetch('/api/auth/me');
@@ -306,21 +459,15 @@
         const data = await resp.json();
         if (data.id) {
           const link = document.getElementById('nav-auth-link');
-          const mobileLink = document.getElementById('nav-auth-link-mobile');
           if (link) { link.textContent = 'Sign Out'; link.href = '/api/auth/logout'; }
-          if (mobileLink) { mobileLink.textContent = 'Sign Out'; mobileLink.href = '/api/auth/logout'; }
         }
       }
     } catch(e) {}
   })();
 
-  // IntersectionObserver for fade-in animations
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('visible');
-        observer.unobserve(entry.target);
-      }
+      if (entry.isIntersecting) { entry.target.classList.add('visible'); observer.unobserve(entry.target); }
     });
   }, { threshold: 0.15 });
 
@@ -328,36 +475,26 @@
     el.style.transitionDelay = `${i * 0.15}s`;
     observer.observe(el);
   });
-
   document.querySelectorAll('.solution-card').forEach((el, i) => {
     el.style.transitionDelay = `${i * 0.2}s`;
     observer.observe(el);
   });
 
-  // Share button
   const shareBtn = document.getElementById('share-btn');
   if (shareBtn) {
     shareBtn.addEventListener('click', async () => {
       try {
         await navigator.clipboard.writeText('https://captainsbridge.io');
-        const original = shareBtn.textContent;
-        shareBtn.textContent = 'Link copied — send it to someone who needs it';
-        setTimeout(() => { shareBtn.textContent = original; }, 3000);
-      } catch (e) {
+      } catch(e) {
         const ta = document.createElement('textarea');
         ta.value = 'https://captainsbridge.io';
-        document.body.appendChild(ta);
-        ta.select();
-        document.execCommand('copy');
-        document.body.removeChild(ta);
-        const original = shareBtn.textContent;
-        shareBtn.textContent = 'Link copied — send it to someone who needs it';
-        setTimeout(() => { shareBtn.textContent = original; }, 3000);
+        document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
       }
+      const original = shareBtn.textContent;
+      shareBtn.textContent = 'Link copied — send it to someone who needs it';
+      setTimeout(() => { shareBtn.textContent = original; }, 3000);
     });
   }
-
-  
 </script>
 </body>
 </html>

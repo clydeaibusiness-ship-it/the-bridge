@@ -1,6 +1,6 @@
 <!--
 OWNER INSTRUCTIONS:
-This file is the knowledge base behind every Commander and Navigation Chart response.
+This file is the knowledge base behind every Earl and Navigation Chart response.
 It loads AFTER soul.md in the system prompt. Never reorder this.
 Edit directly in the repository to update the framework, add new books, or add case studies.
 Changes take effect on the next API call. No redeployment needed.

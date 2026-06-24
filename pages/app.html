@@ -67,14 +67,6 @@
     .slider-pill { position: absolute; top: 4px; left: 0; height: calc(100% - 8px); width: 33.3333%; background: #0a0a0f; border-radius: 999px; transition: transform 0.32s cubic-bezier(0.4,0,0.2,1); z-index: 0; transform: translateX(0); }
     .slider-inner button { position: relative; z-index: 1; flex: 1; background: none; border: none; cursor: pointer; font-family: var(--font-data); font-size: 0.625rem; letter-spacing: 0.08em; text-transform: uppercase; color: #7a7570; transition: color 0.2s; }
     .slider-inner button.active { color: #f0ebe0; }
-    /* Menu sheet */
-    .scrim { position: absolute; inset: 0; background: rgba(10,10,15,0.4); opacity: 0; pointer-events: none; transition: opacity 0.25s; z-index: 20; }
-    .scrim.open { opacity: 1; pointer-events: auto; }
-    .menu { position: absolute; top: 0; left: 0; bottom: 0; width: 76%; max-width: 320px; background: #f5f0e8; transform: translateX(-100%); transition: transform 0.28s cubic-bezier(0.4,0,0.2,1); z-index: 21; box-shadow: 2px 0 30px rgba(0,0,0,0.15); padding: 20px; }
-    .menu.open { transform: translateX(0); }
-    .menu-head { font-family: var(--font-data); font-size: 0.7rem; font-weight: 700; letter-spacing: 0.14em; color: #0a0a0f; margin-bottom: 24px; }
-    .menu a { display: block; font-family: var(--font-ui); font-size: 0.95rem; color: #2a2520; text-decoration: none; padding: 14px 0; border-bottom: 1px solid #e0d8c8; }
-    .menu a.danger { color: #8a4a3a; }
     /* Settings block on the Chart panel */
     .settings { margin-top: 28px; padding-top: 8px; border-top: 1px solid #d8d0c0; }
     .settings-row { display: block; width: 100%; text-align: left; background: none; border: none; cursor: pointer; font-family: var(--font-ui); font-size: 0.875rem; color: #2a2520; text-decoration: none; padding: 13px 0; border-bottom: 1px solid #e0d8c8; }
@@ -93,15 +85,12 @@
     .modal-btn.ghost { background: transparent; border: 1px solid #c8c0b0; color: #3a3530; }
     .modal-note { font-size: 0.82rem; color: #7a7570; line-height: 1.55; }
     .modal-note a { color: #8a6830; }
-    /* Hamburger only on phones; on laptop the settings live on the Chart panel */
-    @media (min-width: 768px) { #menu-open { visibility: hidden; } }
   </style>
 </head>
 <body>
   <div class="shell">
     <div class="tb">
-      <button class="tb-btn" id="menu-open" aria-label="Menu">&#9776;</button>
-      <span class="tb-title" id="tb-title">THE COMMANDER</span>
+      <span class="tb-title" id="tb-title">EARL</span>
       <button class="tb-btn" id="history-btn" aria-label="History" style="font-size:1rem;">&#8635;</button>
     </div>
 
@@ -118,6 +107,7 @@
               <a class="settings-row" href="/subscribe">Manage subscription</a>
               <a class="settings-row danger" href="/api/auth/logout">Sign out</a>
             </div>
+            <div id="app-version" style="font-family:var(--font-data);font-size:0.6rem;color:#b0a898;letter-spacing:0.08em;text-align:center;padding:16px 0 4px;"></div>
           </div>
         </section>
 
@@ -125,9 +115,10 @@
         <section class="panel">
           <div class="msgs" id="msgs"></div>
           <div class="prompts" id="prompts">
-            <button class="pill" data-p="What is the one move I could make right now that would save me the most money? Ask me whatever you need first.">What's the one move that saves me money?</button>
-            <button class="pill" data-p="What do you think is the biggest unvalidated assumption baked into my business right now? Ask me questions until you can name it.">What's my biggest assumption?</button>
-            <button class="pill" data-p="Based on what you know about me, what should I focus on for the next 90 days?">What should I focus on next?</button>
+            <button class="pill" data-p="What are you, exactly — and why would I talk to you instead of just figuring things out myself?">What are you, exactly?</button>
+            <button class="pill" data-p="How does this work? What should I expect from our conversations?">How does this work?</button>
+            <button class="pill" data-p="What do you know about my business so far, and what do you still need to know?">What do you know about me so far?</button>
+            <button class="pill" data-p="What's the most important thing you'd want to know about me and my business right now?">What do you want to know first?</button>
           </div>
           <div class="composer">
             <div class="composer-row">
@@ -157,13 +148,6 @@
       </div>
     </div>
 
-    <div class="scrim" id="scrim"></div>
-    <nav class="menu" id="menu">
-      <div class="menu-head">THE BRIDGE</div>
-      <a href="#" data-change-answer>Change an interview answer</a>
-      <a href="/subscribe">Manage subscription</a>
-      <a href="/api/auth/logout" class="danger">Sign out</a>
-    </nav>
 
     <div class="modal-scrim" id="ca-scrim">
       <div class="modal">
@@ -174,7 +158,7 @@
   </div>
 
   <script>
-    const TITLES = ['NAVIGATION CHART', 'THE COMMANDER', 'YOUR PROGRESS'];
+    const TITLES = ['NAVIGATION CHART', 'EARL', 'YOUR PROGRESS'];
     const track = document.getElementById('track');
     const tbTitle = document.getElementById('tb-title');
     const sliderBtns = Array.from(document.querySelectorAll('#slider button'));
@@ -202,11 +186,6 @@
       if (Math.abs(dx) > 55 && Math.abs(dx) > Math.abs(dy) * 1.5) goTo(current + (dx < 0 ? 1 : -1));
     }, { passive: true });
 
-    // Menu
-    const menu = document.getElementById('menu'), scrim = document.getElementById('scrim');
-    function setMenu(open) { menu.classList.toggle('open', open); scrim.classList.toggle('open', open); }
-    document.getElementById('menu-open').addEventListener('click', () => setMenu(true));
-    scrim.addEventListener('click', () => setMenu(false));
 
     // Change-an-answer modal (replaces the old /profile page)
     const caScrim = document.getElementById('ca-scrim');
@@ -215,7 +194,6 @@
     caScrim.addEventListener('click', e => { if (e.target === caScrim) closeCA(); });
 
     async function openChangeAnswer() {
-      setMenu(false);
       caBody.innerHTML = '<p class="modal-note">Loading&#8230;</p>';
       caScrim.classList.add('open');
       const { ok, data } = await api('/api/member/intake-changes');
@@ -333,7 +311,7 @@
     sendBtn.addEventListener('click', send);
     input.addEventListener('keydown', e => { if (e.key === 'Enter') send(); });
     prompts.querySelectorAll('.pill').forEach(p => p.addEventListener('click', () => { input.value = p.dataset.p; send(); }));
-    document.getElementById('history-btn').addEventListener('click', () => goTo(1));
+    document.getElementById('history-btn').addEventListener('click', () => window.location.reload());
 
     // ---- Progress ----
     async function loadProgress() {
@@ -460,6 +438,10 @@
       loadHistory();
       loadProgress();
       loadChart();
+      fetch('/api/version').then(r => r.json()).then(d => {
+        const el = document.getElementById('app-version');
+        if (el) el.textContent = 'v' + d.version;
+      }).catch(() => {});
     })();
   </script>
   <script src="/js/checkin.js"></script>
