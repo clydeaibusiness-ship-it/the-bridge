@@ -116,7 +116,6 @@
             <div class="settings">
               <button class="settings-row" data-change-answer>Change an interview answer</button>
               <a class="settings-row" href="/subscribe">Manage subscription</a>
-              <button class="settings-row" onclick="window.location.reload()">Reload app</button>
               <a class="settings-row danger" href="/api/auth/logout">Sign out</a>
             </div>
             <div id="app-version" style="font-family:var(--font-data);font-size:0.6rem;color:#b0a898;letter-spacing:0.08em;text-align:center;padding:16px 0 4px;"></div>
@@ -335,7 +334,7 @@
     sendBtn.addEventListener('click', send);
     input.addEventListener('keydown', e => { if (e.key === 'Enter') send(); });
     prompts.querySelectorAll('.pill').forEach(p => p.addEventListener('click', () => { input.value = p.dataset.p; send(); }));
-    document.getElementById('history-btn').addEventListener('click', () => goTo(1));
+    document.getElementById('history-btn').addEventListener('click', () => window.location.reload());
 
     // ---- Progress ----
     async function loadProgress() {
