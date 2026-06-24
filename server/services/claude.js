@@ -291,7 +291,7 @@ async function commanderChat(message, gameState, sessionContext, conversationHis
     },
     {
       name: 'save_action_step',
-      description: "Call this when the member commits to a specific, concrete action they will take before your next conversation. Save it in their exact words, not your paraphrase. Do not invent action steps the member did not volunteer, and never save more than two in a single conversation. After saving, confirm to the member in your own voice.",
+      description: "Call this when the member commits to a specific, concrete action they will take before your next conversation. Save it in their exact words, not your paraphrase. Do not invent action steps the member did not volunteer, and never save more than two in a single conversation. After saving, confirm to the member in your own voice. If the action step clearly serves one of the member's named goals (from their benchmarks in context), include that benchmark_id so the step appears under the right goal in their progress view.",
       input_schema: {
         type: 'object',
         properties: {
@@ -302,6 +302,10 @@ async function commanderChat(message, gameState, sessionContext, conversationHis
           target_date: {
             type: 'string',
             description: "Optional target completion date in YYYY-MM-DD form, only if the member gave one"
+          },
+          benchmark_id: {
+            type: 'string',
+            description: "Optional UUID of the benchmark this step is working toward. Only include if you can clearly match the step to one of the member's named goals."
           }
         },
         required: ['step_text']
@@ -347,7 +351,8 @@ async function commanderChat(message, gameState, sessionContext, conversationHis
               persist.userId,
               block.input.step_text,
               persist.sessionId || null,
-              block.input.target_date || null
+              block.input.target_date || null,
+              block.input.benchmark_id || null
             );
           } catch (asErr) {
             console.error('save_action_step error:', asErr.message);
