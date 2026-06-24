@@ -161,7 +161,7 @@
     function renderStageBridge(message, onContinue) {
       let html = '<div class="iv-msg">' + esc(message || '') + '</div>';
       html += '<div><button class="iv-btn" id="iv-continue">Keep going</button>';
-      html += '<button class="iv-btn iv-btn-ghost" id="iv-stop">Talk to the Commander →</button></div>';
+      html += '<button class="iv-btn iv-btn-ghost" id="iv-stop">Talk to Earl →</button></div>';
       panel.innerHTML = html;
       document.getElementById('iv-continue').addEventListener('click', onContinue);
       document.getElementById('iv-stop').addEventListener('click', () => { window.location.href = '/dashboard'; });
@@ -195,7 +195,7 @@
         const btn = document.getElementById('iv-approve');
         btn.disabled = true; btn.textContent = 'Saving…';
         await api('/api/member/benchmark/approve', 'POST', { statements });
-        // Stage 2 done — offer Stage 3 or the Commander.
+        // Stage 2 done — offer Stage 3 or Earl.
         renderStageBridge('That is locked in. Stage 3 is the most personal stage and the most important one. Take it now, or come back to it when you are ready.',
           () => { setProgress(null); loadState(); });
       });
@@ -204,8 +204,8 @@
     function renderDone() {
       barFill.style.width = '100%';
       progressEl.textContent = 'Interview complete';
-      panel.innerHTML = '<div class="iv-msg">That is everything. The Commander now has the full picture. Go have a real conversation.</div>' +
-        '<div><a class="iv-btn" href="/dashboard" style="display:inline-block;text-decoration:none;">Talk to the Commander →</a></div>';
+      panel.innerHTML = '<div class="iv-msg">That is everything. Earl now has the full picture. Go have a real conversation.</div>' +
+        '<div><a class="iv-btn" href="/dashboard" style="display:inline-block;text-decoration:none;">Talk to Earl →</a></div>';
     }
 
     async function loadState() {

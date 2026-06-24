@@ -21,7 +21,7 @@
     .track { display: flex; width: 300%; height: 100%; transition: transform 0.32s cubic-bezier(0.4,0,0.2,1); }
     .panel { width: 33.3333%; height: 100%; display: flex; flex-direction: column; overflow: hidden; }
     .panel-scroll { flex: 1 1 auto; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 16px; }
-    /* Commander */
+    /* Earl */
     .msgs { flex: 1 1 auto; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 16px 14px; display: flex; flex-direction: column; gap: 10px; }
     .m { max-width: 82%; padding: 9px 12px; font-size: 0.875rem; line-height: 1.5; border-radius: 12px; word-wrap: break-word; }
     .m-user { align-self: flex-end; background: #0a0a0f; color: #f0ebe0; border-bottom-right-radius: 3px; }
@@ -121,7 +121,7 @@
           </div>
         </section>
 
-        <!-- CENTER: Commander -->
+        <!-- CENTER: Earl -->
         <section class="panel">
           <div class="msgs" id="msgs"></div>
           <div class="prompts" id="prompts">
@@ -131,7 +131,7 @@
           </div>
           <div class="composer">
             <div class="composer-row">
-              <input id="composer-input" type="text" placeholder="Ask the Commander&#8230;" autocomplete="off">
+              <input id="composer-input" type="text" placeholder="Ask Earl&#8230;" autocomplete="off">
               <button class="send" id="composer-send" aria-label="Send">&#8593;</button>
             </div>
           </div>
@@ -152,7 +152,7 @@
       <div class="slider-inner" id="slider">
         <div class="slider-pill" id="slider-pill"></div>
         <button data-i="0">Chart</button>
-        <button data-i="1" class="active">Commander</button>
+        <button data-i="1" class="active">Earl</button>
         <button data-i="2">Progress</button>
       </div>
     </div>
@@ -189,7 +189,7 @@
       sliderBtns.forEach(b => b.classList.toggle('active', Number(b.dataset.i) === current));
     }
     sliderBtns.forEach(b => b.addEventListener('click', () => goTo(Number(b.dataset.i))));
-    goTo(1); // start on the Commander immediately
+    goTo(1); // start on Earl immediately
 
     // Touch swipe between panels (ignored while swiping inside the message list horizontally)
     let sx = 0, sy = 0, swiping = false;
@@ -264,7 +264,7 @@
       return { ok: r.ok, status: r.status, data };
     }
 
-    // ---- Commander ----
+    // ---- Earl ----
     const msgs = document.getElementById('msgs');
     const prompts = document.getElementById('prompts');
     const input = document.getElementById('composer-input');
@@ -319,12 +319,12 @@
           addMsg(data.response, 'commander');
           loadProgress();
         } else {
-          addMsg('The Commander hit a snag on that one. Give it another try in a moment.', 'system');
+          addMsg('Earl hit a snag on that one. Give it another try in a moment.', 'system');
           input.value = text;
         }
       } catch (err) {
         loading.remove();
-        addMsg(navigator.onLine ? 'Could not reach the Commander just now. Check your connection and try again.' : 'You appear to be offline. Your message was not sent — try again once you are back.', 'system');
+        addMsg(navigator.onLine ? 'Could not reach Earl just now. Check your connection and try again.' : 'You appear to be offline. Your message was not sent — try again once you are back.', 'system');
         input.value = text;
       }
       sendBtn.disabled = false;
@@ -391,7 +391,7 @@
 
       // Periodic report
       if (data.periodicReport && data.periodicReport.letter) {
-        html += '<div class="sp-block-title">A note from the Commander</div>' +
+        html += '<div class="sp-block-title">A note from Earl</div>' +
           `<div class="pg-letter">${esc(data.periodicReport.letter)}<div class="pg-letter-date">${fmtDate(data.periodicReport.created_at)}</div></div>`;
       }
 

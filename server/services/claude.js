@@ -138,14 +138,24 @@ function getSystemPrompt(includeCommanderContext = true) {
  */
 async function callClaude(userContent, additionalContext = '') {
   const systemPrompt = getStrategyPrompt();
-  const fullSystem = additionalContext
-    ? `${systemPrompt}\n\n---\n\n${additionalContext}`
-    : systemPrompt;
+  const systemBlocks = [
+    {
+      type: 'text',
+      text: systemPrompt,
+      cache_control: { type: 'ephemeral' }
+    }
+  ];
+  if (additionalContext) {
+    systemBlocks.push({
+      type: 'text',
+      text: '---\n\n' + additionalContext
+    });
+  }
 
   const response = await client.messages.create({
     model: 'claude-sonnet-4-6',
     max_tokens: 4000,
-    system: fullSystem,
+    system: systemBlocks,
     messages: [{ role: 'user', content: userContent }]
   });
 
@@ -214,18 +224,39 @@ async function commanderChat(message, gameState, sessionContext, conversationHis
   }
 
   const systemPrompt = getSystemPrompt();
-  const fullSystem = context
-    ? `${systemPrompt}\n\n---\n\n${context}`
-    : systemPrompt;
-
   const soulPrimer = getSoulPrimer();
 
-  // Build messages array: silent user prime, soul prefill, then history, then new message.
+  // Build system prompt as array of content blocks with cache_control.
+  // Static content (strategy + case studies) is cached — Anthropic charges 90% less
+  // when the cache is warm (auto-extends on every hit within 5 min).
+  // Per-user context (intake, run history, session notes) is NOT cached — it changes.
+  const systemBlocks = [
+    {
+      type: 'text',
+      text: systemPrompt,
+      cache_control: { type: 'ephemeral' }
+    }
+  ];
+  if (context) {
+    systemBlocks.push({
+      type: 'text',
+      text: '---\n\n' + context
+    });
+  }
+
+  // Build messages array: silent user prime, soul prefill (cached), then history, then new message.
   // Anthropic API requires the first message to be role:user.
   const messages = [
     ...(soulPrimer ? [
       { role: 'user', content: '.' },
-      { role: 'assistant', content: soulPrimer }
+      {
+        role: 'assistant',
+        content: [{
+          type: 'text',
+          text: soulPrimer,
+          cache_control: { type: 'ephemeral' }
+        }]
+      }
     ] : []),
     ...(conversationHistory || []),
     { role: 'user', content: message }
@@ -288,7 +319,7 @@ async function commanderChat(message, gameState, sessionContext, conversationHis
   let response = await client.messages.create({
     model: 'claude-sonnet-4-6',
     max_tokens: 400,
-    system: fullSystem,
+    system: systemBlocks,
     messages,
     tools
   });
@@ -420,14 +451,14 @@ async function fetchCaseStudyStory(inputTags) {
  */
 async function generateSessionDebrief(conversationMessages) {
   const formatted = conversationMessages.map(m => {
-    const role = (m.role || m.message_role) === 'user' ? 'Member' : 'Commander';
+    const role = (m.role || m.message_role) === 'user' ? 'Member' : 'Earl';
     return `${role}: ${m.content || m.message_content}`;
   }).join('\n\n');
 
   const response = await client.messages.create({
     model: 'claude-haiku-4-5',
     max_tokens: 400,
-    system: 'You are quietly reflecting on a conversation between a small-business owner (Member) and their advisor (Commander). Return only a JSON object, no markdown, no backticks, no prose.',
+    system: 'You are quietly reflecting on a conversation between a small-business owner (Member) and their advisor (Earl). Return only a JSON object, no markdown, no backticks, no prose.',
     messages: [{
       role: 'user',
       content: `From this conversation, return JSON exactly in this shape:
@@ -470,7 +501,7 @@ async function generatePeriodicReport({ memberName, benchmarks = [], actionSteps
 
   const debriefLines = debriefs.slice(0, 6).map(d => `- ${d.summary}`).join('\n') || '(no session reflections yet)';
 
-  const prompt = `Write a short reflection letter to ${memberName || 'this member'} as the Commander. Three to five sentences. Name what has shifted since they started, what is still unresolved, and what you are watching for next. Speak in your own voice — direct, warm, specific to what you see below. Do not use headers, bullet points, or a signature. Do not mention ratings as numbers; speak to the movement behind them.
+  const prompt = `Write a short reflection letter to ${memberName || 'this member'} as Earl. Three to five sentences. Name what has shifted since they started, what is still unresolved, and what you are watching for next. Speak in your own voice — direct, warm, specific to what you see below. Do not use headers, bullet points, or a signature. Do not mention ratings as numbers; speak to the movement behind them.
 
 Their success statements and movement:
 ${benchLines}
@@ -623,10 +654,10 @@ ${pairs}`;
  */
 async function generateConversationSummary(messages) {
   const formatted = messages.map(m =>
-    `${m.role === 'user' ? 'Member' : 'Commander'}: ${m.content}`
+    `${m.role === 'user' ? 'Member' : 'Earl'}: ${m.content}`
   ).join('\n\n');
 
-  const prompt = `Summarize this conversation between a business owner (Member) and their strategic advisor (Commander) in exactly three sentences. Focus on: what was discussed, what was decided or recommended, and any action items. Be specific to their business.\n\nConversation:\n${formatted}`;
+  const prompt = `Summarize this conversation between a business owner (Member) and their strategic advisor (Earl) in exactly three sentences. Focus on: what was discussed, what was decided or recommended, and any action items. Be specific to their business.\n\nConversation:\n${formatted}`;
 
   return await callClaude(prompt);
 }
@@ -667,7 +698,7 @@ Return this exact JSON structure with 6 sections. Each section has a "title" and
   ]
 }`;
 
-  // Navigation Chart keeps soul in system prompt (no prefill pattern here)
+  // Navigation Chart — soul + strategy as cached system blocks
   const soulContent = getSoulPrimer();
   const strategyContent = getSystemPrompt(false); // chart gen doesn't need operational context
   const chartSystemPrompt = soulContent
@@ -680,7 +711,7 @@ Return this exact JSON structure with 6 sections. Each section has a "title" and
   const response = await client.messages.create({
     model: 'claude-sonnet-4-6',
     max_tokens: 4000,
-    system: fullSystem,
+    system: chartSystemBlocks,
     messages: [{ role: 'user', content: prompt }]
   });
 
@@ -744,7 +775,7 @@ Return this exact JSON structure with 6 sections. Each section has a "title" and
  */
 async function compressSession(conversationMessages) {
   const formatted = conversationMessages.map(m => {
-    const role = m.message_role === 'user' ? 'Member' : 'Commander';
+    const role = m.message_role === 'user' ? 'Member' : 'Earl';
     return `${role}: ${m.message_content}`;
   }).join('\n\n');
 
