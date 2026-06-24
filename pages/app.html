@@ -107,7 +107,7 @@
     .tl-tag.done { background: #e8f0e5; color: #5a7a50; }
     .tl-tag.active { background: #e8e8f0; color: #3a3a7a; }
     .tl-tag.upcoming { background: #f0ece5; color: #9a8a70; }
-    .tl-steps { margin-top: 8px; }
+    .tl-steps { margin-top: 8px; margin-left: 3px; padding-left: 14px; border-left: 2px solid #e4dccb; }
     .tl-step { display: flex; gap: 8px; align-items: flex-start; font-size: 0.8rem; color: #3a3530; padding: 5px 0; line-height: 1.4; border-bottom: 1px solid #f0ece5; }
     .tl-step:last-child { border-bottom: none; }
     .tl-step-dot { flex: 0 0 6px; width: 6px; height: 6px; border-radius: 50%; background: #c8c0b0; margin-top: 5px; }
@@ -414,28 +414,16 @@
         }
       });
 
-      // Unlinked action steps at top
-      if (generalSteps.length) {
-        html += '<div class="tl-general"><div class="tl-general-title">In progress</div>';
-        html += '<div class="tl-steps">';
-        generalSteps.forEach(s => {
-          const done = s.status !== 'active';
-          html += `<div class="tl-step${done ? ' done' : ''}"><div class="tl-step-dot"></div><span>${esc(s.step_text)}</span></div>`;
-        });
-        html += '</div></div>';
-      }
-
-      // Goals timeline
+      // Goals timeline — each goal is a node, its action steps nest underneath it
       if (benches.length) {
         html += '<div class="tl">';
         benches.forEach(b => {
           const achieved = b.current_rating != null && b.current_rating >= 7;
           const nodeClass = achieved ? 'done' : 'active';
-          const labelClass = achieved ? '' : '';
           const steps = linkedSteps[b.id] || [];
           html += `<div class="tl-item">
             <div class="tl-node ${nodeClass}"></div>
-            <div class="tl-label ${labelClass}">${esc(b.statement)}</div>
+            <div class="tl-label">${esc(b.statement)}</div>
             <span class="tl-tag ${achieved ? 'done' : 'active'}">${achieved ? 'achieved' : 'in progress'}</span>`;
           if (steps.length) {
             html += '<div class="tl-steps">';
@@ -455,6 +443,17 @@
           ${g.graduated ? '<span class="tl-tag done">complete</span>' : '<span class="tl-tag upcoming">ahead</span>'}
         </div>`;
         html += '</div>';
+      }
+
+      // Action steps not yet tied to a specific goal — shown below the timeline
+      if (generalSteps.length) {
+        html += '<div class="tl-general"><div class="tl-general-title">Other action steps</div>';
+        html += '<div class="tl-steps" style="margin-left:0;">';
+        generalSteps.forEach(s => {
+          const done = s.status !== 'active';
+          html += `<div class="tl-step${done ? ' done' : ''}"><div class="tl-step-dot"></div><span>${esc(s.step_text)}</span></div>`;
+        });
+        html += '</div></div>';
       }
 
       // Session reflections
