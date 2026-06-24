@@ -138,70 +138,75 @@ const QUESTIONS = [
     followup: { kind: 'api', instruction: 'Draw out the specific outcome of one thing they tried — what they expected versus what actually happened.' } },
 
   { n: 19, stage: 2, field: 'north_star',
-    question: 'Picture yourself about a year from now, in the best realistic position you could hope to be in as the owner of this business. Not selling it and walking away, not some far-off fantasy — the version where the business is genuinely thriving and you are running it the way you want to. What does that look like?',
+    question: 'What does your business look like in three to five years if everything goes the way you actually want it to? Not what sounds impressive. What you genuinely want for yourself.',
     check: { minWords: 25 },
-    followup: { kind: 'api', instruction: 'Pull the vision down to what would have to be true in the next several months for them to be on that path. Steer away from long-horizon exit or sale goals; keep it on the near-term thriving state.' } },
+    followup: { kind: 'api', instruction: 'Connect the long-term vision to what it would allow them to do or stop doing in their actual life. This is their distant horizon, not their near-term goal.' } },
 
-  { n: 20, stage: 2, field: 'life_success_definition',
+  { n: 20, stage: 2, field: 'graduation_target',
+    question: 'Now bring it closer. Imagine about a year from now and picture yourself in the best realistic position you could hope to be in as the owner of this business — the version where it is genuinely thriving and you are running it the way you want. With focused help cutting through to what actually moves the needle, more of that is reachable than it usually feels. What does that position look like?',
+    check: { minWords: 25 },
+    followup: { kind: 'api', instruction: 'Pull out two or three concrete, recognizable markers of that position — specific things they would be able to point to and know they had arrived. These become what we measure progress against.' } },
+
+  { n: 21, stage: 2, field: 'life_success_definition',
     question: 'What would have to be true about your daily life for that version of the business to feel like success? Not the numbers on paper. Your actual life.',
     check: { minWords: 20 },
     followup: { kind: 'api', instruction: 'Ask what a specific ordinary day looks like when the business is where they want it to be.' } },
 
   // ---------------- STAGE 3 — Full Picture ----------------
-  { n: 21, stage: 3, field: 'what_they_love',
+  { n: 22, stage: 3, field: 'what_they_love',
     question: 'What do you genuinely love about what you do? Not what you are good at, not what pays the bills. What you actually enjoy.',
     check: { minWords: 15, banned: ['helping people', 'being my own boss', 'the freedom'] },
     followup: { kind: 'string', template: 'How much of your typical week is spent actually doing that specific thing?' } },
 
-  { n: 22, stage: 3, field: 'what_drains_them',
+  { n: 23, stage: 3, field: 'what_drains_them',
     question: 'What about running this business makes you want to quit?',
     check: { minWords: 15, banned: ['nothing', 'i never feel that way'] },
     followup: { kind: 'string', template: 'You said [answer]. How often does that feeling show up? Occasionally, regularly, or more than you would like to admit?' } },
 
-  { n: 23, stage: 3, field: 'unspoken_truth',
+  { n: 24, stage: 3, field: 'unspoken_truth',
     question: 'What is the thing about your business situation right now that you have never said out loud to anyone?',
     check: { minWords: 20, banned: ['nothing', 'i am an open book', 'open book'] },
     followup: { kind: 'api', instruction: 'Gently name that this is a safe place to say the thing, and ask again with more specific framing around what they are carrying that is heavier than anyone around them knows.' } },
 
-  { n: 24, stage: 3, field: 'closing_threshold',
+  { n: 25, stage: 3, field: 'closing_threshold',
     question: 'What would have to happen for you to decide to close this business?',
     check: { minWords: 15 },
     followup: { kind: 'string', template: 'How close to that point have you come?' } },
 
-  { n: 25, stage: 3, field: 'problem_solving_style',
+  { n: 26, stage: 3, field: 'problem_solving_style',
     question: 'When a serious problem hits your business, what is your first instinct? Do you want to solve it immediately yourself, think it through before acting, talk it through with someone, or hand it to someone else?',
     check: { custom: 'depends_only' },
     followup: { kind: 'string', template: 'Does that tendency usually serve you well or get you into trouble?' } },
 
-  { n: 26, stage: 3, field: 'thinking_style',
+  { n: 27, stage: 3, field: 'thinking_style',
     question: 'Are you more energized by big picture thinking and new ideas or by executing and getting things done well?',
     check: { custom: 'both_only' },
     followup: { kind: 'string', template: 'Which one do you spend more of your actual working time doing, even if it is not the one you prefer?' } },
 
-  { n: 27, stage: 3, field: 'energy_type',
+  { n: 28, stage: 3, field: 'energy_type',
     question: 'After a full day of interacting with customers, employees, or people in general, do you typically come away energized or drained?',
     check: { custom: 'depends_only' },
     followup: { kind: 'string', template: 'How has that shaped the way you have set up your business or your typical work day?' } },
 
-  { n: 28, stage: 3, field: 'support_network',
+  { n: 29, stage: 3, field: 'support_network',
     question: 'Who in your life, if anyone, knows the full reality of what your business is going through right now? Not the version you share with most people. The actual truth.',
     check: { minWords: 15, banned: ['everyone knows', 'nobody'] },
     followup: { kind: 'string', template: 'How often do you actually talk to them about what is really going on?' } },
 
-  { n: 29, stage: 3, field: 'peer_network',
+  { n: 30, stage: 3, field: 'peer_network',
     question: 'Do you have people in your life who have owned their own business, people who would actually understand what you are dealing with without you having to explain it?',
     check: { minWords: 4 },
     followup: { kind: 'string', template: 'When did you last talk to one of them about what you are actually going through right now?' } },
 
-  { n: 30, stage: 3, field: 'additional_context',
+  { n: 31, stage: 3, field: 'additional_context',
     question: 'Is there anything else about your situation, your business, the context of your life, or what you are carrying right now, that you think would help Earl understand where you actually are?',
     check: null, followup: { kind: 'none' } }
 ];
 
 const STAGE_BOUNDS = {
   1: { first: 1, last: 8 },
-  2: { first: 9, last: 20 },
-  3: { first: 21, last: 30 }
+  2: { first: 9, last: 21 },
+  3: { first: 22, last: 31 }
 };
 
 function getQuestionByField(field) {

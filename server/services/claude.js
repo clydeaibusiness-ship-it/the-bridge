@@ -570,9 +570,9 @@ async function generateBenchmark(answers) {
 
   const prompt = `A member has completed enough of their intake to set their benchmark. Using their own words, write 3 to 5 success statements that capture what they are working toward. Each statement must be drawn directly from what they said — not reworded into abstractions. If they said "take a Saturday off without everything falling apart," that is the statement, not "operational independence."
 
-CRITICAL SCOPE: These statements are the member's goals for the next six months of working together — the things that, when reached, mean their business is in a genuinely thriving spot as THEY define it. Every statement must be something that can meaningfully move within roughly six months to a year.
+CRITICAL SCOPE: These statements are the member's goals for the next six months of working together — the things that, when reached, mean their business is in a genuinely thriving spot as THEY define it. Draw them primarily from the member's near-term target below. Every statement must be something that can meaningfully move within roughly six months to a year.
 
-Do NOT create statements for long-horizon goals that cannot move in that window: selling the business, exiting, retiring, passing it to family, or anything five years out. If the member mentioned a goal like that, do not turn it into a statement. Instead, capture what the business would need to look like in the near term to be thriving and sustainable on its own terms.
+The member's long-term vision (three-to-five years) is provided only as background — it tells you where they ultimately want to go. Do NOT turn the long-term vision into goal statements. Anything that cannot move in the six-month window — selling the business, exiting, retiring, passing it to family — is context, not a goal. Keep every statement on what thriving looks like in the near term.
 
 Give each statement a starting rating from 1 to 10 reflecting where they are NOW (these should be low — they reflect the current gap, not the goal).
 
@@ -588,9 +588,11 @@ Return ONLY JSON, no markdown:
   }
 }
 
+PRIMARY GOAL SOURCE — their near-term target (best realistic position ~a year out): ${get('graduation_target')}
 What they want from working together: ${get('desired_outcome')}
-Their near-term vision of a thriving business (about a year out): ${get('north_star')}
 What their actual life would look like in success: ${get('life_success_definition')}
+
+BACKGROUND ONLY — their long-term three-to-five year vision (do not make goals from this): ${get('north_star')}
 
 Operational baseline:
 - Annual revenue: ${get('annual_revenue')}
