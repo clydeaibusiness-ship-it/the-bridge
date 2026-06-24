@@ -169,6 +169,12 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+// Version
+app.get('/api/version', (req, res) => {
+  const sha = process.env.RAILWAY_GIT_COMMIT_SHA || 'local';
+  res.json({ version: sha.slice(0, 7) });
+});
+
 // 404
 app.use((req, res) => {
   res.status(404).sendFile(path.join(__dirname, '../pages/index.html'));

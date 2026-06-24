@@ -116,8 +116,10 @@
             <div class="settings">
               <button class="settings-row" data-change-answer>Change an interview answer</button>
               <a class="settings-row" href="/subscribe">Manage subscription</a>
+              <button class="settings-row" onclick="window.location.reload()">Reload app</button>
               <a class="settings-row danger" href="/api/auth/logout">Sign out</a>
             </div>
+            <div id="app-version" style="font-family:var(--font-data);font-size:0.6rem;color:#b0a898;letter-spacing:0.08em;text-align:center;padding:16px 0 4px;"></div>
           </div>
         </section>
 
@@ -460,6 +462,10 @@
       loadHistory();
       loadProgress();
       loadChart();
+      fetch('/api/version').then(r => r.json()).then(d => {
+        const el = document.getElementById('app-version');
+        if (el) el.textContent = 'v' + d.version;
+      }).catch(() => {});
     })();
   </script>
   <script src="/js/checkin.js"></script>
