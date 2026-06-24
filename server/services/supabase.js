@@ -294,8 +294,12 @@ async function getCommanderMessagesForApi(userId, limit = 10, soulVersion = null
   if (soulVersion) {
     filtered = filtered.filter(m => {
       if (m.message_role === 'user') return true;
-      // Assistant messages: keep if same version or no version tagged yet
-      return !m.soul_version || m.soul_version === soulVersion;
+      // Assistant messages: keep ONLY if generated under the CURRENT soul.
+      // Legacy/old-persona messages (null or mismatched version) are excluded
+      // so the Commander never imitates a prior system's style. Letting null
+      // through previously caused old-Bridge responses to leak in and the
+      // model to mimic that verbose, non-persona voice.
+      return m.soul_version === soulVersion;
     });
   }
 
