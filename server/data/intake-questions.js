@@ -138,9 +138,9 @@ const QUESTIONS = [
     followup: { kind: 'api', instruction: 'Draw out the specific outcome of one thing they tried — what they expected versus what actually happened.' } },
 
   { n: 19, stage: 2, field: 'north_star',
-    question: 'What does your business look like in three to five years if everything goes the way you actually want it to? Not what sounds impressive. What you genuinely want for yourself.',
+    question: 'Picture yourself about a year from now, in the best realistic position you could hope to be in as the owner of this business. Not selling it and walking away, not some far-off fantasy — the version where the business is genuinely thriving and you are running it the way you want to. What does that look like?',
     check: { minWords: 25 },
-    followup: { kind: 'api', instruction: 'Connect the business vision to what it would allow them to do or stop doing in their actual life.' } },
+    followup: { kind: 'api', instruction: 'Pull the vision down to what would have to be true in the next several months for them to be on that path. Steer away from long-horizon exit or sale goals; keep it on the near-term thriving state.' } },
 
   { n: 20, stage: 2, field: 'life_success_definition',
     question: 'What would have to be true about your daily life for that version of the business to feel like success? Not the numbers on paper. Your actual life.',

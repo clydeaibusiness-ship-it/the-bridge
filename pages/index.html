@@ -459,7 +459,7 @@
         const data = await resp.json();
         if (data.id) {
           const link = document.getElementById('nav-auth-link');
-          if (link) { link.textContent = 'Sign Out'; link.href = '/api/auth/logout'; }
+          if (link) { link.textContent = 'Go to Earl'; link.href = '/dashboard'; }
         }
       }
     } catch(e) {}
