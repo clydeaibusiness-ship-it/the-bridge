@@ -139,10 +139,9 @@
     .tl-add-actions { display: flex; gap: 8px; margin-top: 8px; }
     .tl-add-save { font-family: var(--font-data); font-size: 0.55rem; letter-spacing: 0.08em; text-transform: uppercase; background: #0a0a0f; color: #f0ebe0; border: none; border-radius: 6px; padding: 7px 14px; cursor: pointer; }
     .tl-add-cancel { font-family: var(--font-data); font-size: 0.55rem; letter-spacing: 0.08em; text-transform: uppercase; background: none; color: #7a7570; border: 1px solid #c8c0b0; border-radius: 6px; padding: 7px 14px; cursor: pointer; }
-    .tl-step-icons { display: flex; gap: 6px; align-items: center; flex-shrink: 0; margin-left: auto; padding-left: 8px; opacity: 0; transition: opacity 0.15s; }
-    .tl-step:hover .tl-step-icons, .tl-step:active .tl-step-icons { opacity: 1; }
-    .tl-step-icon { background: none; border: none; cursor: pointer; color: #9a948a; padding: 2px; display: flex; align-items: center; border-radius: 3px; }
-    .tl-step-icon:hover { color: #3a3530; }
+    .tl-step-icons { display: flex; gap: 2px; align-items: center; flex-shrink: 0; margin-left: auto; padding-left: 8px; }
+    .tl-step-icon { background: none; border: none; cursor: pointer; color: #9a948a; padding: 7px; display: flex; align-items: center; border-radius: 6px; -webkit-tap-highlight-color: transparent; }
+    .tl-step-icon:hover, .tl-step-icon:active { color: #3a3530; background: #e8e2d6; }
     .tl-step-edit-form { display: none; padding: 8px 0 8px 14px; }
     .tl-step-edit-form.open { display: block; }
     /* ---- Dark mode ---- */
@@ -498,8 +497,8 @@
     }
 
     // ---- Step helpers ----
-    const PENCIL = `<svg width="11" height="11" viewBox="0 0 11 11" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 1L10 3L3.5 9.5H1.5V7.5L8 1Z"/></svg>`;
-    const CAL_ICON = `<svg width="11" height="11" viewBox="0 0 11 11" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="2" width="9" height="8" rx="1"/><line x1="1" y1="5" x2="10" y2="5"/><line x1="3.5" y1="1" x2="3.5" y2="3"/><line x1="7.5" y1="1" x2="7.5" y2="3"/></svg>`;
+    const PENCIL = `<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 2L14 5L5 14H2V11L11 2Z"/></svg>`;
+    const CAL_ICON = `<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1.5" y="3" width="13" height="11" rx="1.5"/><line x1="1.5" y1="7" x2="14.5" y2="7"/><line x1="5" y1="1.5" x2="5" y2="4.5"/><line x1="11" y1="1.5" x2="11" y2="4.5"/></svg>`;
 
     function renderStep(s) {
       const done = s.status !== 'active';
@@ -566,12 +565,13 @@
         .replace(/\s{2,}/g, ' ').replace(/[,\s]+$/, '').trim();
       if (!title) title = text;
 
-      const fmt = d => d.toISOString().replace(/[-:.]/g, '').slice(0,15);
-      const fmtDay = d => d.toISOString().slice(0,10).replace(/-/g,'');
+      const pad = n => String(n).padStart(2, '0');
+      const fmtLocal = d => `${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}T${pad(d.getHours())}${pad(d.getMinutes())}00`;
+      const fmtDay = d => `${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}`;
       const end = new Date(start.getTime() + 3600000);
 
       const dates = hasTime
-        ? `${fmt(start)}/${fmt(end)}`
+        ? `${fmtLocal(start)}/${fmtLocal(end)}`
         : `${fmtDay(start)}/${fmtDay(start)}`;
 
       return `https://calendar.google.com/calendar/r/eventedit?text=${encodeURIComponent(title)}&dates=${dates}`;
