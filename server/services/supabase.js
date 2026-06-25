@@ -687,6 +687,16 @@ async function getActionStep(actionStepId) {
  * Update an action step's status. Sets completed_at when completed.
  * Optionally records the check-in follow-up answer.
  */
+async function updateActionStepText(actionStepId, userId, stepText) {
+  const db = getClient();
+  if (!db) return null;
+  const { data, error } = await db
+    .from('action_steps').update({ step_text: stepText })
+    .eq('id', actionStepId).eq('user_id', userId).select().single();
+  if (error) { console.error('updateActionStepText error:', error.message); return null; }
+  return data;
+}
+
 async function updateActionStepStatus(actionStepId, status, followUpAnswer = null) {
   const db = getClient();
   if (!db) return null;
@@ -1126,7 +1136,7 @@ module.exports = {
   getCommanderSessionMessages, saveSessionNote, getSessionNotes, sessionNoteExists,
   saveActionStep, upsertSessionDebrief,
   ensureMemberState, updateMemberState,
-  getActionSteps, getActionStep, updateActionStepStatus, updateActionStepFollowUp,
+  getActionSteps, getActionStep, updateActionStepText, updateActionStepStatus, updateActionStepFollowUp,
   getBenchmarks, addBenchmarkRating, getBenchmarkRatingHistory,
   createCheckIn, getActiveCheckIn, getLastAnsweredCheckIn, answerCheckIn, snoozeCheckIn,
   getSessionDebriefs,

@@ -1091,6 +1091,25 @@ router.get('/member/action-steps', async (req, res) => {
 });
 
 /**
+ * PATCH /api/member/action-steps/:id
+ * Member edits the text of one of their action steps.
+ */
+router.patch('/member/action-steps/:id', async (req, res) => {
+  if (!req.dbUser) return res.status(401).json({ error: 'Authentication required' });
+  try {
+    const { step_text } = req.body;
+    if (!step_text || !String(step_text).trim()) return res.status(400).json({ error: 'step_text required' });
+    const { updateActionStepText } = require('../services/supabase');
+    const step = await updateActionStepText(req.params.id, req.dbUser.id, String(step_text).trim());
+    if (!step) return res.status(404).json({ error: 'Step not found or not yours' });
+    res.json({ ok: true, step });
+  } catch (e) {
+    console.error('Update action step error:', e.message);
+    res.status(500).json({ error: 'Could not update action step' });
+  }
+});
+
+/**
  * POST /api/member/action-steps
  * Member manually creates an action step, optionally tied to a benchmark.
  */
