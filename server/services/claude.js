@@ -292,7 +292,7 @@ async function commanderChat(message, gameState, sessionContext, conversationHis
     },
     {
       name: 'save_action_step',
-      description: "Call this when the member commits to a specific, concrete action they will take before your next conversation. Save it in their exact words, not your paraphrase. Do not invent action steps the member did not volunteer, and never save more than two in a single conversation. After saving, confirm to the member in your own voice.",
+      description: "Call this when the member commits to a specific, concrete action they will take before your next conversation. Save it in their exact words, not your paraphrase. Do not invent action steps the member did not volunteer, and never save more than two in a single conversation. After saving, confirm to the member in your own voice. If this step clearly serves one of their named goals, include the exact benchmark_id from your context — copy it character for character, do not paraphrase or invent it.",
       input_schema: {
         type: 'object',
         properties: {
@@ -303,6 +303,10 @@ async function commanderChat(message, gameState, sessionContext, conversationHis
           target_date: {
             type: 'string',
             description: "Optional target completion date in YYYY-MM-DD form, only if the member gave one"
+          },
+          benchmark_id: {
+            type: 'string',
+            description: "The benchmark_id from your context for the goal this step serves. Copy it exactly. Only include if this step clearly belongs to one of their named goals."
           }
         },
         required: ['step_text']
@@ -349,7 +353,7 @@ async function commanderChat(message, gameState, sessionContext, conversationHis
               block.input.step_text,
               persist.sessionId || null,
               block.input.target_date || null,
-              null
+              block.input.benchmark_id || null
             );
           } catch (asErr) {
             console.error('save_action_step error:', asErr.message);
