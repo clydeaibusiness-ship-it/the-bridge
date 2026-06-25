@@ -368,6 +368,9 @@
       addMsg(text, 'user');
       sendBtn.disabled = true;
 
+      // Capture current panel so DOM changes after response don't confuse mobile layout
+      const panelAtSend = current;
+
       const loading = document.createElement('div');
       loading.className = 'm m-commander'; loading.textContent = 'Thinking…'; loading.style.opacity = '0.5';
       msgs.appendChild(loading); msgs.scrollTop = msgs.scrollHeight;
@@ -380,6 +383,9 @@
         if (ok && data && data.response) {
           addMsg(data.response, 'commander');
           loadProgress();
+          // Re-assert whichever panel the user is on — DOM changes can desync
+          // the mobile layout if the user switched panels while Earl was responding
+          if (current !== panelAtSend) goTo(current);
         } else {
           addMsg('Earl hit a snag on that one. Give it another try in a moment.', 'system');
           input.value = text;
@@ -395,7 +401,10 @@
     sendBtn.addEventListener('click', send);
     input.addEventListener('keydown', e => { if (e.key === 'Enter') send(); });
     prompts.querySelectorAll('.pill').forEach(p => p.addEventListener('click', () => { input.value = p.dataset.p; send(); }));
-    document.getElementById('history-btn').addEventListener('click', () => window.location.reload());
+    document.getElementById('history-btn').addEventListener('click', () => {
+      sessionStorage.setItem('earlPanel', current);
+      window.location.reload();
+    });
 
     // ---- Interview warning banners ----
     function showBanner(stages) {
@@ -624,7 +633,9 @@
       } catch (e) {}
 
       showBanner(stages);
-      goTo(1);
+      const savedPanel = parseInt(sessionStorage.getItem('earlPanel') || '1', 10);
+      sessionStorage.removeItem('earlPanel');
+      goTo(isNaN(savedPanel) ? 1 : savedPanel);
       loadHistory();
       loadProgress();
       loadChart();
