@@ -27,6 +27,9 @@
     .m-user { align-self: flex-end; background: #0a0a0f; color: #f0ebe0; border-bottom-right-radius: 3px; }
     .m-commander { align-self: flex-start; background: #ece7dc; color: #2a2520; border-bottom-left-radius: 3px; }
     .m-system { align-self: center; color: #9a7a4a; font-style: italic; font-size: 0.8125rem; text-align: center; }
+    .m-compress { align-self: stretch; display: flex; align-items: center; gap: 8px; padding: 2px 0; }
+    .m-compress::before, .m-compress::after { content: ''; flex: 1; height: 1px; background: #e0d8c8; }
+    .m-compress span { font-family: var(--font-data); font-size: 0.5rem; letter-spacing: 0.1em; text-transform: uppercase; color: #b0a898; white-space: nowrap; }
     .prompts { display: flex; flex-direction: column; gap: 8px; padding: 4px 14px 0; }
     .pill { text-align: left; font-family: var(--font-ui); font-size: 0.8125rem; color: #3a3530; background: #ece7dc; border: 1px solid #d8d0c0; border-radius: 10px; padding: 10px 12px; cursor: pointer; }
     .composer { flex: 0 0 auto; padding: 10px 12px; border-top: 1px solid #d8d0c0; }
@@ -333,7 +336,16 @@
       if (ok && data) {
         if (data.summary) addMsg('Previous session summary: ' + data.summary, 'system');
         if (data.messages && data.messages.length) {
-          data.messages.forEach(m => addMsg(m.content, m.role === 'user' ? 'user' : 'commander'));
+          data.messages.forEach(m => {
+            if (m.role === 'system_note') {
+              const div = document.createElement('div');
+              div.className = 'm-compress';
+              div.innerHTML = '<span>Earlier context summarized</span>';
+              msgs.appendChild(div);
+            } else {
+              addMsg(m.content, m.role === 'user' ? 'user' : 'commander');
+            }
+          });
           prompts.style.display = 'none';
         }
         // Quiet pre-conversation note (cleared on the next send).
