@@ -398,6 +398,9 @@
       sendBtn.disabled = false;
       input.focus();
     }
+    // Re-assert panel position when mobile keyboard opens/closes (viewport resize)
+    window.visualViewport && window.visualViewport.addEventListener('resize', () => goTo(current));
+
     sendBtn.addEventListener('click', send);
     input.addEventListener('keydown', e => { if (e.key === 'Enter') send(); });
     prompts.querySelectorAll('.pill').forEach(p => p.addEventListener('click', () => { input.value = p.dataset.p; send(); }));
