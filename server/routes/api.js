@@ -90,8 +90,9 @@ async function buildCoachingContext(userId) {
     ctx += '\nWHAT THEY ARE WORKING TOWARD (your private map — do not quote these ratings to them unprompted):\n';
     for (const b of benches) {
       const r = b.current_rating ?? b.starting_rating;
-      ctx += `- "${b.statement}"${r != null ? ` (now ${r}/10)` : ''}\n`;
+      ctx += `- [benchmark_id: ${b.id}] "${b.statement}"${r != null ? ` (now ${r}/10)` : ''}\n`;
     }
+    ctx += 'Use the benchmark_id values above when saving action steps that serve a specific goal.\n';
   }
 
   if (state && state.hidden_metrics && typeof state.hidden_metrics === 'object') {

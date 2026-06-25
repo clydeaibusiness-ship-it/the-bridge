@@ -468,6 +468,7 @@
         }
       });
 
+
       // Goals timeline — each goal is a node, its action steps nest underneath it
       if (benches.length) {
         html += '<div class="tl">';
@@ -508,16 +509,6 @@
         html += '</div>';
       }
 
-      // Action steps not yet tied to a specific goal — shown below the timeline
-      if (generalSteps.length) {
-        html += '<div class="tl-general"><div class="tl-general-title">Other action steps</div>';
-        html += '<div class="tl-steps" style="margin-left:0;">';
-        generalSteps.forEach(s => {
-          const done = s.status !== 'active';
-          html += `<div class="tl-step${done ? ' done' : ''}"><div class="tl-step-dot"></div><span>${esc(s.step_text)}</span></div>`;
-        });
-        html += '</div></div>';
-      }
 
       // Session reflections
       const refl = data.reflections || [];
