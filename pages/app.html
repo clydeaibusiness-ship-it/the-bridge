@@ -139,6 +139,12 @@
     .tl-add-actions { display: flex; gap: 8px; margin-top: 8px; }
     .tl-add-save { font-family: var(--font-data); font-size: 0.55rem; letter-spacing: 0.08em; text-transform: uppercase; background: #0a0a0f; color: #f0ebe0; border: none; border-radius: 6px; padding: 7px 14px; cursor: pointer; }
     .tl-add-cancel { font-family: var(--font-data); font-size: 0.55rem; letter-spacing: 0.08em; text-transform: uppercase; background: none; color: #7a7570; border: 1px solid #c8c0b0; border-radius: 6px; padding: 7px 14px; cursor: pointer; }
+    .tl-step-icons { display: flex; gap: 6px; align-items: center; flex-shrink: 0; margin-left: auto; padding-left: 8px; opacity: 0; transition: opacity 0.15s; }
+    .tl-step:hover .tl-step-icons, .tl-step:active .tl-step-icons { opacity: 1; }
+    .tl-step-icon { background: none; border: none; cursor: pointer; color: #9a948a; padding: 2px; display: flex; align-items: center; border-radius: 3px; }
+    .tl-step-icon:hover { color: #3a3530; }
+    .tl-step-edit-form { display: none; padding: 8px 0 8px 14px; }
+    .tl-step-edit-form.open { display: block; }
   </style>
   <!-- Microsoft Clarity -->
   <script type="text/javascript">
@@ -423,6 +429,86 @@
       el.querySelector('.iv-banner-dismiss').addEventListener('click', () => { el.style.display = 'none'; });
     }
 
+    // ---- Step helpers ----
+    const PENCIL = `<svg width="11" height="11" viewBox="0 0 11 11" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 1L10 3L3.5 9.5H1.5V7.5L8 1Z"/></svg>`;
+    const CAL_ICON = `<svg width="11" height="11" viewBox="0 0 11 11" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="2" width="9" height="8" rx="1"/><line x1="1" y1="5" x2="10" y2="5"/><line x1="3.5" y1="1" x2="3.5" y2="3"/><line x1="7.5" y1="1" x2="7.5" y2="3"/></svg>`;
+
+    function renderStep(s) {
+      const done = s.status !== 'active';
+      const sid = esc(s.id || '');
+      const txt = esc(s.step_text || '');
+      const td = esc(s.target_date || '');
+      return `<div class="tl-step${done ? ' done' : ''}" data-sid="${sid}" data-text="${txt}" data-date="${td}">
+        <div class="tl-step-dot"></div>
+        <span class="tl-step-text">${txt}</span>
+        <div class="tl-step-icons">
+          <button class="tl-step-icon step-edit-btn" title="Edit">${PENCIL}</button>
+          <button class="tl-step-icon step-cal-btn" title="Add to calendar">${CAL_ICON}</button>
+        </div>
+      </div>
+      <div class="tl-step-edit-form" id="ef-${sid}">
+        <textarea class="tl-add-input" style="min-height:48px;">${txt}</textarea>
+        <div class="tl-add-actions">
+          <button class="tl-add-save step-edit-save" data-sid="${sid}">Save</button>
+          <button class="tl-add-cancel step-edit-cancel" data-sid="${sid}">Cancel</button>
+        </div>
+      </div>`;
+    }
+
+    function buildCalendarUrl(text, targetDate) {
+      let title = text;
+      let start = targetDate ? new Date(targetDate) : new Date();
+      if (!targetDate) start.setDate(start.getDate() + 1);
+      start.setHours(0, 0, 0, 0);
+      let hasTime = false;
+
+      // Parse time: "4:00 p.m.", "4:00pm", "4pm", "16:00"
+      const timeRx = /\b(\d{1,2})(?::(\d{2}))?\s*(a\.?\s*m\.?|p\.?\s*m\.?)/i;
+      const m = text.match(timeRx);
+      if (m) {
+        let h = parseInt(m[1]), mn = parseInt(m[2] || '0');
+        const per = m[3].replace(/[\s.]/g, '').toLowerCase();
+        if (per === 'pm' && h < 12) h += 12;
+        if (per === 'am' && h === 12) h = 0;
+        start.setHours(h, mn, 0, 0);
+        hasTime = true;
+      }
+
+      // Parse relative date words
+      if (/\btomorrow\b/i.test(text)) { const d = new Date(); d.setDate(d.getDate()+1); start.setFullYear(d.getFullYear(), d.getMonth(), d.getDate()); }
+      else if (/\btoday\b/i.test(text)) { const d = new Date(); start.setFullYear(d.getFullYear(), d.getMonth(), d.getDate()); }
+
+      // Named weekdays
+      const days = ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'];
+      const dm = text.toLowerCase().match(/\b(monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b/);
+      if (dm) {
+        const target = days.indexOf(dm[1]);
+        const now = new Date();
+        let diff = target - now.getDay();
+        if (diff <= 0) diff += 7;
+        const nd = new Date(now); nd.setDate(nd.getDate() + diff);
+        start.setFullYear(nd.getFullYear(), nd.getMonth(), nd.getDate());
+      }
+
+      // Clean time/date phrases from title
+      title = title
+        .replace(/\bat\s+(?:our\s+)?(\d{1,2})(?::\d{2})?\s*(?:a\.?\s*m\.?|p\.?\s*m\.?)(?:\s+meeting)?/ig, '')
+        .replace(/\btomorrow\b/ig, '').replace(/\btoday\b/ig, '')
+        .replace(/\b(monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b/ig, '')
+        .replace(/\s{2,}/g, ' ').replace(/[,\s]+$/, '').trim();
+      if (!title) title = text;
+
+      const fmt = d => d.toISOString().replace(/[-:.]/g, '').slice(0,15);
+      const fmtDay = d => d.toISOString().slice(0,10).replace(/-/g,'');
+      const end = new Date(start.getTime() + 3600000);
+
+      const dates = hasTime
+        ? `${fmt(start)}/${fmt(end)}`
+        : `${fmtDay(start)}/${fmtDay(start)}`;
+
+      return `https://calendar.google.com/calendar/r/eventedit?text=${encodeURIComponent(title)}&dates=${dates}`;
+    }
+
     // ---- Progress ----
     async function loadProgress() {
       const { data } = await api('/api/member/progress');
@@ -482,10 +568,7 @@
             <span class="tl-tag ${achieved ? 'done' : 'active'}">${achieved ? 'achieved' : 'in progress'}</span>`;
           if (steps.length) {
             html += '<div class="tl-steps">';
-            steps.forEach(s => {
-              const done = s.status !== 'active';
-              html += `<div class="tl-step${done ? ' done' : ''}"><div class="tl-step-dot"></div><span>${esc(s.step_text)}</span></div>`;
-            });
+            steps.forEach(s => { html += renderStep(s); });
             html += '</div>';
           }
           html += `<button class="tl-add-btn" data-bid="${esc(b.id)}">+ Add action step</button>
@@ -558,16 +641,57 @@
               stepsDiv.className = 'tl-steps';
               form.closest('.tl-item').querySelector('.tl-label').after(stepsDiv);
             }
-            const row = document.createElement('div');
-            row.className = 'tl-step';
-            row.innerHTML = `<div class="tl-step-dot"></div><span>${esc(data.step.step_text)}</span>`;
-            stepsDiv.appendChild(row);
+            stepsDiv.insertAdjacentHTML('beforeend', renderStep(data.step));
             form.classList.remove('open');
             form.querySelector('.tl-add-input').value = '';
             body.querySelector(`.tl-add-btn[data-bid="${bid}"]`).style.display = '';
           } else {
             saveBtn.disabled = false; saveBtn.textContent = 'Save';
           }
+          return;
+        }
+
+        // Edit step: open
+        const editBtn = e.target.closest('.step-edit-btn');
+        if (editBtn) {
+          const step = editBtn.closest('.tl-step');
+          const sid = step.dataset.sid;
+          const form = document.getElementById('ef-' + sid);
+          form.querySelector('textarea').value = step.dataset.text;
+          form.classList.add('open');
+          form.querySelector('textarea').focus();
+          return;
+        }
+        // Edit step: cancel
+        const editCancel = e.target.closest('.step-edit-cancel');
+        if (editCancel) {
+          document.getElementById('ef-' + editCancel.dataset.sid).classList.remove('open');
+          return;
+        }
+        // Edit step: save
+        const editSave = e.target.closest('.step-edit-save');
+        if (editSave) {
+          const sid = editSave.dataset.sid;
+          const form = document.getElementById('ef-' + sid);
+          const text = form.querySelector('textarea').value.trim();
+          if (!text) { form.querySelector('textarea').focus(); return; }
+          editSave.disabled = true; editSave.textContent = 'Saving...';
+          const { ok, data: d } = await api('/api/member/action-steps/' + sid, 'PATCH', { step_text: text });
+          if (ok && d && d.step) {
+            const stepEl = body.querySelector(`.tl-step[data-sid="${sid}"]`);
+            stepEl.querySelector('.tl-step-text').textContent = text;
+            stepEl.dataset.text = text;
+            form.classList.remove('open');
+          }
+          editSave.disabled = false; editSave.textContent = 'Save';
+          return;
+        }
+        // Calendar
+        const calBtn = e.target.closest('.step-cal-btn');
+        if (calBtn) {
+          const step = calBtn.closest('.tl-step');
+          const url = buildCalendarUrl(step.dataset.text, step.dataset.date);
+          window.open(url, '_blank');
           return;
         }
       });
