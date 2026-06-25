@@ -102,11 +102,11 @@
       if (!p) return;
       const a = p.answered;
       document.getElementById('iv-s1-fill').style.width = Math.round(Math.min(a, 8) / 8 * 100) + '%';
-      document.getElementById('iv-s2-fill').style.width = Math.round(Math.max(0, Math.min(a - 8, 12)) / 12 * 100) + '%';
-      document.getElementById('iv-s3-fill').style.width = Math.round(Math.max(0, Math.min(a - 20, 10)) / 10 * 100) + '%';
+      document.getElementById('iv-s2-fill').style.width = Math.round(Math.max(0, Math.min(a - 8, 13)) / 13 * 100) + '%';
+      document.getElementById('iv-s3-fill').style.width = Math.round(Math.max(0, Math.min(a - 21, 10)) / 10 * 100) + '%';
       if (a >= 8)  s1El.classList.add('complete');
-      if (a >= 20) s2El.classList.add('complete');
-      if (a >= 30) s3El.classList.add('complete');
+      if (a >= 21) s2El.classList.add('complete');
+      if (a >= 31) s3El.classList.add('complete');
     }
 
     // Signal the dashboard that the member has cleared the gate (after Stage 1).
@@ -123,7 +123,7 @@
     function renderQuestion(q, framing) {
       let html = '';
       if (framing) html += '<div class="iv-framing">' + esc(framing) + '</div>';
-      html += '<div class="iv-q-kicker">' + (q.n <= 8 ? 'Stage 1 · Quick Start' : q.n <= 20 ? 'Stage 2 · Operational Reality' : 'Stage 3 · Full Picture') + '</div>';
+      html += '<div class="iv-q-kicker">' + (q.n <= 8 ? 'Stage 1 · Quick Start' : q.n <= 21 ? 'Stage 2 · Operational Reality' : 'Stage 3 · Full Picture') + '</div>';
       html += '<div class="iv-q">' + esc(q.text) + '</div>';
       html += '<textarea class="iv-input" id="iv-answer" autofocus></textarea>';
       html += '<div><button class="iv-btn" id="iv-submit">Continue</button></div>';
@@ -163,7 +163,7 @@
       // certificate when finished.
       if (ROUND === 2) {
         if (data.done) { window.location.href = '/certificate'; return; }
-        setProgress({ answered: data.question.n - 1, total: 30 });
+        setProgress({ answered: data.question.n - 1, total: 31 });
         renderQuestion(data.question, data.framing);
         return;
       }
@@ -180,7 +180,7 @@
         return;
       }
       if (data.done) { renderDone(); return; }
-      setProgress({ answered: data.question.n - 1, total: 30 });
+      setProgress({ answered: data.question.n - 1, total: 31 });
       renderQuestion(data.question, data.framing);
     }
 

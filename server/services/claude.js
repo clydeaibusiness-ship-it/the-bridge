@@ -291,7 +291,7 @@ async function commanderChat(message, gameState, sessionContext, conversationHis
     },
     {
       name: 'save_action_step',
-      description: "Call this when the member commits to a specific, concrete action they will take before your next conversation. Save it in their exact words, not your paraphrase. Do not invent action steps the member did not volunteer, and never save more than two in a single conversation. After saving, confirm to the member in your own voice.",
+      description: "Call this when the member commits to a specific, concrete action they will take before your next conversation. Save it in their exact words, not your paraphrase. Do not invent action steps the member did not volunteer, and never save more than two in a single conversation. After saving, confirm to the member in your own voice. If the action step clearly serves one of the member's named goals (from their benchmarks in context), include that benchmark_id so the step appears under the right goal in their progress view.",
       input_schema: {
         type: 'object',
         properties: {
@@ -302,6 +302,10 @@ async function commanderChat(message, gameState, sessionContext, conversationHis
           target_date: {
             type: 'string',
             description: "Optional target completion date in YYYY-MM-DD form, only if the member gave one"
+          },
+          benchmark_id: {
+            type: 'string',
+            description: "Optional UUID of the benchmark this step is working toward. Only include if you can clearly match the step to one of the member's named goals."
           }
         },
         required: ['step_text']
@@ -347,7 +351,8 @@ async function commanderChat(message, gameState, sessionContext, conversationHis
               persist.userId,
               block.input.step_text,
               persist.sessionId || null,
-              block.input.target_date || null
+              block.input.target_date || null,
+              block.input.benchmark_id || null
             );
           } catch (asErr) {
             console.error('save_action_step error:', asErr.message);
@@ -565,6 +570,10 @@ async function generateBenchmark(answers) {
 
   const prompt = `A member has completed enough of their intake to set their benchmark. Using their own words, write 3 to 5 success statements that capture what they are working toward. Each statement must be drawn directly from what they said — not reworded into abstractions. If they said "take a Saturday off without everything falling apart," that is the statement, not "operational independence."
 
+CRITICAL SCOPE: These statements are the member's goals for the next six months of working together — the things that, when reached, mean their business is in a genuinely thriving spot as THEY define it. Draw them primarily from the member's near-term target below. Every statement must be something that can meaningfully move within roughly six months to a year.
+
+The member's long-term vision (three-to-five years) is provided only as background — it tells you where they ultimately want to go. Do NOT turn the long-term vision into goal statements. Anything that cannot move in the six-month window — selling the business, exiting, retiring, passing it to family — is context, not a goal. Keep every statement on what thriving looks like in the near term.
+
 Give each statement a starting rating from 1 to 10 reflecting where they are NOW (these should be low — they reflect the current gap, not the goal).
 
 Also return a hidden_metrics object summarizing their operational baseline for internal use.
@@ -579,9 +588,11 @@ Return ONLY JSON, no markdown:
   }
 }
 
-What they want from The Bridge: ${get('desired_outcome')}
-Their three-to-five year vision: ${get('north_star')}
+PRIMARY GOAL SOURCE — their near-term target (best realistic position ~a year out): ${get('graduation_target')}
+What they want from working together: ${get('desired_outcome')}
 What their actual life would look like in success: ${get('life_success_definition')}
+
+BACKGROUND ONLY — their long-term three-to-five year vision (do not make goals from this): ${get('north_star')}
 
 Operational baseline:
 - Annual revenue: ${get('annual_revenue')}

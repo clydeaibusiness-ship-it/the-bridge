@@ -85,6 +85,57 @@
     .modal-btn.ghost { background: transparent; border: 1px solid #c8c0b0; color: #3a3530; }
     .modal-note { font-size: 0.82rem; color: #7a7570; line-height: 1.55; }
     .modal-note a { color: #8a6830; }
+    /* Interview warning banners */
+    .iv-banner { flex: 0 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 9px 14px; font-family: var(--font-ui); font-size: 0.78rem; line-height: 1.4; }
+    .iv-banner a { font-weight: 600; text-decoration: underline; white-space: nowrap; }
+    .iv-banner-dismiss { background: none; border: none; cursor: pointer; font-size: 1rem; line-height: 1; opacity: 0.5; padding: 0; flex-shrink: 0; }
+    .iv-banner.red { background: #fde8e8; color: #7a2020; border-bottom: 1px solid #f0c0c0; }
+    .iv-banner.red a { color: #7a2020; }
+    .iv-banner.yellow { background: #fdf6e0; color: #7a5e10; border-bottom: 1px solid #f0d880; }
+    .iv-banner.yellow a { color: #7a5e10; }
+    /* Cascading timeline */
+    .tl { position: relative; padding-left: 22px; padding-bottom: 8px; }
+    .tl::before { content: ''; position: absolute; left: 7px; top: 8px; bottom: 8px; width: 1px; background: #e0d8c8; }
+    .tl-item { position: relative; margin-bottom: 22px; }
+    .tl-node { position: absolute; left: -19px; top: 3px; width: 12px; height: 12px; border-radius: 50%; background: #f5f0e8; border: 2px solid #c8c0b0; box-sizing: border-box; }
+    .tl-node.active { border-color: #0a0a0f; background: #0a0a0f; }
+    .tl-node.done { border-color: #5a7a50; background: #5a7a50; }
+    .tl-node.grad { border-color: #c8a96e; background: #c8a96e; }
+    .tl-label { font-family: var(--font-ui); font-size: 0.85rem; font-weight: 600; color: #1a1a1f; line-height: 1.4; }
+    .tl-label.muted { color: #9a948a; font-weight: 400; }
+    .tl-tag { display: inline-block; font-family: var(--font-data); font-size: 0.5rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 2px 6px; border-radius: 4px; margin-top: 4px; }
+    .tl-tag.done { background: #e8f0e5; color: #5a7a50; }
+    .tl-tag.active { background: #e8e8f0; color: #3a3a7a; }
+    .tl-tag.upcoming { background: #f0ece5; color: #9a8a70; }
+    .tl-steps { margin-top: 8px; margin-left: 3px; padding-left: 14px; border-left: 2px solid #e4dccb; }
+    .tl-step { display: flex; gap: 8px; align-items: flex-start; font-size: 0.8rem; color: #3a3530; padding: 5px 0; line-height: 1.4; border-bottom: 1px solid #f0ece5; }
+    .tl-step:last-child { border-bottom: none; }
+    .tl-step-dot { flex: 0 0 6px; width: 6px; height: 6px; border-radius: 50%; background: #c8c0b0; margin-top: 5px; }
+    .tl-step.done { color: #9a948a; }
+    .tl-step.done span { text-decoration: line-through; }
+    .tl-step.done .tl-step-dot { background: #5a7a50; }
+    .tl-general { margin-bottom: 20px; }
+    .tl-general-title { font-family: var(--font-data); font-size: 0.5625rem; letter-spacing: 0.1em; text-transform: uppercase; color: #7a7570; margin-bottom: 8px; }
+    .pg-grad { background: #efe8dc; border-radius: 10px; padding: 14px; margin-bottom: 18px; }
+    .pg-grad p { font-size: 0.8125rem; color: #2a2520; line-height: 1.55; margin: 0 0 10px; }
+    .pg-grad p:last-child { margin-bottom: 0; }
+    .pg-grad a { color: #8a6830; }
+    .pg-grad-btn { font-family: var(--font-data); font-size: 0.6rem; letter-spacing: 0.08em; text-transform: uppercase; color: #f0ebe0; background: #0a0a0f; border: none; border-radius: 6px; padding: 9px 14px; cursor: pointer; }
+    .pg-letter { background: #efe8dc; border-left: 2px solid #8a6830; padding: 14px 16px; font-size: 0.82rem; color: #2a2520; line-height: 1.65; }
+    .pg-letter-date { font-family: var(--font-data); font-size: 0.5rem; letter-spacing: 0.08em; text-transform: uppercase; color: #9a948a; margin-top: 8px; }
+    .pg-refl { font-size: 0.8125rem; color: #3a3530; line-height: 1.6; padding: 9px 0; border-bottom: 1px solid #e0d8c8; }
+    .pg-refl:last-child { border-bottom: none; }
+    .pg-continue { display: inline-block; margin: 2px 0 6px; font-family: var(--font-data); font-size: 0.6rem; letter-spacing: 0.08em; text-transform: uppercase; color: #f0ebe0; background: #0a0a0f; border-radius: 6px; padding: 10px 14px; text-decoration: none; }
+    .tl-add-btn { background: none; border: none; cursor: pointer; font-family: var(--font-data); font-size: 0.5rem; letter-spacing: 0.08em; text-transform: uppercase; color: #9a948a; padding: 6px 0 0; display: block; }
+    .tl-add-btn:hover { color: #3a3530; }
+    .tl-add-form { margin-top: 8px; background: #f0ece4; border-radius: 8px; padding: 10px 12px; display: none; }
+    .tl-add-form.open { display: block; }
+    .tl-add-hint { font-family: var(--font-ui); font-size: 0.75rem; color: #7a6840; margin-bottom: 8px; line-height: 1.55; }
+    .tl-add-input { width: 100%; box-sizing: border-box; font-family: var(--font-ui); font-size: 0.8125rem; color: #0a0a0f; background: #fff; border: 1px solid #c8c0b0; border-radius: 6px; padding: 8px 10px; min-height: 56px; resize: none; outline: none; }
+    .tl-add-input:focus { border-color: #3a3530; }
+    .tl-add-actions { display: flex; gap: 8px; margin-top: 8px; }
+    .tl-add-save { font-family: var(--font-data); font-size: 0.55rem; letter-spacing: 0.08em; text-transform: uppercase; background: #0a0a0f; color: #f0ebe0; border: none; border-radius: 6px; padding: 7px 14px; cursor: pointer; }
+    .tl-add-cancel { font-family: var(--font-data); font-size: 0.55rem; letter-spacing: 0.08em; text-transform: uppercase; background: none; color: #7a7570; border: 1px solid #c8c0b0; border-radius: 6px; padding: 7px 14px; cursor: pointer; }
   </style>
 </head>
 <body>
@@ -113,6 +164,7 @@
 
         <!-- CENTER: Earl -->
         <section class="panel">
+          <div id="interview-banner" style="display:none;"></div>
           <div class="msgs" id="msgs"></div>
           <div class="prompts" id="prompts">
             <button class="pill" data-p="What are you, exactly — and why would I talk to you instead of just figuring things out myself?">What are you, exactly?</button>
@@ -313,57 +365,120 @@
     prompts.querySelectorAll('.pill').forEach(p => p.addEventListener('click', () => { input.value = p.dataset.p; send(); }));
     document.getElementById('history-btn').addEventListener('click', () => window.location.reload());
 
+    // ---- Interview warning banners ----
+    function showBanner(stages) {
+      const el = document.getElementById('interview-banner');
+      if (!el) return;
+      if (!stages || stages.stage_3) { el.style.display = 'none'; return; }
+      const isRed = !stages.stage_2;
+      el.className = 'iv-banner ' + (isRed ? 'red' : 'yellow');
+      el.style.display = 'flex';
+      el.innerHTML = isRed
+        ? `<span>Earl is missing context that matters. <a href="/intake">Complete Stage 2</a> to get more from every conversation.</span><button class="iv-banner-dismiss" aria-label="Dismiss">&times;</button>`
+        : `<span>Earl still needs Stage 3 to see the full picture. <a href="/intake">Complete it now</a> for better conversations.</span><button class="iv-banner-dismiss" aria-label="Dismiss">&times;</button>`;
+      el.querySelector('.iv-banner-dismiss').addEventListener('click', () => { el.style.display = 'none'; });
+    }
+
     // ---- Progress ----
     async function loadProgress() {
       const { data } = await api('/api/member/progress');
       const body = document.getElementById('progress-body');
       if (!data || data.authenticated === false) return;
+
+      const st = data.stages || {};
+
+      // Gate: need Stage 2 for anything meaningful to show
+      if (!st.stage_2) {
+        const link = st.stage_1 ? '<a class="pg-continue" href="/intake">Continue to Stage 2 &#8594;</a>' : '';
+        body.innerHTML = `<p class="sp-empty">Your progress view builds after you complete Stage 2 of the interview. That is where your goals take shape.</p>${link}`;
+        return;
+      }
+
       let html = '';
 
-      // Graduation
+      // Graduation block
       const g = data.graduation || {};
       if (g.graduated) {
-        html += '<div class="pg-grad"><p>You have graduated. <a href="/certificate">View your certificate &#8594;</a></p></div>';
+        html += '<div class="pg-grad"><p>You have completed your goals. <a href="/certificate">Download your certificate &#8594;</a></p></div>';
       } else if (g.offered) {
         html += '<div class="pg-grad"><p>You may be ready to graduate. When you are, begin your exit interview — the same questions you started with, answered fresh.</p><button class="pg-grad-btn" id="pg-grad-start">Begin exit interview</button></div>';
       }
 
-      // Stages (+ resume the interview if not finished)
-      const st = data.stages || {};
-      html += '<div class="stages">' +
-        ['stage_1', 'stage_2', 'stage_3'].map((k, i) => `<span class="stage ${st[k] ? 'on' : ''}">${i + 1}</span>`).join('') +
-        '</div>';
+      // Continue interview prompt
       if (!st.stage_3) {
-        html += `<a class="pg-continue" href="/intake">${st.stage_2 ? 'Continue to Stage 3' : 'Continue your interview'} &#8594;</a>`;
+        html += `<a class="pg-continue" href="/intake">Continue to Stage 3 &#8594;</a>`;
       }
 
-      // Benchmarks
+      // Build cascading timeline
       const benches = data.benchmarks || [];
+      const allSteps = [...(data.actionSteps?.active || []), ...(data.actionSteps?.completed || []), ...(data.actionSteps?.did_not_happen || [])];
+
+      // Separate linked and unlinked steps
+      const linkedSteps = {};
+      const generalSteps = [];
+      allSteps.forEach(s => {
+        if (s.benchmark_id) {
+          (linkedSteps[s.benchmark_id] = linkedSteps[s.benchmark_id] || []).push(s);
+        } else {
+          generalSteps.push(s);
+        }
+      });
+
+      // Goals timeline — each goal is a node, its action steps nest underneath it
       if (benches.length) {
-        const hist = {};
-        (data.ratingHistory || []).forEach(r => { (hist[r.benchmark_id] = hist[r.benchmark_id] || []).push(r); });
-        html += '<div class="sp-block-title">What you are working toward</div>';
+        html += '<div class="tl">';
         benches.forEach(b => {
-          const now = b.current_rating != null ? b.current_rating : b.starting_rating;
-          html += `<div class="bench"><div class="bench-stmt">${esc(b.statement)}</div><div class="bench-row">${arc(hist[b.id], now)}<span class="bench-now">${now != null ? 'now ' + now + ' / 10' : 'not yet rated'}</span></div></div>`;
+          const achieved = b.current_rating != null && b.current_rating >= 7;
+          const nodeClass = achieved ? 'done' : 'active';
+          const steps = linkedSteps[b.id] || [];
+          html += `<div class="tl-item">
+            <div class="tl-node ${nodeClass}"></div>
+            <div class="tl-label">${esc(b.statement)}</div>
+            <span class="tl-tag ${achieved ? 'done' : 'active'}">${achieved ? 'achieved' : 'in progress'}</span>`;
+          if (steps.length) {
+            html += '<div class="tl-steps">';
+            steps.forEach(s => {
+              const done = s.status !== 'active';
+              html += `<div class="tl-step${done ? ' done' : ''}"><div class="tl-step-dot"></div><span>${esc(s.step_text)}</span></div>`;
+            });
+            html += '</div>';
+          }
+          html += `<button class="tl-add-btn" data-bid="${esc(b.id)}">+ Add action step</button>
+            <div class="tl-add-form" id="tl-form-${esc(b.id)}">
+              <div class="tl-add-hint">Make it SMART: Specific, Measurable, Achievable, Relevant, and Time-bound.<br>e.g. "Follow up with 3 past clients by Friday to ask for a referral."</div>
+              <textarea class="tl-add-input" placeholder="Describe your action step..."></textarea>
+              <div class="tl-add-actions">
+                <button class="tl-add-save" data-bid="${esc(b.id)}">Save</button>
+                <button class="tl-add-cancel" data-bid="${esc(b.id)}">Cancel</button>
+              </div>
+            </div>`;
+          html += '</div>';
         });
-      } else {
-        html += '<p class="sp-empty">Finish stage two of your interview and the things you are working toward show up here.</p>';
+
+        // Graduation node at bottom
+        html += `<div class="tl-item">
+          <div class="tl-node ${g.graduated ? 'grad' : ''}"></div>
+          <div class="tl-label muted">${g.graduated ? 'Graduated' : 'Graduation'}</div>
+          ${g.graduated ? '<span class="tl-tag done">complete</span>' : '<span class="tl-tag upcoming">ahead</span>'}
+        </div>`;
+        html += '</div>';
       }
 
-      // Action steps
-      const steps = (data.actionSteps || {});
-      const active = steps.active || [], done = steps.completed || [];
-      if (active.length || done.length) {
-        html += '<div class="sp-block-title">Action steps</div>';
-        active.forEach(s => html += `<div class="step">${esc(s.step_text)}</div>`);
-        done.forEach(s => html += `<div class="step done">${esc(s.step_text)}</div>`);
+      // Action steps not yet tied to a specific goal — shown below the timeline
+      if (generalSteps.length) {
+        html += '<div class="tl-general"><div class="tl-general-title">Other action steps</div>';
+        html += '<div class="tl-steps" style="margin-left:0;">';
+        generalSteps.forEach(s => {
+          const done = s.status !== 'active';
+          html += `<div class="tl-step${done ? ' done' : ''}"><div class="tl-step-dot"></div><span>${esc(s.step_text)}</span></div>`;
+        });
+        html += '</div></div>';
       }
 
       // Session reflections
       const refl = data.reflections || [];
       if (refl.length) {
-        html += '<div class="sp-block-title">Session reflections</div>';
+        html += '<div class="sp-block-title" style="margin-top:24px;">Session reflections</div>';
         refl.slice(0, 8).forEach(r => html += `<div class="pg-refl">${esc(r.summary)}</div>`);
       }
 
@@ -375,22 +490,60 @@
 
       body.innerHTML = html;
 
+      // Add step button delegation
+      body.addEventListener('click', async (e) => {
+        const addBtn = e.target.closest('.tl-add-btn');
+        if (addBtn) {
+          const bid = addBtn.dataset.bid;
+          document.getElementById('tl-form-' + bid).classList.add('open');
+          addBtn.style.display = 'none';
+          return;
+        }
+        const cancelBtn = e.target.closest('.tl-add-cancel');
+        if (cancelBtn) {
+          const bid = cancelBtn.dataset.bid;
+          const form = document.getElementById('tl-form-' + bid);
+          form.classList.remove('open');
+          form.querySelector('.tl-add-input').value = '';
+          body.querySelector(`.tl-add-btn[data-bid="${bid}"]`).style.display = '';
+          return;
+        }
+        const saveBtn = e.target.closest('.tl-add-save');
+        if (saveBtn) {
+          const bid = saveBtn.dataset.bid;
+          const form = document.getElementById('tl-form-' + bid);
+          const text = form.querySelector('.tl-add-input').value.trim();
+          if (!text) { form.querySelector('.tl-add-input').focus(); return; }
+          saveBtn.disabled = true; saveBtn.textContent = 'Saving...';
+          const { ok, data } = await api('/api/member/action-steps', 'POST', { step_text: text, benchmark_id: bid });
+          if (ok && data && data.step) {
+            let stepsDiv = form.closest('.tl-item').querySelector('.tl-steps');
+            if (!stepsDiv) {
+              stepsDiv = document.createElement('div');
+              stepsDiv.className = 'tl-steps';
+              form.closest('.tl-item').querySelector('.tl-label').after(stepsDiv);
+            }
+            const row = document.createElement('div');
+            row.className = 'tl-step';
+            row.innerHTML = `<div class="tl-step-dot"></div><span>${esc(data.step.step_text)}</span>`;
+            stepsDiv.appendChild(row);
+            form.classList.remove('open');
+            form.querySelector('.tl-add-input').value = '';
+            body.querySelector(`.tl-add-btn[data-bid="${bid}"]`).style.display = '';
+          } else {
+            saveBtn.disabled = false; saveBtn.textContent = 'Save';
+          }
+          return;
+        }
+      });
+
       const gb = document.getElementById('pg-grad-start');
       if (gb) gb.addEventListener('click', async () => {
-        gb.disabled = true; gb.textContent = 'Starting…';
+        gb.disabled = true; gb.textContent = 'Starting...';
         const { ok } = await api('/api/member/graduation/start', 'POST');
         if (ok) location.href = '/intake?round=2';
         else { gb.disabled = false; gb.textContent = 'Begin exit interview'; }
       });
-    }
-    function arc(history, now) {
-      const pts = (history && history.length) ? history.map(p => p.rating) : (now ? [now] : []);
-      if (!pts.length) return '';
-      const w = 100, h = 22, pad = 3, maxI = Math.max(pts.length - 1, 1);
-      const c = pts.map((v, i) => [pad + (i / maxI) * (w - 2 * pad), h - pad - ((v - 1) / 9) * (h - 2 * pad)]);
-      const line = c.map((p, i) => (i ? 'L' : 'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join(' ');
-      const last = c[c.length - 1];
-      return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">${c.length > 1 ? `<path d="${line}" fill="none" stroke="#8a6830" stroke-width="1.5"/>` : ''}<circle cx="${last[0].toFixed(1)}" cy="${last[1].toFixed(1)}" r="2.4" fill="#0a0a0f"/></svg>`;
     }
 
     // ---- Chart ----
@@ -429,11 +582,16 @@
         const me = await api('/api/auth/me');
         if (me.ok && me.data && me.data.membershipTier === 'free') { location.href = '/subscribe'; return; }
       } catch (e) {}
+      let stages = {};
       try {
         const pr = await api('/api/member/progress');
-        if (pr.data && pr.data.authenticated !== false && pr.data.stages && !pr.data.stages.stage_1) { location.replace('/intake'); return; }
+        if (pr.data && pr.data.authenticated !== false && pr.data.stages) {
+          stages = pr.data.stages;
+          if (!stages.stage_1) { location.replace('/intake'); return; }
+        }
       } catch (e) {}
 
+      showBanner(stages);
       goTo(1);
       loadHistory();
       loadProgress();

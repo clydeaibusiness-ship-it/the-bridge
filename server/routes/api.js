@@ -1064,6 +1064,33 @@ router.get('/member/action-steps', async (req, res) => {
 });
 
 /**
+ * POST /api/member/action-steps
+ * Member manually creates an action step, optionally tied to a benchmark.
+ */
+router.post('/member/action-steps', async (req, res) => {
+  if (!req.dbUser) return res.status(401).json({ error: 'Authentication required' });
+  try {
+    const { step_text, benchmark_id } = req.body;
+    if (!step_text || !String(step_text).trim()) {
+      return res.status(400).json({ error: 'step_text required' });
+    }
+    const { saveActionStep } = require('../services/supabase');
+    const step = await saveActionStep(
+      req.dbUser.id,
+      String(step_text).trim(),
+      null,
+      null,
+      benchmark_id || null
+    );
+    if (!step) return res.status(500).json({ error: 'Could not save action step' });
+    res.json({ ok: true, step });
+  } catch (e) {
+    console.error('Create action step error:', e.message);
+    res.status(500).json({ error: 'Could not save action step' });
+  }
+});
+
+/**
  * POST /api/member/action-steps/:id/complete
  * Marks complete and triggers an immediate Type 2 (action follow-up) check-in.
  */

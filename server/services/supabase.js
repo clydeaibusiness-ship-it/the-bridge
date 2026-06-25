@@ -542,19 +542,22 @@ async function sessionNoteExists(userId, sessionId) {
  * Stores the member's exact words. Called when the Commander invokes the
  * save_action_step tool.
  */
-async function saveActionStep(userId, stepText, sourceSessionId = null, targetDate = null) {
+async function saveActionStep(userId, stepText, sourceSessionId = null, targetDate = null, benchmarkId = null) {
   const db = getClient();
   if (!db) return null;
 
+  const row = {
+    user_id: userId,
+    step_text: stepText,
+    source_session_id: sourceSessionId,
+    target_date: targetDate,
+    status: 'active'
+  };
+  if (benchmarkId) row.benchmark_id = benchmarkId;
+
   const { data, error } = await db
     .from('action_steps')
-    .insert({
-      user_id: userId,
-      step_text: stepText,
-      source_session_id: sourceSessionId,
-      target_date: targetDate,
-      status: 'active'
-    })
+    .insert(row)
     .select()
     .single();
 
