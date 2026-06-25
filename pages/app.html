@@ -233,12 +233,16 @@
     const pill = document.getElementById('slider-pill');
     let current = 1;
 
+    const PANEL_PATHS = ['/app/chart', '/app/earl', '/app/progress'];
     function goTo(i) {
       current = Math.max(0, Math.min(2, i));
       track.style.transform = `translateX(-${current * 33.3333}%)`;
       pill.style.transform = `translateX(${current * 100}%)`;
       tbTitle.textContent = TITLES[current];
       sliderBtns.forEach(b => b.classList.toggle('active', Number(b.dataset.i) === current));
+      if (typeof gtag !== 'undefined') {
+        gtag('event', 'page_view', { page_path: PANEL_PATHS[current], page_title: TITLES[current] });
+      }
     }
     sliderBtns.forEach(b => b.addEventListener('click', () => goTo(Number(b.dataset.i))));
     goTo(1); // start on Earl immediately
