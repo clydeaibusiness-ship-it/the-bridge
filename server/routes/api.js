@@ -247,7 +247,7 @@ router.get('/member/commander/history', async (req, res) => {
   }
 
   try {
-    const messages = await getCommanderHistory(req.dbUser.id, 20);
+    const messages = await getCommanderHistory(req.dbUser.id, 40);
     const sessionInfo = await getLatestCommanderSessionId(req.dbUser.id);
     
     // Check if we need a summary (>24h gap)
@@ -369,8 +369,34 @@ router.post('/member/commander/message', async (req, res) => {
       // Get current soul version for filtering + tagging
       const soulVersion = getSoulVersion();
 
-      // Get last 10 messages for API context — filtered by soul version
-      conversationHistory = await getCommanderMessagesForApi(req.dbUser.id, 10, soulVersion);
+      // Mid-session compression: if the current session has grown very long,
+      // compress the oldest chunk in the background and drop a marker in chat.
+      const MID_COMPRESS_THRESHOLD = 30;
+      const currentSessionMsgs = await getCommanderSessionMessages(req.dbUser.id, sessionId);
+      if (currentSessionMsgs.length >= MID_COMPRESS_THRESHOLD) {
+        const alreadyMarked = currentSessionMsgs.some(m => m.message_role === 'system_note');
+        if (!alreadyMarked) {
+          const toCompress = currentSessionMsgs.filter(m => m.message_role !== 'system_note').slice(0, 20);
+          runBackground('mid-session-compress', async () => {
+            try {
+              const compressed = await compressSession(toCompress);
+              await saveSessionNote(req.dbUser.id, crypto.randomUUID(),
+                compressed.operator_insights || [],
+                compressed.strategic_ground || [],
+                compressed.unresolved_threads || [],
+                toCompress.length
+              );
+              await saveCommanderMessage(req.dbUser.id, sessionId, 'system_note',
+                'Earlier context in this conversation has been summarized.', null);
+            } catch (e) {
+              console.error('Mid-session compression error:', e.message);
+            }
+          });
+        }
+      }
+
+      // Get last 30 messages for API context — filtered by soul version
+      conversationHistory = await getCommanderMessagesForApi(req.dbUser.id, 30, soulVersion);
 
       // Load session notes (long-term memory) — max 30 most recent
       const sessionNotes = await getSessionNotes(req.dbUser.id, 30);

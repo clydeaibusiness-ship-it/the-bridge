@@ -290,7 +290,8 @@ async function getCommanderMessagesForApi(userId, limit = 10, soulVersion = null
   // User messages always pass through — they're the member's words.
   // Assistant messages only pass if they match the current soul version
   // (or have no version tag, for backward compat during transition).
-  let filtered = data || [];
+  // Strip system_note markers — these are UI-only and must never go to the API
+  let filtered = (data || []).filter(m => m.message_role !== 'system_note');
   if (soulVersion) {
     filtered = filtered.filter(m => {
       if (m.message_role === 'user') return true;
