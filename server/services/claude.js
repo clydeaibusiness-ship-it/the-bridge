@@ -16,6 +16,7 @@ function stripMarkdown(text) {
     .replace(/\*(.+?)\*/g, '$1')       // *italic* → italic
     .replace(/^#{1,3}\s+/gm, '')       // ### headers → nothing
     .replace(/^[\-•]\s+/gm, '')        // - or • bullets → clean lines
+    .replace(/\s*—\s*/g, '. ')         // em dash → period + space
     .trim();
 }
 
@@ -393,7 +394,7 @@ async function commanderChat(message, gameState, sessionContext, conversationHis
     response = await client.messages.create({
       model: 'claude-sonnet-4-6',
       max_tokens: 400,
-      system: fullSystem,
+      system: systemBlocks,
       messages,
       tools
     });
