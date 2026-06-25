@@ -126,6 +126,16 @@
     .pg-refl { font-size: 0.8125rem; color: #3a3530; line-height: 1.6; padding: 9px 0; border-bottom: 1px solid #e0d8c8; }
     .pg-refl:last-child { border-bottom: none; }
     .pg-continue { display: inline-block; margin: 2px 0 6px; font-family: var(--font-data); font-size: 0.6rem; letter-spacing: 0.08em; text-transform: uppercase; color: #f0ebe0; background: #0a0a0f; border-radius: 6px; padding: 10px 14px; text-decoration: none; }
+    .tl-add-btn { background: none; border: none; cursor: pointer; font-family: var(--font-data); font-size: 0.5rem; letter-spacing: 0.08em; text-transform: uppercase; color: #9a948a; padding: 6px 0 0; display: block; }
+    .tl-add-btn:hover { color: #3a3530; }
+    .tl-add-form { margin-top: 8px; background: #f0ece4; border-radius: 8px; padding: 10px 12px; display: none; }
+    .tl-add-form.open { display: block; }
+    .tl-add-hint { font-family: var(--font-ui); font-size: 0.75rem; color: #7a6840; margin-bottom: 8px; line-height: 1.55; }
+    .tl-add-input { width: 100%; box-sizing: border-box; font-family: var(--font-ui); font-size: 0.8125rem; color: #0a0a0f; background: #fff; border: 1px solid #c8c0b0; border-radius: 6px; padding: 8px 10px; min-height: 56px; resize: none; outline: none; }
+    .tl-add-input:focus { border-color: #3a3530; }
+    .tl-add-actions { display: flex; gap: 8px; margin-top: 8px; }
+    .tl-add-save { font-family: var(--font-data); font-size: 0.55rem; letter-spacing: 0.08em; text-transform: uppercase; background: #0a0a0f; color: #f0ebe0; border: none; border-radius: 6px; padding: 7px 14px; cursor: pointer; }
+    .tl-add-cancel { font-family: var(--font-data); font-size: 0.55rem; letter-spacing: 0.08em; text-transform: uppercase; background: none; color: #7a7570; border: 1px solid #c8c0b0; border-radius: 6px; padding: 7px 14px; cursor: pointer; }
   </style>
 </head>
 <body>
@@ -433,6 +443,15 @@
             });
             html += '</div>';
           }
+          html += `<button class="tl-add-btn" data-bid="${esc(b.id)}">+ Add action step</button>
+            <div class="tl-add-form" id="tl-form-${esc(b.id)}">
+              <div class="tl-add-hint">Make it SMART: Specific, Measurable, Achievable, Relevant, and Time-bound.<br>e.g. "Follow up with 3 past clients by Friday to ask for a referral."</div>
+              <textarea class="tl-add-input" placeholder="Describe your action step..."></textarea>
+              <div class="tl-add-actions">
+                <button class="tl-add-save" data-bid="${esc(b.id)}">Save</button>
+                <button class="tl-add-cancel" data-bid="${esc(b.id)}">Cancel</button>
+              </div>
+            </div>`;
           html += '</div>';
         });
 
@@ -470,6 +489,53 @@
       }
 
       body.innerHTML = html;
+
+      // Add step button delegation
+      body.addEventListener('click', async (e) => {
+        const addBtn = e.target.closest('.tl-add-btn');
+        if (addBtn) {
+          const bid = addBtn.dataset.bid;
+          document.getElementById('tl-form-' + bid).classList.add('open');
+          addBtn.style.display = 'none';
+          return;
+        }
+        const cancelBtn = e.target.closest('.tl-add-cancel');
+        if (cancelBtn) {
+          const bid = cancelBtn.dataset.bid;
+          const form = document.getElementById('tl-form-' + bid);
+          form.classList.remove('open');
+          form.querySelector('.tl-add-input').value = '';
+          body.querySelector(`.tl-add-btn[data-bid="${bid}"]`).style.display = '';
+          return;
+        }
+        const saveBtn = e.target.closest('.tl-add-save');
+        if (saveBtn) {
+          const bid = saveBtn.dataset.bid;
+          const form = document.getElementById('tl-form-' + bid);
+          const text = form.querySelector('.tl-add-input').value.trim();
+          if (!text) { form.querySelector('.tl-add-input').focus(); return; }
+          saveBtn.disabled = true; saveBtn.textContent = 'Saving...';
+          const { ok, data } = await api('/api/member/action-steps', 'POST', { step_text: text, benchmark_id: bid });
+          if (ok && data && data.step) {
+            let stepsDiv = form.closest('.tl-item').querySelector('.tl-steps');
+            if (!stepsDiv) {
+              stepsDiv = document.createElement('div');
+              stepsDiv.className = 'tl-steps';
+              form.closest('.tl-item').querySelector('.tl-label').after(stepsDiv);
+            }
+            const row = document.createElement('div');
+            row.className = 'tl-step';
+            row.innerHTML = `<div class="tl-step-dot"></div><span>${esc(data.step.step_text)}</span>`;
+            stepsDiv.appendChild(row);
+            form.classList.remove('open');
+            form.querySelector('.tl-add-input').value = '';
+            body.querySelector(`.tl-add-btn[data-bid="${bid}"]`).style.display = '';
+          } else {
+            saveBtn.disabled = false; saveBtn.textContent = 'Save';
+          }
+          return;
+        }
+      });
 
       const gb = document.getElementById('pg-grad-start');
       if (gb) gb.addEventListener('click', async () => {
