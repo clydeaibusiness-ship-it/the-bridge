@@ -522,59 +522,63 @@
       </div>`;
     }
 
-    function buildCalendarUrl(text, targetDate) {
+    function openCalendarEvent(text, targetDate) {
+      const pad = n => String(n).padStart(2, '0');
+      const fmtLocal = d => `${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}T${pad(d.getHours())}${pad(d.getMinutes())}00`;
+      const fmtDay = d => `${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}`;
+      const fmtUTC = d => d.toISOString().replace(/[-:]/g,'').split('.')[0]+'Z';
+
       let title = text;
       let start = targetDate ? new Date(targetDate) : new Date();
       if (!targetDate) start.setDate(start.getDate() + 1);
       start.setHours(0, 0, 0, 0);
       let hasTime = false;
 
-      // Parse time: "4:00 p.m.", "4:00pm", "4pm", "16:00"
-      const timeRx = /\b(\d{1,2})(?::(\d{2}))?\s*(a\.?\s*m\.?|p\.?\s*m\.?)/i;
-      const m = text.match(timeRx);
+      const m = text.match(/\b(\d{1,2})(?::(\d{2}))?\s*(a\.?\s*m\.?|p\.?\s*m\.?)/i);
       if (m) {
         let h = parseInt(m[1]), mn = parseInt(m[2] || '0');
-        const per = m[3].replace(/[\s.]/g, '').toLowerCase();
+        const per = m[3].replace(/[\s.]/g,'').toLowerCase();
         if (per === 'pm' && h < 12) h += 12;
         if (per === 'am' && h === 12) h = 0;
         start.setHours(h, mn, 0, 0);
         hasTime = true;
       }
 
-      // Parse relative date words
-      if (/\btomorrow\b/i.test(text)) { const d = new Date(); d.setDate(d.getDate()+1); start.setFullYear(d.getFullYear(), d.getMonth(), d.getDate()); }
-      else if (/\btoday\b/i.test(text)) { const d = new Date(); start.setFullYear(d.getFullYear(), d.getMonth(), d.getDate()); }
-
-      // Named weekdays
+      const now = new Date();
+      if (/\btomorrow\b/i.test(text)) { const d = new Date(now); d.setDate(d.getDate()+1); start.setFullYear(d.getFullYear(),d.getMonth(),d.getDate()); }
+      else if (/\btoday\b/i.test(text)) { start.setFullYear(now.getFullYear(),now.getMonth(),now.getDate()); }
       const days = ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'];
       const dm = text.toLowerCase().match(/\b(monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b/);
-      if (dm) {
-        const target = days.indexOf(dm[1]);
-        const now = new Date();
-        let diff = target - now.getDay();
-        if (diff <= 0) diff += 7;
-        const nd = new Date(now); nd.setDate(nd.getDate() + diff);
-        start.setFullYear(nd.getFullYear(), nd.getMonth(), nd.getDate());
-      }
+      if (dm) { const t=days.indexOf(dm[1]); let diff=t-now.getDay(); if(diff<=0)diff+=7; const nd=new Date(now); nd.setDate(nd.getDate()+diff); start.setFullYear(nd.getFullYear(),nd.getMonth(),nd.getDate()); }
 
-      // Clean time/date phrases from title
       title = title
-        .replace(/\bat\s+(?:our\s+)?(\d{1,2})(?::\d{2})?\s*(?:a\.?\s*m\.?|p\.?\s*m\.?)(?:\s+meeting)?/ig, '')
-        .replace(/\btomorrow\b/ig, '').replace(/\btoday\b/ig, '')
-        .replace(/\b(monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b/ig, '')
-        .replace(/\s{2,}/g, ' ').replace(/[,\s]+$/, '').trim();
-      if (!title) title = text;
+        .replace(/\bat\s+(?:our\s+)?(\d{1,2})(?::\d{2})?\s*(?:a\.?\s*m\.?|p\.?\s*m\.?)(?:\s+meeting)?/ig,'')
+        .replace(/\btomorrow\b|\btoday\b/ig,'')
+        .replace(/\b(monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b/ig,'')
+        .replace(/\s{2,}/g,' ').replace(/[,.\s]+$/,'').trim() || text;
 
-      const pad = n => String(n).padStart(2, '0');
-      const fmtLocal = d => `${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}T${pad(d.getHours())}${pad(d.getMinutes())}00`;
-      const fmtDay = d => `${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}`;
       const end = new Date(start.getTime() + 3600000);
+      const esc = s => s.replace(/\\/g,'\\\\').replace(/;/g,'\\;').replace(/,/g,'\\,').replace(/\n/g,'\\n');
 
-      const dates = hasTime
-        ? `${fmtLocal(start)}/${fmtLocal(end)}`
-        : `${fmtDay(start)}/${fmtDay(start)}`;
+      const ics = [
+        'BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Earl//EN','CALSCALE:GREGORIAN','METHOD:PUBLISH',
+        'BEGIN:VEVENT',
+        `UID:${Date.now()}@captainsbridge.io`,
+        `DTSTAMP:${fmtUTC(now)}`,
+        `SUMMARY:${esc(title)}`,
+        hasTime ? `DTSTART:${fmtLocal(start)}` : `DTSTART;VALUE=DATE:${fmtDay(start)}`,
+        hasTime ? `DTEND:${fmtLocal(end)}` : `DTEND;VALUE=DATE:${fmtDay(new Date(start.getTime()+86400000))}`,
+        'BEGIN:VALARM','TRIGGER:-PT30M','ACTION:DISPLAY','DESCRIPTION:Reminder','END:VALARM',
+        'END:VEVENT','END:VCALENDAR'
+      ].join('\r\n');
 
-      return `https://calendar.google.com/calendar/r/eventedit?text=${encodeURIComponent(title)}&dates=${dates}`;
+      const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'earl-action-step.ics';
+      document.body.appendChild(a); a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
     }
 
     // ---- Progress ----
@@ -758,8 +762,7 @@
         const calBtn = e.target.closest('.step-cal-btn');
         if (calBtn) {
           const step = calBtn.closest('.tl-step');
-          const url = buildCalendarUrl(step.dataset.text, step.dataset.date);
-          window.open(url, '_blank');
+          openCalendarEvent(step.dataset.text, step.dataset.date);
           return;
         }
       });
