@@ -145,6 +145,62 @@
     .tl-step-icon:hover { color: #3a3530; }
     .tl-step-edit-form { display: none; padding: 8px 0 8px 14px; }
     .tl-step-edit-form.open { display: block; }
+    /* ---- Dark mode ---- */
+    /* Only black/white/gray spectrum is inverted. Gold, green, red stay. */
+    .shell.dark, .shell.dark .panel-scroll, .shell.dark .msgs { background: #18181c; color: #f0ebe0; }
+    .shell.dark .tb { background: #18181c; border-bottom-color: #2e2e3a; }
+    .shell.dark .tb-title { color: #f0ebe0; }
+    .shell.dark .tb-btn { color: #888898; }
+    .shell.dark .sp-title { color: #888898; border-bottom-color: #2e2e3a; }
+    .shell.dark .sp-empty { color: #888898; }
+    .shell.dark .chart-sec { border-bottom-color: #2e2e3a; }
+    .shell.dark .chart-sec-t { color: #888898; }
+    .shell.dark .chart-sec-b { color: #c0b8b0; }
+    .shell.dark .m-commander { background: #252530; color: #d8d0c8; }
+    .shell.dark .pill { background: #252530; border-color: #2e2e3a; color: #c0b8b0; }
+    .shell.dark .composer { border-top-color: #2e2e3a; }
+    .shell.dark .composer-row { background: #252530; border-color: #2e2e3a; }
+    .shell.dark .composer input { color: #f0ebe0; }
+    .shell.dark .slider { border-top-color: #2e2e3a; background: #18181c; }
+    .shell.dark .slider-inner { background: #252530; }
+    .shell.dark .settings { border-top-color: #2e2e3a; }
+    .shell.dark .settings-row { color: #c0b8b0; border-bottom-color: #2e2e3a; }
+    .shell.dark #app-version { color: #44444e; }
+    .shell.dark .tl::before { background: #2e2e3a; }
+    .shell.dark .tl-node { background: #18181c; border-color: #3a3a48; }
+    .shell.dark .tl-node.active { background: #f0ebe0; border-color: #f0ebe0; }
+    .shell.dark .tl-label { color: #d8d0c8; }
+    .shell.dark .tl-label.muted { color: #555560; }
+    .shell.dark .tl-steps { border-left-color: #2e2e3a; }
+    .shell.dark .tl-step { color: #c0b8b0; border-bottom-color: #2e2e3a; }
+    .shell.dark .tl-step.done { color: #555560; }
+    .shell.dark .tl-step-dot { background: #3a3a48; }
+    .shell.dark .tl-step-icon { color: #555560; }
+    .shell.dark .tl-step-icon:hover { color: #c0b8b0; }
+    .shell.dark .tl-add-btn { color: #555560; }
+    .shell.dark .tl-add-btn:hover { color: #c0b8b0; }
+    .shell.dark .tl-add-form { background: #252530; }
+    .shell.dark .tl-add-input { background: #18181c; border-color: #2e2e3a; color: #f0ebe0; }
+    .shell.dark .tl-add-save { background: #f0ebe0; color: #0a0a0f; }
+    .shell.dark .tl-add-cancel { color: #888898; border-color: #2e2e3a; }
+    .shell.dark .tl-general-title { color: #888898; }
+    .shell.dark .sp-block-title { color: #888898; }
+    .shell.dark .pg-refl { color: #c0b8b0; border-bottom-color: #2e2e3a; }
+    .shell.dark .pg-letter { background: #252530; color: #c0b8b0; }
+    .shell.dark .pg-letter-date { color: #555560; }
+    .shell.dark .pg-grad { background: #252530; }
+    .shell.dark .pg-grad p { color: #c0b8b0; }
+    .shell.dark .modal { background: #252530; }
+    .shell.dark .modal h3 { color: #888898; }
+    .shell.dark .modal label { color: #c0b8b0; }
+    .shell.dark .modal select, .shell.dark .modal textarea { background: #18181c; border-color: #2e2e3a; color: #f0ebe0; }
+    .shell.dark .modal-note { color: #888898; }
+    .shell.dark .modal-scrim { background: rgba(0,0,0,0.6); }
+    .shell.dark .m-compress::before, .shell.dark .m-compress::after { background: #2e2e3a; }
+    .shell.dark .m-compress span { color: #555560; }
+    .shell.dark .iv-banner.red { background: #281818; color: #c08888; border-bottom-color: #381818; }
+    .shell.dark .iv-banner.yellow { background: #242010; color: #b89050; border-bottom-color: #342e10; }
+    .shell.dark .tl-step-edit-form { background: transparent; }
   </style>
   <!-- Microsoft Clarity -->
   <script type="text/javascript">
@@ -180,6 +236,7 @@
             <div id="chart-body"><p class="sp-empty">Loading your chart&#8230;</p></div>
             <div class="settings">
               <button class="settings-row" data-change-answer>Change an interview answer</button>
+              <button class="settings-row" id="theme-toggle">Dark mode</button>
               <a class="settings-row" href="/subscribe">Manage subscription</a>
               <a class="settings-row danger" href="/api/auth/logout">Sign out</a>
             </div>
@@ -404,6 +461,17 @@
       sendBtn.disabled = false;
       input.focus();
     }
+    // ---- Dark / Light mode ----
+    const shell = document.querySelector('.shell');
+    const themeBtn = document.getElementById('theme-toggle');
+    function applyTheme(dark) {
+      shell.classList.toggle('dark', dark);
+      themeBtn.textContent = dark ? 'Light mode' : 'Dark mode';
+      localStorage.setItem('earl-theme', dark ? 'dark' : 'light');
+    }
+    applyTheme(localStorage.getItem('earl-theme') === 'dark');
+    themeBtn.addEventListener('click', () => applyTheme(!shell.classList.contains('dark')));
+
     // Re-assert panel position when mobile keyboard opens/closes (viewport resize)
     window.visualViewport && window.visualViewport.addEventListener('resize', () => goTo(current));
 
