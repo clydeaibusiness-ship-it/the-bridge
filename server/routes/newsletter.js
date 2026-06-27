@@ -7,12 +7,17 @@
  */
 
 const express = require('express');
+const crypto = require('crypto');
 const router = express.Router();
 
 const { extractUser, requireOwner } = require('../middleware/auth');
 const store = require('../services/newsletter/store');
 const { generateCandidates } = require('../services/newsletter');
 const { regenerateSection } = require('../services/newsletter/write');
+
+// In-memory generation jobs (single dev instance). A job runs in the
+// background after the request returns; the page polls its status.
+const generationJobs = new Map();
 
 router.use(extractUser);
 
@@ -48,18 +53,43 @@ router.get('/admin/run', requireOwner, async (req, res) => {
   }
 });
 
-// Generate a fresh run of three candidates now.
+// Kick off generation in the background. Returns a jobId immediately; the
+// page polls /admin/generate/status. Generation takes a couple minutes
+// (GDELT spacing + writing + scoring), too long for one HTTP request.
 router.post('/admin/generate', requireOwner, async (req, res) => {
-  try {
-    const sendDate = req.body?.sendDate || nextSendDate();
-    const { candidates, research } = await generateCandidates({ count: 3 });
-    if (!candidates.length) {
-      return res.status(422).json({ error: 'No qualifying stories found', research });
+  const jobId = crypto.randomUUID();
+  const sendDate = req.body?.sendDate || nextSendDate();
+  generationJobs.set(jobId, { status: 'running', stage: 'starting', startedAt: Date.now() });
+  res.status(202).json({ jobId });
+
+  (async () => {
+    try {
+      const { candidates, research } = await generateCandidates({
+        count: 3,
+        onProgress: (p) => {
+          const j = generationJobs.get(jobId);
+          if (j) { j.stage = p.stage; j.detail = p.detail; }
+        },
+      });
+      if (!candidates.length) {
+        generationJobs.set(jobId, { status: 'error', error: 'No qualifying stories found right now. Try again.' });
+        return;
+      }
+      const run = await store.createRun({ sendDate, candidates, research });
+      generationJobs.set(jobId, { status: 'done', runId: run.id });
+    } catch (e) {
+      generationJobs.set(jobId, { status: 'error', error: e.message });
     }
-    const run = await store.createRun({ sendDate, candidates, research });
-    res.json({ run });
-  } catch (e) {
-    res.status(500).json({ error: e.message });
+  })();
+});
+
+// Poll generation progress.
+router.get('/admin/generate/status', requireOwner, (req, res) => {
+  const job = generationJobs.get(req.query.jobId);
+  res.json(job || { status: 'unknown' });
+  // Clean up finished jobs shortly after they're read.
+  if (job && (job.status === 'done' || job.status === 'error')) {
+    setTimeout(() => generationJobs.delete(req.query.jobId), 30000);
   }
 });
 

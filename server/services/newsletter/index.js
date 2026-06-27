@@ -40,8 +40,12 @@ async function buildCandidate(story, usedPrincipleTexts) {
  * @param {string} [opts.timespan]       GDELT lookback (default '2d')
  * @returns {Promise<{candidates:Array, research:Object}>}
  */
-async function generateCandidates({ count = 3, gateThreshold = GATE_THRESHOLD, timespan = '2d' } = {}) {
+async function generateCandidates({ count = 3, gateThreshold = GATE_THRESHOLD, timespan = '2d', onProgress } = {}) {
+  const report = (stage, detail) => { try { onProgress && onProgress({ stage, detail }); } catch (_) {} };
+
+  report('fetching', 'pulling the news');
   const articles = await fetchAll({ timespan });
+  report('qualifying', `${articles.length} articles`);
   const stories = qualifyStories(articles);
 
   if (!stories.length) {
@@ -53,6 +57,7 @@ async function generateCandidates({ count = 3, gateThreshold = GATE_THRESHOLD, t
   let ptr = 0; // pointer into the ranked story pool
 
   while (candidates.length < count && ptr < stories.length) {
+    report('writing', `issue ${candidates.length + 1} of ${count}`);
     const storyA = stories[ptr++];
     let best = await buildCandidate(storyA, usedPrincipleTexts);
     if (!best) continue;
