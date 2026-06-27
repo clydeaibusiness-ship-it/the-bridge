@@ -712,13 +712,25 @@ Return this exact JSON structure with 6 sections. Each section has a "title" and
 
   // Navigation Chart — soul + strategy as cached system blocks
   const soulContent = getSoulPrimer();
-  const strategyContent = getSystemPrompt(false); // chart gen doesn't need operational context
-  const chartSystemPrompt = soulContent
-    ? `${soulContent}\n\n---\n\n${strategyContent}`
-    : strategyContent;
-  const fullSystem = additionalContext
-    ? `${chartSystemPrompt}\n\n---\n\nAdditional context from the player's web presence:${additionalContext}`
-    : chartSystemPrompt;
+  const strategyContent = getSystemPrompt();
+  const chartSystemBlocks = [];
+  if (soulContent) {
+    chartSystemBlocks.push({
+      type: 'text',
+      text: soulContent
+    });
+  }
+  chartSystemBlocks.push({
+    type: 'text',
+    text: strategyContent,
+    cache_control: { type: 'ephemeral' }
+  });
+  if (additionalContext) {
+    chartSystemBlocks.push({
+      type: 'text',
+      text: '---\n\nAdditional context from the player\'s web presence:' + additionalContext
+    });
+  }
 
   const response = await client.messages.create({
     model: 'claude-sonnet-4-6',
