@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex" />
+  <title>Earl — Newsletter Desk</title>
+  <script>var _isProd = location.hostname === 'captainsbridge.io' || location.hostname === 'www.captainsbridge.io'; window.__clerk_publishable_key = _isProd ? 'pk_live_Y2xlcmsuY2FwdGFpbnNicmlkZ2UuaW8k' : 'pk_test_b2JsaWdpbmctcHl0aG9uLTUuY2xlcmsuYWNjb3VudHMuZGV2JA';</script>
+  <script src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@5/dist/clerk.browser.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --cream:#f5f0e8; --ink:#1a1512; --gold:#c8a96e; --mute:#7a7570; --line:#e0d8c8;
+      --red:#b4543f; --green:#5a7d57; --card:#fffdf8;
+    }
+    * { box-sizing:border-box; }
+    body { margin:0; background:var(--cream); color:var(--ink); font-family:Georgia,'Times New Roman',serif; }
+    .bar { position:sticky; top:0; z-index:5; background:var(--cream); border-bottom:1px solid var(--line);
+      display:flex; align-items:center; gap:12px; padding:14px 18px; flex-wrap:wrap; }
+    .brand { font-family:'Playfair Display',serif; font-weight:700; font-size:22px; }
+    .brand small { font-family:'DM Mono',monospace; font-weight:400; font-size:12px; color:var(--mute); letter-spacing:.12em; text-transform:uppercase; margin-left:6px; }
+    .bar .spacer { flex:1; }
+    .meta { font-family:'DM Mono',monospace; font-size:12px; color:var(--mute); }
+    button { font-family:'DM Mono',monospace; font-size:13px; cursor:pointer; border:1px solid var(--ink);
+      background:var(--ink); color:var(--cream); padding:9px 14px; border-radius:3px; letter-spacing:.04em; }
+    button.ghost { background:transparent; color:var(--ink); }
+    button:disabled { opacity:.5; cursor:default; }
+    .hint { font-family:'DM Mono',monospace; font-size:12px; color:var(--mute); padding:6px 18px 0; }
+
+    .carousel { display:flex; overflow-x:auto; scroll-snap-type:x mandatory; gap:16px; padding:18px; -webkit-overflow-scrolling:touch; }
+    .card { flex:0 0 88%; scroll-snap-align:center; background:var(--card); border:1px solid var(--line);
+      border-radius:8px; padding:18px; box-shadow:0 1px 4px rgba(0,0,0,.04); }
+    .card.locked { border-color:var(--gold); box-shadow:0 0 0 2px var(--gold); }
+
+    .scorehead { display:flex; align-items:flex-start; gap:14px; border-bottom:1px solid var(--line); padding-bottom:12px; margin-bottom:14px; }
+    .overall { font-family:'Playfair Display',serif; font-size:40px; line-height:1; font-weight:700; }
+    .overall.ok { color:var(--green); } .overall.bad { color:var(--red); }
+    .subs { font-family:'DM Mono',monospace; font-size:11px; color:var(--mute); line-height:1.7; }
+    .flag { display:inline-block; font-family:'DM Mono',monospace; font-size:10px; color:#fff; background:var(--red);
+      padding:2px 7px; border-radius:10px; letter-spacing:.08em; text-transform:uppercase; margin-top:4px; }
+    .lockwrap { margin-left:auto; text-align:right; }
+
+    label.lab { display:block; font-family:'DM Mono',monospace; font-size:10px; letter-spacing:.16em; text-transform:uppercase; color:var(--gold); margin:14px 0 6px; }
+    .subject { width:100%; font-family:'Playfair Display',serif; font-size:18px; font-weight:600; color:var(--ink);
+      border:1px solid var(--line); border-radius:4px; padding:8px 10px; background:#fff; }
+    .box { position:relative; }
+    textarea { width:100%; font-family:Georgia,serif; font-size:15px; line-height:1.55; color:var(--ink);
+      border:1px solid var(--line); border-radius:4px; padding:10px 10px 10px; background:#fff; resize:vertical; min-height:90px; }
+    .reload { position:absolute; top:26px; right:6px; background:transparent; color:var(--mute); border:none; padding:4px 6px; font-size:12px; }
+    .reload:hover { color:var(--ink); }
+    .resource { font-family:'DM Mono',monospace; font-size:12px; color:var(--mute); margin-top:6px; }
+    .resource a { color:var(--ink); }
+    .cardfoot { display:flex; gap:10px; margin-top:16px; }
+    .msg { padding:30px 18px; font-family:'DM Mono',monospace; color:var(--mute); }
+    .err { color:var(--red); }
+  </style>
+</head>
+<body>
+  <div class="bar">
+    <div class="brand">Earl<small>Newsletter Desk</small></div>
+    <div class="spacer"></div>
+    <span class="meta" id="sendmeta"></span>
+    <button class="ghost" id="refresh">Refresh</button>
+    <button id="generate">Generate</button>
+  </div>
+  <div class="hint">Three candidates, best on the left. Edit any box, hit reload to rewrite it, or lock one in. If you lock nothing, the leftmost sends.</div>
+
+  <div id="stage" class="carousel"></div>
+  <div id="status" class="msg"></div>
+
+  <script>
+    let RUN = null;
+
+    async function api(path, method, body) {
+      const opts = { method: method || 'GET', headers: { 'Content-Type': 'application/json' } };
+      if (body) opts.body = JSON.stringify(body);
+      const r = await fetch(path, opts);
+      let data = null; try { data = await r.json(); } catch (e) {}
+      return { ok: r.ok, status: r.status, data };
+    }
+
+    const stage = document.getElementById('stage');
+    const statusEl = document.getElementById('status');
+    const sendMeta = document.getElementById('sendmeta');
+
+    function setStatus(text, isErr) {
+      statusEl.textContent = text || '';
+      statusEl.className = 'msg' + (isErr ? ' err' : '');
+    }
+
+    function scoreClass(n) { return n >= 6 ? 'ok' : 'bad'; }
+
+    function cardHtml(cand, idx) {
+      const s = cand.score || {};
+      const iss = cand.issue || {};
+      const locked = RUN && RUN.locked_index === idx;
+      const res = cand.resourceChosen;
+      return `
+        <div class="card ${locked ? 'locked' : ''}" data-idx="${idx}">
+          <div class="scorehead">
+            <div>
+              <div class="overall ${scoreClass(s.overall || 0)}">${(s.overall ?? 0)}</div>
+              ${cand.flagged ? '<span class="flag">below bar</span>' : ''}
+            </div>
+            <div class="subs">
+              news ${s.news_strength ?? '–'}<br>voice ${s.voice ?? '–'}<br>fit ${s.principle_fit ?? '–'}<br>seo ${s.seo_aio ?? '–'}
+            </div>
+            <div class="lockwrap">
+              <button class="lockbtn ${locked ? '' : 'ghost'}" data-idx="${idx}">${locked ? 'Locked ✓' : 'Lock in'}</button>
+            </div>
+          </div>
+
+          <label class="lab">Subject</label>
+          <input class="subject" data-field="subject" value="${escapeAttr(iss.subject || '')}" />
+
+          <label class="lab">1 — One thing from the world</label>
+          <div class="box">
+            <textarea data-field="section1">${escapeHtml(iss.section1 || '')}</textarea>
+            <button class="reload" data-section="1" data-idx="${idx}">↻ reload</button>
+          </div>
+
+          <label class="lab">2 — One thing learned the hard way</label>
+          <div class="box">
+            <textarea data-field="section2">${escapeHtml(iss.section2 || '')}</textarea>
+            <button class="reload" data-section="2" data-idx="${idx}">↻ reload</button>
+          </div>
+          <div class="resource">${res ? `link: <a href="${res.url}" target="_blank">${escapeHtml(res.person)} — ${escapeHtml(res.title)}</a>` : 'link: (none chosen)'}</div>
+
+          <label class="lab">3 — One question</label>
+          <div class="box">
+            <textarea data-field="section3">${escapeHtml(iss.section3 || '')}</textarea>
+            <button class="reload" data-section="3" data-idx="${idx}">↻ reload</button>
+          </div>
+
+          <div class="cardfoot">
+            <button class="savebtn" data-idx="${idx}">Save changes</button>
+          </div>
+        </div>`;
+    }
+
+    function render() {
+      if (!RUN || !Array.isArray(RUN.candidates) || !RUN.candidates.length) {
+        stage.innerHTML = '';
+        setStatus('No draft yet. Hit Generate to build three candidates.');
+        sendMeta.textContent = '';
+        return;
+      }
+      setStatus('');
+      sendMeta.textContent = 'sends ' + (RUN.send_date || '');
+      stage.innerHTML = RUN.candidates.map(cardHtml).join('');
+      wire();
+    }
+
+    function readCard(cardEl) {
+      const idx = parseInt(cardEl.dataset.idx, 10);
+      const cand = RUN.candidates[idx];
+      cand.issue = cand.issue || {};
+      cardEl.querySelectorAll('[data-field]').forEach(el => { cand.issue[el.dataset.field] = el.value; });
+      return idx;
+    }
+
+    function wire() {
+      stage.querySelectorAll('.savebtn').forEach(b => b.onclick = async () => {
+        const card = b.closest('.card'); readCard(card);
+        b.disabled = true; b.textContent = 'Saving…';
+        const { ok } = await api('/api/newsletter/admin/run/' + RUN.id, 'PATCH', { candidates: RUN.candidates });
+        b.textContent = ok ? 'Saved ✓' : 'Save failed';
+        setTimeout(() => { b.textContent = 'Save changes'; b.disabled = false; }, 1400);
+      });
+
+      stage.querySelectorAll('.lockbtn').forEach(b => b.onclick = async () => {
+        const idx = parseInt(b.dataset.idx, 10);
+        const next = (RUN.locked_index === idx) ? null : idx;
+        const { ok, data } = await api('/api/newsletter/admin/run/' + RUN.id, 'PATCH', { lockedIndex: next });
+        if (ok && data.run) { RUN = data.run; render(); }
+      });
+
+      stage.querySelectorAll('.reload').forEach(b => b.onclick = async () => {
+        const idx = parseInt(b.dataset.idx, 10);
+        const section = parseInt(b.dataset.section, 10);
+        const card = b.closest('.card'); readCard(card); // keep current edits before reload
+        b.disabled = true; const orig = b.textContent; b.textContent = '↻ …';
+        const { ok, data } = await api('/api/newsletter/admin/run/' + RUN.id + '/reload', 'POST', { candidateIndex: idx, section });
+        if (ok && data) {
+          const ta = card.querySelector('[data-field="section' + section + '"]');
+          if (ta) ta.value = data.text;
+          if (data.run) RUN = data.run;
+          if (section === 2) render(); // refresh the resource line
+        }
+        b.disabled = false; b.textContent = orig;
+      });
+    }
+
+    function escapeHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+    function escapeAttr(s){return escapeHtml(s).replace(/"/g,'&quot;');}
+
+    document.getElementById('generate').onclick = async () => {
+      const btn = document.getElementById('generate');
+      btn.disabled = true; btn.textContent = 'Generating…'; setStatus('Pulling news, qualifying, writing three issues. This takes a minute.');
+      const { ok, data, status } = await api('/api/newsletter/admin/generate', 'POST', {});
+      btn.disabled = false; btn.textContent = 'Generate';
+      if (ok && data.run) { RUN = data.run; render(); }
+      else if (status === 403) setStatus('This desk is owner-only.', true);
+      else setStatus((data && data.error) || 'Generation failed.', true);
+    };
+
+    document.getElementById('refresh').onclick = load;
+
+    async function load() {
+      const { ok, data, status } = await api('/api/newsletter/admin/run');
+      if (status === 401) { location.href = '/login'; return; }
+      if (status === 403) { setStatus('This desk is owner-only.', true); return; }
+      if (ok) { RUN = data.run; render(); }
+      else setStatus('Could not load.', true);
+    }
+
+    (async function init(){
+      try { if (window.Clerk && !window.Clerk.loaded) await window.Clerk.load(); } catch(e){ location.href='/login'; return; }
+      try { if (window.Clerk && window.Clerk.session) await window.Clerk.session.getToken(); } catch(e){}
+      if (window.Clerk && !window.Clerk.user) { location.href = '/login'; return; }
+      load();
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,866 @@
+{
+  "_meta": {
+    "purpose": "Borrowed-trust resource library for Newsletter Earl, Section 2. Each person behind a Big Book principle, with real sub-20-minute touchpoints where they convey their own thinking. Organized people-first. Code filters by lever/principle and drops recently-used resources before the writing call; Earl picks the best fit from the survivors. Usage is stamped on send, never on draft generation.",
+    "selection_flow": "1) match principle to story  2) filter library to that principle's resources  3) drop anything used too recently (last_used)  4) inject survivors into the writing call  5) Earl picks best fit for the point made",
+    "length_ceiling_minutes": 20,
+    "resource_types": ["talk", "video", "podcast", "interview", "essay", "book_excerpt"],
+    "book_excerpt_rule": "Cite exact chapter and the segment within it. Never 'read the book.'",
+    "polarizing_rule": "For polarizing public figures, anchor the link to the specific idea or work, never their broader platform.",
+    "verified_field": "true only when a search or fetch confirmed the URL resolves to the right content and the length is under the ceiling.",
+    "lever_index": {
+      "1": "Positioning / Focus",
+      "2": "Information Asymmetry",
+      "3": "Time",
+      "4": "Capital",
+      "5": "Differentiation",
+      "6": "Habit Design",
+      "7": "Switching Costs",
+      "8": "Network Effects",
+      "9": "Systems",
+      "10": "People"
+    },
+    "status_values": ["researched", "partial", "todo"],
+    "last_updated": "2026-06-27"
+  },
+  "people": [
+    {
+      "name": "Will Guidara",
+      "book": "Unreasonable Hospitality",
+      "levers": [5, 7, 10],
+      "principles": ["unreasonable hospitality as differentiation", "the 95/5 rule", "the generous solution"],
+      "polarizing": false,
+      "status": "partial",
+      "resources": [
+        {
+          "id": "guidara-ted-hospitality",
+          "type": "talk",
+          "title": "The secret ingredients of great hospitality",
+          "platform": "TED",
+          "url": "https://www.ted.com/talks/will_guidara_the_secret_ingredients_of_great_hospitality",
+          "alt_url": "https://www.youtube.com/watch?v=6RHfP38nJqo",
+          "length_min": 16,
+          "anchors": "Hospitality as the product itself; the unreasonable gesture that creates a memorable moment; the 95/5 rule.",
+          "verified": true,
+          "last_used": null
+        }
+      ]
+    },
+    {
+      "name": "Rory Sutherland",
+      "book": "Alchemy",
+      "levers": [5, 7],
+      "principles": ["the irrational is rational / psycho-logic", "reframe before you redesign", "loss aversion"],
+      "polarizing": false,
+      "status": "partial",
+      "resources": [
+        {
+          "id": "sutherland-ted-adman",
+          "type": "talk",
+          "title": "Life lessons from an ad man",
+          "platform": "TED",
+          "url": "https://www.ted.com/talks/rory_sutherland_life_lessons_from_an_ad_man",
+          "length_min": 16,
+          "anchors": "Perceived value can satisfy as much as real value; reframing a problem instead of re-engineering it; the Frederick the Great potato story.",
+          "verified": true,
+          "last_used": null
+        }
+      ]
+    },
+    {
+      "name": "Simon Sinek",
+      "book": "The Infinite Game",
+      "levers": [1, 10],
+      "principles": ["the infinite game", "start with why"],
+      "polarizing": false,
+      "status": "partial",
+      "resources": [
+        {
+          "id": "sinek-ted-why",
+          "type": "talk",
+          "title": "How great leaders inspire action",
+          "platform": "TED (TEDxPugetSound)",
+          "url": "https://www.ted.com/talks/simon_sinek_how_great_leaders_inspire_action",
+          "length_min": 18,
+          "anchors": "The Golden Circle; start with why, not what; people buy why you do it.",
+          "verified": true,
+          "last_used": null
+        }
+      ]
+    },
+    {
+      "name": "Daniel Pink",
+      "book": "When",
+      "levers": [3],
+      "principles": ["peak, trough, and recovery", "timing is a lever"],
+      "polarizing": false,
+      "status": "partial",
+      "resources": [
+        {
+          "id": "pink-franklincovey-ptr",
+          "type": "video",
+          "title": "Daniel Pink on Peak, Trough, and Recovery",
+          "platform": "FranklinCovey On Leadership (YouTube)",
+          "url": "https://www.youtube.com/watch?v=qR-NqSpS_cE",
+          "length_min": 6,
+          "anchors": "The daily peak/trough/recovery cycle; do analytic work at peak, admin at trough, creative at recovery.",
+          "verified": true,
+          "last_used": null
+        },
+        {
+          "id": "pink-icma-timing",
+          "type": "interview",
+          "title": "Timing Is Everything: An Interview with Daniel Pink",
+          "platform": "ICMA PM Magazine",
+          "url": "https://icma.org/articles/pm-magazine/timing-everything-interview-daniel-pink",
+          "length_min": 10,
+          "anchors": "Why when you do something is as important as what you do.",
+          "verified": true,
+          "last_used": null
+        }
+      ]
+    },
+    {
+      "name": "Charles Duhigg",
+      "book": "The Power of Habit",
+      "levers": [6],
+      "principles": ["the habit loop: cue, routine, reward", "keystone habits"],
+      "polarizing": false,
+      "status": "partial",
+      "resources": [
+        {
+          "id": "duhigg-umn-habit",
+          "type": "interview",
+          "title": "The Power of Habit with Charles Duhigg",
+          "platform": "Taking Charge of Your Wellbeing, University of Minnesota",
+          "url": "https://www.takingcharge.csh.umn.edu/power-habit-charles-duhigg",
+          "length_min": null,
+          "anchors": "Cue, routine, reward; how to change a habit by keeping the cue and reward and swapping the routine; keystone habits.",
+          "verified": false,
+          "note": "Page has Duhigg video segments with timestamps; confirm a single segment lands under 20 min, or cite the cue/routine/reward segment specifically.",
+          "last_used": null
+        }
+      ]
+    },
+    {
+      "name": "Nir Eyal",
+      "book": "Hooked",
+      "levers": [6, 7],
+      "principles": ["the habit loop: trigger, action, variable reward, investment", "internal triggers", "variable rewards"],
+      "polarizing": false,
+      "status": "partial",
+      "resources": [
+        {
+          "id": "eyal-googleplay-hooked",
+          "type": "essay",
+          "title": "Optimize App Retention with the Hooked Model",
+          "platform": "Google Play Apps & Games (Medium), by Nir Eyal",
+          "url": "https://medium.com/googleplaydev/optimize-app-retention-with-the-hooked-model-a0781f8e5d29",
+          "length_min": 10,
+          "anchors": "The four steps of the Hook: trigger, action, variable reward, investment.",
+          "verified": true,
+          "last_used": null
+        }
+      ]
+    },
+    {
+      "name": "Chris Voss",
+      "book": "Never Split the Difference",
+      "levers": [10],
+      "principles": ["tactical empathy", "'that's right' is more powerful than 'yes'"],
+      "polarizing": false,
+      "status": "partial",
+      "resources": [
+        {
+          "id": "voss-tedx-nevada",
+          "type": "talk",
+          "title": "Never Split the Difference",
+          "platform": "TEDxUniversityofNevada (YouTube)",
+          "url": "https://www.youtube.com/watch?v=MjHdkNmTjY0",
+          "length_min": 18,
+          "anchors": "Tactical empathy; calibrated questions; naming the other side's position to be heard.",
+          "verified": true,
+          "last_used": null
+        }
+      ]
+    },
+    {
+      "name": "Mohnish Pabrai",
+      "book": "The Dhandho Investor",
+      "levers": [1, 4],
+      "principles": ["pioneers get arrows, second movers win", "heads I win, tails I don't lose much", "few bets, big bets, infrequent bets"],
+      "polarizing": false,
+      "status": "partial",
+      "resources": [
+        {
+          "id": "pabrai-google-dhandho",
+          "type": "talk",
+          "title": "Dhandho. Heads I win; Tails I don't lose much",
+          "platform": "Talks at Google (YouTube)",
+          "url": "https://www.youtube.com/watch?v=E_nWM4vjgqE",
+          "length_min": null,
+          "anchors": "The Patels and the motel business, low downside and high upside; explain the thesis in four or five sentences without a spreadsheet.",
+          "verified": false,
+          "note": "Full talk runs long; cite the Patel motel segment (opening) to stay near the ceiling.",
+          "last_used": null
+        }
+      ]
+    },
+    {
+      "name": "Michael Gerber",
+      "book": "The E-Myth Revisited",
+      "levers": [9, 10],
+      "principles": ["the technician's entrepreneurial seizure", "work on the business, not in it", "the franchise prototype"],
+      "polarizing": false,
+      "status": "partial",
+      "resources": [
+        {
+          "id": "gerber-bringonsuccess-onit",
+          "type": "interview",
+          "title": "Work On Your Business, Not In It - Michael E. Gerber Explains Why",
+          "platform": "Bring On Success",
+          "url": "https://www.bringonsuccess.com/e/work-on-your-business-not-in-it-%E2%80%94-michael-e-gerber-explains-why",
+          "length_min": null,
+          "anchors": "The technician's entrepreneurial seizure; building turnkey systems so the business does not depend on the owner.",
+          "verified": false,
+          "note": "Confirm runtime is under 20 min before use; swap for a shorter clip if it runs long.",
+          "last_used": null
+        }
+      ]
+    },
+    {
+      "name": "Eric Ries",
+      "book": "The Lean Startup",
+      "levers": [9],
+      "principles": ["build, measure, learn", "validated learning"],
+      "polarizing": false,
+      "status": "partial",
+      "resources": [
+        {
+          "id": "ries-ecorner-leanstartup",
+          "type": "talk",
+          "title": "Evangelizing for the Lean Startup",
+          "platform": "Stanford eCorner",
+          "url": "https://ecorner.stanford.edu/videos/2329/Evangelizing-for-the-Lean-Startup-Entire-Talk",
+          "length_min": null,
+          "anchors": "Build, measure, learn; minimum viable product; the pivot. Small fast experiments over big assumptions.",
+          "verified": false,
+          "note": "Full talk runs long; eCorner publishes short clip segments, cite the build-measure-learn clip to stay under the ceiling.",
+          "last_used": null
+        }
+      ]
+    },
+    {
+      "name": "Peter Thiel",
+      "book": "Zero to One",
+      "levers": [1],
+      "principles": ["zero to one vs one to n", "monopoly over competition", "what important truth do few people agree with you on"],
+      "polarizing": true,
+      "status": "partial",
+      "resources": [
+        {
+          "id": "thiel-cs183b-competition",
+          "type": "talk",
+          "title": "Competition is for Losers (How to Start a Startup, Lecture 5)",
+          "platform": "Stanford CS183B / Y Combinator (YouTube)",
+          "url": "https://www.youtube.com/results?search_query=peter+thiel+competition+is+for+losers+how+to+start+a+startup",
+          "length_min": null,
+          "anchors": "Escape competition by being the best at one narrow thing; dominate a small market first; create a new category instead of fighting for an old one.",
+          "verified": false,
+          "note": "POLARIZING figure: anchor strictly to the business idea, never his politics or platform. Confirm the exact lecture URL; lecture runs ~50 min, cite the small-market-monopoly segment.",
+          "last_used": null
+        }
+      ]
+    },
+    {
+      "name": "Patrick Bet-David",
+      "book": "Your Next Five Moves",
+      "levers": [3, 10],
+      "principles": ["think five moves ahead", "a goal without a path is a wish", "you are the average of your five"],
+      "polarizing": true,
+      "status": "partial",
+      "resources": [
+        {
+          "id": "betdavid-valuetainment-fivemoves",
+          "type": "video",
+          "title": "Think Five Moves Ahead (Your Next Five Moves)",
+          "platform": "Valuetainment (YouTube)",
+          "url": "https://www.youtube.com/results?search_query=patrick+bet-david+think+five+moves+ahead",
+          "length_min": null,
+          "anchors": "Move one is master knowing yourself; think five moves ahead while competitors think one; five is the sweet spot between foresight and paralysis.",
+          "verified": false,
+          "note": "POLARIZING figure: anchor strictly to the strategy idea, never his politics or platform. Confirm the exact short Valuetainment video URL.",
+          "last_used": null
+        }
+      ]
+    },
+    {
+      "name": "W. Chan Kim and Renee Mauborgne",
+      "book": "Blue Ocean Strategy",
+      "levers": [1, 5, 7],
+      "principles": ["blue ocean vs red ocean", "value innovation", "never compete on price to retain"],
+      "polarizing": false,
+      "status": "partial",
+      "resources": [
+        {
+          "id": "blueocean-official-explainer",
+          "type": "essay",
+          "title": "What is Blue Ocean Strategy?",
+          "platform": "blueoceanstrategy.com (Kim and Mauborgne's official site)",
+          "url": "https://www.blueoceanstrategy.com/what-is-blue-ocean-strategy/",
+          "length_min": 10,
+          "anchors": "Value innovation, the simultaneous pursuit of differentiation and low cost; stop competing in the red ocean and create uncontested space.",
+          "verified": true,
+          "note": "Authors' own site. A short official animated overview also exists on their YouTube; add it as a second touchpoint when its URL is confirmed.",
+          "last_used": null
+        }
+      ]
+    },
+    {
+      "name": "Jay Conrad Levinson",
+      "book": "Guerrilla Marketing",
+      "levers": [8],
+      "principles": ["marketing is every point of contact", "commit to one message long enough to compound", "measure marketing by profit, not impressions"],
+      "polarizing": false,
+      "deceased": true,
+      "status": "partial",
+      "resources": [
+        {
+          "id": "levinson-excerpt-meaning-of-marketing",
+          "type": "book_excerpt",
+          "title": "Guerrilla Marketing, 'The Meaning of Marketing' chapter: marketing is every bit of contact",
+          "platform": "book passage",
+          "url": "https://www.gmarketing.com/",
+          "length_min": 7,
+          "anchors": "Marketing is every bit of contact your company has with anyone in the outside world; consistency breeds familiarity, familiarity breeds confidence, confidence breeds sales.",
+          "verified": true,
+          "note": "Deceased author: cite the 'meaning of marketing' chapter and the 'every bit of contact' and 'consistency breeds familiarity' lines. No filmed talk by Levinson is used.",
+          "last_used": null
+        }
+      ]
+    },
+    {
+      "name": "Derek Thompson",
+      "book": "Hitmakers",
+      "levers": [5, 8],
+      "principles": ["MAYA: most advanced yet acceptable", "nothing spreads by accident; find the broadcast"],
+      "polarizing": false,
+      "status": "partial",
+      "resources": [
+        {
+          "id": "thompson-ted-maya",
+          "type": "talk",
+          "title": "The four-letter code to selling anything",
+          "platform": "TED (2018)",
+          "url": "https://www.ted.com/talks/derek_thompson_the_four_letter_code_to_selling_anything",
+          "length_min": 14,
+          "anchors": "MAYA, most advanced yet acceptable; the tension between neophilia and neophobia; Raymond Loewy.",
+          "verified": true,
+          "last_used": null
+        }
+      ]
+    },
+    {
+      "name": "Jeff Sutherland",
+      "book": "Scrum",
+      "levers": [3],
+      "principles": ["the 80/20 of time", "time-boxed sprints create clarity"],
+      "polarizing": false,
+      "status": "partial",
+      "resources": [
+        {
+          "id": "sutherland-leanit-scrum",
+          "type": "talk",
+          "title": "Scrum: the art of doing twice the work in half the time",
+          "platform": "Lean IT Summit 2014 (YouTube)",
+          "url": "https://www.youtube.com/watch?v=5vSc4WhkrMs",
+          "length_min": null,
+          "anchors": "Protect the 20 percent of effort that drives the result; time-boxed sprints force focus.",
+          "verified": false,
+          "note": "Summit talk may run over the ceiling; cite the segment on focus and prioritization.",
+          "last_used": null
+        }
+      ]
+    },
+    {
+      "name": "Jeffrey Liker",
+      "book": "The Toyota Way",
+      "levers": [9],
+      "principles": ["genchi genbutsu: go and see", "fix defects at the source", "continuous improvement as practice"],
+      "polarizing": false,
+      "status": "partial",
+      "resources": [
+        {
+          "id": "liker-leanblog-genchi",
+          "type": "interview",
+          "title": "Dr. Jeffrey Liker on The Toyota Way (genchi genbutsu segment)",
+          "platform": "Lean Blog Podcast #3",
+          "url": "https://www.leanblog.org/2006/08/leanblog-podcast-3-dr-jeffrey-liker_27/",
+          "length_min": null,
+          "anchors": "Go and see for yourself; managers evaluate the real situation firsthand instead of trusting the report.",
+          "verified": false,
+          "note": "Liker discusses genchi genbutsu around the 16:03 mark; cite that segment specifically.",
+          "last_used": null
+        }
+      ]
+    },
+    {
+      "name": "Rob Fitzpatrick",
+      "book": "The Mom Test",
+      "levers": [2],
+      "principles": ["validate the problem before the solution", "customers lie to be polite", "the mom test"],
+      "polarizing": false,
+      "status": "partial",
+      "resources": [
+        {
+          "id": "fitzpatrick-momtest-site",
+          "type": "essay",
+          "title": "The Mom Test (core ideas and short author videos)",
+          "platform": "momtestbook.com",
+          "url": "https://www.momtestbook.com/",
+          "length_min": 10,
+          "anchors": "Ask about their life and past behavior, not your idea; questions even your mom could not lie through.",
+          "verified": true,
+          "last_used": null
+        }
+      ]
+    },
+    {
+      "name": "John Doerr",
+      "book": "Measure What Matters",
+      "levers": [3],
+      "principles": ["objectives and key results", "the one number that matters"],
+      "polarizing": false,
+      "status": "partial",
+      "resources": [
+        {
+          "id": "doerr-ted-okr",
+          "type": "talk",
+          "title": "Why the secret to success is setting the right goals",
+          "platform": "TED (2018)",
+          "url": "https://www.ted.com/talks/john_doerr_why_the_secret_to_success_is_setting_the_right_goals",
+          "length_min": 12,
+          "anchors": "OKRs: the objective is what you want, the key results are how you know you got there; the Google and Bono examples.",
+          "verified": true,
+          "last_used": null
+        }
+      ]
+    },
+    {
+      "name": "Tom Rath and Barry Conchie",
+      "book": "Strengths Based Leadership",
+      "levers": [10],
+      "principles": ["build on strengths, not weaknesses", "the four domains of leadership strength", "followers need trust, compassion, stability, hope"],
+      "polarizing": false,
+      "status": "partial",
+      "resources": [
+        {
+          "id": "rath-findyourstrengths",
+          "type": "video",
+          "title": "Tom Rath: Find Your Strengths",
+          "platform": "YouTube",
+          "url": "https://www.youtube.com/watch?v=93anYwdtADs",
+          "length_min": 6,
+          "anchors": "Stop fixing weaknesses; build the work around what each person is naturally great at.",
+          "verified": true,
+          "last_used": null
+        }
+      ]
+    },
+    {
+      "name": "Chris Guillebeau",
+      "book": "The $100 Startup",
+      "levers": [4],
+      "principles": ["the minimum viable offering", "build from revenue, not funding"],
+      "polarizing": false,
+      "status": "partial",
+      "resources": [
+        {
+          "id": "guillebeau-tnw-neweconomy",
+          "type": "talk",
+          "title": "Notes on the New Economy",
+          "platform": "TNW Conference 2017 (YouTube)",
+          "url": "https://www.youtube.com/watch?v=qFq_I7stzYQ",
+          "length_min": null,
+          "anchors": "Building a profitable micro-business from a tiny investment; revenue before funding; the case studies behind The $100 Startup.",
+          "verified": false,
+          "note": "Confirm runtime is at or near 20 min before use.",
+          "last_used": null
+        }
+      ]
+    },
+    {
+      "name": "Jake Knapp",
+      "book": "Sprint",
+      "levers": [3],
+      "principles": ["the five-day design sprint", "time constraints create clarity"],
+      "polarizing": false,
+      "status": "partial",
+      "resources": [
+        {
+          "id": "knapp-medium-sprint-recipe",
+          "type": "essay",
+          "title": "The product design sprint: a five-day recipe for startups",
+          "platform": "Medium, by Jake Knapp",
+          "url": "https://jakek.medium.com/the-product-design-sprint-a-five-day-recipe-for-startups-84fde3e97d79",
+          "length_min": 12,
+          "anchors": "The five-day sprint structure; compressing months of debate into one focused week.",
+          "verified": true,
+          "last_used": null
+        },
+        {
+          "id": "knapp-gv-sprint",
+          "type": "video",
+          "title": "The Design Sprint (day-by-day videos)",
+          "platform": "GV (gv.com/sprint)",
+          "url": "https://www.gv.com/sprint/",
+          "length_min": 15,
+          "anchors": "Short videos walking through each day of the sprint.",
+          "verified": true,
+          "last_used": null
+        }
+      ]
+    },
+    {
+      "name": "Steven Levitt and Stephen Dubner",
+      "book": "Think Like a Freak",
+      "levers": [2],
+      "principles": ["counterintuitive thinking as information asymmetry", "think like a freak"],
+      "polarizing": false,
+      "status": "partial",
+      "resources": [
+        {
+          "id": "dubner-wharton-threewords",
+          "type": "essay",
+          "title": "To 'Think Like a Freak,' Start with These Three Words",
+          "platform": "Knowledge at Wharton",
+          "url": "https://knowledge.wharton.upenn.edu/article/three-words-to-help-retrain-your-brain/",
+          "length_min": 9,
+          "anchors": "Saying 'I don't know' as the start of real thinking; questioning conventional wisdom because the obvious answer is usually already taken.",
+          "verified": true,
+          "note": "Big Think hosts short Dubner video clips as an alternate touchpoint; the full Freakonomics Radio episodes run over the ceiling.",
+          "last_used": null
+        }
+      ]
+    },
+    {
+      "name": "Victoria Grady",
+      "book": "Stuck",
+      "levers": [7],
+      "principles": ["change resistance is real and predictable", "the transition curve"],
+      "polarizing": false,
+      "researcher_voice": true,
+      "status": "partial",
+      "resources": [
+        {
+          "id": "grady-tedx-staplers",
+          "type": "talk",
+          "title": "Staplers & Volleyballs: Why Strength May Not Be What You Think",
+          "platform": "TEDxColumbiana",
+          "url": "https://tedxcolumbiana.com/dr-victoria-m-grady/",
+          "length_min": 14,
+          "anchors": "People resist change because the brain attaches to the familiar; loss, not stubbornness, drives the resistance.",
+          "verified": false,
+          "note": "Confirm the playable TEDx video URL (likely on YouTube) before use.",
+          "last_used": null
+        }
+      ]
+    },
+    {
+      "name": "Dale Carnegie",
+      "book": "How to Win Friends and Influence People",
+      "levers": [8, 10],
+      "principles": ["win friends before you need them", "genuine interest as a skill", "people do business with people they like and trust"],
+      "polarizing": false,
+      "deceased": true,
+      "status": "partial",
+      "resources": [
+        {
+          "id": "carnegie-excerpt-genuine-interest",
+          "type": "book_excerpt",
+          "title": "How to Win Friends and Influence People, Part Two, Chapter 1: 'Become Genuinely Interested in Other People' (Principle 1)",
+          "platform": "book passage",
+          "url": "https://www.goodreads.com/book/show/4865.How_to_Win_Friends_Influence_People",
+          "length_min": 7,
+          "anchors": "You make more friends in two months by being genuinely interested in others than in two years trying to make them interested in you; the segment on remembering birthdays and greeting people with real warmth.",
+          "verified": true,
+          "note": "Deceased author: cite this exact chapter and the 'two months / two years' segment. No filmed talk exists.",
+          "last_used": null
+        }
+      ]
+    },
+    {
+      "name": "Mike Michalowicz",
+      "book": "Profit First / Fix This Next / Clockwork",
+      "levers": [4, 9],
+      "principles": ["profit first: revenue minus profit equals expenses", "the business hierarchy of needs / vital need", "the queen bee role; run four weeks without you"],
+      "polarizing": false,
+      "status": "partial",
+      "resources": [
+        {
+          "id": "michalowicz-tedx-profitfirst",
+          "type": "talk",
+          "title": "'Profit First' is better for entrepreneurs than 'G.A.A.P.'",
+          "platform": "TEDxFultonStreet (YouTube)",
+          "url": "https://www.youtube.com/watch?v=-8O2Rw8moHs",
+          "length_min": 14,
+          "anchors": "Flip the formula to Sales minus Profit equals Expenses; take profit first so the business is forced to run lean; his own made-it-then-lost-it story.",
+          "verified": true,
+          "last_used": null
+        }
+      ]
+    },
+    {
+      "name": "Howard Schultz",
+      "book": "Onward",
+      "levers": [5],
+      "principles": ["the third place", "the Starbucks turnaround: closing to retrain"],
+      "polarizing": false,
+      "case_study": true,
+      "status": "partial",
+      "resources": [
+        {
+          "id": "schultz-thirdplace-starbucks",
+          "type": "interview",
+          "title": "Howard Schultz on reclaiming the third place",
+          "platform": "Starbucks Stories (about.starbucks.com)",
+          "url": "https://about.starbucks.com/stories/2025/brian-niccol-and-howard-schultz-on-reclaiming-the-third-place-and-delivering-performance-through-the-lens-of-humanity/",
+          "length_min": 10,
+          "anchors": "The third place between home and work as the actual product; experience and human connection over coffee.",
+          "verified": false,
+          "note": "Schultz's own words on the third place; confirm a short video/segment, or substitute a short Schultz talk clip.",
+          "last_used": null
+        }
+      ]
+    },
+    {
+      "name": "Tripp Mickle",
+      "book": "After Steve",
+      "levers": [10],
+      "principles": ["design vs operations after a founder", "what holds a company together when the visionary leaves"],
+      "polarizing": false,
+      "case_study": true,
+      "status": "partial",
+      "resources": [
+        {
+          "id": "mickle-twit-aftersteve-clip",
+          "type": "interview",
+          "title": "Jony Ive & Tim Cook's working relationship post Steve Jobs (clip)",
+          "platform": "TWiT (Triangulation clip)",
+          "url": "https://twit.tv/shows/tech-break/episodes/7280",
+          "length_min": null,
+          "anchors": "What shifts when the visionary leaves and the operator takes over; design culture versus operational excellence.",
+          "verified": false,
+          "note": "Short clip from the full Triangulation interview; confirm runtime under the ceiling.",
+          "last_used": null
+        }
+      ]
+    },
+    {
+      "name": "Andy Dunn",
+      "book": "Burn Rate",
+      "levers": [4],
+      "principles": ["founder psychology", "the cost of growth at all costs"],
+      "polarizing": false,
+      "case_study": true,
+      "status": "partial",
+      "resources": [
+        {
+          "id": "dunn-ecorner-mentalhealth",
+          "type": "talk",
+          "title": "Mental Health for Entrepreneurs",
+          "platform": "Stanford eCorner",
+          "url": "https://stvp.stanford.edu/videos/mental-health-for-entrepreneurs-entire-talk/",
+          "length_min": null,
+          "anchors": "The human cost behind the growth story; what chasing scale did to the founder underneath it.",
+          "verified": false,
+          "note": "eCorner publishes short clips of this talk; cite a clip under the ceiling rather than the full session.",
+          "last_used": null
+        }
+      ]
+    },
+    {
+      "name": "Joseph Michelli",
+      "book": "The Starbucks Experience",
+      "levers": [5, 9],
+      "principles": ["customer experience as a system", "the details that make the experience"],
+      "polarizing": false,
+      "case_study": true,
+      "status": "partial",
+      "resources": [
+        {
+          "id": "michelli-starbucks-experience",
+          "type": "essay",
+          "title": "The Starbucks Experience: five principles (author overview)",
+          "platform": "josephmichelli.com",
+          "url": "https://www.josephmichelli.com/starbucksexperience/",
+          "length_min": 10,
+          "anchors": "Make it your own; surprise and delight; embrace resistance. Experience engineered as a repeatable system.",
+          "verified": true,
+          "note": "Michelli's own overview; a short keynote clip can be added as a second touchpoint when a URL is confirmed.",
+          "last_used": null
+        }
+      ]
+    },
+    {
+      "name": "Nina Munk",
+      "book": "The Idealist",
+      "levers": [9],
+      "principles": ["why brilliant frameworks fail without ground-level understanding"],
+      "polarizing": false,
+      "case_study": true,
+      "status": "partial",
+      "resources": [
+        {
+          "id": "munk-idealist-site",
+          "type": "essay",
+          "title": "The Idealist (author overview)",
+          "platform": "ninamunk.com",
+          "url": "https://ninamunk.com/books-cpt/the-idealist/",
+          "length_min": 8,
+          "anchors": "A $120M plan to end village poverty colliding with the reality on the ground; the gap between the spreadsheet and the dirt road.",
+          "verified": true,
+          "note": "No short filmed talk confirmed; her EconTalk interview runs long. If no clip is found, cite a passage from The Idealist (the Dertu chapter, where the plan meets the ground) as a book_excerpt.",
+          "last_used": null
+        }
+      ]
+    },
+    {
+      "name": "Bo Burlingham",
+      "book": "Small Giants",
+      "levers": [1],
+      "principles": ["choosing to be great instead of big", "mojo: the soul of a company that stays small on purpose"],
+      "polarizing": false,
+      "operator_voice": true,
+      "status": "partial",
+      "resources": [
+        {
+          "id": "burlingham-booktalk-smallgiants",
+          "type": "interview",
+          "title": "Small Giants: Interview with Bo Burlingham",
+          "platform": "Book Talk Today (YouTube)",
+          "url": "https://www.youtube.com/watch?v=0QUuU1P1W-E",
+          "length_min": null,
+          "anchors": "Companies that choose greatness over growth; each defines its own greatness; Zingerman's, Clif Bar, Righteous Babe.",
+          "verified": false,
+          "note": "Confirm runtime under 20 min; if long, use a clipped segment on the choose-to-be-great thesis.",
+          "last_used": null
+        }
+      ]
+    },
+    {
+      "name": "Jack Stack",
+      "book": "The Great Game of Business",
+      "levers": [4, 10],
+      "principles": ["open-book management", "teach everyone to read the numbers", "give people a stake in the outcome"],
+      "polarizing": false,
+      "operator_voice": true,
+      "status": "partial",
+      "resources": [
+        {
+          "id": "stack-greatgame-official",
+          "type": "video",
+          "title": "Jack Stack on open-book management",
+          "platform": "greatgame.com (official)",
+          "url": "https://www.greatgame.com/jack",
+          "length_min": null,
+          "anchors": "The 1983 employee buyout of SRC; teaching frontline workers the financials so they act like owners.",
+          "verified": false,
+          "note": "Official page; confirm an embedded video segment under 20 min, or cite a specific short clip.",
+          "last_used": null
+        }
+      ]
+    },
+    {
+      "name": "Karen Mills",
+      "book": "Fintech, Small Business & the American Dream",
+      "levers": [4],
+      "principles": ["the small business capital gap", "how lending and credit decide who survives"],
+      "polarizing": false,
+      "researcher_voice": true,
+      "status": "partial",
+      "resources": [
+        {
+          "id": "mills-hks-growthpolicy",
+          "type": "interview",
+          "title": "Fintech, Small Business & the American Dream (GrowthPolicy interview)",
+          "platform": "Harvard Kennedy School, Mossavar-Rahmani Center",
+          "url": "https://www.hks.harvard.edu/centers/mrcbg/programs/growthpolicy/fintech-small-business-american-dream",
+          "length_min": 12,
+          "anchors": "Why small businesses struggle to get capital; how technology is reshaping who can borrow and survive.",
+          "verified": false,
+          "note": "Confirm this is a readable Q&A under the ceiling; karengmills.com is a backup anchor.",
+          "last_used": null
+        }
+      ]
+    },
+    {
+      "name": "Scott Shane",
+      "book": "The Illusions of Entrepreneurship",
+      "levers": [2],
+      "principles": ["the data behind who actually succeeds", "debunking the costly myths owners live by"],
+      "polarizing": false,
+      "researcher_voice": true,
+      "status": "partial",
+      "resources": [
+        {
+          "id": "shane-smallbiztrends-columns",
+          "type": "essay",
+          "title": "Scott Shane's columns on small business data",
+          "platform": "Small Business Trends (authored by Scott Shane)",
+          "url": "https://smallbiztrends.com/author/scott-shane/",
+          "length_min": 8,
+          "anchors": "Research-backed reality checks on survival rates, growth myths, and what the data actually says about small firms.",
+          "verified": true,
+          "note": "Pick the single column matching the principle being taught; each is a short read in his own words.",
+          "last_used": null
+        }
+      ]
+    },
+    {
+      "name": "Norm Brodsky",
+      "book": "Street Smarts (with Bo Burlingham)",
+      "levers": [4],
+      "principles": ["cash is survival, sales are vanity", "follow the numbers", "protect gross margin and receivables"],
+      "polarizing": false,
+      "operator_voice": true,
+      "status": "partial",
+      "resources": [
+        {
+          "id": "brodsky-inc-stayalive",
+          "type": "essay",
+          "title": "How to Stay Alive When Business Shrinks",
+          "platform": "Inc. Magazine, Street Smarts column by Norm Brodsky",
+          "url": "https://www.inc.com/magazine/201206/norm-brodsky/street-smarts-how-to-keep-business-alive.html",
+          "length_min": 8,
+          "anchors": "When revenue drops, cash and gross margin keep you open; a serial operator's plain survival math.",
+          "verified": true,
+          "note": "Other strong Brodsky columns: 'Follow the Numbers' and 'How to Fix Cash-Flow Problems.' Pick the one matching the principle.",
+          "last_used": null
+        }
+      ]
+    },
+    {
+      "name": "John Mullins",
+      "book": "The Customer-Funded Business",
+      "levers": [4],
+      "principles": ["fund growth from customers, not investors", "five customer-funded models", "revenue before raising"],
+      "polarizing": false,
+      "researcher_voice": true,
+      "status": "partial",
+      "resources": [
+        {
+          "id": "mullins-ted-customerfunded",
+          "type": "talk",
+          "title": "TED talk on customer-funded growth (TEDxLondonBusinessSchool, on TED.com)",
+          "platform": "TED",
+          "url": "https://www.ted.com/speakers/john_mullins_TEDxLondonBusinessSchool20230415-52753",
+          "length_min": 12,
+          "anchors": "Why raising capital first is often the wrong move; growing on your customers' cash instead.",
+          "verified": false,
+          "note": "Confirm the exact TED talk URL/slug; customerfundedbusiness.com is the backup anchor.",
+          "last_used": null
+        }
+      ]
+    }
+  ]
+}

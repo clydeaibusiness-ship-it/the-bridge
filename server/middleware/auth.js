@@ -71,4 +71,20 @@ function requireAuth(req, res, next) {
   next();
 }
 
-module.exports = { extractUser, requireAuth };
+/**
+ * Require the owner — gates the newsletter admin to a single Clerk account
+ * whose email matches NEWSLETTER_ADMIN_EMAIL (falls back to OWNER_EMAIL).
+ * Fails closed: if no admin email is configured, nobody gets in.
+ * Run after extractUser so req.dbUser is populated.
+ */
+function requireOwner(req, res, next) {
+  if (!req.dbUser) return res.status(401).json({ error: 'Authentication required' });
+  const allow = (process.env.NEWSLETTER_ADMIN_EMAIL || process.env.OWNER_EMAIL || '').toLowerCase();
+  if (!allow) return res.status(503).json({ error: 'Admin email not configured' });
+  if ((req.dbUser.email || '').toLowerCase() !== allow) {
+    return res.status(403).json({ error: 'Forbidden' });
+  }
+  next();
+}
+
+module.exports = { extractUser, requireAuth, requireOwner };

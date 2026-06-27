@@ -10,6 +10,7 @@ const apiRoutes = require('./routes/api');
 const authRoutes = require('./routes/auth');
 const paymentRoutes = require('./routes/payments');
 const commanderRoutes = require('./routes/commander');
+const newsletterRoutes = require('./routes/newsletter');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -66,6 +67,7 @@ app.use('/api', apiRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/commander', commanderRoutes);
+app.use('/api/newsletter', newsletterRoutes);
 
 // Auth + tier gate middleware for protected pages
 const { extractUser } = require('./middleware/auth');
@@ -152,6 +154,11 @@ app.get('/terms', (req, res) => {
 
 app.get('/config-panel', (req, res) => {
   res.sendFile(path.join(__dirname, '../pages/config-panel.html'));
+});
+
+// Newsletter admin desk — Clerk-gated client-side; the API enforces owner-only.
+app.get('/newsletter-admin', (req, res) => {
+  res.sendFile(path.join(__dirname, '../pages/newsletter-admin.html'));
 });
 
 // Health check
