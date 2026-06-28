@@ -161,6 +161,56 @@ app.get('/newsletter-admin', (req, res) => {
   res.sendFile(path.join(__dirname, '../pages/newsletter-admin.html'));
 });
 
+// Public newsletter archive (server-rendered for SEO/AIO). Fully free, no wall.
+app.get('/newsletter', async (req, res) => {
+  try {
+    const store = require('./services/newsletter/store');
+    const { renderArchiveIndex } = require('./services/newsletter/archive');
+    const issues = await store.listPublishedIssues({ limit: 200 });
+    res.set('Content-Type', 'text/html').send(renderArchiveIndex(issues));
+  } catch (e) {
+    res.status(500).send('Archive unavailable.');
+  }
+});
+
+app.get('/newsletter/:slug', async (req, res) => {
+  try {
+    const store = require('./services/newsletter/store');
+    const { renderArchivePost } = require('./services/newsletter/archive');
+    const issue = await store.getPublishedIssueBySlug(req.params.slug);
+    if (!issue) {
+      return res.status(404).set('Content-Type', 'text/html').send(
+        `<div style="font-family:Georgia,serif;background:#f5f0e8;color:#1a1512;max-width:520px;margin:60px auto;text-align:center;padding:0 20px"><h2>Issue not found</h2><p><a href="/newsletter">Back to the archive →</a></p></div>`
+      );
+    }
+    res.set('Content-Type', 'text/html').send(renderArchivePost(issue));
+  } catch (e) {
+    res.status(500).send('Issue unavailable.');
+  }
+});
+
+// Sitemap + robots for the archive.
+app.get('/sitemap.xml', async (req, res) => {
+  try {
+    const store = require('./services/newsletter/store');
+    const base = process.env.PUBLIC_BASE_URL || 'https://captainsbridge.io';
+    const issues = await store.listPublishedIssues({ limit: 500 });
+    const urls = [`${base}/`, `${base}/newsletter`, ...issues.map((i) => `${base}/newsletter/${i.slug}`)];
+    const xml =
+      `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n` +
+      urls.map((u) => `  <url><loc>${u}</loc></url>`).join('\n') +
+      `\n</urlset>`;
+    res.set('Content-Type', 'application/xml').send(xml);
+  } catch (e) {
+    res.status(500).send('');
+  }
+});
+
+app.get('/robots.txt', (req, res) => {
+  const base = process.env.PUBLIC_BASE_URL || 'https://captainsbridge.io';
+  res.set('Content-Type', 'text/plain').send(`User-agent: *\nAllow: /\nDisallow: /newsletter-admin\n\nSitemap: ${base}/sitemap.xml\n`);
+});
+
 // Health check
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });

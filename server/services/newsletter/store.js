@@ -88,6 +88,34 @@ async function listIssues({ limit = 50 } = {}) {
   return data;
 }
 
+/** Published archive issues, newest first (public). */
+async function listPublishedIssues({ limit = 200 } = {}) {
+  const db = getClient();
+  if (!db) return [];
+  const { data, error } = await db
+    .from('newsletter_issues')
+    .select('slug, subject, story, sent_at, publish_at')
+    .eq('published', true)
+    .order('sent_at', { ascending: false })
+    .limit(limit);
+  if (error) return [];
+  return data;
+}
+
+/** A single published issue by slug (public). */
+async function getPublishedIssueBySlug(slug) {
+  const db = getClient();
+  if (!db) return null;
+  const { data, error } = await db
+    .from('newsletter_issues')
+    .select('*')
+    .eq('slug', slug)
+    .eq('published', true)
+    .limit(1);
+  if (error || !data?.length) return null;
+  return data[0];
+}
+
 /** Purge research older than 15 days; the finalized issues are untouched. */
 async function purgeExpiredRuns() {
   const db = getClient();
@@ -243,6 +271,8 @@ module.exports = {
   markRunSent,
   createIssue,
   listIssues,
+  listPublishedIssues,
+  getPublishedIssueBySlug,
   purgeExpiredRuns,
   getSubscriberByEmail,
   addSubscriber,

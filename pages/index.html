@@ -46,6 +46,15 @@
       transition: border-color 0.15s, color 0.15s;
     }
     .top-bar-signin:hover { border-color: #3a3530; color: #0a0a0f; }
+    .top-bar-nav { display: flex; align-items: center; gap: 18px; }
+    .top-bar-link {
+      font-family: var(--font-data);
+      font-size: 0.6875rem;
+      letter-spacing: 0.08em;
+      color: #3a3530;
+      text-decoration: none;
+    }
+    .top-bar-link:hover { color: #0a0a0f; }
 
     .hero-split {
       display: grid;
@@ -226,7 +235,10 @@
 
 <header class="top-bar">
   <a href="/" class="top-bar-brand">EARL</a>
-  <a href="/login" class="top-bar-signin" id="nav-auth-link">Sign In</a>
+  <nav class="top-bar-nav">
+    <a href="/newsletter" class="top-bar-link">Newsletter</a>
+    <a href="/login" class="top-bar-signin" id="nav-auth-link">Sign In</a>
+  </nav>
 </header>
 
 <!-- HERO -->
@@ -464,6 +476,7 @@
     <div class="footer-bottom">
       <div class="footer-copy">EARL © 2025</div>
       <div class="footer-links">
+        <a href="/newsletter">Newsletter</a>
         <a href="#">Privacy</a>
         <a href="/terms">Terms</a>
         <a href="#">Contact</a>
