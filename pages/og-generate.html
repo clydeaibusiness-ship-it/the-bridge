@@ -114,8 +114,8 @@
     document.getElementById('dl').addEventListener('click', () => {
       render(img.complete && img.naturalWidth ? img : null);
       const a = document.createElement('a');
-      a.download = 'og-image.png';
-      a.href = canvas.toDataURL('image/png');
+      a.download = 'og-image.jpg';
+      a.href = canvas.toDataURL('image/jpeg', 0.88);
       a.click();
     });
   </script>
