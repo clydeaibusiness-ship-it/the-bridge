@@ -39,11 +39,24 @@ function escapeHtml(s) {
 
 // ---- Admin (owner only) ----
 
-// The current draft (what the carousel shows). Null if none generated yet.
+// The batch for the NEXT send date only. Empty until the night-before run
+// exists, so the desk shows nothing stale between issues.
 router.get('/admin/run', requireOwner, async (req, res) => {
   try {
-    const run = await store.getLatestDraft();
-    res.json({ run });
+    const sendDate = jobs.nextSendDate();
+    const run = await store.getDraftForSendDate(sendDate);
+    res.json({ run, nextSendDate: sendDate });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// Discard the current batch (e.g., a test run) so the desk goes empty again.
+// The night-before scheduler will generate a fresh one for that send date.
+router.post('/admin/run/:id/discard', requireOwner, async (req, res) => {
+  try {
+    await store.updateRun(req.params.id, { status: 'expired' });
+    res.json({ ok: true });
   } catch (e) {
     res.status(500).json({ error: e.message });
   }

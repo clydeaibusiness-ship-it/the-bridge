@@ -62,12 +62,14 @@
     .body { padding:18px 22px 22px; }
     .lab { display:block; font-family:var(--mono); font-size:10px; letter-spacing:.18em; text-transform:uppercase; color:var(--gold-d); margin:18px 0 7px; }
     .lab:first-child { margin-top:0; }
-    .subject { width:100%; font-family:var(--serif); font-size:21px; font-weight:600; color:var(--ink); line-height:1.25;
-      border:none; border-bottom:1px solid var(--line); padding:2px 0 8px; background:transparent; }
+    .subject { width:100%; font-family:var(--serif); font-size:21px; font-weight:600; color:var(--ink); line-height:1.3;
+      border:none; border-bottom:1px solid var(--line); padding:2px 0 8px; background:transparent;
+      resize:none; overflow:hidden; display:block; }
     .subject:focus { outline:none; border-color:var(--gold); }
     .box { position:relative; }
+    /* Text fields grow to fit their content — no inner scrollbars, no drag handle. */
     textarea { width:100%; font-family:var(--body); font-size:15.5px; line-height:1.62; color:var(--ink2);
-      border:1px solid var(--line); border-radius:6px; padding:12px 12px; background:#fffdfa; resize:vertical; min-height:96px; }
+      border:1px solid var(--line); border-radius:6px; padding:12px 12px; background:#fffdfa; resize:none; overflow:hidden; }
     textarea:focus { outline:none; border-color:var(--gold); box-shadow:0 0 0 3px rgba(200,169,110,.15); }
     .rewrite { position:absolute; top:-26px; right:0; background:transparent; border:none; color:var(--mute); padding:2px 4px; font-size:11px; letter-spacing:.04em; }
     .rewrite:hover { color:var(--gold-d); }
@@ -101,6 +103,7 @@
     </div>
     <div class="spacer"></div>
     <span class="when" id="when"></span>
+    <button class="ghost" id="discard" style="display:none">Discard batch</button>
     <button class="ghost" id="backfill">Subscribe members</button>
     <button class="ghost" id="refresh">Refresh</button>
     <button id="generate">Generate</button>
@@ -129,6 +132,16 @@
 
     function setStatus(t, isErr) { statusEl.textContent = t || ''; statusEl.className = 'statusline' + (isErr ? ' err' : ''); }
     function scoreClass(n) { return n >= 6 ? 'ok' : 'bad'; }
+
+    let NEXT_SEND = null;
+    function autoGrow(el) { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; }
+    function growAll() { rail.querySelectorAll('textarea').forEach(autoGrow); }
+    function emptyMsg() {
+      if (!NEXT_SEND) return 'No batch yet. Hit Generate to build one now.';
+      const d = new Date(NEXT_SEND + 'T12:00:00');
+      const day = d.toLocaleDateString('en-US', { weekday: 'long' });
+      return day + "'s three candidates appear here the night before, around 8pm Central. You can also hit Generate to build one now.";
+    }
     function escapeHtml(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
     function escapeAttr(s){return escapeHtml(s).replace(/"/g,'&quot;');}
 
@@ -160,7 +173,7 @@
           </div>
           <div class="body">
             <span class="lab">Subject</span>
-            <input class="subject" data-field="subject" value="${escapeAttr(iss.subject)}" />
+            <textarea class="subject" data-field="subject" rows="1">${escapeHtml(iss.subject)}</textarea>
 
             <span class="lab">1 · One thing from the world</span>
             <div class="box"><button class="rewrite" data-section="1" data-idx="${idx}">↻ rewrite</button>
@@ -186,15 +199,19 @@
     }
 
     function render() {
+      const discardBtn = document.getElementById('discard');
       if (!RUN || !Array.isArray(RUN.candidates) || !RUN.candidates.length) {
         rail.innerHTML = ''; pageIdx.textContent = ''; whenEl.textContent = '';
-        statusEl.textContent || setStatus('No draft yet. Hit Generate to build three candidates.');
+        if (discardBtn) discardBtn.style.display = 'none';
+        setStatus(emptyMsg());
         return;
       }
       setStatus(''); whenEl.textContent = 'sends ' + (RUN.send_date || '');
+      if (discardBtn) discardBtn.style.display = '';
       rail.innerHTML = RUN.candidates.map(cardHtml).join('');
       pageIdx.textContent = RUN.candidates.length + ' candidates · swipe →';
       wire();
+      requestAnimationFrame(growAll);
     }
 
     function readCard(cardEl) {
@@ -222,7 +239,7 @@
         readCard(card); b.disabled = true; const orig = b.textContent; b.textContent = '↻ rewriting…';
         const { ok, data } = await api('/api/newsletter/admin/run/' + RUN.id + '/reload', 'POST', { candidateIndex: idx, section });
         if (ok && data) {
-          const ta = card.querySelector('[data-field="section' + section + '"]'); if (ta) ta.value = data.text;
+          const ta = card.querySelector('[data-field="section' + section + '"]'); if (ta) { ta.value = data.text; autoGrow(ta); }
           if (data.run) RUN = data.run;
           if (section === 2) render();
         }
@@ -236,6 +253,7 @@
         b.textContent = (ok && data.sent) ? 'Sent to you ✓' : ((data && data.error) || 'failed');
         setTimeout(() => { b.textContent = o; b.disabled = false; }, 2200);
       });
+      rail.querySelectorAll('textarea').forEach(t => t.addEventListener('input', () => autoGrow(t)));
     }
 
     const genBtn = document.getElementById('generate');
@@ -266,6 +284,12 @@
 
     document.getElementById('refresh').onclick = load;
 
+    document.getElementById('discard').onclick = async () => {
+      if (!RUN || !confirm('Discard this batch? The desk goes empty until the next night-before run.')) return;
+      const { ok } = await api('/api/newsletter/admin/run/' + RUN.id + '/discard', 'POST', {});
+      if (ok) { RUN = null; render(); }
+    };
+
     document.getElementById('backfill').onclick = async () => {
       if (!confirm('Subscribe all existing paid members to the newsletter? They start receiving it on the next send.')) return;
       const b = document.getElementById('backfill'); b.disabled = true; const o = b.textContent; b.textContent = 'Subscribing…';
@@ -278,7 +302,7 @@
       const { ok, data, status } = await api('/api/newsletter/admin/run');
       if (status === 401) { location.href = '/login'; return; }
       if (status === 403) { setStatus('This desk is owner-only.', true); return; }
-      if (ok) { RUN = data.run; render(); } else setStatus('Could not load.', true);
+      if (ok) { RUN = data.run; NEXT_SEND = data.nextSendDate || NEXT_SEND; render(); } else setStatus('Could not load.', true);
     }
 
     (async function init() {
