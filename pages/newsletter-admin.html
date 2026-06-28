@@ -7,66 +7,108 @@
   <title>Earl — Newsletter Desk</title>
   <script>var _isProd = location.hostname === 'captainsbridge.io' || location.hostname === 'www.captainsbridge.io'; window.__clerk_publishable_key = _isProd ? 'pk_live_Y2xlcmsuY2FwdGFpbnNicmlkZ2UuaW8k' : 'pk_test_b2JsaWdpbmctcHl0aG9uLTUuY2xlcmsuYWNjb3VudHMuZGV2JA';</script>
   <script src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@5/dist/clerk.browser.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <style>
     :root {
-      --cream:#f5f0e8; --ink:#1a1512; --gold:#c8a96e; --mute:#7a7570; --line:#e0d8c8;
-      --red:#b4543f; --green:#5a7d57; --card:#fffdf8;
+      --cream:#f5f0e8; --paper:#fffdf9; --ink:#1a1512; --ink2:#3a322a; --gold:#c8a96e; --gold-d:#a8884c;
+      --mute:#8a837a; --line:#e6ddcd; --green:#5a7d57; --red:#b4543f;
+      --left:#6b7a8f; --center:#9a948a; --right:#a76a52;
+      --serif:'Playfair Display',Georgia,serif; --mono:'DM Mono',ui-monospace,monospace; --body:Georgia,'Times New Roman',serif;
     }
     * { box-sizing:border-box; }
-    body { margin:0; background:var(--cream); color:var(--ink); font-family:Georgia,'Times New Roman',serif; }
-    .bar { position:sticky; top:0; z-index:5; background:var(--cream); border-bottom:1px solid var(--line);
-      display:flex; align-items:center; gap:12px; padding:14px 18px; flex-wrap:wrap; }
-    .brand { font-family:'Playfair Display',serif; font-weight:700; font-size:22px; }
-    .brand small { font-family:'DM Mono',monospace; font-weight:400; font-size:12px; color:var(--mute); letter-spacing:.12em; text-transform:uppercase; margin-left:6px; }
-    .bar .spacer { flex:1; }
-    .meta { font-family:'DM Mono',monospace; font-size:12px; color:var(--mute); }
-    button { font-family:'DM Mono',monospace; font-size:13px; cursor:pointer; border:1px solid var(--ink);
-      background:var(--ink); color:var(--cream); padding:9px 14px; border-radius:3px; letter-spacing:.04em; }
+    html,body { margin:0; }
+    body { background:var(--cream); color:var(--ink); font-family:var(--body);
+      background-image:radial-gradient(circle at 50% -10%, #fbf7ef 0%, var(--cream) 60%); min-height:100vh; }
+
+    /* masthead */
+    .masthead { position:sticky; top:0; z-index:10; background:rgba(245,240,232,.92); backdrop-filter:blur(6px);
+      border-bottom:1px solid var(--line); display:flex; align-items:center; gap:16px; padding:16px 22px; }
+    .mark { font-family:var(--serif); font-weight:700; font-size:26px; letter-spacing:.01em; line-height:1; }
+    .mark em { font-style:normal; color:var(--gold-d); }
+    .kicker { font-family:var(--mono); font-size:10.5px; letter-spacing:.22em; text-transform:uppercase; color:var(--mute); margin-top:3px; }
+    .masthead .spacer { flex:1; }
+    .when { font-family:var(--mono); font-size:12px; color:var(--mute); margin-right:4px; }
+    button { font-family:var(--mono); font-size:12.5px; cursor:pointer; border:1px solid var(--ink); background:var(--ink); color:var(--cream);
+      padding:9px 15px; border-radius:2px; letter-spacing:.05em; transition:opacity .15s; }
+    button:hover { opacity:.85; }
     button.ghost { background:transparent; color:var(--ink); }
-    button:disabled { opacity:.5; cursor:default; }
-    .hint { font-family:'DM Mono',monospace; font-size:12px; color:var(--mute); padding:6px 18px 0; }
+    button:disabled { opacity:.45; cursor:default; }
 
-    .carousel { display:flex; overflow-x:auto; scroll-snap-type:x mandatory; gap:16px; padding:18px; -webkit-overflow-scrolling:touch; }
-    .card { flex:0 0 88%; scroll-snap-align:center; background:var(--card); border:1px solid var(--line);
-      border-radius:8px; padding:18px; box-shadow:0 1px 4px rgba(0,0,0,.04); }
-    .card.locked { border-color:var(--gold); box-shadow:0 0 0 2px var(--gold); }
+    .statusline { font-family:var(--mono); font-size:12.5px; color:var(--mute); padding:14px 22px 0; min-height:18px; }
+    .statusline.err { color:var(--red); }
+    .lead { font-family:var(--mono); font-size:11.5px; color:var(--mute); padding:4px 22px 0; letter-spacing:.02em; }
 
-    .scorehead { display:flex; align-items:flex-start; gap:14px; border-bottom:1px solid var(--line); padding-bottom:12px; margin-bottom:14px; }
-    .overall { font-family:'Playfair Display',serif; font-size:40px; line-height:1; font-weight:700; }
-    .overall.ok { color:var(--green); } .overall.bad { color:var(--red); }
-    .subs { font-family:'DM Mono',monospace; font-size:11px; color:var(--mute); line-height:1.7; }
-    .flag { display:inline-block; font-family:'DM Mono',monospace; font-size:10px; color:#fff; background:var(--red);
-      padding:2px 7px; border-radius:10px; letter-spacing:.08em; text-transform:uppercase; margin-top:4px; }
-    .lockwrap { margin-left:auto; text-align:right; }
+    /* carousel */
+    .rail { display:flex; gap:22px; overflow-x:auto; scroll-snap-type:x mandatory; padding:20px 22px 40px; -webkit-overflow-scrolling:touch; }
+    .rail::-webkit-scrollbar { height:8px; } .rail::-webkit-scrollbar-thumb { background:var(--line); border-radius:8px; }
+    .issue { scroll-snap-align:center; flex:0 0 min(540px, 88vw); background:var(--paper); border:1px solid var(--line);
+      border-radius:10px; box-shadow:0 6px 22px rgba(60,45,25,.07); padding:0; overflow:hidden; }
+    .issue.locked { border-color:var(--gold); box-shadow:0 0 0 2px var(--gold), 0 6px 22px rgba(60,45,25,.08); }
 
-    label.lab { display:block; font-family:'DM Mono',monospace; font-size:10px; letter-spacing:.16em; text-transform:uppercase; color:var(--gold); margin:14px 0 6px; }
-    .subject { width:100%; font-family:'Playfair Display',serif; font-size:18px; font-weight:600; color:var(--ink);
-      border:1px solid var(--line); border-radius:4px; padding:8px 10px; background:#fff; }
+    /* score stamp header */
+    .ihead { display:flex; gap:16px; align-items:center; padding:18px 22px; border-bottom:1px solid var(--line);
+      background:linear-gradient(180deg,#fffefb,transparent); }
+    .stamp { width:62px; height:62px; flex:0 0 auto; border:1.5px solid var(--ink); border-radius:6px;
+      display:flex; flex-direction:column; align-items:center; justify-content:center; }
+    .stamp .n { font-family:var(--serif); font-weight:700; font-size:28px; line-height:1; }
+    .stamp .x { font-family:var(--mono); font-size:8px; letter-spacing:.12em; color:var(--mute); margin-top:2px; }
+    .stamp.ok { border-color:var(--green); } .stamp.ok .n { color:var(--green); }
+    .stamp.bad { border-color:var(--red); } .stamp.bad .n { color:var(--red); }
+    .subscores { flex:1; display:grid; grid-template-columns:1fr 1fr; gap:3px 14px; font-family:var(--mono); font-size:11px; color:var(--ink2); }
+    .subscores b { color:var(--mute); font-weight:400; }
+    .flag { display:inline-block; font-family:var(--mono); font-size:9.5px; color:#fff; background:var(--red);
+      padding:2px 7px; border-radius:10px; letter-spacing:.08em; text-transform:uppercase; margin-top:6px; }
+
+    .body { padding:18px 22px 22px; }
+    .lab { display:block; font-family:var(--mono); font-size:10px; letter-spacing:.18em; text-transform:uppercase; color:var(--gold-d); margin:18px 0 7px; }
+    .lab:first-child { margin-top:0; }
+    .subject { width:100%; font-family:var(--serif); font-size:21px; font-weight:600; color:var(--ink); line-height:1.25;
+      border:none; border-bottom:1px solid var(--line); padding:2px 0 8px; background:transparent; }
+    .subject:focus { outline:none; border-color:var(--gold); }
     .box { position:relative; }
-    textarea { width:100%; font-family:Georgia,serif; font-size:15px; line-height:1.55; color:var(--ink);
-      border:1px solid var(--line); border-radius:4px; padding:10px 10px 10px; background:#fff; resize:vertical; min-height:90px; }
-    .reload { position:absolute; top:26px; right:6px; background:transparent; color:var(--mute); border:none; padding:4px 6px; font-size:12px; }
-    .reload:hover { color:var(--ink); }
-    .resource { font-family:'DM Mono',monospace; font-size:12px; color:var(--mute); margin-top:6px; }
-    .resource a { color:var(--ink); }
-    .cardfoot { display:flex; gap:10px; margin-top:16px; }
-    .msg { padding:30px 18px; font-family:'DM Mono',monospace; color:var(--mute); }
-    .err { color:var(--red); }
+    textarea { width:100%; font-family:var(--body); font-size:15.5px; line-height:1.62; color:var(--ink2);
+      border:1px solid var(--line); border-radius:6px; padding:12px 12px; background:#fffdfa; resize:vertical; min-height:96px; }
+    textarea:focus { outline:none; border-color:var(--gold); box-shadow:0 0 0 3px rgba(200,169,110,.15); }
+    .rewrite { position:absolute; top:-26px; right:0; background:transparent; border:none; color:var(--mute); padding:2px 4px; font-size:11px; letter-spacing:.04em; }
+    .rewrite:hover { color:var(--gold-d); }
+
+    .reslink { margin-top:10px; padding:10px 12px; background:#f4eede; border-left:3px solid var(--gold); border-radius:4px; }
+    .reslink .rl-lab { font-family:var(--mono); font-size:9.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--mute); }
+    .reslink a { font-family:var(--body); font-size:14px; color:var(--ink); }
+    .reslink .unver { font-family:var(--mono); font-size:9.5px; color:#fff; background:var(--gold-d); padding:1px 6px; border-radius:8px; margin-left:6px; letter-spacing:.05em; }
+
+    .sources { margin-top:18px; border-top:1px dashed var(--line); padding-top:12px; }
+    .src-pills { display:flex; flex-wrap:wrap; gap:6px; margin-top:6px; }
+    .pill { font-family:var(--mono); font-size:11px; color:var(--ink2); text-decoration:none; border:1px solid var(--line);
+      border-radius:20px; padding:3px 10px 3px 8px; display:inline-flex; align-items:center; gap:6px; background:#fffdfa; }
+    .pill:hover { border-color:var(--gold); }
+    .dot { width:7px; height:7px; border-radius:50%; flex:0 0 auto; }
+    .dot.left { background:var(--left); } .dot.center { background:var(--center); } .dot.right { background:var(--right); } .dot.unrated { background:var(--line); }
+
+    .ifoot { display:flex; gap:10px; align-items:center; margin-top:20px; }
+    .lockbtn.on { background:var(--gold-d); border-color:var(--gold-d); color:#fff; }
+    .saved { font-family:var(--mono); font-size:11px; color:var(--green); }
+
+    .empty { font-family:var(--mono); color:var(--mute); padding:40px 22px; font-size:13px; }
+    .pageindex { text-align:center; font-family:var(--mono); font-size:11px; color:var(--mute); padding-bottom:24px; }
   </style>
 </head>
 <body>
-  <div class="bar">
-    <div class="brand">Earl<small>Newsletter Desk</small></div>
+  <div class="masthead">
+    <div>
+      <div class="mark">E<em>a</em>rl</div>
+      <div class="kicker">Newsletter Desk</div>
+    </div>
     <div class="spacer"></div>
-    <span class="meta" id="sendmeta"></span>
+    <span class="when" id="when"></span>
     <button class="ghost" id="refresh">Refresh</button>
     <button id="generate">Generate</button>
   </div>
-  <div class="hint">Three candidates, best on the left. Edit any box, hit reload to rewrite it, or lock one in. If you lock nothing, the leftmost sends.</div>
+  <div class="lead">Three candidates, strongest on the left. Edit any box, rewrite it, or lock one in. Lock nothing and the leftmost sends.</div>
+  <div class="statusline" id="status"></div>
 
-  <div id="stage" class="carousel"></div>
-  <div id="status" class="msg"></div>
+  <div id="rail" class="rail"></div>
+  <div class="pageindex" id="pageindex"></div>
 
   <script>
     let RUN = null;
@@ -79,120 +121,113 @@
       return { ok: r.ok, status: r.status, data };
     }
 
-    const stage = document.getElementById('stage');
+    const rail = document.getElementById('rail');
     const statusEl = document.getElementById('status');
-    const sendMeta = document.getElementById('sendmeta');
+    const whenEl = document.getElementById('when');
+    const pageIdx = document.getElementById('pageindex');
 
-    function setStatus(text, isErr) {
-      statusEl.textContent = text || '';
-      statusEl.className = 'msg' + (isErr ? ' err' : '');
+    function setStatus(t, isErr) { statusEl.textContent = t || ''; statusEl.className = 'statusline' + (isErr ? ' err' : ''); }
+    function scoreClass(n) { return n >= 6 ? 'ok' : 'bad'; }
+    function escapeHtml(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+    function escapeAttr(s){return escapeHtml(s).replace(/"/g,'&quot;');}
+
+    function sourcesHtml(story) {
+      const seen = new Set(); const pills = [];
+      (story && story.sources || []).forEach(s => {
+        if (!s.domain || seen.has(s.domain)) return; seen.add(s.domain);
+        const lean = s.lean || 'unrated';
+        pills.push(`<a class="pill" href="${escapeAttr(s.url||'#')}" target="_blank" rel="noopener"><span class="dot ${lean}"></span>${escapeHtml(s.domain)}</a>`);
+      });
+      if (!pills.length) return '';
+      return `<div class="sources"><span class="lab" style="margin:0">Reported across (cross-spectrum)</span><div class="src-pills">${pills.join('')}</div></div>`;
     }
 
-    function scoreClass(n) { return n >= 6 ? 'ok' : 'bad'; }
-
     function cardHtml(cand, idx) {
-      const s = cand.score || {};
-      const iss = cand.issue || {};
+      const s = cand.score || {}, iss = cand.issue || {}, res = cand.resourceChosen;
       const locked = RUN && RUN.locked_index === idx;
-      const res = cand.resourceChosen;
+      const unver = res && res.verified === false;
       return `
-        <div class="card ${locked ? 'locked' : ''}" data-idx="${idx}">
-          <div class="scorehead">
-            <div>
-              <div class="overall ${scoreClass(s.overall || 0)}">${(s.overall ?? 0)}</div>
-              ${cand.flagged ? '<span class="flag">below bar</span>' : ''}
+        <div class="issue ${locked ? 'locked' : ''}" data-idx="${idx}">
+          <div class="ihead">
+            <div class="stamp ${scoreClass(s.overall||0)}"><span class="n">${s.overall ?? '–'}</span><span class="x">/ 10</span></div>
+            <div class="subscores">
+              <div><b>news</b> ${s.news_strength ?? '–'}</div><div><b>voice</b> ${s.voice ?? '–'}</div>
+              <div><b>fit</b> ${s.principle_fit ?? '–'}</div><div><b>seo</b> ${s.seo_aio ?? '–'}</div>
+              ${cand.flagged ? '<div style="grid-column:1/3"><span class="flag">below bar</span></div>' : ''}
             </div>
-            <div class="subs">
-              news ${s.news_strength ?? '–'}<br>voice ${s.voice ?? '–'}<br>fit ${s.principle_fit ?? '–'}<br>seo ${s.seo_aio ?? '–'}
+            <button class="lockbtn ${locked ? 'on' : 'ghost'}" data-idx="${idx}">${locked ? 'Locked' : 'Lock in'}</button>
+          </div>
+          <div class="body">
+            <span class="lab">Subject</span>
+            <input class="subject" data-field="subject" value="${escapeAttr(iss.subject)}" />
+
+            <span class="lab">1 · One thing from the world</span>
+            <div class="box"><button class="rewrite" data-section="1" data-idx="${idx}">↻ rewrite</button>
+              <textarea data-field="section1">${escapeHtml(iss.section1)}</textarea></div>
+
+            <span class="lab">2 · One thing learned the hard way</span>
+            <div class="box"><button class="rewrite" data-section="2" data-idx="${idx}">↻ rewrite</button>
+              <textarea data-field="section2">${escapeHtml(iss.section2)}</textarea></div>
+            <div class="reslink">
+              <div class="rl-lab">The one link${unver ? '<span class="unver">unverified — check it</span>' : ''}</div>
+              ${res ? `<a href="${escapeAttr(res.url)}" target="_blank" rel="noopener">${escapeHtml(res.person)} — ${escapeHtml(res.title)}</a>` : '<span style="color:var(--mute)">none chosen</span>'}
             </div>
-            <div class="lockwrap">
-              <button class="lockbtn ${locked ? '' : 'ghost'}" data-idx="${idx}">${locked ? 'Locked ✓' : 'Lock in'}</button>
-            </div>
-          </div>
 
-          <label class="lab">Subject</label>
-          <input class="subject" data-field="subject" value="${escapeAttr(iss.subject || '')}" />
+            <span class="lab">3 · One question</span>
+            <div class="box"><button class="rewrite" data-section="3" data-idx="${idx}">↻ rewrite</button>
+              <textarea data-field="section3">${escapeHtml(iss.section3)}</textarea></div>
 
-          <label class="lab">1 — One thing from the world</label>
-          <div class="box">
-            <textarea data-field="section1">${escapeHtml(iss.section1 || '')}</textarea>
-            <button class="reload" data-section="1" data-idx="${idx}">↻ reload</button>
-          </div>
+            ${sourcesHtml(cand.story)}
 
-          <label class="lab">2 — One thing learned the hard way</label>
-          <div class="box">
-            <textarea data-field="section2">${escapeHtml(iss.section2 || '')}</textarea>
-            <button class="reload" data-section="2" data-idx="${idx}">↻ reload</button>
-          </div>
-          <div class="resource">${res ? `link: <a href="${res.url}" target="_blank">${escapeHtml(res.person)} — ${escapeHtml(res.title)}</a>` : 'link: (none chosen)'}</div>
-
-          <label class="lab">3 — One question</label>
-          <div class="box">
-            <textarea data-field="section3">${escapeHtml(iss.section3 || '')}</textarea>
-            <button class="reload" data-section="3" data-idx="${idx}">↻ reload</button>
-          </div>
-
-          <div class="cardfoot">
-            <button class="savebtn" data-idx="${idx}">Save changes</button>
+            <div class="ifoot"><button class="savebtn" data-idx="${idx}">Save changes</button><span class="saved" data-saved="${idx}"></span></div>
           </div>
         </div>`;
     }
 
     function render() {
       if (!RUN || !Array.isArray(RUN.candidates) || !RUN.candidates.length) {
-        stage.innerHTML = '';
-        setStatus('No draft yet. Hit Generate to build three candidates.');
-        sendMeta.textContent = '';
+        rail.innerHTML = ''; pageIdx.textContent = ''; whenEl.textContent = '';
+        statusEl.textContent || setStatus('No draft yet. Hit Generate to build three candidates.');
         return;
       }
-      setStatus('');
-      sendMeta.textContent = 'sends ' + (RUN.send_date || '');
-      stage.innerHTML = RUN.candidates.map(cardHtml).join('');
+      setStatus(''); whenEl.textContent = 'sends ' + (RUN.send_date || '');
+      rail.innerHTML = RUN.candidates.map(cardHtml).join('');
+      pageIdx.textContent = RUN.candidates.length + ' candidates · swipe →';
       wire();
     }
 
     function readCard(cardEl) {
-      const idx = parseInt(cardEl.dataset.idx, 10);
-      const cand = RUN.candidates[idx];
+      const idx = parseInt(cardEl.dataset.idx, 10), cand = RUN.candidates[idx];
       cand.issue = cand.issue || {};
       cardEl.querySelectorAll('[data-field]').forEach(el => { cand.issue[el.dataset.field] = el.value; });
       return idx;
     }
 
     function wire() {
-      stage.querySelectorAll('.savebtn').forEach(b => b.onclick = async () => {
-        const card = b.closest('.card'); readCard(card);
-        b.disabled = true; b.textContent = 'Saving…';
+      rail.querySelectorAll('.savebtn').forEach(b => b.onclick = async () => {
+        const card = b.closest('.issue'), idx = readCard(card);
+        b.disabled = true;
         const { ok } = await api('/api/newsletter/admin/run/' + RUN.id, 'PATCH', { candidates: RUN.candidates });
-        b.textContent = ok ? 'Saved ✓' : 'Save failed';
-        setTimeout(() => { b.textContent = 'Save changes'; b.disabled = false; }, 1400);
+        b.disabled = false;
+        const tag = rail.querySelector('[data-saved="' + idx + '"]'); if (tag) { tag.textContent = ok ? 'saved ✓' : 'save failed'; setTimeout(() => tag.textContent = '', 1600); }
       });
-
-      stage.querySelectorAll('.lockbtn').forEach(b => b.onclick = async () => {
-        const idx = parseInt(b.dataset.idx, 10);
-        const next = (RUN.locked_index === idx) ? null : idx;
+      rail.querySelectorAll('.lockbtn').forEach(b => b.onclick = async () => {
+        const idx = parseInt(b.dataset.idx, 10), next = (RUN.locked_index === idx) ? null : idx;
         const { ok, data } = await api('/api/newsletter/admin/run/' + RUN.id, 'PATCH', { lockedIndex: next });
         if (ok && data.run) { RUN = data.run; render(); }
       });
-
-      stage.querySelectorAll('.reload').forEach(b => b.onclick = async () => {
-        const idx = parseInt(b.dataset.idx, 10);
-        const section = parseInt(b.dataset.section, 10);
-        const card = b.closest('.card'); readCard(card); // keep current edits before reload
-        b.disabled = true; const orig = b.textContent; b.textContent = '↻ …';
+      rail.querySelectorAll('.rewrite').forEach(b => b.onclick = async () => {
+        const idx = parseInt(b.dataset.idx, 10), section = parseInt(b.dataset.section, 10), card = b.closest('.issue');
+        readCard(card); b.disabled = true; const orig = b.textContent; b.textContent = '↻ rewriting…';
         const { ok, data } = await api('/api/newsletter/admin/run/' + RUN.id + '/reload', 'POST', { candidateIndex: idx, section });
         if (ok && data) {
-          const ta = card.querySelector('[data-field="section' + section + '"]');
-          if (ta) ta.value = data.text;
+          const ta = card.querySelector('[data-field="section' + section + '"]'); if (ta) ta.value = data.text;
           if (data.run) RUN = data.run;
-          if (section === 2) render(); // refresh the resource line
+          if (section === 2) render();
         }
         b.disabled = false; b.textContent = orig;
       });
     }
-
-    function escapeHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
-    function escapeAttr(s){return escapeHtml(s).replace(/"/g,'&quot;');}
 
     const genBtn = document.getElementById('generate');
     genBtn.onclick = async () => {
@@ -207,23 +242,16 @@
       const map = { starting: 'Starting', fetching: 'Pulling the news (about 90 seconds)', qualifying: 'Sorting the stories', writing: 'Writing', scoring: 'Scoring' };
       return (map[j.stage] || j.stage || 'Working') + (j.detail ? ' — ' + j.detail : '') + '…';
     }
-
     function pollGen(jobId) {
       let tries = 0;
       const timer = setInterval(async () => {
         tries++;
         const { ok, data } = await api('/api/newsletter/admin/generate/status?jobId=' + encodeURIComponent(jobId));
         if (!ok) return;
-        if (data.status === 'running') {
-          setStatus(stageText(data));
-        } else if (data.status === 'done') {
-          clearInterval(timer); genBtn.disabled = false; genBtn.textContent = 'Generate'; await load();
-        } else if (data.status === 'error') {
-          clearInterval(timer); genBtn.disabled = false; genBtn.textContent = 'Generate'; setStatus(data.error || 'Generation error.', true);
-        } else if (data.status === 'unknown' && tries > 3) {
-          clearInterval(timer); genBtn.disabled = false; genBtn.textContent = 'Generate';
-          setStatus('Lost track of that job. Hit Refresh — it may have finished.', true);
-        }
+        if (data.status === 'running') setStatus(stageText(data));
+        else if (data.status === 'done') { clearInterval(timer); genBtn.disabled = false; genBtn.textContent = 'Generate'; await load(); }
+        else if (data.status === 'error') { clearInterval(timer); genBtn.disabled = false; genBtn.textContent = 'Generate'; setStatus(data.error || 'Generation error.', true); }
+        else if (data.status === 'unknown' && tries > 3) { clearInterval(timer); genBtn.disabled = false; genBtn.textContent = 'Generate'; setStatus('Lost track of that job. Hit Refresh — it may have finished.', true); }
       }, 3000);
     }
 
@@ -233,13 +261,12 @@
       const { ok, data, status } = await api('/api/newsletter/admin/run');
       if (status === 401) { location.href = '/login'; return; }
       if (status === 403) { setStatus('This desk is owner-only.', true); return; }
-      if (ok) { RUN = data.run; render(); }
-      else setStatus('Could not load.', true);
+      if (ok) { RUN = data.run; render(); } else setStatus('Could not load.', true);
     }
 
-    (async function init(){
-      try { if (window.Clerk && !window.Clerk.loaded) await window.Clerk.load(); } catch(e){ location.href='/login'; return; }
-      try { if (window.Clerk && window.Clerk.session) await window.Clerk.session.getToken(); } catch(e){}
+    (async function init() {
+      try { if (window.Clerk && !window.Clerk.loaded) await window.Clerk.load(); } catch (e) { location.href = '/login'; return; }
+      try { if (window.Clerk && window.Clerk.session) await window.Clerk.session.getToken(); } catch (e) {}
       if (window.Clerk && !window.Clerk.user) { location.href = '/login'; return; }
       load();
     })();

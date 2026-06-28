@@ -41,7 +41,7 @@ function usedRecently(resource, cooldownDays) {
  * @param {number} [opts.limit]        Max resources to return (default 5).
  * @returns {Array} resource records, each enriched with person/book context.
  */
-function pickResources({ lever, principle, cooldownDays = 30, limit = 5 } = {}) {
+function pickResources({ lever, principle, cooldownDays = 30, limit = 5, verifiedOnly = false } = {}) {
   const lib = load();
   const needle = (principle || '').toLowerCase();
 
@@ -65,6 +65,14 @@ function pickResources({ lever, principle, cooldownDays = 30, limit = 5 } = {}) 
       polarizing: !!p.polarizing,
     }))
   );
+
+  // 2b) Link safety: when asked, hand Earl only resources whose URL was
+  // confirmed to resolve, so a dead link can never reach a reader. Falls back
+  // to all if a principle has no verified resource yet.
+  if (verifiedOnly) {
+    const verified = resources.filter((r) => r.verified);
+    if (verified.length) resources = verified;
+  }
 
   // 3) Rotation: drop anything used too recently.
   const fresh = resources.filter((r) => !usedRecently(r, cooldownDays));

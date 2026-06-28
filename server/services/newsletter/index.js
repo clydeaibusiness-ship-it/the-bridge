@@ -24,7 +24,7 @@ async function buildCandidate(story, usedPrincipleTexts) {
   const match = matchPrinciple(story, { excludePrincipleTexts: usedPrincipleTexts });
   if (!match) return null;
 
-  const resources = pickResources({ lever: match.lever, principle: match.principle.text, limit: 5 });
+  const resources = pickResources({ lever: match.lever, principle: match.principle.text, limit: 5, verifiedOnly: true });
   const issue = await generateIssue({ story, principle: match.principle, resources });
   const score = await scoreIssue({ issue, story, principle: match.principle });
   const resourceChosen = resources.find((r) => r.id === issue.resourceId) || null;
