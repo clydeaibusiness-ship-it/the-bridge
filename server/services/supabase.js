@@ -69,7 +69,55 @@ async function getOrCreateUser(clerkId, email) {
     console.error('getOrCreateUser insert failed:', ins.error.message);
     return null;
   }
-  return ins.data;
+
+  // If someone paid via the direct ad flow (no Clerk first), a pending activation
+  // may exist for their email. Consume it now that they have a Clerk account.
+  const user = ins.data;
+  if (email) {
+    try {
+      const pending = await consumePendingActivation(email);
+      if (pending) {
+        await updateMembershipTier(user.id, 'captain');
+        if (pending.stripe_customer_id) await updateStripeCustomerId(user.id, pending.stripe_customer_id);
+        await require('../services/email').sendSubscriptionConfirmation(email);
+        try {
+          await require('./newsletter/store').addSubscriber({ email, userId: user.id, source: 'member' });
+        } catch (_) {}
+        console.log('[auth] activated pending payment for', email);
+        return { ...user, membership_tier: 'captain' };
+      }
+    } catch (e) {
+      console.error('[auth] pending activation check failed:', e.message);
+    }
+  }
+
+  return user;
+}
+
+// ---- Pending member activations (for direct-to-Stripe ad flow) ----
+
+async function createPendingActivation({ email, stripeCustomerId }) {
+  const db = getClient();
+  if (!db || !email) return null;
+  const { data, error } = await db
+    .from('pending_member_activations')
+    .upsert({ email: email.toLowerCase(), stripe_customer_id: stripeCustomerId, activated: false }, { onConflict: 'email' })
+    .select().single();
+  if (error) console.error('createPendingActivation error:', error.message);
+  return data;
+}
+
+async function consumePendingActivation(email) {
+  const db = getClient();
+  if (!db || !email) return null;
+  const { data, error } = await db
+    .from('pending_member_activations')
+    .update({ activated: true })
+    .eq('email', email.toLowerCase())
+    .eq('activated', false)
+    .select().single();
+  if (error || !data) return null;
+  return data;
 }
 
 async function getUserByClerkId(clerkId) {
@@ -1146,5 +1194,7 @@ module.exports = {
   saveBenchmarks, approveBenchmarks,
   getGraduationRecord, createGraduationRecord, finalizeGraduationRecord,
   flagExtensionRequest,
-  saveChartSections
+  saveChartSections,
+  createPendingActivation,
+  consumePendingActivation,
 };

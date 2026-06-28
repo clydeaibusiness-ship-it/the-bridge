@@ -76,7 +76,26 @@ const { ensureMemberState } = require('./services/supabase');
 async function requirePaidMember(req, res, next) {
   const token = req.cookies?.__session || req.headers.authorization?.replace('Bearer ', '');
   if (!token) {
-    // No session at all — send to the purchase flow.
+    // No Clerk session. If Stripe just redirected here with session_id, the
+    // person has paid but hasn't created their Clerk account yet. Look up their
+    // email from Stripe and send them to Clerk sign-up with it pre-filled so
+    // the pending activation fires the moment they create their account.
+    const sessionId = req.query.session_id;
+    if (sessionId && process.env.STRIPE_SECRET_KEY) {
+      try {
+        const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+        const stripeSession = await stripe.checkout.sessions.retrieve(sessionId);
+        const email = stripeSession.customer_details?.email || stripeSession.customer_email || '';
+        const isProd = req.hostname === 'captainsbridge.io' || req.hostname === 'www.captainsbridge.io';
+        const clerkBase = isProd
+          ? 'https://accounts.captainsbridge.io/sign-up'
+          : 'https://obliging-python-5.accounts.dev/sign-up';
+        const redirect = clerkBase + '?redirect_url=' + encodeURIComponent(req.protocol + '://' + req.get('host') + '/dashboard') + (email ? '&email_address=' + encodeURIComponent(email) : '');
+        return res.redirect(redirect);
+      } catch (e) {
+        console.error('Post-payment Stripe session lookup failed:', e.message);
+      }
+    }
     return res.redirect('/login?action=subscribe');
   }
 

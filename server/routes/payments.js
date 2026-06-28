@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { updateMembershipTier, updateStripeCustomerId, getUserByClerkId } = require('../services/supabase');
+const { updateMembershipTier, updateStripeCustomerId, getUserByClerkId, getOrCreateUser, createPendingActivation } = require('../services/supabase');
 const { sendSubscriptionConfirmation } = require('../services/email');
 
 /**
@@ -96,19 +96,54 @@ router.post('/webhook', async (req, res) => {
         const session = event.data.object;
         const clerkId = session.metadata?.clerk_id;
         const customerId = session.customer;
+        const customerEmail = (session.customer_details?.email || session.customer_email || '').toLowerCase();
 
         if (clerkId) {
+          // Normal flow: Clerk sign-up → Stripe payment. Activate immediately.
           const user = await getUserByClerkId(clerkId);
           if (user) {
             await updateMembershipTier(user.id, 'captain');
             await updateStripeCustomerId(user.id, customerId);
             await sendSubscriptionConfirmation(user.email);
-            // Paid members are auto-subscribed to the newsletter (no separate signup).
             try {
               await require('../services/newsletter/store').addSubscriber({ email: user.email, userId: user.id, source: 'member' });
             } catch (e) {
               console.error('Newsletter auto-subscribe failed:', e.message);
             }
+          }
+        } else if (customerEmail) {
+          // Ad flow: Stripe payment before Clerk sign-up.
+          // Check if a Clerk account already exists for this email (e.g. returning visitor).
+          let activated = false;
+          try {
+            let clerkBackend = null;
+            try { clerkBackend = require('@clerk/backend'); } catch (_) {}
+            if (clerkBackend && process.env.CLERK_SECRET_KEY) {
+              const clerk = clerkBackend.createClerkClient({ secretKey: process.env.CLERK_SECRET_KEY });
+              const existing = await clerk.users.getUserList({ emailAddress: [customerEmail] });
+              const clerkUser = existing.data?.[0] || existing[0];
+              if (clerkUser) {
+                const user = await getOrCreateUser(clerkUser.id, customerEmail);
+                if (user) {
+                  await updateMembershipTier(user.id, 'captain');
+                  await updateStripeCustomerId(user.id, customerId);
+                  await sendSubscriptionConfirmation(customerEmail);
+                  try {
+                    await require('../services/newsletter/store').addSubscriber({ email: customerEmail, userId: user.id, source: 'member' });
+                  } catch (_) {}
+                  activated = true;
+                }
+              }
+            }
+          } catch (e) {
+            console.error('Ad-flow Clerk lookup failed:', e.message);
+          }
+
+          if (!activated) {
+            // No Clerk account yet. Store pending activation — consumed when they sign up.
+            await createPendingActivation({ email: customerEmail, stripeCustomerId: customerId });
+            await sendSubscriptionConfirmation(customerEmail);
+            console.log('[webhook] pending activation stored for', customerEmail);
           }
         }
         break;
