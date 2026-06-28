@@ -140,7 +140,7 @@ function renderArchivePost(issue) {
 ${paragraphs(issue.section1)}
 <div class="lab">One thing someone else learned the hard way</div>
 ${paragraphs(issue.section2)}
-${res ? `<p class="reslink">Go to the source: <a href="${attr(res.url)}" target="_blank" rel="noopener">${esc(res.person)} — ${esc(res.title)}</a></p>` : ''}
+${res ? `<p class="reslink">Learn from someone who's done it: <a href="${attr(res.url)}" target="_blank" rel="noopener">${esc(res.person)} — ${esc(res.title)}</a></p>` : ''}
 <div class="lab">One question to carry into the week</div>
 <div class="q">${esc(issue.section3 || '')}</div>
 ${sourceLinks ? `<div class="sources"><strong>Sources:</strong> ${sourceLinks}</div>` : ''}

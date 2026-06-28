@@ -75,6 +75,42 @@
     .nl-archive { display: inline-block; margin-top: 1rem; font-family: var(--font-data); font-size: 0.75rem; letter-spacing: 0.05em; color: #3a3530; text-decoration: none; border-bottom: 1px solid #c8a96e; }
     .nl-archive:hover { color: #0a0a0f; }
 
+    /* Where Earl sits — the AI ∩ mentor overlap */
+    .distinction { background: #f5f0e8; padding: 3.5rem 0; border-top: 1px solid #e0d8c8; border-bottom: 1px solid #e0d8c8; }
+    .distinction-inner { display: grid; grid-template-columns: 240px 1fr; gap: 2.5rem; align-items: center; max-width: 58rem; margin: 0 auto; padding: 0 24px; }
+    .distinction-venn { display: flex; justify-content: center; }
+    .distinction-label { font-family: var(--font-data); font-size: 0.625rem; letter-spacing: 0.18em; color: #a8884c; margin-bottom: 0.6rem; }
+    .distinction-copy h2 { font-family: var(--font-ui); font-size: 1.5rem; font-weight: 700; color: #0a0a0f; margin: 0 0 0.75rem; line-height: 1.25; }
+    .distinction-copy p { font-family: var(--font-ui); font-size: 0.95rem; color: #3a3530; line-height: 1.7; margin: 0; }
+    @media (max-width: 640px) { .distinction-inner { grid-template-columns: 1fr; gap: 1.25rem; text-align: center; } }
+
+    /* A look inside (app preview) */
+    .inside { background: #fffdf8; padding: 4.5rem 0; border-top: 1px solid #e0d8c8; }
+    .inside-head { text-align: center; max-width: 40rem; margin: 0 auto 2.5rem; padding: 0 24px; }
+    .inside-label { font-family: var(--font-data); font-size: 0.625rem; letter-spacing: 0.18em; color: #a8884c; margin-bottom: 0.6rem; }
+    .inside-head h2 { font-family: var(--font-ui); font-size: 1.75rem; font-weight: 700; color: #0a0a0f; margin: 0 0 0.5rem; }
+    .inside-head p { font-family: var(--font-ui); font-size: 0.95rem; color: #3a3530; line-height: 1.6; margin: 0; }
+    .inside-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.25rem; max-width: 56rem; margin: 0 auto; padding: 0 24px; }
+    @media (max-width: 640px) { .inside-grid { grid-template-columns: 1fr; } }
+    .mock { background: #f5f0e8; border: 1px solid #e0d8c8; border-radius: 10px; padding: 1rem; }
+    .mock-cap { font-family: var(--font-data); font-size: 0.6875rem; letter-spacing: 0.05em; color: #7a7570; margin-top: 0.75rem; }
+    .mock-screen { background: #fff; border: 1px solid #e0d8c8; border-radius: 7px; padding: 0.85rem; min-height: 132px; }
+    .mk-bub { font-family: var(--font-ui); font-size: 0.78rem; line-height: 1.4; padding: 0.5rem 0.7rem; border-radius: 10px; margin-bottom: 0.5rem; max-width: 88%; }
+    .mk-earl { background: #efe7d6; color: #1a1512; }
+    .mk-you { background: #0a0a0f; color: #f5f0e8; margin-left: auto; }
+    .mk-stage { display: flex; gap: 6px; margin-bottom: 0.7rem; }
+    .mk-seg { flex: 1; height: 7px; border-radius: 4px; background: #e0d8c8; }
+    .mk-seg.done { background: #c8a96e; }
+    .mk-seg.half { background: linear-gradient(90deg, #c8a96e 55%, #e0d8c8 55%); }
+    .mk-line { font-family: var(--font-ui); font-size: 0.8rem; color: #3a3530; }
+    .mk-row { display: flex; align-items: center; gap: 8px; margin-bottom: 0.6rem; }
+    .mk-rowlabel { font-family: var(--font-ui); font-size: 0.72rem; color: #3a3530; width: 76px; flex: 0 0 auto; }
+    .mk-bar { flex: 1; height: 6px; border-radius: 4px; background: #e0d8c8; position: relative; }
+    .mk-bar > span { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 4px; background: #5a7d57; }
+    .mk-node { display: flex; gap: 8px; align-items: flex-start; margin-bottom: 0.6rem; font-family: var(--font-ui); font-size: 0.76rem; color: #3a3530; }
+    .mk-check { width: 14px; height: 14px; border-radius: 50%; border: 1.5px solid #c8a96e; flex: 0 0 auto; margin-top: 1px; }
+    .mk-check.on { background: #5a7d57; border-color: #5a7d57; }
+
     .hero-split {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -279,6 +315,27 @@
   </div>
 </section>
 
+<!-- WHERE EARL SITS — AI ∩ mentor -->
+<section class="distinction">
+  <div class="distinction-inner">
+    <div class="distinction-venn">
+      <svg viewBox="0 0 230 180" width="230" height="180" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Earl is the overlap between an AI and a real mentor">
+        <circle cx="88" cy="90" r="62" fill="#6b7a8f" fill-opacity="0.08" stroke="#6b7a8f" stroke-width="1.5" />
+        <circle cx="142" cy="90" r="62" fill="#c8a96e" fill-opacity="0.16" stroke="#a8884c" stroke-width="1.5" />
+        <text x="52" y="94" font-family="'Space Mono',monospace" font-size="13" fill="#3a3530" text-anchor="middle">AI</text>
+        <text x="180" y="94" font-family="'Space Mono',monospace" font-size="11" fill="#3a3530" text-anchor="middle">MENTOR</text>
+        <text x="115" y="86" font-family="'Space Mono',monospace" font-size="13" font-weight="700" fill="#0a0a0f" text-anchor="middle">EARL</text>
+        <text x="115" y="101" font-family="'Space Mono',monospace" font-size="8" fill="#7a7570" text-anchor="middle">both</text>
+      </svg>
+    </div>
+    <div class="distinction-copy">
+      <div class="distinction-label">Where Earl sits</div>
+      <h2>Not just another AI. And not a mentor you can only afford once.</h2>
+      <p>A good mentor has lived it and asks the question you are avoiding. An AI holds every book ever written and never gets tired. Earl is where the two meet. The judgment of the first and the memory of the second, with you for six months instead of one expensive hour.</p>
+    </div>
+  </div>
+</section>
+
 <!-- MEET EARL -->
 <section class="trek-context">
   <div class="trek-context-inner">
@@ -416,6 +473,49 @@
     </div>
 
     <div class="captains-closing">If you pay employees, serve customers, and lie awake wondering if you are making the right calls, you belong here.</div>
+  </div>
+</section>
+
+<!-- A LOOK INSIDE -->
+<section class="inside" id="inside">
+  <div class="inside-head">
+    <div class="inside-label">A look inside</div>
+    <h2>What the $300 actually gets you</h2>
+    <p>Here is the format once you are in, so you know exactly what to expect.</p>
+  </div>
+  <div class="inside-grid">
+    <div class="mock">
+      <div class="mock-screen">
+        <div class="mk-bub mk-earl">What specifically are you trying to fix this month?</div>
+        <div class="mk-bub mk-you">Cash. We look profitable but we are always short.</div>
+        <div class="mk-bub mk-earl">Then we start with the gap between what you bill and what you bank. Show me last month.</div>
+      </div>
+      <div class="mock-cap">Talking with Earl</div>
+    </div>
+    <div class="mock">
+      <div class="mock-screen">
+        <div class="mk-stage"><div class="mk-seg done"></div><div class="mk-seg half"></div><div class="mk-seg"></div></div>
+        <div class="mk-line"><strong>Stage 2 of 3 — Your numbers</strong></div>
+        <div class="mk-line" style="color:#7a7570;margin-top:6px">Question 11 of 13</div>
+      </div>
+      <div class="mock-cap">The interview that builds your foundation</div>
+    </div>
+    <div class="mock">
+      <div class="mock-screen">
+        <div class="mk-row"><span class="mk-rowlabel">Stay open</span><span class="mk-bar"><span style="width:72%"></span></span></div>
+        <div class="mk-row"><span class="mk-rowlabel">Steady pay</span><span class="mk-bar"><span style="width:48%"></span></span></div>
+        <div class="mk-row"><span class="mk-rowlabel">Less chaos</span><span class="mk-bar"><span style="width:61%"></span></span></div>
+      </div>
+      <div class="mock-cap">Your Navigation Chart, goals in your own words</div>
+    </div>
+    <div class="mock">
+      <div class="mock-screen">
+        <div class="mk-node"><span class="mk-check on"></span><span>Call the three slow-paying accounts</span></div>
+        <div class="mk-node"><span class="mk-check on"></span><span>Put net-15 terms on new invoices</span></div>
+        <div class="mk-node"><span class="mk-check"></span><span>Move 5% to a profit account each week</span></div>
+      </div>
+      <div class="mock-cap">Progress, action steps tracked between sessions</div>
+    </div>
   </div>
 </section>
 
