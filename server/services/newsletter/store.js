@@ -205,6 +205,20 @@ async function recordEvent({ issueId, email, type }) {
   if (error) console.error('[newsletter] event insert:', error.message);
 }
 
+/** Publish archive issues whose 7-day delay has elapsed. */
+async function publishDueIssues() {
+  const db = getClient();
+  if (!db) return 0;
+  const { data, error } = await db
+    .from('newsletter_issues')
+    .update({ published: true })
+    .lte('publish_at', new Date().toISOString())
+    .eq('published', false)
+    .select('id');
+  if (error) return 0;
+  return data?.length || 0;
+}
+
 /** Aggregate event counts per issue, for the admin stats. */
 async function getStatsForIssues(ids) {
   const db = getClient();
@@ -237,4 +251,5 @@ module.exports = {
   backfillMembers,
   recordEvent,
   getStatsForIssues,
+  publishDueIssues,
 };

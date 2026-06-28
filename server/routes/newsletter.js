@@ -15,7 +15,7 @@ const store = require('../services/newsletter/store');
 const { generateCandidates } = require('../services/newsletter');
 const { regenerateSection } = require('../services/newsletter/write');
 const { sendIssueToList } = require('../services/newsletter/send');
-const { markUsed } = require('../services/newsletter/library');
+const jobs = require('../services/newsletter/jobs');
 
 // In-memory generation jobs (single dev instance). A job runs in the
 // background after the request returns; the page polls its status.
@@ -31,25 +31,6 @@ function requireCronSecret(req, res, next) {
     return res.status(403).json({ error: 'forbidden' });
   }
   next();
-}
-
-/** Next Mon/Wed/Fri strictly after the given date, as YYYY-MM-DD. */
-function nextSendDate(from = new Date()) {
-  const d = new Date(from);
-  const SEND_DAYS = new Set([1, 3, 5]); // Mon, Wed, Fri
-  do {
-    d.setDate(d.getDate() + 1);
-  } while (!SEND_DAYS.has(d.getDay()));
-  return d.toISOString().slice(0, 10);
-}
-
-/** Clean, keyword-aware slug from the story headline. */
-function slugify(s) {
-  return String(s || 'issue')
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-    .slice(0, 80);
 }
 
 function escapeHtml(s) {
@@ -73,7 +54,8 @@ router.get('/admin/run', requireOwner, async (req, res) => {
 // (GDELT spacing + writing + scoring), too long for one HTTP request.
 router.post('/admin/generate', requireOwner, async (req, res) => {
   const jobId = crypto.randomUUID();
-  const sendDate = req.body?.sendDate || nextSendDate();
+  const sendDate = req.body?.sendDate || jobs.nextSendDate();
+  const timespan = jobs.timespanForSendDate(sendDate);
   generationJobs.set(jobId, { status: 'running', stage: 'starting', startedAt: Date.now() });
   res.status(202).json({ jobId });
 
@@ -81,6 +63,7 @@ router.post('/admin/generate', requireOwner, async (req, res) => {
     try {
       const { candidates, research } = await generateCandidates({
         count: 3,
+        timespan,
         onProgress: (p) => {
           const j = generationJobs.get(jobId);
           if (j) { j.stage = p.stage; j.detail = p.detail; }
@@ -203,78 +186,22 @@ router.post('/admin/backfill-members', requireOwner, async (req, res) => {
 
 // ---- Cron (shared-secret) ----
 
-// Evening-before generation: build the run for the next send date if absent.
+// Evening-before generation (also runnable via cron secret for a manual kick).
 router.post('/cron/generate', requireCronSecret, async (req, res) => {
-  try {
-    const sendDate = nextSendDate();
-    const existing = await store.getDraftForSendDate(sendDate);
-    if (existing) return res.json({ status: 'exists', runId: existing.id, sendDate });
-    const { candidates, research } = await generateCandidates({ count: 3 });
-    if (!candidates.length) return res.status(422).json({ error: 'no qualifying stories', research });
-    const run = await store.createRun({ sendDate, candidates, research });
-    res.json({ status: 'generated', runId: run.id, sendDate });
-  } catch (e) {
-    res.status(500).json({ error: e.message });
-  }
+  try { res.json(await jobs.runGenerate()); }
+  catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-// Send day: take today's due run, finalize the locked (or leftmost) candidate
-// into an issue, send to the list, stamp resource usage, mark the run sent.
+// Send day (also runnable via cron secret for a manual trigger).
 router.post('/cron/send', requireCronSecret, async (req, res) => {
-  try {
-    const today = new Date().toISOString().slice(0, 10);
-    const run = await store.getDueRun(today);
-    if (!run) return res.json({ status: 'nothing-due', date: today });
-
-    const idx = Number.isInteger(run.locked_index) ? run.locked_index : 0;
-    const cand = run.candidates?.[idx];
-    if (!cand) return res.status(422).json({ error: 'no candidate to send' });
-
-    const iss = cand.issue || {};
-    const story = cand.story || {};
-    const resource = cand.resourceChosen || null;
-    const now = new Date();
-    const publishAt = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000); // archive trails 7 days
-
-    const issue = await store.createIssue({
-      run_id: run.id,
-      subject: iss.subject,
-      section1: iss.section1,
-      section2: iss.section2,
-      section3: iss.section3,
-      resource,
-      principle: cand.principle,
-      story: { headline: story.headline, categoryLabel: story.categoryLabel },
-      sources: story.sources,
-      score: cand.score,
-      slug: `${slugify(story.headline || iss.subject)}-${today}`,
-      send_date: today,
-      sent_at: now.toISOString(),
-      publish_at: publishAt.toISOString(),
-      published: false,
-    });
-
-    // Stamp rotation only now, on send — not on the throwaway drafts.
-    if (resource && resource.id) { try { markUsed(resource.id, now.toISOString()); } catch (_) {} }
-
-    const subscribers = await store.getActiveSubscribers();
-    const result = await sendIssueToList({ issue, sources: story.sources, resourceChosen: resource, subscribers });
-    await store.markRunSent(run.id);
-
-    res.json({ status: 'sent', issueId: issue.id, slug: issue.slug, recipients: result.sent, failed: result.failed });
-  } catch (e) {
-    res.status(500).json({ error: e.message });
-  }
+  try { res.json(await jobs.runSend()); }
+  catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-// Daily housekeeping: purge research older than 15 days.
+// Daily housekeeping: purge 15-day research, publish archive-due issues.
 router.post('/cron/purge', requireCronSecret, async (req, res) => {
-  try {
-    const purged = await store.purgeExpiredRuns();
-    res.json({ status: 'ok', purged });
-  } catch (e) {
-    res.status(500).json({ error: e.message });
-  }
+  try { res.json(await jobs.runPurge()); }
+  catch (e) { res.status(500).json({ error: e.message }); }
 });
 
 // ---- Public ----

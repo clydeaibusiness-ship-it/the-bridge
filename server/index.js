@@ -186,6 +186,12 @@ app.use((err, req, res, next) => {
 app.listen(PORT, () => {
   console.log(`The Bridge is running on port ${PORT}`);
   console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+  // Newsletter Earl's in-process scheduler (generate/send/purge on Central time).
+  try {
+    require('./services/newsletter/scheduler').start();
+  } catch (e) {
+    console.error('Newsletter scheduler failed to start:', e.message);
+  }
 });
 
 module.exports = app;
