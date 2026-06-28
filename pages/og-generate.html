@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>OG Image Generator</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    body { margin: 0; background: #2a2218; display: flex; flex-direction: column; align-items: center; padding: 40px 20px; font-family: 'Space Mono', monospace; color: #f5f0e8; }
+    h1 { font-size: 14px; letter-spacing: 0.1em; color: #c8a96e; margin-bottom: 24px; }
+    canvas { display: block; max-width: 100%; border: 1px solid #3a3028; }
+    button { margin-top: 24px; background: #c8a96e; color: #1a1512; border: none; font-family: 'Space Mono', monospace; font-size: 13px; letter-spacing: 0.08em; padding: 12px 28px; cursor: pointer; border-radius: 2px; }
+    button:hover { background: #a8884c; }
+    p { font-size: 12px; color: #6a6058; margin-top: 12px; }
+  </style>
+</head>
+<body>
+  <h1>EARL — OG IMAGE GENERATOR</h1>
+  <canvas id="c" width="1200" height="630"></canvas>
+  <button id="dl">Download PNG</button>
+  <p>Save as og-image.png, then upload to /public/assets/</p>
+
+  <script>
+    const W = 1200, H = 630;
+    const canvas = document.getElementById('c');
+    const ctx = canvas.getContext('2d');
+
+    function draw() {
+      // Background
+      ctx.fillStyle = '#1a1512';
+      ctx.fillRect(0, 0, W, H);
+
+      // Star dots
+      const dots = [
+        [1080, 80, 2.5, 0.35], [1140, 140, 1.5, 0.25], [1060, 200, 3.5, 0.15],
+        [1160, 300, 2, 0.3], [1100, 420, 1.5, 0.2], [80, 500, 2, 0.2],
+        [40, 380, 3, 0.15], [120, 160, 1.5, 0.25]
+      ];
+      dots.forEach(([x, y, r, a]) => {
+        ctx.save();
+        ctx.globalAlpha = a;
+        ctx.fillStyle = '#c8a96e';
+        ctx.beginPath();
+        ctx.arc(x, y, r, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      });
+
+      // Left accent bar
+      ctx.fillStyle = '#c8a96e';
+      ctx.globalAlpha = 0.4;
+      ctx.fillRect(64, 64, 3, 502);
+      ctx.globalAlpha = 1;
+
+      // EARL wordmark
+      ctx.fillStyle = '#c8a96e';
+      ctx.font = '700 52px "Space Mono", monospace';
+      ctx.letterSpacing = '8px';
+      ctx.fillText('EARL', 96, 136);
+
+      // Gold rule under wordmark
+      ctx.fillStyle = '#c8a96e';
+      ctx.globalAlpha = 0.5;
+      ctx.fillRect(96, 154, 120, 1.5);
+      ctx.globalAlpha = 1;
+
+      // Kicker
+      ctx.fillStyle = '#c8a96e';
+      ctx.globalAlpha = 0.7;
+      ctx.font = '400 13px "Space Mono", monospace';
+      ctx.fillText('AI BUSINESS MENTOR', 96, 196);
+      ctx.globalAlpha = 1;
+
+      // Main headline
+      ctx.fillStyle = '#f5f0e8';
+      ctx.font = '700 58px "Space Grotesk", sans-serif';
+      ctx.fillText('You started this to do', 96, 292);
+      ctx.fillText('more of what you love.', 96, 362);
+
+      // Subline
+      ctx.fillStyle = '#a8a098';
+      ctx.font = '400 28px "Space Grotesk", sans-serif';
+      ctx.fillText('Nobody mentioned the other eighteen jobs that came with it.', 96, 434);
+
+      // Bottom rule
+      ctx.fillStyle = '#3a3028';
+      ctx.fillRect(64, 560, 1072, 1);
+
+      // Bottom left
+      ctx.fillStyle = '#6a6058';
+      ctx.font = '400 15px "Space Mono", monospace';
+      ctx.fillText('captainsbridge.io', 96, 598);
+
+      // Bottom right
+      ctx.textAlign = 'right';
+      ctx.font = '400 13px "Space Mono", monospace';
+      ctx.fillStyle = '#4a4038';
+      ctx.fillText('For the small business owner', 1136, 598);
+      ctx.textAlign = 'left';
+    }
+
+    // Wait for fonts then draw
+    document.fonts.ready.then(() => {
+      draw();
+    });
+
+    document.getElementById('dl').addEventListener('click', () => {
+      draw();
+      const a = document.createElement('a');
+      a.download = 'og-image.png';
+      a.href = canvas.toDataURL('image/png');
+      a.click();
+    });
+  </script>
+</body>
+</html>

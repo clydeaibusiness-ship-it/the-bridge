@@ -161,6 +161,11 @@ app.get('/newsletter-admin', (req, res) => {
   res.sendFile(path.join(__dirname, '../pages/newsletter-admin.html'));
 });
 
+// OG image generator — opens in browser, click Download PNG, put in /public/assets/og-image.png
+app.get('/og-generate', (req, res) => {
+  res.sendFile(path.join(__dirname, '../pages/og-generate.html'));
+});
+
 // Public newsletter archive (server-rendered for SEO/AIO). Fully free, no wall.
 app.get('/newsletter', async (req, res) => {
   try {
