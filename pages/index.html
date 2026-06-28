@@ -109,8 +109,8 @@
     }
     .hero-cta {
       display: inline-block;
-      background: #0a0a0f;
-      color: #f5f0e8;
+      background: #c8a96e;
+      color: #1a1512;
       font-family: var(--font-data);
       font-size: 0.75rem;
       letter-spacing: 0.1em;
@@ -120,7 +120,7 @@
       transition: background 0.15s;
       align-self: flex-start;
     }
-    .hero-cta:hover { background: #1e1e2a; }
+    .hero-cta:hover { background: #a8884c; }
     .hero-fine {
       font-family: var(--font-ui);
       font-size: 0.75rem;
@@ -129,7 +129,7 @@
     }
 
     /* Distinction band */
-    .distinction { background: #f5f0e8; padding: 3.5rem 0; border-top: 1px solid #e0d8c8; border-bottom: 1px solid #e0d8c8; }
+    .distinction { background: #ffffff; padding: 3.5rem 0; border-top: 1px solid #e0d8c8; border-bottom: 1px solid #e0d8c8; }
     .distinction-inner { display: grid; grid-template-columns: 240px 1fr; gap: 2.5rem; align-items: center; max-width: 58rem; margin: 0 auto; padding: 0 24px; }
     .distinction-venn { display: flex; justify-content: center; }
     .distinction-label { font-family: var(--font-data); font-size: 0.625rem; letter-spacing: 0.18em; color: #a8884c; margin-bottom: 0.6rem; text-transform: uppercase; }
@@ -178,8 +178,13 @@
     .mk-step { font-family: var(--font-ui); font-size: 0.74rem; color: #3a3530; border-left: 2px solid #e0d8c8; padding-left: 8px; margin: 6px 0 6px 2px; line-height: 1.4; }
     .mk-add { font-family: var(--font-data); font-size: 0.6rem; letter-spacing: 0.04em; color: #a8884c; }
 
-    /* What changes section */
-    .stakes { background: #f5f0e8; padding: 4.5rem 0; border-top: 1px solid #e0d8c8; }
+    /* What changes section — dark */
+    .stakes { background: #1a1512; padding: 4.5rem 0; border-top: none; }
+    .stakes .stakes-label { color: #c8a96e; }
+    .stakes .stakes-h2 { color: #f5f0e8; }
+    .stakes .stakes-col h3 { color: #f5f0e8; }
+    .stakes .stakes-col p { color: #a8a098; }
+    .stakes .stakes-col.failure h3 { color: #c87a6a; }
     .stakes-inner { max-width: 52rem; margin: 0 auto; padding: 0 24px; display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; }
     .stakes-label { font-family: var(--font-data); font-size: 0.625rem; letter-spacing: 0.18em; color: #a8884c; margin-bottom: 0.75rem; text-transform: uppercase; }
     .stakes-h2 { font-family: var(--font-ui); font-size: 1.5rem; font-weight: 700; color: #0a0a0f; margin: 0 0 1rem; line-height: 1.2; grid-column: 1 / -1; }
@@ -188,8 +193,19 @@
     .stakes-col.failure h3 { color: #8a4a3a; }
     @media (max-width: 640px) { .stakes-inner { grid-template-columns: 1fr; gap: 2rem; } .stakes-h2 { grid-column: 1; } }
 
-    /* Newsletter secondary CTA */
-    .newsletter-cta { background: #efe7d6; padding: 4.5rem 0; border-top: 1px solid #c8c0b0; }
+    /* Newsletter secondary CTA — dark section */
+    .newsletter-cta { background: #1a1512; padding: 4.5rem 0; border-top: none; }
+    .newsletter-cta .nl-label { color: #c8a96e; }
+    .newsletter-cta .nl-headline { color: #f5f0e8; }
+    .newsletter-cta .nl-sub { color: #a8a098; }
+    .newsletter-cta .nl-input { background: #2a2218; border-color: #4a4038; color: #f5f0e8; }
+    .newsletter-cta .nl-input::placeholder { color: #6a6058; }
+    .newsletter-cta .nl-input:focus { border-color: #c8a96e; }
+    .newsletter-cta .nl-btn { background: #c8a96e; color: #1a1512; }
+    .newsletter-cta .nl-btn:hover { background: #a8884c; }
+    .newsletter-cta .nl-msg { color: #c8a96e; }
+    .newsletter-cta .nl-archive { color: #a8a098; border-bottom-color: #4a4038; }
+    .newsletter-cta .nl-archive:hover { color: #f5f0e8; }
     .nl-inner { max-width: 40rem; margin: 0 auto; text-align: center; padding: 0 24px; }
     .nl-label { font-family: var(--font-data); font-size: 0.625rem; letter-spacing: 0.18em; text-transform: uppercase; color: #a8884c; margin-bottom: 0.75rem; }
     .nl-headline { font-family: var(--font-ui); font-size: 1.75rem; font-weight: 700; color: #0a0a0f; margin: 0 0 0.75rem; line-height: 1.2; }
@@ -202,6 +218,10 @@
     .nl-msg { font-family: var(--font-data); font-size: 0.75rem; color: #a8884c; margin-top: 0.75rem; min-height: 1rem; }
     .nl-archive { display: inline-block; margin-top: 1rem; font-family: var(--font-data); font-size: 0.75rem; letter-spacing: 0.05em; color: #3a3530; text-decoration: none; border-bottom: 1px solid #c8a96e; }
     .nl-archive:hover { color: #0a0a0f; }
+
+    /* Gold button overrides */
+    .btn-pricing { background: #c8a96e !important; color: #1a1512 !important; }
+    .btn-pricing:hover { background: #a8884c !important; }
 
     @media (max-width: 48em) {
       .hero-split { grid-template-columns: 1fr; }
@@ -322,26 +342,9 @@
   </div>
   <div class="landing-container">
     <div class="problem-label">The part nobody warns you about</div>
-    <div class="problem-opening">Nobody warned you about this part. Not the work itself, which you were always good at, but the weight of everything that comes with owning the business that does the work. The decisions that only you can make. The people who only answer to you. The months where the revenue looks fine and the cash still does not.</div>
-
-    <div class="problem-grid">
-      <div class="problem-item fade-in">
-        <div class="problem-number">01</div>
-        <div class="problem-headline">You did not sign up to be a manager, an accountant, a salesperson, and a strategist.</div>
-        <div class="problem-body">You signed up because you were good at something and you believed that skill was enough to build a life around. The business was supposed to be the vehicle for that. Somewhere it became the destination.</div>
-      </div>
-      <div class="problem-item fade-in">
-        <div class="problem-number">02</div>
-        <div class="problem-headline">The advice that exists for small business owners was mostly built for someone else.</div>
-        <div class="problem-body">Courses want you to scale. Coaches want you to think like a CEO. Books assume you have a team executing while you strategize. None of that is what you are actually dealing with.</div>
-      </div>
-      <div class="problem-item fade-in">
-        <div class="problem-number">03</div>
-        <div class="problem-headline">The decisions that will shape the next three years get made alone, in five minutes, with no one to think them through with.</div>
-        <div class="problem-body">Pricing. That contract. The hire you keep putting off. Each one carries real consequences, made on a gut feeling because there is nobody in your corner who actually knows your situation.</div>
-      </div>
-    </div>
-
+    <div class="problem-opening">Nobody warned you about this part. Not the work itself, which you were always good at, but the weight of everything that comes with owning the business that does the work.</div>
+    <div class="problem-opening" style="margin-top:1.25rem;">You did not sign up to be a manager, an accountant, a salesperson, and a strategist on top of the thing you actually came here to do. You signed up because you were good at something and believed that skill was enough to build a life around. The business was supposed to be the vehicle. Somewhere it became the destination.</div>
+    <div class="problem-opening" style="margin-top:1.25rem;">The advice that exists for people in your position was built for someone else. Courses want you to scale. Coaches want you to think like a CEO. Books assume you have a team executing while you strategize. None of that is what you are dealing with. What you are dealing with is this: the decisions that will shape the next three years get made in five minutes, alone, on a gut feeling, with no one to think them through with.</div>
     <div class="problem-closing">That is what wears people down. Not the work. The isolation of it.</div>
   </div>
 </section>
@@ -390,7 +393,7 @@
     </div>
 
     <div style="text-align:center;margin-top:2.5rem;">
-      <a href="/login?action=subscribe" class="hero-cta" style="text-decoration:none;display:inline-block;">Start the interview</a>
+      <a href="/login?action=subscribe" class="hero-cta" style="text-decoration:none;display:inline-block;background:#c8a96e;color:#1a1512;">Start the interview</a>
     </div>
   </div>
 </section>
