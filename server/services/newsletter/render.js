@@ -59,7 +59,7 @@ function renderEmailHtml(issue, ctx = {}) {
 
   const resource = ctx.resourceChosen;
   const resourceLine = resource
-    ? `<p style="${label}">Go to the source</p>
+    ? `<p style="${label}">Learn from someone who's done it</p>
        <p style="margin:0 0 6px;font-size:11px;line-height:1.5;font-family:Georgia,serif;color:${INK};">
          <a href="${resource.url}" style="color:${INK};text-decoration:underline;">${escapeHtml(resource.person)} — ${escapeHtml(
         resource.title
