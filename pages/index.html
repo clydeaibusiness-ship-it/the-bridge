@@ -46,6 +46,34 @@
       transition: border-color 0.15s, color 0.15s;
     }
     .top-bar-signin:hover { border-color: #3a3530; color: #0a0a0f; }
+    .top-bar-nav { display: flex; align-items: center; gap: 12px; }
+    .top-bar-link {
+      font-family: var(--font-data);
+      font-size: 0.6875rem;
+      letter-spacing: 0.08em;
+      color: #3a3530;
+      text-decoration: none;
+      border: 1px solid #c8c0b0;
+      border-radius: 2px;
+      padding: 6px 14px;
+      transition: border-color 0.15s, color 0.15s;
+    }
+    .top-bar-link:hover { border-color: #3a3530; color: #0a0a0f; }
+
+    /* Free-newsletter section (secondary CTA) */
+    .newsletter-cta { background: #efe7d6; padding: 4.5rem 0; border-top: 1px solid #c8c0b0; }
+    .nl-inner { max-width: 40rem; margin: 0 auto; text-align: center; padding: 0 24px; }
+    .nl-label { font-family: var(--font-data); font-size: 0.625rem; letter-spacing: 0.18em; text-transform: uppercase; color: #a8884c; margin-bottom: 0.75rem; }
+    .nl-headline { font-family: var(--font-ui); font-size: 1.75rem; font-weight: 700; color: #0a0a0f; margin: 0 0 0.75rem; line-height: 1.2; }
+    .nl-sub { font-family: var(--font-ui); font-size: 0.95rem; color: #3a3530; line-height: 1.7; margin: 0 0 1.5rem; }
+    .nl-form { display: flex; gap: 0.5rem; justify-content: center; flex-wrap: wrap; }
+    .nl-input { font-family: var(--font-ui); font-size: 0.95rem; padding: 0.7rem 0.9rem; border: 1px solid #c8c0b0; border-radius: 2px; background: #fff; min-width: 16rem; color: #0a0a0f; }
+    .nl-input:focus { outline: none; border-color: #c8a96e; }
+    .nl-btn { font-family: var(--font-data); font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; background: #0a0a0f; color: #f5f0e8; border: none; border-radius: 2px; padding: 0.7rem 1.4rem; cursor: pointer; }
+    .nl-btn:hover { background: #3a3530; }
+    .nl-msg { font-family: var(--font-data); font-size: 0.75rem; color: #a8884c; margin-top: 0.75rem; min-height: 1rem; }
+    .nl-archive { display: inline-block; margin-top: 1rem; font-family: var(--font-data); font-size: 0.75rem; letter-spacing: 0.05em; color: #3a3530; text-decoration: none; border-bottom: 1px solid #c8a96e; }
+    .nl-archive:hover { color: #0a0a0f; }
 
     .hero-split {
       display: grid;
@@ -226,7 +254,10 @@
 
 <header class="top-bar">
   <a href="/" class="top-bar-brand">EARL</a>
-  <a href="/login" class="top-bar-signin" id="nav-auth-link">Sign In</a>
+  <nav class="top-bar-nav">
+    <a href="/newsletter" class="top-bar-link">Newsletter</a>
+    <a href="/login" class="top-bar-signin" id="nav-auth-link">Sign In</a>
+  </nav>
 </header>
 
 <!-- HERO -->
@@ -438,6 +469,37 @@
   </div>
 </section>
 
+<!-- NEWSLETTER — secondary CTA -->
+<section class="newsletter-cta" id="newsletter">
+  <div class="nl-inner">
+    <div class="nl-label">Free Newsletter</div>
+    <h2 class="nl-headline">Earl, three mornings a week.</h2>
+    <p class="nl-sub">Not ready for the full thing? Start with the free newsletter. One thing from the world this week, one principle worth keeping, and one question to carry into the week. No politics, no noise, about a two-minute read.</p>
+    <form class="nl-form" id="nl-form">
+      <input class="nl-input" id="nl-email" type="email" placeholder="you@business.com" required aria-label="Email address" />
+      <button class="nl-btn" type="submit">Get it free</button>
+    </form>
+    <div class="nl-msg" id="nl-msg"></div>
+    <a class="nl-archive" href="/newsletter">Read past issues first &rarr;</a>
+  </div>
+</section>
+<script>
+  (function () {
+    var f = document.getElementById('nl-form');
+    if (!f) return;
+    f.addEventListener('submit', async function (e) {
+      e.preventDefault();
+      var email = document.getElementById('nl-email').value, msg = document.getElementById('nl-msg');
+      msg.textContent = '…';
+      try {
+        var r = await fetch('/api/newsletter/subscribe', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: email }) });
+        if (r.ok) { msg.textContent = "You're on the list. Watch your inbox."; f.reset(); }
+        else { msg.textContent = 'Enter a valid email and try again.'; }
+      } catch (_) { msg.textContent = 'Something went wrong, try again.'; }
+    });
+  })();
+</script>
+
 <!-- FOOTER -->
 <footer class="landing-footer" id="footer">
   <div class="stars-field">
@@ -464,6 +526,7 @@
     <div class="footer-bottom">
       <div class="footer-copy">EARL © 2025</div>
       <div class="footer-links">
+        <a href="/newsletter">Newsletter</a>
         <a href="#">Privacy</a>
         <a href="/terms">Terms</a>
         <a href="#">Contact</a>
