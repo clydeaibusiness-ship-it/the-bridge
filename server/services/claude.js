@@ -701,7 +701,7 @@ Return this exact JSON structure with 6 sections. Each section has a "title" and
 
 {
   "sections": [
-    { "title": "Ship Status", "body": "Current state of the business based on everything they told you" },
+    { "title": "Where You Stand", "body": "Current state of the business based on everything they told you" },
     { "title": "Kill Risk", "body": "The single most dangerous vulnerability that could destroy this business in the next 12 months" },
     { "title": "Lever Map", "body": "Which of the 8 strategic levers are strong, which are weak, and which are missing entirely" },
     { "title": "Leverage Sequence", "body": "The specific order in which they should address their lever gaps" },
@@ -765,7 +765,7 @@ Return this exact JSON structure with 6 sections. Each section has a "title" and
 
 {
   "sections": [
-    { "title": "Ship Status", "body": "Current state of the business based on everything they told you" },
+    { "title": "Where You Stand", "body": "Current state of the business based on everything they told you" },
     { "title": "Kill Risk", "body": "The single most dangerous vulnerability that could destroy this business in the next 12 months" },
     { "title": "Lever Map", "body": "Which of the 8 strategic levers are strong, which are weak, and which are missing entirely" },
     { "title": "Leverage Sequence", "body": "The specific order in which they should address their lever gaps" },

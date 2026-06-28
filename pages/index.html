@@ -110,6 +110,14 @@
     .mk-node { display: flex; gap: 8px; align-items: flex-start; margin-bottom: 0.6rem; font-family: var(--font-ui); font-size: 0.76rem; color: #3a3530; }
     .mk-check { width: 14px; height: 14px; border-radius: 50%; border: 1.5px solid #c8a96e; flex: 0 0 auto; margin-top: 1px; }
     .mk-check.on { background: #5a7d57; border-color: #5a7d57; }
+    .mk-doc-label { font-family: var(--font-data); font-size: 0.6rem; letter-spacing: 0.14em; color: #7a7570; margin-bottom: 5px; }
+    .mk-doctext { font-family: var(--font-ui); font-size: 0.74rem; color: #3a3530; line-height: 1.45; }
+    .mk-goal { display: flex; gap: 9px; align-items: flex-start; }
+    .mk-goaldot { width: 11px; height: 11px; border-radius: 50%; background: #0a0a0f; flex: 0 0 auto; margin-top: 3px; }
+    .mk-goaltext { font-family: var(--font-ui); font-size: 0.82rem; font-weight: 700; color: #0a0a0f; line-height: 1.3; }
+    .mk-pill { display: inline-block; font-family: var(--font-data); font-size: 0.55rem; letter-spacing: 0.08em; color: #5a5fb0; background: #e8e8f6; border-radius: 10px; padding: 2px 8px; margin: 6px 0; }
+    .mk-step { font-family: var(--font-ui); font-size: 0.74rem; color: #3a3530; border-left: 2px solid #e0d8c8; padding-left: 8px; margin: 6px 0 6px 2px; line-height: 1.4; }
+    .mk-add { font-family: var(--font-data); font-size: 0.6rem; letter-spacing: 0.04em; color: #a8884c; }
 
     .hero-split {
       display: grid;
@@ -322,15 +330,12 @@
       <svg viewBox="0 0 230 180" width="230" height="180" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Earl is the overlap between an AI and a real mentor">
         <circle cx="88" cy="90" r="62" fill="#6b7a8f" fill-opacity="0.08" stroke="#6b7a8f" stroke-width="1.5" />
         <circle cx="142" cy="90" r="62" fill="#c8a96e" fill-opacity="0.16" stroke="#a8884c" stroke-width="1.5" />
-        <text x="52" y="94" font-family="'Space Mono',monospace" font-size="13" fill="#3a3530" text-anchor="middle">AI</text>
-        <text x="180" y="94" font-family="'Space Mono',monospace" font-size="11" fill="#3a3530" text-anchor="middle">MENTOR</text>
-        <text x="115" y="86" font-family="'Space Mono',monospace" font-size="13" font-weight="700" fill="#0a0a0f" text-anchor="middle">EARL</text>
-        <text x="115" y="101" font-family="'Space Mono',monospace" font-size="8" fill="#7a7570" text-anchor="middle">both</text>
+        <text x="115" y="95" font-family="'Space Mono',monospace" font-size="13" font-weight="700" fill="#0a0a0f" text-anchor="middle">EARL</text>
       </svg>
     </div>
     <div class="distinction-copy">
       <div class="distinction-label">Where Earl sits</div>
-      <h2>Not just another AI. And not a mentor you can only afford once.</h2>
+      <h2>Not just another AI and not a mentor you can only afford once.</h2>
       <p>A good mentor has lived it and asks the question you are avoiding. An AI holds every book ever written and never gets tired. Earl is where the two meet. The judgment of the first and the memory of the second, with you for six months instead of one expensive hour.</p>
     </div>
   </div>
@@ -481,40 +486,44 @@
   <div class="inside-head">
     <div class="inside-label">A look inside</div>
     <h2>What the $300 actually gets you</h2>
-    <p>Here is the format once you are in, so you know exactly what to expect.</p>
+    <p>You do not just start chatting with an AI. Earl learns who you are and where you are going first, then builds everything on that. Here is the format once you are in.</p>
   </div>
   <div class="inside-grid">
     <div class="mock">
       <div class="mock-screen">
-        <div class="mk-bub mk-earl">What specifically are you trying to fix this month?</div>
-        <div class="mk-bub mk-you">Cash. We look profitable but we are always short.</div>
-        <div class="mk-bub mk-earl">Then we start with the gap between what you bill and what you bank. Show me last month.</div>
-      </div>
-      <div class="mock-cap">Talking with Earl</div>
-    </div>
-    <div class="mock">
-      <div class="mock-screen">
         <div class="mk-stage"><div class="mk-seg done"></div><div class="mk-seg half"></div><div class="mk-seg"></div></div>
-        <div class="mk-line"><strong>Stage 2 of 3 — Your numbers</strong></div>
+        <div class="mk-line"><strong>Stage 2 of 3 · Your numbers</strong></div>
         <div class="mk-line" style="color:#7a7570;margin-top:6px">Question 11 of 13</div>
       </div>
-      <div class="mock-cap">The interview that builds your foundation</div>
+      <div class="mock-cap">First, the interview. Earl learns who you are.</div>
     </div>
     <div class="mock">
       <div class="mock-screen">
-        <div class="mk-row"><span class="mk-rowlabel">Stay open</span><span class="mk-bar"><span style="width:72%"></span></span></div>
-        <div class="mk-row"><span class="mk-rowlabel">Steady pay</span><span class="mk-bar"><span style="width:48%"></span></span></div>
-        <div class="mk-row"><span class="mk-rowlabel">Less chaos</span><span class="mk-bar"><span style="width:61%"></span></span></div>
+        <div class="mk-bub mk-earl">What specifically are you trying to fix this month?</div>
+        <div class="mk-bub mk-you">Cash. We look profitable but we are always short.</div>
+        <div class="mk-bub mk-earl">Then we start with the gap between what you bill and what you bank.</div>
       </div>
-      <div class="mock-cap">Your Navigation Chart, goals in your own words</div>
+      <div class="mock-cap">Then you talk, and Earl already knows your business.</div>
     </div>
     <div class="mock">
       <div class="mock-screen">
-        <div class="mk-node"><span class="mk-check on"></span><span>Call the three slow-paying accounts</span></div>
-        <div class="mk-node"><span class="mk-check on"></span><span>Put net-15 terms on new invoices</span></div>
-        <div class="mk-node"><span class="mk-check"></span><span>Move 5% to a profit account each week</span></div>
+        <div class="mk-doc-label">KILL RISK</div>
+        <div class="mk-doctext">You are the only one who can sell right now, and you do not want to.</div>
+        <div class="mk-doc-label" style="margin-top:11px">90-DAY FOCUS</div>
+        <div class="mk-doctext">Close one paying customer before the move. Everything else waits.</div>
       </div>
-      <div class="mock-cap">Progress, action steps tracked between sessions</div>
+      <div class="mock-cap">Your Navigation Chart, the real strategic picture.</div>
+    </div>
+    <div class="mock">
+      <div class="mock-screen">
+        <div class="mk-goal"><span class="mk-goaldot"></span><div style="flex:1">
+          <div class="mk-goaltext">I have customers paying $300 for the product</div>
+          <span class="mk-pill">IN PROGRESS</span>
+          <div class="mk-step">Close the endocrinologist at our 4pm meeting tomorrow.</div>
+          <div class="mk-add">+ ADD ACTION STEP</div>
+        </div></div>
+      </div>
+      <div class="mock-cap">Progress, your goals and the steps under each.</div>
     </div>
   </div>
 </section>
