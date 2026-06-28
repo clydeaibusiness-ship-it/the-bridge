@@ -179,7 +179,7 @@
 
             ${sourcesHtml(cand.story)}
 
-            <div class="ifoot"><button class="savebtn" data-idx="${idx}">Save changes</button><span class="saved" data-saved="${idx}"></span></div>
+            <div class="ifoot"><button class="savebtn" data-idx="${idx}">Save changes</button><button class="ghost testbtn" data-idx="${idx}">Email me this</button><span class="saved" data-saved="${idx}"></span></div>
           </div>
         </div>`;
     }
@@ -226,6 +226,14 @@
           if (section === 2) render();
         }
         b.disabled = false; b.textContent = orig;
+      });
+      rail.querySelectorAll('.testbtn').forEach(b => b.onclick = async () => {
+        const idx = parseInt(b.dataset.idx, 10), card = b.closest('.issue');
+        readCard(card); b.disabled = true; const o = b.textContent; b.textContent = 'Sending…';
+        await api('/api/newsletter/admin/run/' + RUN.id, 'PATCH', { candidates: RUN.candidates });
+        const { ok, data } = await api('/api/newsletter/admin/run/' + RUN.id + '/test-send', 'POST', { candidateIndex: idx });
+        b.textContent = (ok && data.sent) ? 'Sent to you ✓' : ((data && data.error) || 'failed');
+        setTimeout(() => { b.textContent = o; b.disabled = false; }, 2200);
       });
     }
 

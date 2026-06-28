@@ -103,6 +103,12 @@ router.post('/webhook', async (req, res) => {
             await updateMembershipTier(user.id, 'captain');
             await updateStripeCustomerId(user.id, customerId);
             await sendSubscriptionConfirmation(user.email);
+            // Paid members are auto-subscribed to the newsletter (no separate signup).
+            try {
+              await require('../services/newsletter/store').addSubscriber({ email: user.email, userId: user.id, source: 'member' });
+            } catch (e) {
+              console.error('Newsletter auto-subscribe failed:', e.message);
+            }
           }
         }
         break;
