@@ -2,109 +2,117 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>OG Image Generator</title>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+  <title>OG Image Generator — Earl</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Space+Grotesk:wght@400;700&display=swap" rel="stylesheet">
   <style>
-    body { margin: 0; background: #2a2218; display: flex; flex-direction: column; align-items: center; padding: 40px 20px; font-family: 'Space Mono', monospace; color: #f5f0e8; }
-    h1 { font-size: 14px; letter-spacing: 0.1em; color: #c8a96e; margin-bottom: 24px; }
-    canvas { display: block; max-width: 100%; border: 1px solid #3a3028; }
-    button { margin-top: 24px; background: #c8a96e; color: #1a1512; border: none; font-family: 'Space Mono', monospace; font-size: 13px; letter-spacing: 0.08em; padding: 12px 28px; cursor: pointer; border-radius: 2px; }
-    button:hover { background: #a8884c; }
-    p { font-size: 12px; color: #6a6058; margin-top: 12px; }
+    body { margin: 0; background: #120e0a; display: flex; flex-direction: column; align-items: center; padding: 40px 20px; font-family: 'Space Mono', monospace; color: #f5f0e8; }
+    h1 { font-size: 12px; letter-spacing: 0.14em; color: #c8a96e; margin-bottom: 24px; text-transform: uppercase; }
+    canvas { display: block; max-width: 100%; border: 1px solid #2a2218; }
+    .btn { margin-top: 24px; background: #c8a96e; color: #1a1512; border: none; font-family: 'Space Mono', monospace; font-size: 12px; letter-spacing: 0.08em; padding: 12px 28px; cursor: pointer; border-radius: 2px; text-transform: uppercase; }
+    .btn:hover { background: #a8884c; }
+    p { font-size: 11px; color: #4a4038; margin-top: 10px; letter-spacing: 0.04em; }
   </style>
 </head>
 <body>
-  <h1>EARL — OG IMAGE GENERATOR</h1>
+  <h1>Earl — OG Image Generator</h1>
   <canvas id="c" width="1200" height="630"></canvas>
-  <button id="dl">Download PNG</button>
-  <p>Save as og-image.png, then upload to /public/assets/</p>
+  <button class="btn" id="dl">Download og-image.png</button>
+  <p>Place the downloaded file at: public/assets/og-image.png</p>
 
   <script>
     const W = 1200, H = 630;
     const canvas = document.getElementById('c');
     const ctx = canvas.getContext('2d');
 
-    function draw() {
-      // Background
+    function render(img) {
+      ctx.clearRect(0, 0, W, H);
+
+      // Base background (fallback if image fails)
       ctx.fillStyle = '#1a1512';
       ctx.fillRect(0, 0, W, H);
 
-      // Star dots
-      const dots = [
-        [1080, 80, 2.5, 0.35], [1140, 140, 1.5, 0.25], [1060, 200, 3.5, 0.15],
-        [1160, 300, 2, 0.3], [1100, 420, 1.5, 0.2], [80, 500, 2, 0.2],
-        [40, 380, 3, 0.15], [120, 160, 1.5, 0.25]
-      ];
-      dots.forEach(([x, y, r, a]) => {
-        ctx.save();
-        ctx.globalAlpha = a;
-        ctx.fillStyle = '#c8a96e';
-        ctx.beginPath();
-        ctx.arc(x, y, r, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.restore();
-      });
+      // Hero image
+      if (img) {
+        ctx.drawImage(img, 0, 0, W, H);
+      }
+
+      // Dark gradient overlay: heavy left (where text lives), lighter right
+      const grad = ctx.createLinearGradient(0, 0, W, 0);
+      grad.addColorStop(0,    'rgba(16,12,8,0.88)');
+      grad.addColorStop(0.55, 'rgba(16,12,8,0.76)');
+      grad.addColorStop(1,    'rgba(16,12,8,0.42)');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, W, H);
 
       // Left accent bar
       ctx.fillStyle = '#c8a96e';
-      ctx.globalAlpha = 0.4;
-      ctx.fillRect(64, 64, 3, 502);
+      ctx.globalAlpha = 0.5;
+      ctx.fillRect(64, 63, 3, 504);
       ctx.globalAlpha = 1;
 
       // EARL wordmark
       ctx.fillStyle = '#c8a96e';
       ctx.font = '700 52px "Space Mono", monospace';
-      ctx.letterSpacing = '8px';
       ctx.fillText('EARL', 96, 136);
 
       // Gold rule under wordmark
       ctx.fillStyle = '#c8a96e';
-      ctx.globalAlpha = 0.5;
-      ctx.fillRect(96, 154, 120, 1.5);
+      ctx.globalAlpha = 0.45;
+      ctx.fillRect(96, 152, 116, 2);
       ctx.globalAlpha = 1;
 
-      // Kicker
+      // Kicker label
       ctx.fillStyle = '#c8a96e';
-      ctx.globalAlpha = 0.7;
+      ctx.globalAlpha = 0.72;
       ctx.font = '400 13px "Space Mono", monospace';
-      ctx.fillText('AI BUSINESS MENTOR', 96, 196);
+      ctx.fillText('AI BUSINESS MENTOR', 96, 194);
       ctx.globalAlpha = 1;
 
       // Main headline
       ctx.fillStyle = '#f5f0e8';
-      ctx.font = '700 58px "Space Grotesk", sans-serif';
-      ctx.fillText('You started this to do', 96, 292);
-      ctx.fillText('more of what you love.', 96, 362);
+      ctx.font = '700 60px "Space Grotesk", sans-serif';
+      ctx.fillText('You started this to do', 96, 298);
+      ctx.fillText('more of what you love.', 96, 372);
 
       // Subline
       ctx.fillStyle = '#a8a098';
-      ctx.font = '400 28px "Space Grotesk", sans-serif';
-      ctx.fillText('Nobody mentioned the other eighteen jobs that came with it.', 96, 434);
+      ctx.font = '400 26px "Space Grotesk", sans-serif';
+      ctx.fillText('Nobody mentioned the other eighteen jobs that came with it.', 96, 438);
 
       // Bottom rule
-      ctx.fillStyle = '#3a3028';
-      ctx.fillRect(64, 560, 1072, 1);
+      ctx.fillStyle = '#2a2218';
+      ctx.fillRect(64, 561, 1072, 1);
 
-      // Bottom left
-      ctx.fillStyle = '#6a6058';
-      ctx.font = '400 15px "Space Mono", monospace';
-      ctx.fillText('captainsbridge.io', 96, 598);
+      // Bottom left: URL
+      ctx.fillStyle = '#5a5048';
+      ctx.font = '400 14px "Space Mono", monospace';
+      ctx.fillText('captainsbridge.io', 96, 599);
 
-      // Bottom right
+      // Bottom right: tagline
       ctx.textAlign = 'right';
-      ctx.font = '400 13px "Space Mono", monospace';
-      ctx.fillStyle = '#4a4038';
-      ctx.fillText('For the small business owner', 1136, 598);
+      ctx.font = '400 12px "Space Mono", monospace';
+      ctx.fillStyle = '#3a3028';
+      ctx.fillText('For the small business owner', 1136, 599);
       ctx.textAlign = 'left';
     }
 
-    // Wait for fonts then draw
-    document.fonts.ready.then(() => {
-      draw();
-    });
+    // Load the hero image from the same origin
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      document.fonts.ready.then(() => render(img));
+    };
+    img.onerror = () => {
+      // Image failed (local dev / CORS) — render without it, still looks good
+      document.fonts.ready.then(() => render(null));
+    };
+    img.src = '/assets/hero.jpg';
+
+    // Initial render while fonts/image load
+    document.fonts.ready.then(() => render(null));
 
     document.getElementById('dl').addEventListener('click', () => {
-      draw();
+      render(img.complete && img.naturalWidth ? img : null);
       const a = document.createElement('a');
       a.download = 'og-image.png';
       a.href = canvas.toDataURL('image/png');
