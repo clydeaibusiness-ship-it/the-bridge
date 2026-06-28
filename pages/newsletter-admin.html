@@ -101,6 +101,7 @@
     </div>
     <div class="spacer"></div>
     <span class="when" id="when"></span>
+    <button class="ghost" id="backfill">Subscribe members</button>
     <button class="ghost" id="refresh">Refresh</button>
     <button id="generate">Generate</button>
   </div>
@@ -264,6 +265,14 @@
     }
 
     document.getElementById('refresh').onclick = load;
+
+    document.getElementById('backfill').onclick = async () => {
+      if (!confirm('Subscribe all existing paid members to the newsletter? They start receiving it on the next send.')) return;
+      const b = document.getElementById('backfill'); b.disabled = true; const o = b.textContent; b.textContent = 'Subscribing…';
+      const { ok, data } = await api('/api/newsletter/admin/backfill-members', 'POST', {});
+      b.disabled = false; b.textContent = o;
+      setStatus(ok ? `Subscribed ${data.added} member${data.added === 1 ? '' : 's'} to the newsletter.` : ((data && data.error) || 'Backfill failed.'), !ok);
+    };
 
     async function load() {
       const { ok, data, status } = await api('/api/newsletter/admin/run');
