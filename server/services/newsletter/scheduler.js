@@ -12,7 +12,7 @@
  * sent), so a restart mid-window can't double-send.
  */
 
-const { chicagoNow, runGenerate, runSend, runPurge } = require('./jobs');
+const { chicagoNow, runGenerate, runSend, runPurge, GEN_DAYS } = require('./jobs');
 
 const fired = new Set();
 
@@ -31,8 +31,8 @@ function tick() {
   const day = c.dateStr;
   const inWindow = c.minute < 5; // a 5-minute catch window each hour
 
-  if ([0, 2, 4].includes(c.weekday) && c.hour === 20 && inWindow) once('gen-' + day, runGenerate);
-  if ([1, 3, 5].includes(c.weekday) && c.hour === 7 && inWindow) once('send-' + day, runSend);
+  if (GEN_DAYS.includes(c.weekday)   && c.hour === 19 && inWindow) once('gen-'  + day, runGenerate);
+  if ([1, 3, 5].includes(c.weekday) && c.hour === 7  && inWindow) once('send-' + day, runSend);
   if (c.hour === 3 && inWindow) once('purge-' + day, runPurge);
 }
 
@@ -47,7 +47,7 @@ function start() {
   }
   if (timer) return;
   timer = setInterval(tick, 60 * 1000);
-  console.log('[newsletter scheduler] started — generate Sun/Tue/Thu 20:00 CT, send Mon/Wed/Fri 07:00 CT, purge daily 03:00 CT');
+  console.log('[newsletter scheduler] started — generate Sun/Tue/Thu 19:00 CT, send Mon/Wed/Fri 07:00 CT, purge daily 03:00 CT');
 }
 
 module.exports = { start };

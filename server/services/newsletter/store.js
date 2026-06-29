@@ -233,6 +233,18 @@ async function recordEvent({ issueId, email, type }) {
   if (error) console.error('[newsletter] event insert:', error.message);
 }
 
+/** How many issues have been sent so far (for fast-track logic). */
+async function countSentIssues() {
+  const db = getClient();
+  if (!db) return 0;
+  const { count, error } = await db
+    .from('newsletter_issues')
+    .select('*', { count: 'exact', head: true })
+    .not('sent_at', 'is', null);
+  if (error) return 0;
+  return count || 0;
+}
+
 /** Publish archive issues whose 7-day delay has elapsed. */
 async function publishDueIssues() {
   const db = getClient();
@@ -282,4 +294,5 @@ module.exports = {
   recordEvent,
   getStatsForIssues,
   publishDueIssues,
+  countSentIssues,
 };

@@ -1,11 +1,16 @@
 /**
- * jobs.js — the actual generate / send / purge work, plus Central-time date
- * logic. Both the in-process scheduler and the cron HTTP endpoints call these,
- * so there is one source of truth.
+ * jobs.js — generate / send / purge work plus Central-time scheduling logic.
  *
- * Everything is reckoned in America/Chicago. Mondays look back three days
- * (not two), so across Mon/Wed/Fri all seven days of news are covered:
- * Fri reaches Wed-Fri, Wed reaches Mon-Wed, Mon reaches the Sat-Sun-Mon gap.
+ * Everything is reckoned in America/Chicago.
+ * Mondays look back 3 days; Wed/Fri look back 2, so all 7 days are covered.
+ *
+ * Window logic (used by the admin page):
+ *   OPEN    — 7pm CT eve before send day through 6:30am CT send day
+ *   LOCKED  — 6:30am–7:00am CT send day (auto-sends at 7am, no editing)
+ *   CLOSED  — all other times
+ *
+ * The first FAST_TRACK_COUNT issues publish immediately to the archive (no
+ * 7-day delay) so the archive fills up from day one.
  */
 
 const store = require('./store');
@@ -13,9 +18,12 @@ const { generateCandidates } = require('./index');
 const { sendIssueToList } = require('./send');
 const { markUsed } = require('./library');
 
-const SEND_DAYS = [1, 3, 5]; // Mon, Wed, Fri
+const SEND_DAYS = [1, 3, 5];   // Mon, Wed, Fri
+const GEN_DAYS  = [0, 2, 4];   // Sun, Tue, Thu (evening before each send)
+const FAST_TRACK_COUNT = 6;    // first N issues publish to archive immediately
 
-/** Current wall-clock in America/Chicago, broken into parts. */
+// ---- Central-time helpers ----
+
 function chicagoNow(date = new Date()) {
   const f = new Intl.DateTimeFormat('en-US', {
     timeZone: 'America/Chicago',
@@ -27,18 +35,16 @@ function chicagoNow(date = new Date()) {
   return {
     year: +p.year, month: +p.month, day: +p.day,
     weekday: wd, hour: +p.hour, minute: +p.minute,
-    dateStr: `${p.year}-${p.month}-${p.day}`,
+    dateStr: `${p.year}-${p.month.toString().padStart(2,'0')}-${p.day.toString().padStart(2,'0')}`,
   };
 }
 
 /** Next Mon/Wed/Fri strictly after today (Central), as YYYY-MM-DD. */
 function nextSendDate(date = new Date()) {
   const c = chicagoNow(date);
-  // Anchor at noon UTC so day-stepping is immune to DST.
   const anchor = new Date(Date.UTC(c.year, c.month - 1, c.day, 12));
-  do {
-    anchor.setUTCDate(anchor.getUTCDate() + 1);
-  } while (!SEND_DAYS.includes(anchor.getUTCDay()));
+  do { anchor.setUTCDate(anchor.getUTCDate() + 1); }
+  while (!SEND_DAYS.includes(anchor.getUTCDay()));
   return anchor.toISOString().slice(0, 10);
 }
 
@@ -48,11 +54,37 @@ function timespanForSendDate(sendDate) {
   return d.getUTCDay() === 1 ? '3d' : '2d';
 }
 
+/**
+ * The current admin window state and the next send date/time.
+ * Returns { state: 'open'|'locked'|'closed', nextSend, minutesUntilSend }
+ */
+function windowState(date = new Date()) {
+  const c = chicagoNow(date);
+  const mins = c.hour * 60 + c.minute;
+  const OPEN_START  = 19 * 60;       // 7:00pm
+  const LOCK_START  = 6 * 60 + 30;   // 6:30am
+  const SEND_TIME   = 7 * 60;        // 7:00am
+
+  // Gen-day evening: window open from 7pm to midnight
+  if (GEN_DAYS.includes(c.weekday) && mins >= OPEN_START) {
+    return { state: 'open', nextSend: nextSendDate(date) };
+  }
+  // Send-day: locked 6:30–7am, open midnight–6:30am
+  if (SEND_DAYS.includes(c.weekday)) {
+    if (mins < LOCK_START) return { state: 'open',   nextSend: c.dateStr };
+    if (mins < SEND_TIME)  return { state: 'locked', nextSend: c.dateStr,
+      minutesUntilSend: SEND_TIME - mins };
+  }
+  return { state: 'closed', nextSend: nextSendDate(date) };
+}
+
 function slugify(s) {
   return String(s || 'issue').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 80);
 }
 
-/** Build the three candidates for the next send date (evening-before job). */
+// ---- Jobs ----
+
+/** Build the three candidates for the next send date. */
 async function runGenerate() {
   const sendDate = nextSendDate();
   const existing = await store.getDraftForSendDate(sendDate);
@@ -64,7 +96,7 @@ async function runGenerate() {
   return { status: 'generated', runId: run.id, sendDate, timespan };
 }
 
-/** Finalize and send today's due run (morning job). */
+/** Finalize and send today's due run. */
 async function runSend() {
   const today = chicagoNow().dateStr;
   const run = await store.getDueRun(today);
@@ -78,7 +110,14 @@ async function runSend() {
   const story = cand.story || {};
   const resource = cand.resourceChosen || null;
   const now = new Date();
-  const publishAt = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+
+  // First FAST_TRACK_COUNT issues publish immediately to fill the archive.
+  // After that, the normal 7-day delay applies.
+  const sentCount = await store.countSentIssues();
+  const publishAt = sentCount < FAST_TRACK_COUNT
+    ? now
+    : new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+  const publishedNow = sentCount < FAST_TRACK_COUNT;
 
   const issue = await store.createIssue({
     run_id: run.id,
@@ -95,7 +134,7 @@ async function runSend() {
     send_date: today,
     sent_at: now.toISOString(),
     publish_at: publishAt.toISOString(),
-    published: false,
+    published: publishedNow,
   });
 
   if (resource && resource.id) { try { markUsed(resource.id, now.toISOString()); } catch (_) {} }
@@ -113,4 +152,8 @@ async function runPurge() {
   return { purged, published };
 }
 
-module.exports = { chicagoNow, nextSendDate, timespanForSendDate, slugify, runGenerate, runSend, runPurge, SEND_DAYS };
+module.exports = {
+  chicagoNow, nextSendDate, timespanForSendDate, slugify,
+  windowState, SEND_DAYS, GEN_DAYS, FAST_TRACK_COUNT,
+  runGenerate, runSend, runPurge,
+};
