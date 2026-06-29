@@ -39,33 +39,24 @@ function escapeHtml(s) {
 
 // ---- Admin (owner only) ----
 
-// The batch for the NEXT send date only. Empty until the night-before run
-// exists, so the desk shows nothing stale between issues.
-router.get('/admin/run', requireOwner, async (req, res) => {
+// Window state + current run in one call. The page polls this every 60s.
+router.get('/admin/status', requireOwner, async (req, res) => {
   try {
-    const sendDate = jobs.nextSendDate();
-    const run = await store.getDraftForSendDate(sendDate);
-    res.json({ run, nextSendDate: sendDate });
-  } catch (e) {
-    res.status(500).json({ error: e.message });
-  }
-});
-
-// Discard the current batch (e.g., a test run) so the desk goes empty again.
-// The night-before scheduler will generate a fresh one for that send date.
-router.post('/admin/run/:id/discard', requireOwner, async (req, res) => {
-  try {
-    await store.updateRun(req.params.id, { status: 'expired' });
-    res.json({ ok: true });
+    const ws = jobs.windowState();
+    const sendDate = ws.nextSend || jobs.nextSendDate();
+    const run = ws.state !== 'closed' ? await store.getDraftForSendDate(sendDate) : null;
+    res.json({ window: ws, run, sendDate });
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
 });
 
 // Kick off generation in the background. Returns a jobId immediately; the
-// page polls /admin/generate/status. Generation takes a couple minutes
-// (GDELT spacing + writing + scoring), too long for one HTTP request.
+// page polls /admin/generate/status. Only allowed inside the window.
 router.post('/admin/generate', requireOwner, async (req, res) => {
+  const ws = jobs.windowState();
+  if (ws.state === 'closed') return res.status(403).json({ error: 'Outside the generation window.' });
+  if (ws.state === 'locked') return res.status(403).json({ error: 'Window is locked. Sending in under 30 minutes.' });
   const jobId = crypto.randomUUID();
   const sendDate = req.body?.sendDate || jobs.nextSendDate();
   const timespan = jobs.timespanForSendDate(sendDate);
@@ -187,15 +178,6 @@ router.get('/admin/issues', requireOwner, async (req, res) => {
   }
 });
 
-// One-time: subscribe every existing paid member to the newsletter.
-router.post('/admin/backfill-members', requireOwner, async (req, res) => {
-  try {
-    const added = await store.backfillMembers();
-    res.json({ added });
-  } catch (e) {
-    res.status(500).json({ error: e.message });
-  }
-});
 
 // ---- Cron (shared-secret) ----
 

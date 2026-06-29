@@ -12,110 +12,105 @@
     :root {
       --cream:#f5f0e8; --paper:#fffdf9; --ink:#1a1512; --ink2:#3a322a; --gold:#c8a96e; --gold-d:#a8884c;
       --mute:#8a837a; --line:#e6ddcd; --green:#5a7d57; --red:#b4543f;
-      --left:#6b7a8f; --center:#9a948a; --right:#a76a52;
-      --serif:'Playfair Display',Georgia,serif; --mono:'DM Mono',ui-monospace,monospace; --body:Georgia,'Times New Roman',serif;
     }
     * { box-sizing:border-box; }
     html,body { margin:0; }
-    body { background:var(--cream); color:var(--ink); font-family:var(--body);
-      background-image:radial-gradient(circle at 50% -10%, #fbf7ef 0%, var(--cream) 60%); min-height:100vh; }
+    body { background:var(--cream); color:var(--ink); font-family:'DM Mono',ui-monospace,monospace; min-height:100vh; }
 
-    /* masthead */
-    .masthead { position:sticky; top:0; z-index:10; background:rgba(245,240,232,.92); backdrop-filter:blur(6px);
+    .masthead { position:sticky; top:0; z-index:10; background:rgba(245,240,232,.94); backdrop-filter:blur(6px);
       border-bottom:1px solid var(--line); display:flex; align-items:center; gap:16px; padding:16px 22px; }
-    .mark { font-family:var(--serif); font-weight:700; font-size:26px; letter-spacing:.01em; line-height:1; }
+    .mark { font-family:'Playfair Display',serif; font-weight:700; font-size:24px; letter-spacing:.01em; }
     .mark em { font-style:normal; color:var(--gold-d); }
-    .kicker { font-family:var(--mono); font-size:10.5px; letter-spacing:.22em; text-transform:uppercase; color:var(--mute); margin-top:3px; }
+    .kicker { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:.22em; text-transform:uppercase; color:var(--mute); margin-top:3px; }
     .masthead .spacer { flex:1; }
-    .when { font-family:var(--mono); font-size:12px; color:var(--mute); margin-right:4px; }
-    button { font-family:var(--mono); font-size:12.5px; cursor:pointer; border:1px solid var(--ink); background:var(--ink); color:var(--cream);
-      padding:9px 15px; border-radius:2px; letter-spacing:.05em; transition:opacity .15s; }
+    .whensend { font-family:'DM Mono',monospace; font-size:12px; color:var(--mute); }
+    button { font-family:'DM Mono',monospace; font-size:12px; cursor:pointer; border:1px solid var(--ink); background:var(--ink); color:var(--cream);
+      padding:9px 14px; border-radius:2px; letter-spacing:.05em; transition:opacity .15s; }
     button:hover { opacity:.85; }
     button.ghost { background:transparent; color:var(--ink); }
-    button:disabled { opacity:.45; cursor:default; }
+    button:disabled { opacity:.4; cursor:default; }
 
-    .statusline { font-family:var(--mono); font-size:12.5px; color:var(--mute); padding:14px 22px 0; min-height:18px; }
+    /* State screens */
+    .state { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:60vh; text-align:center; padding:40px 22px; }
+    .state-label { font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:var(--gold-d); margin-bottom:16px; }
+    .state-head { font-family:'Playfair Display',serif; font-size:26px; font-weight:600; color:var(--ink); margin-bottom:12px; }
+    .state-sub { font-size:13px; color:var(--mute); line-height:1.7; max-width:400px; margin-bottom:24px; }
+    .state-time { font-size:20px; font-weight:700; color:var(--ink); letter-spacing:.04em; }
+
+    .locked-wrap { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:60vh; text-align:center; padding:40px 22px; }
+    .locked-label { font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:var(--red); margin-bottom:12px; }
+    .locked-head { font-family:'Playfair Display',serif; font-size:26px; font-weight:600; color:var(--ink); margin-bottom:8px; }
+    .locked-sub { font-size:13px; color:var(--mute); line-height:1.7; }
+    .countdown { font-size:36px; font-weight:700; color:var(--ink); margin:18px 0; letter-spacing:.04em; }
+
+    .statusline { font-size:12px; color:var(--mute); padding:12px 22px 0; min-height:18px; }
     .statusline.err { color:var(--red); }
-    .lead { font-family:var(--mono); font-size:11.5px; color:var(--mute); padding:4px 22px 0; letter-spacing:.02em; }
+    .lead { font-size:11px; color:var(--mute); padding:4px 22px 0; }
 
-    /* carousel */
-    .rail { display:flex; gap:22px; overflow-x:auto; scroll-snap-type:x mandatory; padding:20px 22px 40px; -webkit-overflow-scrolling:touch; }
-    .rail::-webkit-scrollbar { height:8px; } .rail::-webkit-scrollbar-thumb { background:var(--line); border-radius:8px; }
-    .issue { scroll-snap-align:center; flex:0 0 min(540px, 88vw); background:var(--paper); border:1px solid var(--line);
-      border-radius:10px; box-shadow:0 6px 22px rgba(60,45,25,.07); padding:0; overflow:hidden; }
-    .issue.locked { border-color:var(--gold); box-shadow:0 0 0 2px var(--gold), 0 6px 22px rgba(60,45,25,.08); }
+    /* Carousel */
+    .rail { display:flex; gap:22px; overflow-x:auto; scroll-snap-type:x mandatory; padding:18px 22px 40px; -webkit-overflow-scrolling:touch; }
+    .rail::-webkit-scrollbar { height:7px; } .rail::-webkit-scrollbar-thumb { background:var(--line); border-radius:8px; }
+    .issue { scroll-snap-align:center; flex:0 0 min(540px,88vw); background:var(--paper); border:1px solid var(--line);
+      border-radius:10px; box-shadow:0 6px 22px rgba(60,45,25,.07); overflow:hidden; }
+    .issue.locked-in { border-color:var(--gold); box-shadow:0 0 0 2px var(--gold), 0 6px 22px rgba(60,45,25,.08); }
 
-    /* score stamp header */
-    .ihead { display:flex; gap:16px; align-items:center; padding:18px 22px; border-bottom:1px solid var(--line);
-      background:linear-gradient(180deg,#fffefb,transparent); }
-    .stamp { width:62px; height:62px; flex:0 0 auto; border:1.5px solid var(--ink); border-radius:6px;
+    .ihead { display:flex; gap:14px; align-items:center; padding:16px 20px; border-bottom:1px solid var(--line); }
+    .stamp { width:58px; height:58px; flex:0 0 auto; border:1.5px solid var(--ink); border-radius:6px;
       display:flex; flex-direction:column; align-items:center; justify-content:center; }
-    .stamp .n { font-family:var(--serif); font-weight:700; font-size:28px; line-height:1; }
-    .stamp .x { font-family:var(--mono); font-size:8px; letter-spacing:.12em; color:var(--mute); margin-top:2px; }
+    .stamp .n { font-family:'Playfair Display',serif; font-weight:700; font-size:26px; line-height:1; }
+    .stamp .x { font-size:8px; letter-spacing:.1em; color:var(--mute); margin-top:2px; }
     .stamp.ok { border-color:var(--green); } .stamp.ok .n { color:var(--green); }
     .stamp.bad { border-color:var(--red); } .stamp.bad .n { color:var(--red); }
-    .subscores { flex:1; display:grid; grid-template-columns:1fr 1fr; gap:3px 14px; font-family:var(--mono); font-size:11px; color:var(--ink2); }
+    .subscores { flex:1; display:grid; grid-template-columns:1fr 1fr; gap:3px 12px; font-size:11px; color:var(--ink2); }
     .subscores b { color:var(--mute); font-weight:400; }
-    .flag { display:inline-block; font-family:var(--mono); font-size:9.5px; color:#fff; background:var(--red);
-      padding:2px 7px; border-radius:10px; letter-spacing:.08em; text-transform:uppercase; margin-top:6px; }
+    .flag { display:inline-block; font-size:9px; color:#fff; background:var(--red); padding:2px 7px; border-radius:10px; letter-spacing:.08em; text-transform:uppercase; margin-top:4px; }
 
-    .body { padding:18px 22px 22px; }
-    .lab { display:block; font-family:var(--mono); font-size:10px; letter-spacing:.18em; text-transform:uppercase; color:var(--gold-d); margin:18px 0 7px; }
+    .body { padding:16px 20px 20px; }
+    .lab { display:block; font-size:9.5px; letter-spacing:.18em; text-transform:uppercase; color:var(--gold-d); margin:16px 0 6px; }
     .lab:first-child { margin-top:0; }
-    .subject { width:100%; font-family:var(--serif); font-size:21px; font-weight:600; color:var(--ink); line-height:1.3;
-      border:none; border-bottom:1px solid var(--line); padding:2px 0 8px; background:transparent;
-      resize:none; overflow:hidden; display:block; }
+    .subject { width:100%; font-family:'Playfair Display',serif; font-size:19px; font-weight:600; color:var(--ink); line-height:1.3;
+      border:none; border-bottom:1px solid var(--line); padding:2px 0 7px; background:transparent; resize:none; overflow:hidden; display:block; }
     .subject:focus { outline:none; border-color:var(--gold); }
     .box { position:relative; }
-    /* Text fields grow to fit their content — no inner scrollbars, no drag handle. */
-    textarea { width:100%; font-family:var(--body); font-size:15.5px; line-height:1.62; color:var(--ink2);
-      border:1px solid var(--line); border-radius:6px; padding:12px 12px; background:#fffdfa; resize:none; overflow:hidden; }
-    textarea:focus { outline:none; border-color:var(--gold); box-shadow:0 0 0 3px rgba(200,169,110,.15); }
-    .rewrite { position:absolute; top:-26px; right:0; background:transparent; border:none; color:var(--mute); padding:2px 4px; font-size:11px; letter-spacing:.04em; }
+    textarea { width:100%; font-family:Georgia,'Times New Roman',serif; font-size:14.5px; line-height:1.6; color:var(--ink2);
+      border:1px solid var(--line); border-radius:6px; padding:10px 11px; background:#fffdfa; resize:none; overflow:hidden; }
+    textarea:focus { outline:none; border-color:var(--gold); box-shadow:0 0 0 3px rgba(200,169,110,.14); }
+    .rewrite { position:absolute; top:-24px; right:0; background:transparent; border:none; color:var(--mute); padding:2px 4px; font-size:10px; letter-spacing:.04em; }
     .rewrite:hover { color:var(--gold-d); }
 
-    .reslink { margin-top:10px; padding:10px 12px; background:#f4eede; border-left:3px solid var(--gold); border-radius:4px; }
-    .reslink .rl-lab { font-family:var(--mono); font-size:9.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--mute); }
-    .reslink a { font-family:var(--body); font-size:14px; color:var(--ink); }
-    .reslink .unver { font-family:var(--mono); font-size:9.5px; color:#fff; background:var(--gold-d); padding:1px 6px; border-radius:8px; margin-left:6px; letter-spacing:.05em; }
+    .reslink { margin-top:8px; padding:9px 11px; background:#f4eede; border-left:3px solid var(--gold); border-radius:4px; font-size:13px; }
+    .reslink .rl-lab { font-size:9px; letter-spacing:.16em; text-transform:uppercase; color:var(--mute); }
+    .reslink a { color:var(--ink); }
+    .unver { font-size:9px; color:#fff; background:var(--gold-d); padding:1px 5px; border-radius:8px; margin-left:5px; }
 
-    .sources { margin-top:18px; border-top:1px dashed var(--line); padding-top:12px; }
-    .src-pills { display:flex; flex-wrap:wrap; gap:6px; margin-top:6px; }
-    .pill { font-family:var(--mono); font-size:11px; color:var(--ink2); text-decoration:none; border:1px solid var(--line);
-      border-radius:20px; padding:3px 10px 3px 8px; display:inline-flex; align-items:center; gap:6px; background:#fffdfa; }
+    .sources { margin-top:16px; border-top:1px dashed var(--line); padding-top:11px; }
+    .src-pills { display:flex; flex-wrap:wrap; gap:5px; margin-top:5px; }
+    .pill { font-size:10px; color:var(--ink2); text-decoration:none; border:1px solid var(--line);
+      border-radius:20px; padding:3px 9px 3px 7px; display:inline-flex; align-items:center; gap:5px; background:#fffdfa; }
     .pill:hover { border-color:var(--gold); }
-    .dot { width:7px; height:7px; border-radius:50%; flex:0 0 auto; }
-    .dot.left { background:var(--left); } .dot.center { background:var(--center); } .dot.right { background:var(--right); } .dot.unrated { background:var(--line); }
+    .dot { width:6px; height:6px; border-radius:50%; flex:0 0 auto; }
+    .dot.left { background:#6b7a8f; } .dot.center { background:#9a948a; } .dot.right { background:#a76a52; } .dot.unrated { background:var(--line); }
 
-    .ifoot { display:flex; gap:10px; align-items:center; margin-top:20px; }
+    .ifoot { display:flex; gap:8px; align-items:center; margin-top:18px; }
     .lockbtn.on { background:var(--gold-d); border-color:var(--gold-d); color:#fff; }
-    .saved { font-family:var(--mono); font-size:11px; color:var(--green); }
-
-    .empty { font-family:var(--mono); color:var(--mute); padding:40px 22px; font-size:13px; }
-    .pageindex { text-align:center; font-family:var(--mono); font-size:11px; color:var(--mute); padding-bottom:24px; }
+    .saved { font-size:10px; color:var(--green); }
+    .pageindex { text-align:center; font-size:10px; color:var(--mute); padding-bottom:22px; }
   </style>
 </head>
 <body>
   <div class="masthead">
-    <div>
-      <div class="mark">E<em>a</em>rl</div>
-      <div class="kicker">Newsletter Desk</div>
-    </div>
+    <div><div class="mark">E<em>a</em>rl</div><div class="kicker">Newsletter Desk</div></div>
     <div class="spacer"></div>
-    <span class="when" id="when"></span>
-    <button class="ghost" id="discard" style="display:none">Discard batch</button>
-    <button class="ghost" id="backfill">Subscribe members</button>
+    <span class="whensend" id="when"></span>
     <button class="ghost" id="refresh">Refresh</button>
-    <button id="generate">Generate</button>
   </div>
-  <div class="lead">Three candidates, strongest on the left. Edit any box, rewrite it, or lock one in. Lock nothing and the leftmost sends.</div>
   <div class="statusline" id="status"></div>
+  <div class="lead" id="lead"></div>
 
-  <div id="rail" class="rail"></div>
-  <div class="pageindex" id="pageindex"></div>
+  <div id="main"></div>
 
   <script>
-    let RUN = null;
+    let RUN = null, WINDOW = null, pollTimer = null;
 
     async function api(path, method, body) {
       const opts = { method: method || 'GET', headers: { 'Content-Type': 'application/json' } };
@@ -125,190 +120,219 @@
       return { ok: r.ok, status: r.status, data };
     }
 
-    const rail = document.getElementById('rail');
-    const statusEl = document.getElementById('status');
-    const whenEl = document.getElementById('when');
-    const pageIdx = document.getElementById('pageindex');
-
-    function setStatus(t, isErr) { statusEl.textContent = t || ''; statusEl.className = 'statusline' + (isErr ? ' err' : ''); }
+    function setStatus(t, isErr) { const el = document.getElementById('status'); el.textContent = t || ''; el.className = 'statusline' + (isErr ? ' err' : ''); }
+    function setLead(t) { document.getElementById('lead').textContent = t || ''; }
     function scoreClass(n) { return n >= 6 ? 'ok' : 'bad'; }
+    function escHtml(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 
-    let NEXT_SEND = null;
-    function autoGrow(el) { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; }
-    function growAll() { rail.querySelectorAll('textarea').forEach(autoGrow); }
-    function emptyMsg() {
-      if (!NEXT_SEND) return 'No batch yet. Hit Generate to build one now.';
-      const d = new Date(NEXT_SEND + 'T12:00:00');
-      const day = d.toLocaleDateString('en-US', { weekday: 'long' });
-      return day + "'s three candidates appear here the night before, around 8pm Central. You can also hit Generate to build one now.";
-    }
-    function escapeHtml(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
-    function escapeAttr(s){return escapeHtml(s).replace(/"/g,'&quot;');}
+    function autoGrow(el) { el.style.height='auto'; el.style.height=el.scrollHeight+'px'; }
+    function growAll() { document.querySelectorAll('textarea, .subject').forEach(autoGrow); }
 
     function sourcesHtml(story) {
-      const seen = new Set(); const pills = [];
-      (story && story.sources || []).forEach(s => {
-        if (!s.domain || seen.has(s.domain)) return; seen.add(s.domain);
-        const lean = s.lean || 'unrated';
-        pills.push(`<a class="pill" href="${escapeAttr(s.url||'#')}" target="_blank" rel="noopener"><span class="dot ${lean}"></span>${escapeHtml(s.domain)}</a>`);
+      const seen=new Set(), pills=[];
+      (story&&story.sources||[]).forEach(s=>{
+        if(!s.domain||seen.has(s.domain))return; seen.add(s.domain);
+        const lean=s.lean||'unrated';
+        pills.push(`<a class="pill" href="${escHtml(s.url||'#')}" target="_blank" rel="noopener"><span class="dot ${lean}"></span>${escHtml(s.domain)}</a>`);
       });
-      if (!pills.length) return '';
+      if(!pills.length)return '';
       return `<div class="sources"><span class="lab" style="margin:0">Reported across (cross-spectrum)</span><div class="src-pills">${pills.join('')}</div></div>`;
     }
 
     function cardHtml(cand, idx) {
-      const s = cand.score || {}, iss = cand.issue || {}, res = cand.resourceChosen;
-      const locked = RUN && RUN.locked_index === idx;
-      const unver = res && res.verified === false;
-      return `
-        <div class="issue ${locked ? 'locked' : ''}" data-idx="${idx}">
-          <div class="ihead">
-            <div class="stamp ${scoreClass(s.overall||0)}"><span class="n">${s.overall ?? '–'}</span><span class="x">/ 10</span></div>
-            <div class="subscores">
-              <div><b>news</b> ${s.news_strength ?? '–'}</div><div><b>voice</b> ${s.voice ?? '–'}</div>
-              <div><b>fit</b> ${s.principle_fit ?? '–'}</div><div><b>seo</b> ${s.seo_aio ?? '–'}</div>
-              ${cand.flagged ? '<div style="grid-column:1/3"><span class="flag">below bar</span></div>' : ''}
-            </div>
-            <button class="lockbtn ${locked ? 'on' : 'ghost'}" data-idx="${idx}">${locked ? 'Locked' : 'Lock in'}</button>
+      const s=cand.score||{}, iss=cand.issue||{}, res=cand.resourceChosen;
+      const lockedIn = RUN && RUN.locked_index===idx;
+      const unver = res && res.verified===false;
+      return `<div class="issue ${lockedIn?'locked-in':''}" data-idx="${idx}">
+        <div class="ihead">
+          <div class="stamp ${scoreClass(s.overall||0)}"><span class="n">${s.overall??'?'}</span><span class="x">/ 10</span></div>
+          <div class="subscores">
+            <div><b>news</b> ${s.news_strength??'?'}</div><div><b>voice</b> ${s.voice??'?'}</div>
+            <div><b>fit</b> ${s.principle_fit??'?'}</div><div><b>seo</b> ${s.seo_aio??'?'}</div>
+            ${cand.flagged?'<div style="grid-column:1/3"><span class="flag">below bar</span></div>':''}
           </div>
-          <div class="body">
-            <span class="lab">Subject</span>
-            <textarea class="subject" data-field="subject" rows="1">${escapeHtml(iss.subject)}</textarea>
-
-            <span class="lab">1 · One thing from the world</span>
-            <div class="box"><button class="rewrite" data-section="1" data-idx="${idx}">↻ rewrite</button>
-              <textarea data-field="section1">${escapeHtml(iss.section1)}</textarea></div>
-
-            <span class="lab">2 · One thing learned the hard way</span>
-            <div class="box"><button class="rewrite" data-section="2" data-idx="${idx}">↻ rewrite</button>
-              <textarea data-field="section2">${escapeHtml(iss.section2)}</textarea></div>
-            <div class="reslink">
-              <div class="rl-lab">The one link${unver ? '<span class="unver">unverified — check it</span>' : ''}</div>
-              ${res ? `<a href="${escapeAttr(res.url)}" target="_blank" rel="noopener">${escapeHtml(res.person)} — ${escapeHtml(res.title)}</a>` : '<span style="color:var(--mute)">none chosen</span>'}
-            </div>
-
-            <span class="lab">3 · One question</span>
-            <div class="box"><button class="rewrite" data-section="3" data-idx="${idx}">↻ rewrite</button>
-              <textarea data-field="section3">${escapeHtml(iss.section3)}</textarea></div>
-
-            ${sourcesHtml(cand.story)}
-
-            <div class="ifoot"><button class="savebtn" data-idx="${idx}">Save changes</button><button class="ghost testbtn" data-idx="${idx}">Email me this</button><span class="saved" data-saved="${idx}"></span></div>
+          <button class="lockbtn ${lockedIn?'on':'ghost'}" data-idx="${idx}">${lockedIn?'Locked':'Lock in'}</button>
+        </div>
+        <div class="body">
+          <span class="lab">Subject</span>
+          <textarea class="subject" data-field="subject" rows="1">${escHtml(iss.subject)}</textarea>
+          <span class="lab">1 · One thing from the world</span>
+          <div class="box"><button class="rewrite" data-section="1" data-idx="${idx}">↻ rewrite</button>
+            <textarea data-field="section1">${escHtml(iss.section1)}</textarea></div>
+          <span class="lab">2 · One thing learned the hard way</span>
+          <div class="box"><button class="rewrite" data-section="2" data-idx="${idx}">↻ rewrite</button>
+            <textarea data-field="section2">${escHtml(iss.section2)}</textarea></div>
+          <div class="reslink"><div class="rl-lab">Learn from someone who's done it${unver?'<span class="unver">check link</span>':''}</div>
+            ${res?`<a href="${escHtml(res.url)}" target="_blank" rel="noopener">${escHtml(res.person)} — ${escHtml(res.title)}</a>`:'<span style="color:var(--mute)">none</span>'}</div>
+          <span class="lab">3 · One question</span>
+          <div class="box"><button class="rewrite" data-section="3" data-idx="${idx}">↻ rewrite</button>
+            <textarea data-field="section3">${escHtml(iss.section3)}</textarea></div>
+          ${sourcesHtml(cand.story)}
+          <div class="ifoot">
+            <button class="savebtn" data-idx="${idx}">Save</button>
+            <button class="ghost testbtn" data-idx="${idx}">Email me this</button>
+            <span class="saved" data-saved="${idx}"></span>
           </div>
+        </div>
+      </div>`;
+    }
+
+    function renderClosed(ws) {
+      const d = new Date(ws.nextSend + 'T19:00:00');
+      const dayName = d.toLocaleDateString('en-US',{weekday:'long',timeZone:'America/Chicago'});
+      document.getElementById('main').innerHTML = `<div class="state">
+        <div class="state-label">No active window</div>
+        <div class="state-head">Nothing to review right now.</div>
+        <div class="state-sub">Three candidates will appear here when the window opens.</div>
+        <div class="state-time">Next: ${dayName} at 7pm Central</div>
+      </div>`;
+    }
+
+    function renderLocked(ws) {
+      const mins = ws.minutesUntilSend || 0;
+      document.getElementById('main').innerHTML = `<div class="locked-wrap">
+        <div class="locked-label">Window locked</div>
+        <div class="locked-head">Sending in ${mins} minute${mins===1?'':'s'}.</div>
+        <div class="locked-sub">The ${RUN&&Number.isInteger(RUN.locked_index)?'locked':'highest-scoring'} candidate goes out at 7am Central. The desk clears after it sends.</div>
+        <div class="countdown" id="countdown">${mins}:00</div>
+      </div>`;
+      // live countdown
+      if (pollTimer) clearInterval(pollTimer);
+      let sec = mins * 60;
+      pollTimer = setInterval(() => {
+        sec--; if (sec < 0) { clearInterval(pollTimer); load(); return; }
+        const m=Math.floor(sec/60), s=sec%60;
+        const el=document.getElementById('countdown'); if(el) el.textContent=`${m}:${String(s).padStart(2,'0')}`;
+      }, 1000);
+    }
+
+    function renderOpen() {
+      if (!RUN || !Array.isArray(RUN.candidates) || !RUN.candidates.length) {
+        // Window is open but no batch yet — show generate
+        document.getElementById('main').innerHTML = `<div class="state">
+          <div class="state-label">Window open</div>
+          <div class="state-head">No batch yet.</div>
+          <div class="state-sub">Auto-generation runs at 7pm Central. You can kick it off now if you want the options early.</div>
+          <button id="gen-btn">Generate now</button>
+          <div class="statusline" id="gen-status" style="margin-top:14px;text-align:center;"></div>
         </div>`;
+        document.getElementById('gen-btn').onclick = startGenerate;
+        return;
+      }
+      const rail = document.createElement('div'); rail.className = 'rail';
+      rail.innerHTML = RUN.candidates.map(cardHtml).join('');
+      document.getElementById('main').innerHTML = '';
+      document.getElementById('main').appendChild(rail);
+      const idx = document.createElement('div'); idx.className = 'pageindex';
+      idx.textContent = RUN.candidates.length + ' candidates · swipe →';
+      document.getElementById('main').appendChild(idx);
+      requestAnimationFrame(growAll);
+      wireCards();
     }
 
     function render() {
-      const discardBtn = document.getElementById('discard');
-      if (!RUN || !Array.isArray(RUN.candidates) || !RUN.candidates.length) {
-        rail.innerHTML = ''; pageIdx.textContent = ''; whenEl.textContent = '';
-        if (discardBtn) discardBtn.style.display = 'none';
-        setStatus(emptyMsg());
-        return;
-      }
-      setStatus(''); whenEl.textContent = 'sends ' + (RUN.send_date || '');
-      if (discardBtn) discardBtn.style.display = '';
-      rail.innerHTML = RUN.candidates.map(cardHtml).join('');
-      pageIdx.textContent = RUN.candidates.length + ' candidates · swipe →';
-      wire();
-      requestAnimationFrame(growAll);
+      if (!WINDOW) return;
+      const sendDate = WINDOW.nextSend;
+      document.getElementById('when').textContent = sendDate ? 'sends ' + sendDate : '';
+      if (WINDOW.state === 'closed')  return renderClosed(WINDOW);
+      if (WINDOW.state === 'locked')  return renderLocked(WINDOW);
+      renderOpen();
     }
 
     function readCard(cardEl) {
-      const idx = parseInt(cardEl.dataset.idx, 10), cand = RUN.candidates[idx];
-      cand.issue = cand.issue || {};
-      cardEl.querySelectorAll('[data-field]').forEach(el => { cand.issue[el.dataset.field] = el.value; });
+      const idx = parseInt(cardEl.dataset.idx,10), cand = RUN.candidates[idx];
+      cand.issue = cand.issue||{};
+      cardEl.querySelectorAll('[data-field]').forEach(el=>{ cand.issue[el.dataset.field]=el.value; });
       return idx;
     }
 
-    function wire() {
-      rail.querySelectorAll('.savebtn').forEach(b => b.onclick = async () => {
-        const card = b.closest('.issue'), idx = readCard(card);
-        b.disabled = true;
-        const { ok } = await api('/api/newsletter/admin/run/' + RUN.id, 'PATCH', { candidates: RUN.candidates });
-        b.disabled = false;
-        const tag = rail.querySelector('[data-saved="' + idx + '"]'); if (tag) { tag.textContent = ok ? 'saved ✓' : 'save failed'; setTimeout(() => tag.textContent = '', 1600); }
+    function wireCards() {
+      document.querySelectorAll('.savebtn').forEach(b => b.onclick = async () => {
+        const card=b.closest('.issue'), idx=readCard(card);
+        b.disabled=true;
+        const {ok}=await api('/api/newsletter/admin/run/'+RUN.id,'PATCH',{candidates:RUN.candidates});
+        b.disabled=false;
+        const tag=document.querySelector('[data-saved="'+idx+'"]');
+        if(tag){tag.textContent=ok?'saved ✓':'error';setTimeout(()=>tag.textContent='',1500);}
       });
-      rail.querySelectorAll('.lockbtn').forEach(b => b.onclick = async () => {
-        const idx = parseInt(b.dataset.idx, 10), next = (RUN.locked_index === idx) ? null : idx;
-        const { ok, data } = await api('/api/newsletter/admin/run/' + RUN.id, 'PATCH', { lockedIndex: next });
-        if (ok && data.run) { RUN = data.run; render(); }
+      document.querySelectorAll('.lockbtn').forEach(b => b.onclick = async () => {
+        const idx=parseInt(b.dataset.idx,10), next=(RUN.locked_index===idx)?null:idx;
+        const {ok,data}=await api('/api/newsletter/admin/run/'+RUN.id,'PATCH',{lockedIndex:next});
+        if(ok&&data.run){RUN=data.run;render();}
       });
-      rail.querySelectorAll('.rewrite').forEach(b => b.onclick = async () => {
-        const idx = parseInt(b.dataset.idx, 10), section = parseInt(b.dataset.section, 10), card = b.closest('.issue');
-        readCard(card); b.disabled = true; const orig = b.textContent; b.textContent = '↻ rewriting…';
-        const { ok, data } = await api('/api/newsletter/admin/run/' + RUN.id + '/reload', 'POST', { candidateIndex: idx, section });
-        if (ok && data) {
-          const ta = card.querySelector('[data-field="section' + section + '"]'); if (ta) { ta.value = data.text; autoGrow(ta); }
-          if (data.run) RUN = data.run;
-          if (section === 2) render();
+      document.querySelectorAll('.rewrite').forEach(b => b.onclick = async () => {
+        const idx=parseInt(b.dataset.idx,10), section=parseInt(b.dataset.section,10);
+        const card=b.closest('.issue'); readCard(card);
+        b.disabled=true; const orig=b.textContent; b.textContent='↻ rewriting…';
+        const {ok,data}=await api('/api/newsletter/admin/run/'+RUN.id+'/reload','POST',{candidateIndex:idx,section});
+        if(ok&&data){
+          const ta=card.querySelector('[data-field="section'+section+'"]');
+          if(ta){ta.value=data.text;autoGrow(ta);}
+          if(data.run)RUN=data.run;
+          if(section===2)render();
         }
-        b.disabled = false; b.textContent = orig;
+        b.disabled=false; b.textContent=orig;
       });
-      rail.querySelectorAll('.testbtn').forEach(b => b.onclick = async () => {
-        const idx = parseInt(b.dataset.idx, 10), card = b.closest('.issue');
-        readCard(card); b.disabled = true; const o = b.textContent; b.textContent = 'Sending…';
-        await api('/api/newsletter/admin/run/' + RUN.id, 'PATCH', { candidates: RUN.candidates });
-        const { ok, data } = await api('/api/newsletter/admin/run/' + RUN.id + '/test-send', 'POST', { candidateIndex: idx });
-        b.textContent = (ok && data.sent) ? 'Sent to you ✓' : ((data && data.error) || 'failed');
-        setTimeout(() => { b.textContent = o; b.disabled = false; }, 2200);
+      document.querySelectorAll('.testbtn').forEach(b => b.onclick = async () => {
+        const idx=parseInt(b.dataset.idx,10), card=b.closest('.issue');
+        readCard(card); b.disabled=true; const o=b.textContent; b.textContent='Sending…';
+        await api('/api/newsletter/admin/run/'+RUN.id,'PATCH',{candidates:RUN.candidates});
+        const {ok,data}=await api('/api/newsletter/admin/run/'+RUN.id+'/test-send','POST',{candidateIndex:idx});
+        b.textContent=(ok&&data.sent)?'Sent ✓':((data&&data.error)||'failed');
+        setTimeout(()=>{b.textContent=o;b.disabled=false;},2000);
       });
-      rail.querySelectorAll('textarea').forEach(t => t.addEventListener('input', () => autoGrow(t)));
+      document.querySelectorAll('textarea, .subject').forEach(t=>t.addEventListener('input',()=>autoGrow(t)));
     }
 
-    const genBtn = document.getElementById('generate');
-    genBtn.onclick = async () => {
-      genBtn.disabled = true; genBtn.textContent = 'Generating…'; setStatus('Starting…');
-      const { ok, data, status } = await api('/api/newsletter/admin/generate', 'POST', {});
-      if (status === 403) { genBtn.disabled = false; genBtn.textContent = 'Generate'; setStatus('This desk is owner-only.', true); return; }
-      if (!ok || !data.jobId) { genBtn.disabled = false; genBtn.textContent = 'Generate'; setStatus((data && data.error) || 'Could not start.', true); return; }
-      pollGen(data.jobId);
-    };
-
-    function stageText(j) {
-      const map = { starting: 'Starting', fetching: 'Pulling the news (about 90 seconds)', qualifying: 'Sorting the stories', writing: 'Writing', scoring: 'Scoring' };
-      return (map[j.stage] || j.stage || 'Working') + (j.detail ? ' — ' + j.detail : '') + '…';
-    }
-    function pollGen(jobId) {
-      let tries = 0;
-      const timer = setInterval(async () => {
-        tries++;
-        const { ok, data } = await api('/api/newsletter/admin/generate/status?jobId=' + encodeURIComponent(jobId));
-        if (!ok) return;
-        if (data.status === 'running') setStatus(stageText(data));
-        else if (data.status === 'done') { clearInterval(timer); genBtn.disabled = false; genBtn.textContent = 'Generate'; await load(); }
-        else if (data.status === 'error') { clearInterval(timer); genBtn.disabled = false; genBtn.textContent = 'Generate'; setStatus(data.error || 'Generation error.', true); }
-        else if (data.status === 'unknown' && tries > 3) { clearInterval(timer); genBtn.disabled = false; genBtn.textContent = 'Generate'; setStatus('Lost track of that job. Hit Refresh — it may have finished.', true); }
-      }, 3000);
+    // Generation flow
+    let genJobId = null;
+    async function startGenerate() {
+      const btn=document.getElementById('gen-btn');
+      const statusEl=document.getElementById('gen-status');
+      if(btn)btn.disabled=true;
+      if(statusEl)statusEl.textContent='Starting…';
+      const {ok,data,status}=await api('/api/newsletter/admin/generate','POST',{});
+      if(status===403){if(statusEl)statusEl.textContent=data.error||'Outside window.';if(btn)btn.disabled=false;return;}
+      if(!ok||!data.jobId){if(statusEl)statusEl.textContent=(data&&data.error)||'Failed.';if(btn)btn.disabled=false;return;}
+      genJobId=data.jobId; pollGenerate();
     }
 
-    document.getElementById('refresh').onclick = load;
-
-    document.getElementById('discard').onclick = async () => {
-      if (!RUN || !confirm('Discard this batch? The desk goes empty until the next night-before run.')) return;
-      const { ok } = await api('/api/newsletter/admin/run/' + RUN.id + '/discard', 'POST', {});
-      if (ok) { RUN = null; render(); }
-    };
-
-    document.getElementById('backfill').onclick = async () => {
-      if (!confirm('Subscribe all existing paid members to the newsletter? They start receiving it on the next send.')) return;
-      const b = document.getElementById('backfill'); b.disabled = true; const o = b.textContent; b.textContent = 'Subscribing…';
-      const { ok, data } = await api('/api/newsletter/admin/backfill-members', 'POST', {});
-      b.disabled = false; b.textContent = o;
-      setStatus(ok ? `Subscribed ${data.added} member${data.added === 1 ? '' : 's'} to the newsletter.` : ((data && data.error) || 'Backfill failed.'), !ok);
-    };
+    function pollGenerate() {
+      const stageMap={starting:'Starting',fetching:'Pulling the news (~90s)',qualifying:'Sorting stories',writing:'Writing',scoring:'Scoring'};
+      const timer=setInterval(async()=>{
+        const {ok,data}=await api('/api/newsletter/admin/generate/status?jobId='+encodeURIComponent(genJobId));
+        if(!ok)return;
+        const statusEl=document.getElementById('gen-status');
+        if(data.status==='running'){if(statusEl)statusEl.textContent=(stageMap[data.stage]||data.stage||'Working')+(data.detail?' — '+data.detail:'')+'…';}
+        else if(data.status==='done'){clearInterval(timer);load();}
+        else if(data.status==='error'){clearInterval(timer);if(statusEl)statusEl.textContent=data.error||'Error.';const b=document.getElementById('gen-btn');if(b)b.disabled=false;}
+        else if(data.status==='unknown'){clearInterval(timer);load();}
+      },3000);
+    }
 
     async function load() {
-      const { ok, data, status } = await api('/api/newsletter/admin/run');
-      if (status === 401) { location.href = '/login'; return; }
-      if (status === 403) { setStatus('This desk is owner-only.', true); return; }
-      if (ok) { RUN = data.run; NEXT_SEND = data.nextSendDate || NEXT_SEND; render(); } else setStatus('Could not load.', true);
+      const {ok,data,status}=await api('/api/newsletter/admin/status');
+      if(status===401){location.href='/login';return;}
+      if(status===403){setStatus('This desk is owner-only.',true);return;}
+      if(ok&&data){
+        WINDOW=data.window;
+        RUN=data.run||null;
+        render();
+        setStatus('');
+      } else {
+        setStatus('Could not load.',true);
+      }
     }
 
-    (async function init() {
-      try { if (window.Clerk && !window.Clerk.loaded) await window.Clerk.load(); } catch (e) { location.href = '/login'; return; }
-      try { if (window.Clerk && window.Clerk.session) await window.Clerk.session.getToken(); } catch (e) {}
-      if (window.Clerk && !window.Clerk.user) { location.href = '/login'; return; }
+    document.getElementById('refresh').onclick=load;
+
+    // Auto-refresh every 60s so window state stays current
+    setInterval(()=>{ if(WINDOW&&WINDOW.state!=='locked') load(); }, 60000);
+
+    (async function init(){
+      try{if(window.Clerk&&!window.Clerk.loaded)await window.Clerk.load();}catch(e){location.href='/login';return;}
+      try{if(window.Clerk&&window.Clerk.session)await window.Clerk.session.getToken();}catch(e){}
+      if(window.Clerk&&!window.Clerk.user){location.href='/login';return;}
       load();
     })();
   </script>
