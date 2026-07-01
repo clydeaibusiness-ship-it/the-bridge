@@ -264,6 +264,17 @@ app.listen(PORT, () => {
   } catch (e) {
     console.error('Newsletter scheduler failed to start:', e.message);
   }
+  // Earl's memory worker (derive ended sessions, nightly profile reflection).
+  try {
+    require('./services/memory/worker').start();
+  } catch (e) {
+    console.error('Memory worker failed to start:', e.message);
+  }
+  // Warm the embedding model at boot so no member's first message ever
+  // waits on the one-time model download after a deploy.
+  require('./services/memory/embed').embed('warmup')
+    .then(() => console.log('[memory] embedding model warm'))
+    .catch((e) => console.error('[memory] embedding warmup failed:', e.message));
 });
 
 module.exports = app;

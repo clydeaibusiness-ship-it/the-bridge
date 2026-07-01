@@ -25,6 +25,7 @@ const {
   getGraduationRecord, createGraduationRecord, finalizeGraduationRecord,
   saveChartSections
 } = require('../services/supabase');
+const { buildMemoryContext, describeGap } = require('../services/memory/context');
 
 function monthsSince(iso) {
   if (!iso) return 0;
@@ -317,6 +318,7 @@ router.post('/member/commander/message', async (req, res) => {
     let sessionId = null;
     let summaryContext = null;
     let sessionNotesContext = '';
+    let gapMinutes = null;
 
     // If authenticated, load conversation history and save messages
     if (req.dbUser) {
@@ -326,7 +328,8 @@ router.post('/member/commander/message', async (req, res) => {
       if (sessionInfo) {
         const lastTime = new Date(sessionInfo.lastMessageAt).getTime();
         const minutesSince = (Date.now() - lastTime) / (1000 * 60);
-        
+        gapMinutes = minutesSince;
+
         if (minutesSince >= 30) {
           // Session ended by inactivity — compress the old session before starting new one
           const oldSessionId = sessionInfo.sessionId;
@@ -399,10 +402,27 @@ router.post('/member/commander/message', async (req, res) => {
       // Get last 30 messages for API context — filtered by soul version
       conversationHistory = await getCommanderMessagesForApi(req.dbUser.id, 30, soulVersion);
 
-      // Load session notes (long-term memory) — max 30 most recent
-      const sessionNotes = await getSessionNotes(req.dbUser.id, 30);
-      if (sessionNotes.length > 0) {
-        sessionNotesContext = formatSessionNotes(sessionNotes);
+      // Long-term memory: member file + relevant facts (recency-weighted,
+      // softened by age) + decision ledger. Falls back to the legacy flat
+      // session notes for members with no derived memory yet, or on error.
+      try {
+        const memoryContext = await buildMemoryContext(req.dbUser.id, message);
+        if (memoryContext) sessionNotesContext = memoryContext;
+      } catch (memErr) {
+        console.error('Memory context error (falling back to session notes):', memErr.message);
+      }
+      if (!sessionNotesContext) {
+        const sessionNotes = await getSessionNotes(req.dbUser.id, 30);
+        if (sessionNotes.length > 0) {
+          sessionNotesContext = formatSessionNotes(sessionNotes);
+        }
+      }
+
+      // Let Earl feel time passing: when a new session starts, tell him how
+      // long it has been. Pure data; what he does with it is the soul's call.
+      if (gapMinutes !== null && gapMinutes >= 30) {
+        const gapLine = `TIME CONTEXT: It has been ${describeGap(gapMinutes)} since your last conversation with this member.`;
+        sessionNotesContext = gapLine + (sessionNotesContext ? '\n\n' + sessionNotesContext : '');
       }
 
       // Save user message tagged with current soul version
