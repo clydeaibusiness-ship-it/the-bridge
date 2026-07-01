@@ -11,7 +11,12 @@ const { getCommanderSessionMessages } = require('../supabase');
 const { embed } = require('./embed');
 const store = require('./store');
 
-const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+// Native fetch when available: the SDK's bundled node-fetch breaks on newer
+// Node versions (premature close on gzipped responses).
+const client = new Anthropic({
+  apiKey: process.env.ANTHROPIC_API_KEY,
+  ...(typeof globalThis.fetch === 'function' ? { fetch: globalThis.fetch } : {}),
+});
 const MODEL = 'claude-sonnet-4-6';
 
 function parseJson(text, label) {
