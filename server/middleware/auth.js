@@ -1,40 +1,63 @@
 /**
- * Clerk auth middleware — extracts user from session token.
- * Sets req.userId (Clerk user ID) and req.dbUser (Supabase users row) if authenticated.
- * Does NOT block unauthenticated requests — routes decide that.
+ * Clerk auth middleware.
+ *
+ * `clerkPageMiddleware` mounts app-wide and does Clerk's handshake: when a
+ * signed-in member arrives with a stale/expired __session cookie, Clerk
+ * transparently mints a fresh one instead of the server treating them as
+ * signed-out. Without it, a stale cookie on a top-level navigation bounces
+ * the member to /login, they get sent back by Clerk, and the two disagree
+ * forever — the sign-in loop. It must run before extractUser and the gates.
+ *
+ * `extractUser` then reads the resolved auth (getAuth) and attaches the
+ * Supabase user. Contract unchanged: sets req.userId + req.dbUser, never blocks.
  */
 const { getUserByClerkId, getOrCreateUser } = require('../services/supabase');
 
-// verifyToken is a top-level export in @clerk/backend, NOT a method on clerkClient
-let verifyTokenFn = null;
+let clerkExpress = null;
 let clerkClient = null;
-
 try {
-  const clerkBackend = require('@clerk/backend');
-  verifyTokenFn = clerkBackend.verifyToken;
+  clerkExpress = require('@clerk/express');
   if (process.env.CLERK_SECRET_KEY) {
-    clerkClient = clerkBackend.createClerkClient({ secretKey: process.env.CLERK_SECRET_KEY });
+    clerkClient = clerkExpress.createClerkClient({ secretKey: process.env.CLERK_SECRET_KEY });
   }
 } catch (e) {
-  console.log('Clerk backend SDK not available:', e.message);
+  console.log('Clerk express SDK not available:', e.message);
+}
+
+// Publishable keys are non-secret (they already ship in the frontend). The
+// server never had this in env, so derive it from which secret key this
+// deploy holds: sk_live → production instance, otherwise the dev instance.
+// An explicit CLERK_PUBLISHABLE_KEY env var still overrides.
+const PK_LIVE = 'pk_live_Y2xlcmsuY2FwdGFpbnNicmlkZ2UuaW8k';
+const PK_TEST = 'pk_test_b2JsaWdpbmctcHl0aG9uLTUuY2xlcmsuYWNjb3VudHMuZGV2JA';
+function resolvePublishableKey() {
+  if (process.env.CLERK_PUBLISHABLE_KEY) return process.env.CLERK_PUBLISHABLE_KEY;
+  return String(process.env.CLERK_SECRET_KEY || '').startsWith('sk_live_') ? PK_LIVE : PK_TEST;
+}
+
+// The app-wide handshake middleware. A no-op passthrough when Clerk isn't
+// configured (e.g. local dev without keys) so the server still boots.
+function clerkPageMiddleware(req, res, next) {
+  if (!clerkExpress || !process.env.CLERK_SECRET_KEY) return next();
+  if (!clerkPageMiddleware._mw) {
+    clerkPageMiddleware._mw = clerkExpress.clerkMiddleware({
+      publishableKey: resolvePublishableKey(),
+      secretKey: process.env.CLERK_SECRET_KEY,
+    });
+  }
+  return clerkPageMiddleware._mw(req, res, next);
 }
 
 async function extractUser(req, res, next) {
   req.userId = null;
   req.dbUser = null;
 
-  if (!verifyTokenFn || !process.env.CLERK_SECRET_KEY) return next();
+  if (!clerkExpress || !process.env.CLERK_SECRET_KEY) return next();
 
   try {
-    const token = req.cookies?.__session || req.headers.authorization?.replace('Bearer ', '');
-    if (!token) return next();
-
-    // verifyToken is a standalone function, takes token + options
-    const payload = await verifyTokenFn(token, {
-      secretKey: process.env.CLERK_SECRET_KEY
-    });
-
-    const sub = payload.sub;
+    // Auth was resolved (and handshaked) by clerkPageMiddleware upstream.
+    const auth = clerkExpress.getAuth(req);
+    const sub = auth?.userId;
     if (!sub) return next();
 
     req.userId = sub;
@@ -54,8 +77,8 @@ async function extractUser(req, res, next) {
     }
     req.dbUser = dbUser;
   } catch (e) {
-    console.error('Auth token verification failed:', e.message);
-    // Token expired or invalid — treat as unauthenticated
+    console.error('Auth resolution failed:', e.message);
+    // Not signed in or Clerk unreachable — treat as unauthenticated.
   }
 
   next();
@@ -87,4 +110,4 @@ function requireOwner(req, res, next) {
   next();
 }
 
-module.exports = { extractUser, requireAuth, requireOwner };
+module.exports = { extractUser, requireAuth, requireOwner, clerkPageMiddleware };

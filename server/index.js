@@ -35,6 +35,15 @@ app.use(helmet({
 app.use(cors());
 app.use(cookieParser());
 
+// Behind Railway's proxy — trust it so Clerk's handshake builds https URLs.
+app.set('trust proxy', 1);
+
+// Clerk handshake, app-wide. Must run before any auth gate so a signed-in
+// member with a stale session cookie gets a fresh one instead of being
+// bounced to login (the sign-in loop). No-op when Clerk isn't configured.
+const { clerkPageMiddleware } = require('./middleware/auth');
+app.use(clerkPageMiddleware);
+
 // Stripe webhooks need raw body — must come before express.json()
 app.use('/api/payments/webhook', express.raw({ type: 'application/json' }));
 
@@ -74,12 +83,17 @@ const { extractUser } = require('./middleware/auth');
 const { ensureMemberState } = require('./services/supabase');
 
 async function requirePaidMember(req, res, next) {
-  const token = req.cookies?.__session || req.headers.authorization?.replace('Bearer ', '');
-  if (!token) {
-    // No Clerk session. If Stripe just redirected here with session_id, the
-    // person has paid but hasn't created their Clerk account yet. Look up their
-    // email from Stripe and send them to Clerk sign-up with it pre-filled so
-    // the pending activation fires the moment they create their account.
+  // Auth (and the Clerk handshake) was resolved upstream by clerkPageMiddleware.
+  // extractUser just attaches the Supabase user. A missing req.dbUser here now
+  // genuinely means signed-out, not a stale-cookie false negative — so we can
+  // redirect without risking the sign-in loop.
+  await new Promise((resolve) => extractUser(req, res, resolve));
+
+  if (!req.dbUser) {
+    // Not signed in. If Stripe just redirected here with session_id, the person
+    // has paid but hasn't created their Clerk account yet. Look up their email
+    // from Stripe and send them to Clerk sign-up with it pre-filled so the
+    // pending activation fires the moment they create their account.
     const sessionId = req.query.session_id;
     if (sessionId && process.env.STRIPE_SECRET_KEY) {
       try {
@@ -97,13 +111,6 @@ async function requirePaidMember(req, res, next) {
       }
     }
     return res.redirect('/login?action=subscribe');
-  }
-
-  await new Promise((resolve) => extractUser(req, res, resolve));
-
-  if (!req.dbUser) {
-    // Token present but invalid or expired — send to login.
-    return res.redirect('/login');
   }
 
   const tier = req.dbUser.membership_tier;
