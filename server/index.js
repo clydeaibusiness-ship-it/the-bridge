@@ -277,11 +277,23 @@ app.listen(PORT, () => {
   } catch (e) {
     console.error('Memory worker failed to start:', e.message);
   }
-  // Warm the embedding model at boot so no member's first message ever
-  // waits on the one-time model download after a deploy.
-  require('./services/memory/embed').embed('warmup')
-    .then(() => console.log('[memory] embedding model warm'))
-    .catch((e) => console.error('[memory] embedding warmup failed:', e.message));
+  // Warm the embedding model at boot so no member's first message waits on
+  // the one-time model load. Retry a few times: if the first pull hiccups,
+  // keep trying rather than leaving the model cold until a member triggers it.
+  (async () => {
+    const { embed } = require('./services/memory/embed');
+    for (let attempt = 1; attempt <= 5; attempt++) {
+      try {
+        await embed('warmup');
+        console.log('[memory] embedding model warm');
+        return;
+      } catch (e) {
+        console.error(`[memory] embedding warmup attempt ${attempt} failed:`, e.message);
+        await new Promise((r) => setTimeout(r, 5000));
+      }
+    }
+    console.error('[memory] embedding warmup gave up; retrieval will warm lazily on first use');
+  })();
 });
 
 module.exports = app;
