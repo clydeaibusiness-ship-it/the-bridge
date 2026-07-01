@@ -14,6 +14,15 @@ const store = require('./store');
 const HALF_LIFE_DAYS = 21; // relevance halves every three weeks
 const TOP_K = 8;
 const MIN_SCORE = 0.18;
+const FACT_SEARCH_BUDGET_MS = 3500; // memory must never stall a reply
+
+/** Reject after ms so a cold/slow embedding model can't hang the whole turn. */
+function withTimeout(promise, ms, label) {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => setTimeout(() => reject(new Error(label + ' exceeded ' + ms + 'ms')), ms)),
+  ]);
+}
 
 function daysBetween(a, b) {
   return Math.max(0, (a.getTime() - b.getTime()) / (1000 * 60 * 60 * 24));
@@ -51,10 +60,15 @@ async function buildMemoryContext(userId, message, opts = {}) {
     store.listLedger(userId, 25).catch(() => []),
     (async () => {
       try {
-        const queryEmbedding = await embed(message);
-        return await store.searchFacts(userId, queryEmbedding, 24);
+        // Bounded: if the embedding model is still warming up (or anything
+        // stalls), give up fast and answer from profile + ledger instead of
+        // hanging the reply. The model keeps loading in the background, so the
+        // next turn gets facts. The ledger (deflections, decisions) needs no
+        // embedding, so it is unaffected by this.
+        const queryEmbedding = await withTimeout(embed(message), FACT_SEARCH_BUDGET_MS, 'embedding');
+        return await withTimeout(store.searchFacts(userId, queryEmbedding, 24), FACT_SEARCH_BUDGET_MS, 'fact search');
       } catch (e) {
-        console.error('Memory fact search unavailable this turn:', e.message);
+        console.error('Memory fact search skipped this turn:', e.message);
         return [];
       }
     })(),
