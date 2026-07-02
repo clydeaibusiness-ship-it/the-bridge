@@ -9,7 +9,11 @@
 
 const Anthropic = require('@anthropic-ai/sdk');
 
-const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+// Native fetch avoids the SDK node-fetch "premature close" on newer Node.
+const client = new Anthropic({
+  apiKey: process.env.ANTHROPIC_API_KEY,
+  ...(typeof globalThis.fetch === 'function' ? { fetch: globalThis.fetch } : {}),
+});
 const MODEL = 'claude-sonnet-4-6';
 
 const RUBRIC = `You are a hard, fair editor grading a small-business newsletter issue.

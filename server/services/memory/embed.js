@@ -7,14 +7,24 @@
 
 let pipePromise = null;
 
+// A normal cold start (download + load) is a few seconds. If it goes far past
+// that, the load is stuck (e.g. the model CDN is unreachable) — reject so the
+// failure surfaces to the owner rather than hanging a member's reply forever.
+const LOAD_TIMEOUT_MS = 45000;
+
 function getPipe() {
   if (!pipePromise) {
-    pipePromise = (async () => {
-      // ESM-only package; dynamic import from CommonJS.
-      const { pipeline } = await import('@xenova/transformers');
-      return pipeline('feature-extraction', 'Xenova/gte-small');
-    })();
-    // If loading fails, allow a retry on the next call.
+    pipePromise = Promise.race([
+      (async () => {
+        // ESM-only package; dynamic import from CommonJS.
+        const { pipeline } = await import('@xenova/transformers');
+        return pipeline('feature-extraction', 'Xenova/gte-small');
+      })(),
+      new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('embedding model load timed out after ' + LOAD_TIMEOUT_MS + 'ms')), LOAD_TIMEOUT_MS)
+      ),
+    ]);
+    // If loading fails or times out, allow a fresh attempt on the next call.
     pipePromise.catch(() => { pipePromise = null; });
   }
   return pipePromise;

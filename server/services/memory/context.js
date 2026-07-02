@@ -14,15 +14,6 @@ const store = require('./store');
 const HALF_LIFE_DAYS = 21; // relevance halves every three weeks
 const TOP_K = 8;
 const MIN_SCORE = 0.18;
-const FACT_SEARCH_BUDGET_MS = 3500; // memory must never stall a reply
-
-/** Reject after ms so a cold/slow embedding model can't hang the whole turn. */
-function withTimeout(promise, ms, label) {
-  return Promise.race([
-    promise,
-    new Promise((_, reject) => setTimeout(() => reject(new Error(label + ' exceeded ' + ms + 'ms')), ms)),
-  ]);
-}
 
 function daysBetween(a, b) {
   return Math.max(0, (a.getTime() - b.getTime()) / (1000 * 60 * 60 * 24));
@@ -53,24 +44,17 @@ function describeGap(minutes) {
 async function buildMemoryContext(userId, message, opts = {}) {
   const now = opts.now ? new Date(opts.now) : new Date();
 
-  // Fact search can fail independently (e.g. embedding model still warming up
-  // on a fresh deploy); profile and ledger should still come through.
+  // If any of these genuinely fail, we let the error propagate rather than
+  // quietly answering with a memory-less Earl. A cold embedding model does not
+  // count as a failure: embed() waits for the in-flight model load (bounded in
+  // embed.js) and then succeeds, so the first reply after a deploy is a little
+  // slower but still correct.
   const [profile, ledger, rawFacts] = await Promise.all([
-    store.getProfile(userId).catch(() => null),
-    store.listLedger(userId, 25).catch(() => []),
+    store.getProfile(userId),
+    store.listLedger(userId, 25),
     (async () => {
-      try {
-        // Bounded: if the embedding model is still warming up (or anything
-        // stalls), give up fast and answer from profile + ledger instead of
-        // hanging the reply. The model keeps loading in the background, so the
-        // next turn gets facts. The ledger (deflections, decisions) needs no
-        // embedding, so it is unaffected by this.
-        const queryEmbedding = await withTimeout(embed(message), FACT_SEARCH_BUDGET_MS, 'embedding');
-        return await withTimeout(store.searchFacts(userId, queryEmbedding, 24), FACT_SEARCH_BUDGET_MS, 'fact search');
-      } catch (e) {
-        console.error('Memory fact search skipped this turn:', e.message);
-        return [];
-      }
+      const queryEmbedding = await embed(message);
+      return store.searchFacts(userId, queryEmbedding, 24);
     })(),
   ]);
 

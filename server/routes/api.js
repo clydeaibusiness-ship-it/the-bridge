@@ -26,6 +26,7 @@ const {
   saveChartSections
 } = require('../services/supabase');
 const { buildMemoryContext, describeGap } = require('../services/memory/context');
+const { sendOwnerAlert } = require('../services/alert');
 
 function monthsSince(iso) {
   if (!iso) return 0;
@@ -403,15 +404,15 @@ router.post('/member/commander/message', async (req, res) => {
       conversationHistory = await getCommanderMessagesForApi(req.dbUser.id, 30, soulVersion);
 
       // Long-term memory: member file + relevant facts (recency-weighted,
-      // softened by age) + decision ledger. Falls back to the legacy flat
-      // session notes for members with no derived memory yet, or on error.
-      try {
-        const memoryContext = await buildMemoryContext(req.dbUser.id, message);
-        if (memoryContext) sessionNotesContext = memoryContext;
-      } catch (memErr) {
-        console.error('Memory context error (falling back to session notes):', memErr.message);
-      }
-      if (!sessionNotesContext) {
+      // softened by age) + decision ledger. A null result means this member
+      // simply has no derived memory yet (fall back to the legacy session
+      // notes). A THROWN error means memory is actually broken — we do NOT
+      // swallow it and answer with a memory-less Earl; it propagates to the
+      // route handler, which alerts the owner and shows the member the snag.
+      const memoryContext = await buildMemoryContext(req.dbUser.id, message);
+      if (memoryContext) {
+        sessionNotesContext = memoryContext;
+      } else {
         const sessionNotes = await getSessionNotes(req.dbUser.id, 30);
         if (sessionNotes.length > 0) {
           sessionNotesContext = formatSessionNotes(sessionNotes);
@@ -521,8 +522,15 @@ router.post('/member/commander/message', async (req, res) => {
     res.json({ response });
   } catch (e) {
     console.error('Commander error:', e.message, e.stack);
-    res.status(500).json({ 
-      error: 'I was not able to process that just now. Could you rephrase or try again in a moment?' 
+    // Surface, don't hide: notify the owner so a real failure gets fixed
+    // instead of quietly degrading every member's experience.
+    sendOwnerAlert(
+      'commander-chat',
+      'Earl failed to answer a member',
+      `A member's message could not be answered and they saw the snag message.\n\nError: ${e.message}\n\n${e.stack || ''}`
+    );
+    res.status(500).json({
+      error: 'I was not able to process that just now. Could you rephrase or try again in a moment?'
     });
   }
 });
