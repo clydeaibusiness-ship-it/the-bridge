@@ -42,6 +42,17 @@
     .subscribe-card--captain {
       border-color: #c8a96e;
     }
+    .subscribe-pfp {
+      width: 92px;
+      height: 92px;
+      border-radius: 50%;
+      object-fit: cover;
+      object-position: center top;
+      border: 2px solid #c8a96e;
+      box-shadow: 0 4px 20px rgba(8, 8, 15, 0.15);
+      display: block;
+      margin: 0 auto 1.1rem;
+    }
     .subscribe-card--selected {
       box-shadow: 0 0 0 2px #c8a96e;
     }
@@ -159,6 +170,7 @@
     <div class="subscribe-grid">
       <!-- Earl -->
       <div class="subscribe-card subscribe-card--captain" id="card-earl">
+        <img class="subscribe-pfp" src="/assets/earl.png" alt="Earl">
         <div class="subscribe-tier">EARL MEMBERSHIP</div>
         <div class="subscribe-price">$300<span> one-time</span></div>
         <div class="subscribe-annual">6 months of full access</div>
