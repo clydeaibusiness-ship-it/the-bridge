@@ -72,10 +72,15 @@ function renderEmailHtml(issue, ctx = {}) {
   <div style="max-width:560px;margin:0 auto;padding:30px 24px;background:${CREAM};">
 
     <!-- header -->
-    <div style="border-bottom:1px solid ${LINE};padding-bottom:12px;margin-bottom:20px;">
-      <span style="font-family:'Playfair Display',Georgia,serif;font-size:18px;font-weight:700;color:${INK};letter-spacing:0.02em;">Earl</span>
-      <span style="float:right;font-family:'DM Mono','Space Mono',monospace;font-size:9px;color:${MUTE};padding-top:7px;">${dateStr}</span>
-    </div>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-bottom:1px solid ${LINE};margin-bottom:20px;">
+      <tr>
+        <td style="padding-bottom:12px;vertical-align:middle;">
+          <img src="https://captainsbridge.io/assets/earl.png" width="40" height="40" alt="Earl" style="border-radius:50%;vertical-align:middle;margin-right:10px;display:inline-block;border:1px solid ${LINE};">
+          <span style="font-family:'Playfair Display',Georgia,serif;font-size:18px;font-weight:700;color:${INK};letter-spacing:0.02em;vertical-align:middle;">Earl</span>
+        </td>
+        <td align="right" style="padding-bottom:12px;vertical-align:middle;font-family:'DM Mono','Space Mono',monospace;font-size:9px;color:${MUTE};">${dateStr}</td>
+      </tr>
+    </table>
 
     <!-- section 1 -->
     <p style="${label}">One thing from the world this week</p>

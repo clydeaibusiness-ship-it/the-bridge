@@ -32,7 +32,8 @@ const STYLE = `
   *{box-sizing:border-box;}
   body{margin:0;background:var(--cream);color:var(--ink);font-family:Georgia,'Times New Roman',serif;line-height:1.6;}
   .wrap{max-width:680px;margin:0 auto;padding:34px 22px 60px;}
-  .top{display:flex;align-items:baseline;gap:12px;border-bottom:1px solid var(--line);padding-bottom:16px;margin-bottom:26px;}
+  .top{display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--line);padding-bottom:16px;margin-bottom:26px;}
+  .pfp{width:44px;height:44px;border-radius:50%;object-fit:cover;object-position:center top;flex:0 0 auto;border:1px solid var(--line);}
   .brand{font-family:'Playfair Display',Georgia,serif;font-weight:700;font-size:26px;text-decoration:none;color:var(--ink);}
   .kick{font-family:'DM Mono',ui-monospace,monospace;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--mute);}
   .top .sp{flex:1;}
@@ -67,7 +68,7 @@ function shell({ title, desc, canonical, head = '', body }) {
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>${STYLE}</style>${head}
 </head><body><div class="wrap">
-<div class="top"><a class="brand" href="/newsletter">Earl</a><span class="kick">Newsletter</span><span class="sp"></span><a class="nav" href="/">captainsbridge.io →</a></div>
+<div class="top"><img class="pfp" src="/assets/earl.png" alt="Earl"><a class="brand" href="/newsletter">Earl</a><span class="kick">Newsletter</span><span class="sp"></span><a class="nav" href="/">captainsbridge.io →</a></div>
 ${body}
 <div class="foot">Earl, for people keeping a business alive. Past issues are free; the newsletter lands a week earlier in your inbox.</div>
 </div></body></html>`;
