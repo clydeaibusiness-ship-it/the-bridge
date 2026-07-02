@@ -3,7 +3,14 @@ const path = require('path');
 const crypto = require('crypto');
 const Anthropic = require('@anthropic-ai/sdk');
 
-const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+// Use the platform's native fetch when present. The SDK's bundled node-fetch
+// intermittently aborts gzipped responses on newer Node ("premature close"),
+// which surfaced to members as a long pause then "Earl hit a snag". Native
+// fetch (undici) does not have this failure.
+const client = new Anthropic({
+  apiKey: process.env.ANTHROPIC_API_KEY,
+  ...(typeof globalThis.fetch === 'function' ? { fetch: globalThis.fetch } : {}),
+});
 
 /**
  * Strip markdown formatting from Commander responses.
