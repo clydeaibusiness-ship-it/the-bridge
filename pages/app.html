@@ -22,7 +22,7 @@
     .shell { position: relative; display: flex; flex-direction: column; height: 100dvh; max-width: 480px; margin: 0 auto;
       background: #f5f0e8; color: #0a0a0f; box-shadow: 0 0 40px rgba(0,0,0,0.08); overflow: hidden; }
     /* Top bar */
-    .tb { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; border-bottom: 1px solid #d8d0c0; flex: 0 0 auto; }
+    .tb { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; flex: 0 0 auto; }
     .tb-btn { background: none; border: none; cursor: pointer; color: #3a3530; font-size: 1.2rem; line-height: 1; padding: 4px; }
     .tb-title { font-family: var(--font-data); font-size: 0.7rem; font-weight: 700; letter-spacing: 0.14em; color: #0a0a0f; }
     .tb-right { display: flex; align-items: center; gap: 12px; }
@@ -75,8 +75,8 @@
     .chart-sec:last-child { border-bottom: none; }
     .chart-sec-t { font-family: var(--font-data); font-size: 0.625rem; letter-spacing: 0.1em; text-transform: uppercase; color: #7a7570; margin-bottom: 6px; }
     .chart-sec-b { font-family: var(--font-ui); font-size: 0.8125rem; color: #3a3530; line-height: 1.65; }
-    /* Bottom slider with a sliding pill */
-    .slider { flex: 0 0 auto; padding: 10px 12px calc(10px + env(safe-area-inset-bottom)); border-top: 1px solid #d8d0c0; background: #f5f0e8; }
+    /* Panel switcher — sits under the header so it's away from the composer */
+    .slider { flex: 0 0 auto; padding: 8px 12px 10px; border-bottom: 1px solid #d8d0c0; background: #f5f0e8; }
     .slider-inner { position: relative; display: flex; height: 42px; background: #ece7dc; border-radius: 999px; }
     .slider-pill { position: absolute; top: 4px; left: 0; height: calc(100% - 8px); width: 33.3333%; background: #0a0a0f; border-radius: 999px; transition: transform 0.32s cubic-bezier(0.4,0,0.2,1); z-index: 0; transform: translateX(0); }
     .slider-inner button { position: relative; z-index: 1; flex: 1; background: none; border: none; cursor: pointer; font-family: var(--font-data); font-size: 0.625rem; letter-spacing: 0.08em; text-transform: uppercase; color: #7a7570; transition: color 0.2s; }
@@ -167,7 +167,7 @@
     /* ---- Dark mode ---- */
     /* Only black/white/gray spectrum is inverted. Gold, green, red stay. */
     .shell.dark, .shell.dark .panel-scroll, .shell.dark .msgs { background: #18181c; color: #f0ebe0; }
-    .shell.dark .tb { background: #18181c; border-bottom-color: #2e2e3a; }
+    .shell.dark .tb { background: #18181c; }
     .shell.dark .tb-title { color: #f0ebe0; }
     .shell.dark .tb-btn { color: #888898; }
     .shell.dark .tb-pfp { border-color: #2e2e3a; }
@@ -181,7 +181,7 @@
     .shell.dark .composer { border-top-color: #2e2e3a; }
     .shell.dark .composer-row { background: #252530; border-color: #2e2e3a; }
     .shell.dark .composer textarea { color: #f0ebe0; }
-    .shell.dark .slider { border-top-color: #2e2e3a; background: #18181c; }
+    .shell.dark .slider { border-bottom-color: #2e2e3a; background: #18181c; }
     .shell.dark .slider-inner { background: #252530; }
     .shell.dark .settings { border-top-color: #2e2e3a; }
     .shell.dark .settings-row { color: #c0b8b0; border-bottom-color: #2e2e3a; }
@@ -251,6 +251,15 @@
       </div>
     </div>
 
+    <div class="slider">
+      <div class="slider-inner" id="slider">
+        <div class="slider-pill" id="slider-pill"></div>
+        <button data-i="0">Chart</button>
+        <button data-i="1" class="active">Earl</button>
+        <button data-i="2">Progress</button>
+      </div>
+    </div>
+
     <div class="panels">
       <div class="track" id="track">
 
@@ -303,16 +312,6 @@
 
       </div>
     </div>
-
-    <div class="slider">
-      <div class="slider-inner" id="slider">
-        <div class="slider-pill" id="slider-pill"></div>
-        <button data-i="0">Chart</button>
-        <button data-i="1" class="active">Earl</button>
-        <button data-i="2">Progress</button>
-      </div>
-    </div>
-
 
     <div class="modal-scrim" id="ca-scrim">
       <div class="modal">
