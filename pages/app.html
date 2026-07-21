@@ -43,9 +43,9 @@
     .m-compress span { font-family: var(--font-data); font-size: 0.5rem; letter-spacing: 0.1em; text-transform: uppercase; color: #b0a898; white-space: nowrap; }
     .prompts { display: flex; flex-direction: column; gap: 8px; padding: 4px 14px 0; }
     .pill { text-align: left; font-family: var(--font-ui); font-size: 0.8125rem; color: #3a3530; background: #ece7dc; border: 1px solid #d8d0c0; border-radius: 10px; padding: 10px 12px; cursor: pointer; }
-    .composer { flex: 0 0 auto; padding: 10px 12px; border-top: 1px solid #d8d0c0; }
-    .composer-row { display: flex; align-items: center; gap: 8px; background: #fff; border: 1px solid #c8c0b0; border-radius: 22px; padding: 7px 8px 7px 14px; }
-    .composer input { flex: 1; border: none; outline: none; font-family: var(--font-ui); font-size: 0.95rem; background: transparent; color: #0a0a0f; }
+    .composer { flex: 0 0 auto; padding: 12px 12px 10px; border-top: 1px solid #d8d0c0; }
+    .composer-row { display: flex; align-items: flex-end; gap: 8px; background: #fff; border: 1px solid #c8c0b0; border-radius: 22px; padding: 6px 8px 6px 14px; }
+    .composer textarea { flex: 1; border: none; outline: none; font-family: var(--font-ui); font-size: 0.95rem; line-height: 1.4; background: transparent; color: #0a0a0f; resize: none; max-height: 140px; overflow-y: auto; padding: 5px 0; margin: 0; }
     .send { width: 34px; height: 34px; flex: 0 0 auto; border: none; border-radius: 50%; background: #0a0a0f; color: #f0ebe0; font-size: 1rem; cursor: pointer; }
     .send:disabled { opacity: 0.4; }
     /* Side panel content */
@@ -180,7 +180,7 @@
     .shell.dark .pill { background: #252530; border-color: #2e2e3a; color: #c0b8b0; }
     .shell.dark .composer { border-top-color: #2e2e3a; }
     .shell.dark .composer-row { background: #252530; border-color: #2e2e3a; }
-    .shell.dark .composer input { color: #f0ebe0; }
+    .shell.dark .composer textarea { color: #f0ebe0; }
     .shell.dark .slider { border-top-color: #2e2e3a; background: #18181c; }
     .shell.dark .slider-inner { background: #252530; }
     .shell.dark .settings { border-top-color: #2e2e3a; }
@@ -287,7 +287,7 @@
           </div>
           <div class="composer">
             <div class="composer-row">
-              <input id="composer-input" type="text" placeholder="Ask Earl&#8230;" autocomplete="off">
+              <textarea id="composer-input" rows="1" placeholder="Ask Earl&#8230;" autocomplete="off"></textarea>
               <button class="send" id="composer-send" aria-label="Send">&#8593;</button>
             </div>
           </div>
@@ -453,10 +453,19 @@
       }
     }
 
+    // Grow the textarea with its content, up to the CSS max-height (then it
+    // scrolls). Keeps a single line when empty.
+    function autoGrow() {
+      input.style.height = 'auto';
+      input.style.height = Math.min(input.scrollHeight, 140) + 'px';
+    }
+    input.addEventListener('input', autoGrow);
+
     async function send() {
       const text = input.value.trim();
       if (!text) return;
       input.value = '';
+      autoGrow();
       prompts.style.display = 'none';
       const pre = msgs.querySelector('.pre-note'); if (pre) pre.remove();
       addMsg(text, 'user');
@@ -482,7 +491,7 @@
           if (current !== panelAtSend) goTo(current);
         } else {
           addMsg('Earl hit a snag on that one. Give it another try in a moment.', 'system');
-          input.value = text;
+          input.value = text; autoGrow();
         }
       } catch (err) {
         loading.remove();
@@ -577,7 +586,10 @@
     window.visualViewport && window.visualViewport.addEventListener('resize', () => goTo(current));
 
     sendBtn.addEventListener('click', send);
-    input.addEventListener('keydown', e => { if (e.key === 'Enter') send(); });
+    input.addEventListener('keydown', e => {
+      // Enter sends; Shift+Enter inserts a newline (standard chat behavior).
+      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
+    });
     prompts.querySelectorAll('.pill').forEach(p => p.addEventListener('click', () => { input.value = p.dataset.p; send(); }));
     document.getElementById('history-btn').addEventListener('click', () => {
       sessionStorage.setItem('earlPanel', current);
