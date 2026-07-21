@@ -14,9 +14,9 @@ const {
   getCommanderSessionMessages, saveSessionNote, getSessionNotes, sessionNoteExists,
   upsertSessionDebrief,
   ensureMemberState, updateMemberState,
-  getActionSteps, getActionStep, updateActionStepStatus, updateActionStepFollowUp,
-  getBenchmarks, addBenchmarkRating, getBenchmarkRatingHistory,
-  createCheckIn, getActiveCheckIn, getLastAnsweredCheckIn, answerCheckIn, snoozeCheckIn,
+  getActionSteps, getActionStep, updateActionStepStatus,
+  getBenchmarks, getBenchmarkRatingHistory,
+  completeBenchmarkGoal,
   getSessionDebriefs,
   getLatestPeriodicReport, savePeriodicReport,
   insertAnonymousAggregate,
@@ -27,6 +27,7 @@ const {
 } = require('../services/supabase');
 const { buildMemoryContext, describeGap } = require('../services/memory/context');
 const { sendOwnerAlert } = require('../services/alert');
+const { getVapidPublicKey, saveSubscription } = require('../services/push');
 
 function monthsSince(iso) {
   if (!iso) return 0;
@@ -34,25 +35,18 @@ function monthsSince(iso) {
 }
 
 /**
- * Evaluate the data-driven lifecycle signals. Condition 1 of graduation
- * (metric movement) is fully evaluable here; conditions 2 and 3 (member
- * confirmation and question-quality) are the Commander's job in conversation.
+ * Evaluate the data-driven lifecycle signals. Graduation condition 1 is now
+ * goal completion: every one of the member's goals has been marked complete
+ * (in conversation, with their confirmation). Conditions 2 and 3 (member
+ * confirmation of the overall shift, and question-quality) remain the
+ * Commander's job in conversation.
  */
 function evaluateLifecycle(benchmarks, ratingHistory, state) {
   const result = { graduationCandidate: false, milestoneReached: false, referralReached: false };
 
-  if (benchmarks.length >= 3) {
-    const byBench = {};
-    for (const r of ratingHistory) (byBench[r.benchmark_id] = byBench[r.benchmark_id] || []).push(r);
-    const TEN_DAYS = 10 * 24 * 60 * 60 * 1000;
-    result.graduationCandidate = benchmarks.every(b => {
-      const rs = (byBench[b.id] || []).slice().sort((a, c) => new Date(a.created_at) - new Date(c.created_at));
-      if (!rs.length) return false;
-      const latest = rs[rs.length - 1];
-      if (latest.rating < 7) return false;
-      // A prior rating of 7+ at least ten days before the latest = two cycles held.
-      return rs.some(r => r.rating >= 7 && (new Date(latest.created_at) - new Date(r.created_at)) >= TEN_DAYS);
-    });
+  // All named goals closed out = the data condition for graduation is met.
+  if (benchmarks.length >= 1) {
+    result.graduationCandidate = benchmarks.every(b => !!b.completed_at);
   }
 
   const months = monthsSince(state?.coaching_started_at);
@@ -88,13 +82,34 @@ async function buildCoachingContext(userId) {
     }
   }
 
+  // Goals + the action steps under each. This is the spine of progress now:
+  // a goal is reached when its action steps are done (or the member says they
+  // hit it another way), you confirm with them, then call complete_goal.
+  let allSteps = [];
+  try { allSteps = await getActionSteps(userId); } catch (e) { /* non-fatal */ }
+
   if (benches.length) {
-    ctx += '\nWHAT THEY ARE WORKING TOWARD (your private map — do not quote these ratings to them unprompted):\n';
+    ctx += '\nTHEIR GOALS AND THE ACTION STEPS UNDER EACH (your private map):\n';
     for (const b of benches) {
-      const r = b.current_rating ?? b.starting_rating;
-      ctx += `- [benchmark_id: ${b.id}] "${b.statement}"${r != null ? ` (now ${r}/10)` : ''}\n`;
+      const done = !!b.completed_at;
+      ctx += `- [benchmark_id: ${b.id}] "${b.statement}"${done ? ' — DONE (already marked complete)' : ''}\n`;
+      const steps = allSteps.filter(s => s.benchmark_id === b.id);
+      if (steps.length) {
+        for (const s of steps) {
+          const mark = s.status === 'completed' ? '✓ done'
+            : s.status === 'did_not_happen' ? '✗ did not happen'
+            : 'in progress';
+          ctx += `    · [action_step_id: ${s.id}] "${s.step_text}" (${mark})\n`;
+        }
+        const openCount = steps.filter(s => s.status === 'active').length;
+        if (!done && openCount === 0) {
+          ctx += `    → Every action step for this goal is closed. If it feels reached, ask them whether to mark the goal complete and move to the next — only call complete_goal if they say yes.\n`;
+        }
+      } else if (!done) {
+        ctx += `    · (no action steps yet — when the moment is right, help them name the concrete steps that would get them here, and save each with save_action_step tagged to this benchmark_id)\n`;
+      }
     }
-    ctx += 'Use the benchmark_id values above when saving action steps that serve a specific goal.\n';
+    ctx += 'Use the exact benchmark_id / action_step_id values above when saving steps, marking steps complete, or completing a goal.\n';
   }
 
   if (state && state.hidden_metrics && typeof state.hidden_metrics === 'object') {
@@ -120,7 +135,7 @@ async function buildCoachingContext(userId) {
     const ratingHistory = await getBenchmarkRatingHistory(userId);
     const life = evaluateLifecycle(benches, ratingHistory, state);
     if (life.graduationCandidate) {
-      ctx += '\nGRADUATION SIGNAL: Their success metrics have held at 7 or above across check-ins (condition one is met). If their questions have shifted from survival to strategy, ask the confirming question and, only if they confirm the shift, begin the graduation conversation per your operating context.\n';
+      ctx += '\nGRADUATION SIGNAL: Every one of their goals has been marked complete (condition one is met). If their questions have shifted from survival to strategy, ask the confirming question and, only if they confirm the shift, begin the graduation conversation per your operating context.\n';
     }
     if (life.referralReached) {
       ctx += '\nNINE-MONTH POINT: They have been with The Bridge nine months without graduating. If progress is minimal, have the honest in-person-coaching referral conversation per your operating context.\n';
@@ -502,20 +517,6 @@ router.post('/member/commander/message', async (req, res) => {
           !!debrief.shift_detected,
           debrief.unresolved_item || null
         );
-
-        // On a meaningful shift, trigger an immediate metric check-in on the
-        // weakest benchmark (per the benchmarking spec), if one isn't already up.
-        if (debrief.shift_detected) {
-          const benchmarks = await getBenchmarks(userId);
-          if (benchmarks.length && !(await getActiveCheckIn(userId))) {
-            const target = [...benchmarks].sort((a, b) =>
-              (a.current_rating ?? a.starting_rating ?? 0) - (b.current_rating ?? b.starting_rating ?? 0))[0];
-            await createCheckIn(userId, {
-              type: 'metric', benchmark_id: target.id,
-              prompt_text: `On a scale of 1 to 10, how close does this feel right now: "${target.statement}"?`
-            });
-          }
-        }
       });
     }
 
@@ -814,61 +815,11 @@ router.post('/session/save', async (req, res) => {
 // steps, progress view, periodic report)
 // ============================================================
 
-const SUBJECTIVE_PROMPTS = [
-  { key: 'money_stress', text: 'On a scale of 1 to 10, how stressed are you about money in the business right now?' },
-  { key: 'week_ownership', text: 'On a scale of 1 to 10, how much of your week felt like yours this week?' },
-  { key: 'direction_confidence', text: 'On a scale of 1 to 10, how confident do you feel about the direction you are heading?' }
-];
-
-const CHECK_IN_CADENCE_DAYS = 3;
-const SUBJECTIVE_EVERY_DAYS = 16;        // a subjective prompt roughly every 2-3 weeks
 const PERIODIC_REPORT_DAYS = 28;
 
 function daysSince(iso) {
   if (!iso) return Infinity;
   return (Date.now() - new Date(iso).getTime()) / (1000 * 60 * 60 * 24);
-}
-
-/**
- * If nothing is already waiting and the cadence has elapsed, create the next
- * due check-in. Metric check-ins rotate through the member's benchmarks
- * (weakest first); when no benchmarks exist yet, fall back to a subjective
- * prompt so the heartbeat still runs. Returns the active check-in (or null).
- */
-async function ensureDueCheckIn(userId) {
-  // Check-ins track the member's benchmark, so none appear until benchmarks
-  // exist (generated after Stage 2). This keeps the prompts tailored to their
-  // own success statements rather than firing a generic question early.
-  const benchmarks = await getBenchmarks(userId);
-  if (!benchmarks.length) return null;
-
-  const active = await getActiveCheckIn(userId);
-  if (active) return active;
-
-  const last = await getLastAnsweredCheckIn(userId);
-  if (daysSince(last?.answered_at) < CHECK_IN_CADENCE_DAYS) return null;
-
-  // Mostly tailored metric check-ins; a subjective state question every
-  // couple of weeks, interspersed.
-  const wantSubjective = daysSince(last?.answered_at) >= SUBJECTIVE_EVERY_DAYS;
-
-  if (wantSubjective) {
-    const pick = SUBJECTIVE_PROMPTS[Math.floor(Date.now() / (1000 * 60 * 60 * 24)) % SUBJECTIVE_PROMPTS.length];
-    return await createCheckIn(userId, {
-      type: 'subjective', prompt_text: pick.text, subjective_key: pick.key
-    });
-  }
-
-  // Metric: focus the weakest (lowest current_rating) benchmark.
-  const target = [...benchmarks].sort((a, b) =>
-    (a.current_rating ?? a.starting_rating ?? 0) - (b.current_rating ?? b.starting_rating ?? 0)
-  )[0];
-
-  return await createCheckIn(userId, {
-    type: 'metric',
-    benchmark_id: target.id,
-    prompt_text: `On a scale of 1 to 10, how close does this feel right now: "${target.statement}"?`
-  });
 }
 
 /**
@@ -951,79 +902,29 @@ router.get('/member/progress', async (req, res) => {
 });
 
 /**
- * GET /api/member/check-in
- * The check-in to show right now, if any. Creates one if the cadence is due.
+ * GET /api/member/push/vapid-public-key
+ * The public key the browser needs to create a push subscription.
  */
-router.get('/member/check-in', async (req, res) => {
-  if (!req.dbUser) return res.json({ checkIn: null });
-  try {
-    const checkIn = await ensureDueCheckIn(req.dbUser.id);
-    res.json({ checkIn: checkIn || null });
-  } catch (e) {
-    console.error('Check-in fetch error:', e.message);
-    res.json({ checkIn: null });
-  }
+router.get('/member/push/vapid-public-key', (req, res) => {
+  res.json({ key: getVapidPublicKey() });
 });
 
 /**
- * POST /api/member/check-in/answer
- * Body: { checkInId, rating?, choice?, text_answer? }
+ * POST /api/member/push/subscribe
+ * Body: { subscription }. Registers this device to receive Earl's check-ins.
  */
-router.post('/member/check-in/answer', async (req, res) => {
+router.post('/member/push/subscribe', async (req, res) => {
   if (!req.dbUser) return res.status(401).json({ error: 'Authentication required' });
   try {
-    const { checkInId, rating, choice, text_answer } = req.body;
-    if (!checkInId) return res.status(400).json({ error: 'checkInId required' });
-
-    const answered = await answerCheckIn(checkInId, {
-      rating: rating ?? null, choice: choice ?? null, text_answer: text_answer ?? null
-    });
-
-    // A metric rating updates the benchmark arc.
-    if (answered && answered.type === 'metric' && answered.benchmark_id && typeof rating === 'number') {
-      await addBenchmarkRating(req.dbUser.id, answered.benchmark_id, rating, 'check_in');
-      recordAnonymous(req.dbUser.id, 'benchmark_progress', { rating });
+    const { subscription } = req.body;
+    if (!subscription || !subscription.endpoint) {
+      return res.status(400).json({ error: 'subscription required' });
     }
-    if (answered && answered.type === 'subjective' && typeof rating === 'number') {
-      recordAnonymous(req.dbUser.id, 'subjective_rating', { key: answered.subjective_key, rating });
-    }
-    // An action follow-up records onto the action step.
-    // Status only changes on an explicit choice; a text-only "how did it go?"
-    // answer (the prompt shown after a step is already marked done) records a
-    // note without disturbing the existing status.
-    if (answered && answered.type === 'action_followup' && answered.action_step_id) {
-      if (choice === 'did_not_happen') {
-        await updateActionStepStatus(answered.action_step_id, 'did_not_happen', text_answer ?? null);
-        recordAnonymous(req.dbUser.id, 'action_completion', { status: 'did_not_happen' });
-      } else if (choice === 'done') {
-        await updateActionStepStatus(answered.action_step_id, 'completed', text_answer ?? null);
-        recordAnonymous(req.dbUser.id, 'action_completion', { status: 'completed' });
-      } else if (text_answer) {
-        await updateActionStepFollowUp(answered.action_step_id, text_answer);
-      }
-    }
-
+    await saveSubscription(req.dbUser.id, subscription, req.get('user-agent') || null);
     res.json({ ok: true });
   } catch (e) {
-    console.error('Check-in answer error:', e.message);
-    res.status(500).json({ error: 'Could not record answer' });
-  }
-});
-
-/**
- * POST /api/member/check-in/snooze
- * Body: { checkInId }
- */
-router.post('/member/check-in/snooze', async (req, res) => {
-  if (!req.dbUser) return res.status(401).json({ error: 'Authentication required' });
-  try {
-    const { checkInId } = req.body;
-    if (!checkInId) return res.status(400).json({ error: 'checkInId required' });
-    await snoozeCheckIn(checkInId, 24);
-    res.json({ ok: true });
-  } catch (e) {
-    console.error('Check-in snooze error:', e.message);
-    res.status(500).json({ error: 'Could not snooze' });
+    console.error('Push subscribe error:', e.message);
+    res.status(500).json({ error: 'Could not register for notifications' });
   }
 });
 
@@ -1166,7 +1067,8 @@ router.post('/member/action-steps', async (req, res) => {
 
 /**
  * POST /api/member/action-steps/:id/complete
- * Marks complete and triggers an immediate Type 2 (action follow-up) check-in.
+ * Marks a step complete from the progress view. The "how did it go?"
+ * follow-up now happens in conversation with Earl, not a popup.
  */
 router.post('/member/action-steps/:id/complete', async (req, res) => {
   if (!req.dbUser) return res.status(401).json({ error: 'Authentication required' });
@@ -1179,13 +1081,6 @@ router.post('/member/action-steps/:id/complete', async (req, res) => {
 
     await updateActionStepStatus(stepId, 'completed');
     recordAnonymous(req.dbUser.id, 'action_completion', { status: 'completed' });
-
-    // Immediate Type 2 check-in: "How did it go?" (optional text).
-    await createCheckIn(req.dbUser.id, {
-      type: 'action_followup',
-      action_step_id: stepId,
-      prompt_text: `You marked this done: "${step.step_text}". How did it go?`
-    });
 
     res.json({ ok: true });
   } catch (e) {

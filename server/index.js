@@ -277,6 +277,12 @@ app.listen(PORT, () => {
   } catch (e) {
     console.error('Memory worker failed to start:', e.message);
   }
+  // Earl reaching out first — proactive check-ins pushed to members' phones.
+  try {
+    require('./services/checkin-worker').start();
+  } catch (e) {
+    console.error('Check-in worker failed to start:', e.message);
+  }
   // Warm the embedding model at boot so no member's first message waits on
   // the one-time model load. Retry a few times: if the first pull hiccups,
   // keep trying rather than leaving the model cold until a member triggers it.
