@@ -28,7 +28,7 @@ const {
 const { buildMemoryContext, describeGap } = require('../services/memory/context');
 const { sendOwnerAlert } = require('../services/alert');
 const { getVapidPublicKey, saveSubscription, removeSubscription } = require('../services/push');
-const { checkInOne } = require('../services/checkin-worker');
+const { checkInOne, replyToCheckIn } = require('../services/checkin-worker');
 
 function monthsSince(iso) {
   if (!iso) return 0;
@@ -942,6 +942,27 @@ router.post('/member/push/unsubscribe', async (req, res) => {
   } catch (e) {
     console.error('Push unsubscribe error:', e.message);
     res.status(500).json({ error: 'Could not turn off notifications' });
+  }
+});
+
+/**
+ * POST /api/member/checkin/reply
+ * Body: { text }. A reply typed straight into a phone notification. Records it,
+ * has Earl respond, and pushes his answer back. Auth rides the Clerk cookie
+ * the service worker sends with the request.
+ */
+router.post('/member/checkin/reply', async (req, res) => {
+  if (!req.dbUser) return res.status(401).json({ error: 'Authentication required' });
+  try {
+    const text = ((req.body && req.body.text) || '').trim();
+    if (!text) return res.status(400).json({ error: 'text required' });
+    const result = await replyToCheckIn(req.dbUser.id, text);
+    res.json({ ok: true, reply: result.reply });
+  } catch (e) {
+    console.error('Check-in reply error:', e.message);
+    // Surface, don't hide — a broken reply loop should reach the owner.
+    sendOwnerAlert('checkin-reply', 'Earl failed to answer a notification reply', `User ${req.dbUser.id}: ${e.message}`);
+    res.status(500).json({ error: 'Could not send your reply' });
   }
 });
 

@@ -16,8 +16,9 @@ const {
   usersWithBenchmarks, getLastEarlCheckIn, getLastCommanderMessageAt,
   getBenchmarks, getActionSteps, getSessionDebriefs,
   getLatestCommanderSessionId, saveCommanderMessage, recordEarlCheckIn,
+  getCommanderMessagesForApi,
 } = require('./supabase');
-const { composeCheckIn, getSoulVersion } = require('./claude');
+const { composeCheckIn, commanderChat, getSoulVersion } = require('./claude');
 const { sendPushToUser } = require('./push');
 const { chicagoNow } = require('./newsletter/jobs');
 
@@ -169,4 +170,44 @@ function start() {
   console.log(`[checkin] worker started — cadence ${CADENCE_DAYS}d, send window ${SEND_HOUR_START}:00–${SEND_HOUR_END}:00 CT`);
 }
 
-module.exports = { start, checkInOne };
+/**
+ * Handle a member's reply typed straight into a notification. Records it,
+ * runs it through the same commanderChat pipeline the app uses (so Earl has
+ * his voice, history, and memory), saves his answer, and pushes it back so
+ * the conversation continues in notifications. Returns { reply }.
+ */
+async function replyToCheckIn(userId, text) {
+  const soulVersion = getSoulVersion();
+  const session = await getLatestCommanderSessionId(userId);
+  const sessionId = (session && session.sessionId) || crypto.randomUUID();
+
+  // Pull history BEFORE saving the new message (commanderChat appends the
+  // message itself — fetching after would duplicate it).
+  const history = await getCommanderMessagesForApi(userId, 10, soulVersion);
+
+  await saveCommanderMessage(userId, sessionId, 'user', text, soulVersion);
+
+  // Memory context, best-effort — never let it block the reply.
+  let memoryContext = '';
+  try {
+    const { buildMemoryContext } = require('./memory/context');
+    memoryContext = (await buildMemoryContext(userId, text)) || '';
+  } catch (e) { /* memory optional */ }
+
+  const reply = await commanderChat(text, null, null, history, null, memoryContext, { userId, sessionId });
+  await saveCommanderMessage(userId, sessionId, 'assistant', reply, soulVersion);
+
+  try {
+    await sendPushToUser(userId, {
+      title: 'Earl',
+      body: reply.length > 140 ? reply.slice(0, 137) + '…' : reply,
+      url: '/app',
+    });
+  } catch (e) {
+    console.error('[checkin] reply push failed for', userId, e.message);
+  }
+
+  return { reply };
+}
+
+module.exports = { start, checkInOne, replyToCheckIn };
