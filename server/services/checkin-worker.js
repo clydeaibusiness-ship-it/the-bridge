@@ -86,11 +86,15 @@ async function buildSituation(userId) {
   return lines.join('\n');
 }
 
-/** Send one member their check-in. Returns true if a message was created. */
+/**
+ * Send one member their check-in. Returns { created, pushed }:
+ * created = a message was composed and saved; pushed = at least one device
+ * received the notification.
+ */
 async function checkInOne(userId) {
   const situation = await buildSituation(userId);
   const message = await composeCheckIn(situation);
-  if (!message || message.length < 2) return false;
+  if (!message || message.length < 2) return { created: false, pushed: false };
 
   // Put it in the chat thread as an assistant message (tagged with the current
   // soul version so it survives the history filter), then record + push.
@@ -111,7 +115,7 @@ async function checkInOne(userId) {
   }
 
   await recordEarlCheckIn(userId, sessionId, message, pushed);
-  return true;
+  return { created: true, pushed };
 }
 
 /** Find quiet members and send. */
@@ -132,7 +136,7 @@ async function run() {
       );
       if (lastContact < CADENCE_DAYS) continue;
 
-      const created = await checkInOne(userId);
+      const { created } = await checkInOne(userId);
       if (created) {
         sent++;
         console.log('[checkin] sent to', userId);
@@ -165,4 +169,4 @@ function start() {
   console.log(`[checkin] worker started — cadence ${CADENCE_DAYS}d, send window ${SEND_HOUR_START}:00–${SEND_HOUR_END}:00 CT`);
 }
 
-module.exports = { start };
+module.exports = { start, checkInOne };

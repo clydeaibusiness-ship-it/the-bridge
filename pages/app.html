@@ -250,6 +250,8 @@
             <div class="settings">
               <button class="settings-row" data-change-answer>Change an interview answer</button>
               <button class="settings-row" id="theme-toggle">Dark mode</button>
+              <button class="settings-row" id="notif-toggle" style="display:none;">Notifications from Earl</button>
+              <button class="settings-row" id="notif-test" style="display:none;">Send me a test message</button>
               <a class="settings-row" href="/subscribe">Manage subscription</a>
               <a class="settings-row danger" href="/api/auth/logout">Sign out</a>
             </div>
@@ -484,6 +486,51 @@
     }
     applyTheme(localStorage.getItem('earl-theme') === 'dark');
     themeBtn.addEventListener('click', () => applyTheme(!shell.classList.contains('dark')));
+
+    // ---- Notifications from Earl ----
+    const notifBtn = document.getElementById('notif-toggle');
+    const notifTestBtn = document.getElementById('notif-test');
+    async function refreshNotifRow() {
+      if (!window.EarlPush) return;
+      const status = await window.EarlPush.status();
+      // Always show the toggle row (it IS the on/off control). Label by state.
+      notifBtn.style.display = 'block';
+      notifTestBtn.style.display = status === 'on' ? 'block' : 'none';
+      if (status === 'on') notifBtn.textContent = 'Notifications from Earl: On';
+      else if (status === 'blocked') notifBtn.textContent = 'Notifications blocked — allow them in your browser settings';
+      else if (status === 'needs-install') notifBtn.textContent = 'Notifications: add Earl to your home screen first';
+      else if (status === 'unsupported') notifBtn.textContent = 'Notifications not supported on this browser';
+      else notifBtn.textContent = 'Turn on notifications from Earl';
+    }
+    notifBtn.addEventListener('click', async () => {
+      const status = await window.EarlPush.status();
+      notifBtn.textContent = 'One moment…';
+      try {
+        if (status === 'on') {
+          await window.EarlPush.disable();
+        } else if (status === 'needs-install') {
+          alert('On iPhone, tap the Share button in your browser, choose "Add to Home Screen," then open Earl from that icon and turn notifications on here.');
+        } else if (status === 'blocked') {
+          alert('Notifications are blocked. Turn them back on for this site in your browser or phone settings, then try again.');
+        } else {
+          const result = await window.EarlPush.enable();
+          if (result === 'blocked') alert('You blocked notifications. You can re-allow them for this site in your browser settings.');
+        }
+      } catch (e) { console.error('notif toggle failed:', e.message); }
+      await refreshNotifRow();
+    });
+    notifTestBtn.addEventListener('click', async () => {
+      notifTestBtn.textContent = 'Sending…';
+      try {
+        const r = await window.EarlPush.sendTest();
+        notifTestBtn.textContent = r && r.pushed ? 'Sent — check your phone' : 'Saved to your chat (no device got the push)';
+      } catch (e) {
+        notifTestBtn.textContent = 'Could not send — try again';
+      }
+      setTimeout(() => { notifTestBtn.textContent = 'Send me a test message'; }, 4000);
+    });
+    // EarlPush loads from /js/push.js at the end of body; wait a tick.
+    setTimeout(refreshNotifRow, 800);
 
     // Re-assert panel position when mobile keyboard opens/closes (viewport resize)
     window.visualViewport && window.visualViewport.addEventListener('resize', () => goTo(current));
