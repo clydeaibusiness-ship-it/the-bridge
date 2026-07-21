@@ -373,12 +373,10 @@ async function getCommanderMessagesForApi(userId, limit = 10, soulVersion = null
     deduplicated.push(msg);
   }
 
-  // Ensure the first message is role:user (it follows the silent "." + soul primer)
-  // If it starts with assistant, drop it — the soul primer already covers that slot
-  if (deduplicated.length > 0 && deduplicated[0].role === 'assistant') {
-    deduplicated.shift();
-  }
-
+  // A leading assistant message is legitimate now — Earl initiates check-ins,
+  // so a session can open with his message. commanderChat merges consecutive
+  // same-role turns (including assistant-after-soul-prefill) before the API
+  // call, so we keep it: dropping it would make Earl forget what he just asked.
   return deduplicated;
 }
 
@@ -822,86 +820,77 @@ async function getBenchmarkRatingHistory(userId) {
   return data || [];
 }
 
-// ---- Check-ins ----
+// ---- Earl-initiated check-ins ----
+// (The popup check-in system — check_ins table + createCheckIn and friends —
+// was retired in favor of Earl composing messages and pushing them to the
+// member's phone. The message lives in commander_messages; earl_checkins
+// records the send and drives cadence.)
 
-async function createCheckIn(userId, fields) {
+async function recordEarlCheckIn(userId, sessionId, content, pushed = false) {
   const db = getClient();
   if (!db) return null;
   const { data, error } = await db
-    .from('check_ins')
-    .insert({ user_id: userId, status: 'pending', ...fields })
+    .from('earl_checkins')
+    .insert({ user_id: userId, session_id: sessionId, content, pushed })
     .select()
     .single();
-  if (error) { console.error('createCheckIn error:', error.message); return null; }
+  if (error) { console.error('recordEarlCheckIn error:', error.message); return null; }
   return data;
 }
 
-/**
- * The single check-in to surface now: a pending one, or a snoozed one whose
- * snooze has elapsed. Most recent first.
- */
-async function getActiveCheckIn(userId) {
-  const db = getClient();
-  if (!db) return null;
-  const nowIso = new Date().toISOString();
-  const { data, error } = await db
-    .from('check_ins')
-    .select('*')
-    .eq('user_id', userId)
-    .neq('status', 'answered')
-    .order('created_at', { ascending: false })
-    .limit(10);
-  if (error) { console.error('getActiveCheckIn error:', error.message); return null; }
-  const list = data || [];
-  // A snoozed check-in is hidden until snoozed_until passes.
-  const due = list.find(c =>
-    c.status === 'pending' ||
-    (c.status === 'snoozed' && (!c.snoozed_until || c.snoozed_until <= nowIso))
-  );
-  return due || null;
-}
-
-async function getLastAnsweredCheckIn(userId) {
+async function getLastEarlCheckIn(userId) {
   const db = getClient();
   if (!db) return null;
   const { data } = await db
-    .from('check_ins')
-    .select('answered_at, type')
+    .from('earl_checkins')
+    .select('created_at, content')
     .eq('user_id', userId)
-    .eq('status', 'answered')
-    .order('answered_at', { ascending: false })
+    .order('created_at', { ascending: false })
     .limit(1);
   return (data && data.length > 0) ? data[0] : null;
 }
 
-async function answerCheckIn(checkInId, { rating = null, choice = null, text_answer = null }) {
+/** Members who have approved, active benchmarks — the check-in population. */
+async function usersWithBenchmarks() {
   const db = getClient();
-  if (!db) return null;
+  if (!db) return [];
   const { data, error } = await db
-    .from('check_ins')
-    .update({
-      status: 'answered',
-      answered_at: new Date().toISOString(),
-      rating, choice, text_answer
-    })
-    .eq('id', checkInId)
-    .select()
-    .single();
-  if (error) { console.error('answerCheckIn error:', error.message); return null; }
-  return data;
+    .from('member_benchmarks')
+    .select('user_id')
+    .eq('active', true)
+    .eq('approved', true);
+  if (error) { console.error('usersWithBenchmarks error:', error.message); return []; }
+  return [...new Set((data || []).map(r => r.user_id))];
 }
 
-async function snoozeCheckIn(checkInId, hours = 24) {
+/** Timestamp of the member's most recent chat message (either role). */
+async function getLastCommanderMessageAt(userId) {
   const db = getClient();
   if (!db) return null;
-  const until = new Date(Date.now() + hours * 3600 * 1000).toISOString();
+  const { data } = await db
+    .from('commander_messages')
+    .select('created_at, message_role')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
+    .limit(1);
+  return (data && data.length > 0) ? data[0].created_at : null;
+}
+
+/**
+ * Mark a goal (benchmark) complete — only ever called after the member
+ * confirmed it in conversation.
+ */
+async function completeBenchmarkGoal(userId, benchmarkId) {
+  const db = getClient();
+  if (!db) return null;
   const { data, error } = await db
-    .from('check_ins')
-    .update({ status: 'snoozed', snoozed_until: until })
-    .eq('id', checkInId)
+    .from('member_benchmarks')
+    .update({ completed_at: new Date().toISOString(), updated_at: new Date().toISOString() })
+    .eq('id', benchmarkId)
+    .eq('user_id', userId)
     .select()
     .single();
-  if (error) { console.error('snoozeCheckIn error:', error.message); return null; }
+  if (error) { console.error('completeBenchmarkGoal error:', error.message); return null; }
   return data;
 }
 
@@ -1186,7 +1175,8 @@ module.exports = {
   ensureMemberState, updateMemberState,
   getActionSteps, getActionStep, updateActionStepText, updateActionStepStatus, updateActionStepFollowUp,
   getBenchmarks, addBenchmarkRating, getBenchmarkRatingHistory,
-  createCheckIn, getActiveCheckIn, getLastAnsweredCheckIn, answerCheckIn, snoozeCheckIn,
+  recordEarlCheckIn, getLastEarlCheckIn, usersWithBenchmarks, getLastCommanderMessageAt,
+  completeBenchmarkGoal,
   getSessionDebriefs,
   getLatestPeriodicReport, savePeriodicReport,
   insertAnonymousAggregate,

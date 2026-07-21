@@ -254,7 +254,7 @@ async function commanderChat(message, gameState, sessionContext, conversationHis
 
   // Build messages array: silent user prime, soul prefill (cached), then history, then new message.
   // Anthropic API requires the first message to be role:user.
-  const messages = [
+  const rawMessages = [
     ...(soulPrimer ? [
       { role: 'user', content: '.' },
       {
@@ -269,6 +269,22 @@ async function commanderChat(message, gameState, sessionContext, conversationHis
     ...(conversationHistory || []),
     { role: 'user', content: message }
   ];
+
+  // Merge consecutive same-role messages into one turn (the API requires
+  // alternation). This happens when Earl initiated the session with a
+  // check-in: the history then opens with an assistant message right after
+  // the soul prefill. Content becomes an array of text blocks, so the
+  // cache_control on the soul block is preserved.
+  const toBlocks = (c) => (Array.isArray(c) ? c : [{ type: 'text', text: String(c) }]);
+  const messages = [];
+  for (const m of rawMessages) {
+    const prev = messages[messages.length - 1];
+    if (prev && prev.role === m.role) {
+      prev.content = [...toBlocks(prev.content), ...toBlocks(m.content)];
+    } else {
+      messages.push({ role: m.role, content: m.content });
+    }
+  }
 
   // Debug: log role sequence so future issues are immediately visible in Railway logs
   console.log('Commander message roles:', messages.map(m => m.role).join(' → '));
@@ -323,6 +339,39 @@ async function commanderChat(message, gameState, sessionContext, conversationHis
       name: 'request_extension',
       description: "Only call this when the member has been offered the three-month half-price extension at their six-month milestone AND explicitly accepts it. It notifies the owner to activate the extension in Stripe. Do not tell the member it is active immediately — tell them it is being arranged.",
       input_schema: { type: 'object', properties: {} }
+    },
+    {
+      name: 'mark_action_step_complete',
+      description: "Call this when the member tells you an action step is done — or clearly didn't happen. Use the exact action_step_id from your context, copied character for character. Set outcome to 'completed' when they did it, 'did_not_happen' when they say it isn't going to happen. After marking, acknowledge in your own voice — and if that was the last open step toward one of their goals, ask whether the goal itself feels reached.",
+      input_schema: {
+        type: 'object',
+        properties: {
+          action_step_id: {
+            type: 'string',
+            description: 'The action_step_id from your context. Copy it exactly.'
+          },
+          outcome: {
+            type: 'string',
+            enum: ['completed', 'did_not_happen'],
+            description: "'completed' if they did it, 'did_not_happen' if they say it is not going to happen"
+          }
+        },
+        required: ['action_step_id', 'outcome']
+      }
+    },
+    {
+      name: 'complete_goal',
+      description: "Marks one of the member's goals complete. NEVER call this on your own judgment. The sequence is: the member says (or their action steps show) the goal is reached → you ask them directly, in your own words, whether to mark it complete and move to the next one → they say yes → THEN you call this. Use the exact benchmark_id from your context. If they hesitate or say not yet, do not call it.",
+      input_schema: {
+        type: 'object',
+        properties: {
+          benchmark_id: {
+            type: 'string',
+            description: 'The benchmark_id from your context for the goal the member confirmed is complete. Copy it exactly.'
+          }
+        },
+        required: ['benchmark_id']
+      }
     }
   ];
 
@@ -370,6 +419,37 @@ async function commanderChat(message, gameState, sessionContext, conversationHis
           type: 'tool_result',
           tool_use_id: block.id,
           content: 'Action step saved.'
+        });
+      } else if (block.name === 'mark_action_step_complete') {
+        if (persist && persist.userId) {
+          try {
+            const { getActionStep, updateActionStepStatus } = require('./supabase');
+            const step = await getActionStep(block.input.action_step_id);
+            if (step && step.user_id === persist.userId) {
+              await updateActionStepStatus(block.input.action_step_id, block.input.outcome);
+            }
+          } catch (msErr) {
+            console.error('mark_action_step_complete error:', msErr.message);
+          }
+        }
+        toolResults.push({
+          type: 'tool_result',
+          tool_use_id: block.id,
+          content: 'Action step updated.'
+        });
+      } else if (block.name === 'complete_goal') {
+        if (persist && persist.userId) {
+          try {
+            const { completeBenchmarkGoal } = require('./supabase');
+            await completeBenchmarkGoal(persist.userId, block.input.benchmark_id);
+          } catch (cgErr) {
+            console.error('complete_goal error:', cgErr.message);
+          }
+        }
+        toolResults.push({
+          type: 'tool_result',
+          tool_use_id: block.id,
+          content: 'Goal marked complete.'
         });
       } else if (block.name === 'request_extension') {
         if (persist && persist.userId) {
@@ -539,6 +619,47 @@ ${debriefLines}`;
 
   const textBlock = response.content.find(b => b.type === 'text');
   return stripMarkdown(textBlock ? textBlock.text : '');
+}
+
+/**
+ * Compose an Earl-initiated check-in — a short, situational message Earl
+ * sends between conversations that lands on the member's phone and waits at
+ * the top of their chat. Written in the soul voice from the member's real
+ * situation (goals, open steps, recent threads, memory).
+ *
+ * `situation` is a plain-text brief the scheduler assembles. Returns one or
+ * two sentences — a single question or observation, never a list.
+ */
+async function composeCheckIn(situation) {
+  const soul = getSoulPrimer();
+  const commanderContext = getCommanderContext();
+
+  const prompt = `You are reaching out to this member first, between conversations. Write the short message that will land on their phone and wait at the top of your chat with them.
+
+Here is where they actually are right now:
+${situation}
+
+Write one thing — a single question or observation, tied to their real situation above. One or two sentences. The way a mentor who had been thinking about them would text — warm, direct, specific. Not a check-in form, not a list, not "just checking in." Output only the message itself, nothing else.`;
+
+  const systemBlocks = [];
+  if (commanderContext) {
+    systemBlocks.push({ type: 'text', text: commanderContext });
+  }
+
+  const messages = [
+    ...(soul ? [{ role: 'user', content: '.' }, { role: 'assistant', content: soul }] : []),
+    { role: 'user', content: prompt }
+  ];
+
+  const response = await client.messages.create({
+    model: 'claude-sonnet-4-6',
+    max_tokens: 200,
+    ...(systemBlocks.length ? { system: systemBlocks } : {}),
+    messages
+  });
+
+  const t = response.content.find(b => b.type === 'text');
+  return stripMarkdown(t ? t.text : '').trim();
 }
 
 /**
@@ -842,6 +963,7 @@ module.exports = {
   generateIntakeFollowUp,
   generateBenchmark,
   generateGraduationComparison,
-  generateChartFromInterview
+  generateChartFromInterview,
+  composeCheckIn
 };
 
