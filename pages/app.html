@@ -75,10 +75,15 @@
     .chart-sec:last-child { border-bottom: none; }
     .chart-sec-t { font-family: var(--font-data); font-size: 0.625rem; letter-spacing: 0.1em; text-transform: uppercase; color: #7a7570; margin-bottom: 6px; }
     .chart-sec-b { font-family: var(--font-ui); font-size: 0.8125rem; color: #3a3530; line-height: 1.65; }
-    /* Panel switcher — sits under the header so it's away from the composer */
-    .slider { flex: 0 0 auto; padding: 8px 12px 10px; border-bottom: 1px solid #d8d0c0; background: #f5f0e8; }
-    .slider-inner { position: relative; display: flex; height: 42px; background: #ece7dc; border-radius: 999px; }
-    .slider-pill { position: absolute; top: 4px; left: 0; height: calc(100% - 8px); width: 33.3333%; background: #0a0a0f; border-radius: 999px; transition: transform 0.32s cubic-bezier(0.4,0,0.2,1); z-index: 0; transform: translateX(0); }
+    /* Panel switcher — a frosted-glass segmented control floating under the
+       header (transparent strip, so it isn't attached to the nav bar). */
+    .slider { flex: 0 0 auto; padding: 12px 16px 14px; background: transparent; }
+    .slider-inner { position: relative; display: flex; height: 44px; border-radius: 999px;
+      background: rgba(255,255,255,0.32);
+      -webkit-backdrop-filter: blur(16px) saturate(150%); backdrop-filter: blur(16px) saturate(150%);
+      border: 1px solid rgba(255,255,255,0.55);
+      box-shadow: 0 8px 24px rgba(10,10,15,0.13), inset 0 1px 0 rgba(255,255,255,0.5); }
+    .slider-pill { position: absolute; top: 4px; left: 0; height: calc(100% - 8px); width: 33.3333%; background: rgba(10,10,15,0.9); border-radius: 999px; box-shadow: 0 2px 10px rgba(10,10,15,0.28); transition: transform 0.32s cubic-bezier(0.4,0,0.2,1); z-index: 0; transform: translateX(0); }
     .slider-inner button { position: relative; z-index: 1; flex: 1; background: none; border: none; cursor: pointer; font-family: var(--font-data); font-size: 0.625rem; letter-spacing: 0.08em; text-transform: uppercase; color: #7a7570; transition: color 0.2s; }
     .slider-inner button.active { color: #f0ebe0; }
     /* Settings block on the Chart panel */
@@ -181,8 +186,10 @@
     .shell.dark .composer { border-top-color: #2e2e3a; }
     .shell.dark .composer-row { background: #252530; border-color: #2e2e3a; }
     .shell.dark .composer textarea { color: #f0ebe0; }
-    .shell.dark .slider { border-bottom-color: #2e2e3a; background: #18181c; }
-    .shell.dark .slider-inner { background: #252530; }
+    .shell.dark .slider { background: transparent; }
+    .shell.dark .slider-inner { background: rgba(255,255,255,0.07); border-color: rgba(255,255,255,0.14);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.06); }
+    .shell.dark .slider-pill { background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.12); box-shadow: none; }
     .shell.dark .settings { border-top-color: #2e2e3a; }
     .shell.dark .settings-row { color: #c0b8b0; border-bottom-color: #2e2e3a; }
     .shell.dark .switch { background: #3a3a48; }
