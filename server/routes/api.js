@@ -27,7 +27,8 @@ const {
 } = require('../services/supabase');
 const { buildMemoryContext, describeGap } = require('../services/memory/context');
 const { sendOwnerAlert } = require('../services/alert');
-const { getVapidPublicKey, saveSubscription } = require('../services/push');
+const { getVapidPublicKey, saveSubscription, removeSubscription } = require('../services/push');
+const { checkInOne } = require('../services/checkin-worker');
 
 function monthsSince(iso) {
   if (!iso) return 0;
@@ -925,6 +926,39 @@ router.post('/member/push/subscribe', async (req, res) => {
   } catch (e) {
     console.error('Push subscribe error:', e.message);
     res.status(500).json({ error: 'Could not register for notifications' });
+  }
+});
+
+/**
+ * POST /api/member/push/unsubscribe
+ * Body: { endpoint }. Member turned notifications off on this device.
+ */
+router.post('/member/push/unsubscribe', async (req, res) => {
+  if (!req.dbUser) return res.status(401).json({ error: 'Authentication required' });
+  try {
+    const { endpoint } = req.body;
+    if (endpoint) await removeSubscription(endpoint);
+    res.json({ ok: true });
+  } catch (e) {
+    console.error('Push unsubscribe error:', e.message);
+    res.status(500).json({ error: 'Could not turn off notifications' });
+  }
+});
+
+/**
+ * POST /api/member/push/test
+ * Send the calling member an Earl check-in right now — the "does this work?"
+ * button in Settings. Composes a real, situational message, drops it in their
+ * chat, and pushes it to their enabled devices.
+ */
+router.post('/member/push/test', async (req, res) => {
+  if (!req.dbUser) return res.status(401).json({ error: 'Authentication required' });
+  try {
+    const result = await checkInOne(req.dbUser.id);
+    res.json({ ok: true, pushed: !!(result && result.pushed) });
+  } catch (e) {
+    console.error('Push test error:', e.message);
+    res.status(500).json({ error: 'Could not send a test' });
   }
 });
 

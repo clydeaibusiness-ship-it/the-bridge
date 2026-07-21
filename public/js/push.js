@@ -2,15 +2,17 @@
  * push.js — enables phone/desktop notifications from Earl.
  *
  * Replaces the old check-in modal (checkin.js). Earl now reaches out on his
- * own via push; this script's only job is getting the device subscribed.
+ * own via push; this script gets the device subscribed and exposes a small
+ * API (window.EarlPush) so the Settings toggle in the app can turn
+ * notifications on and off and send a test.
  *
  *  - Permission already granted → silently (re)subscribe so the server
  *    always has a fresh endpoint.
- *  - Permission not asked yet → show a small one-time banner with an
- *    Enable button (browsers require the request to come from a tap).
+ *  - Permission not asked yet → a small one-time banner nudges them; the
+ *    real control lives in Settings.
  *  - iPhone Safari not installed to home screen → Apple only allows web
- *    push for installed sites, so the banner explains the one-time
- *    Add-to-Home-Screen step instead.
+ *    push for installed sites, so we explain the one-time Add-to-Home-Screen
+ *    step instead.
  *
  * Include on member pages: <script src="/js/push.js"></script>
  */
@@ -48,6 +50,9 @@
   function isStandalone() {
     return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
   }
+  function supported() {
+    return 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
+  }
 
   function urlBase64ToUint8Array(base64String) {
     const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
@@ -58,6 +63,8 @@
     return arr;
   }
 
+  // Register the SW and create+save a push subscription. Assumes permission
+  // is already granted (caller handles the prompt).
   async function subscribe() {
     const reg = await navigator.serviceWorker.register('/sw.js');
     await navigator.serviceWorker.ready;
@@ -83,6 +90,63 @@
     if (!save.ok) throw new Error('subscription save failed');
   }
 
+  // ---- Public API used by the Settings toggle ----
+  const EarlPush = {
+    supported,
+    isIos,
+    isStandalone,
+    // 'on' (subscribed) | 'off' (supported, not on) | 'blocked' | 'needs-install' | 'unsupported'
+    async status() {
+      if (isIos() && !isStandalone()) return 'needs-install';
+      if (!supported()) return 'unsupported';
+      if (Notification.permission === 'denied') return 'blocked';
+      if (Notification.permission === 'granted') {
+        try {
+          const reg = await navigator.serviceWorker.getRegistration();
+          const sub = reg && (await reg.pushManager.getSubscription());
+          return sub ? 'on' : 'off';
+        } catch (e) { return 'off'; }
+      }
+      return 'off';
+    },
+    // Turn on: request permission (if needed) then subscribe. Returns the
+    // resulting status so the caller can message the member.
+    async enable() {
+      if (isIos() && !isStandalone()) return 'needs-install';
+      if (!supported()) return 'unsupported';
+      let perm = Notification.permission;
+      if (perm === 'default') perm = await Notification.requestPermission();
+      if (perm !== 'granted') return perm === 'denied' ? 'blocked' : 'off';
+      await subscribe();
+      return 'on';
+    },
+    // Turn off: unsubscribe this device and tell the server to forget it.
+    async disable() {
+      try {
+        const reg = await navigator.serviceWorker.getRegistration();
+        const sub = reg && (await reg.pushManager.getSubscription());
+        if (sub) {
+          const endpoint = sub.endpoint;
+          await sub.unsubscribe();
+          await fetch('/api/member/push/unsubscribe', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ endpoint })
+          });
+        }
+      } catch (e) { console.error('push disable failed:', e.message); }
+      return 'off';
+    },
+    // Ask the server to send this member a check-in right now (test button).
+    async sendTest() {
+      const r = await fetch('/api/member/push/test', { method: 'POST' });
+      if (!r.ok) throw new Error('test send failed');
+      return r.json();
+    }
+  };
+  window.EarlPush = EarlPush;
+
+  // ---- First-time discovery banner ----
   function showBanner() {
     injectStyle();
     const banner = document.createElement('div');
@@ -99,7 +163,7 @@
 
     const needsInstall = isIos() && !isStandalone();
     if (needsInstall) {
-      text.textContent = 'Want Earl to check in on your phone? Tap Share, then "Add to Home Screen" — then open Earl from there and enable notifications.';
+      text.textContent = 'Want Earl to check in on your phone? Tap Share, then "Add to Home Screen" — then open Earl from there and turn on notifications in Settings.';
       banner.appendChild(text);
     } else {
       text.textContent = 'Want Earl to check in on your phone? He reaches out between conversations — a question or a thought, when the timing is right.';
@@ -109,12 +173,7 @@
       btn.className = 'pu-btn';
       btn.textContent = 'Enable';
       btn.addEventListener('click', async () => {
-        try {
-          const perm = await Notification.requestPermission();
-          if (perm === 'granted') await subscribe();
-        } catch (e) {
-          console.error('push enable failed:', e.message);
-        }
+        try { await EarlPush.enable(); } catch (e) { console.error('push enable failed:', e.message); }
         close();
       });
       banner.appendChild(btn);
@@ -139,7 +198,7 @@
 
   async function init() {
     try {
-      if (!('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)) {
+      if (!supported()) {
         // iOS Safari outside a home-screen install has no PushManager —
         // still worth showing the install nudge once.
         if (isIos() && !isStandalone() && !localStorage.getItem(DISMISS_KEY)) showBanner();
