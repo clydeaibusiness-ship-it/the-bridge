@@ -85,6 +85,15 @@
     .settings { margin-top: 28px; padding-top: 8px; border-top: 1px solid #d8d0c0; }
     .settings-row { display: block; width: 100%; text-align: left; background: none; border: none; cursor: pointer; font-family: var(--font-ui); font-size: 0.875rem; color: #2a2520; text-decoration: none; padding: 13px 0; border-bottom: 1px solid #e0d8c8; }
     .settings-row.danger { color: #8a4a3a; }
+    /* Toggle-switch settings row (notifications) */
+    .settings-toggle { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .switch { width: 44px; height: 26px; border-radius: 13px; background: #cdc6b6; position: relative; flex: 0 0 auto; transition: background 0.18s ease; cursor: pointer; }
+    .switch.on { background: #c8a96e; }
+    .switch.disabled { opacity: 0.4; cursor: default; }
+    .switch-knob { position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: #fff; transition: transform 0.18s ease; box-shadow: 0 1px 3px rgba(0,0,0,0.3); }
+    .switch.on .switch-knob { transform: translateX(18px); }
+    .switch:focus-visible { outline: 2px solid #c8a96e; outline-offset: 2px; }
+    .notif-note { font-size: 0.75rem; color: #7a7570; padding: 2px 0 13px; line-height: 1.45; border-bottom: 1px solid #e0d8c8; }
     /* Change-answer modal */
     .modal-scrim { position: absolute; inset: 0; background: rgba(10,10,15,0.45); display: none; align-items: center; justify-content: center; z-index: 30; padding: 16px; }
     .modal-scrim.open { display: flex; }
@@ -176,6 +185,9 @@
     .shell.dark .slider-inner { background: #252530; }
     .shell.dark .settings { border-top-color: #2e2e3a; }
     .shell.dark .settings-row { color: #c0b8b0; border-bottom-color: #2e2e3a; }
+    .shell.dark .switch { background: #3a3a48; }
+    .shell.dark .switch.on { background: #c8a96e; }
+    .shell.dark .notif-note { color: #888898; border-bottom-color: #2e2e3a; }
     .shell.dark #app-version { color: #44444e; }
     .shell.dark .tl::before { background: #2e2e3a; }
     .shell.dark .tl-node { background: #18181c; border-color: #3a3a48; }
@@ -250,7 +262,11 @@
             <div class="settings">
               <button class="settings-row" data-change-answer>Change an interview answer</button>
               <button class="settings-row" id="theme-toggle">Dark mode</button>
-              <button class="settings-row" id="notif-toggle" style="display:none;">Notifications from Earl</button>
+              <div class="settings-row settings-toggle" id="notif-row" style="display:none;">
+                <span>Allow Earl to send you messages</span>
+                <span class="switch" id="notif-switch" role="switch" aria-checked="false" tabindex="0"><span class="switch-knob"></span></span>
+              </div>
+              <div class="notif-note" id="notif-note" style="display:none;"></div>
               <button class="settings-row" id="notif-test" style="display:none;">Send me a test message</button>
               <a class="settings-row" href="/subscribe">Manage subscription</a>
               <a class="settings-row danger" href="/api/auth/logout">Sign out</a>
@@ -487,38 +503,62 @@
     applyTheme(localStorage.getItem('earl-theme') === 'dark');
     themeBtn.addEventListener('click', () => applyTheme(!shell.classList.contains('dark')));
 
-    // ---- Notifications from Earl ----
-    const notifBtn = document.getElementById('notif-toggle');
+    // ---- Notifications from Earl (toggle switch) ----
+    const notifRow = document.getElementById('notif-row');
+    const notifSwitch = document.getElementById('notif-switch');
+    const notifNote = document.getElementById('notif-note');
     const notifTestBtn = document.getElementById('notif-test');
+
+    function setSwitch(on) {
+      notifSwitch.classList.toggle('on', on);
+      notifSwitch.setAttribute('aria-checked', on ? 'true' : 'false');
+    }
+
     async function refreshNotifRow() {
       if (!window.EarlPush) return;
+      notifRow.style.display = 'flex';
       const status = await window.EarlPush.status();
-      // Always show the toggle row (it IS the on/off control). Label by state.
-      notifBtn.style.display = 'block';
-      notifTestBtn.style.display = status === 'on' ? 'block' : 'none';
-      if (status === 'on') notifBtn.textContent = 'Notifications from Earl: On';
-      else if (status === 'blocked') notifBtn.textContent = 'Notifications blocked — allow them in your browser settings';
-      else if (status === 'needs-install') notifBtn.textContent = 'Notifications: add Earl to your home screen first';
-      else if (status === 'unsupported') notifBtn.textContent = 'Notifications not supported on this browser';
-      else notifBtn.textContent = 'Turn on notifications from Earl';
+      notifSwitch.classList.remove('disabled');
+      notifNote.style.display = 'none';
+      notifTestBtn.style.display = 'none';
+
+      if (status === 'on') {
+        setSwitch(true);
+        notifTestBtn.style.display = 'block';
+      } else if (status === 'off') {
+        setSwitch(false);
+      } else {
+        // blocked / needs-install / unsupported — off, dimmed, with a plain note.
+        setSwitch(false);
+        notifSwitch.classList.add('disabled');
+        notifNote.style.display = 'block';
+        notifNote.textContent =
+          status === 'blocked'
+            ? 'Notifications are turned off for this site. Tap the icon just left of the web address, open Permissions, allow Notifications, then reload this page.'
+          : status === 'needs-install'
+            ? 'On iPhone, add Earl to your home screen first (Share → Add to Home Screen), then open it from that icon and turn this on.'
+            : 'This browser doesn’t support notifications.';
+      }
     }
-    notifBtn.addEventListener('click', async () => {
+
+    async function toggleNotif() {
+      if (!window.EarlPush) return;
       const status = await window.EarlPush.status();
-      notifBtn.textContent = 'One moment…';
+      if (status === 'blocked' || status === 'needs-install' || status === 'unsupported') {
+        return refreshNotifRow(); // just (re)show the note; nothing to toggle
+      }
       try {
-        if (status === 'on') {
-          await window.EarlPush.disable();
-        } else if (status === 'needs-install') {
-          alert('On iPhone, tap the Share button in your browser, choose "Add to Home Screen," then open Earl from that icon and turn notifications on here.');
-        } else if (status === 'blocked') {
-          alert('Notifications are blocked. Turn them back on for this site in your browser or phone settings, then try again.');
-        } else {
-          const result = await window.EarlPush.enable();
-          if (result === 'blocked') alert('You blocked notifications. You can re-allow them for this site in your browser settings.');
-        }
+        if (status === 'on') await window.EarlPush.disable();
+        else await window.EarlPush.enable();
       } catch (e) { console.error('notif toggle failed:', e.message); }
       await refreshNotifRow();
+    }
+
+    notifSwitch.addEventListener('click', toggleNotif);
+    notifSwitch.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleNotif(); }
     });
+
     notifTestBtn.addEventListener('click', async () => {
       notifTestBtn.textContent = 'Sending…';
       try {
@@ -529,6 +569,7 @@
       }
       setTimeout(() => { notifTestBtn.textContent = 'Send me a test message'; }, 4000);
     });
+
     // EarlPush loads from /js/push.js at the end of body; wait a tick.
     setTimeout(refreshNotifRow, 800);
 
