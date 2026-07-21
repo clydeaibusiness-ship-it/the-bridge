@@ -331,6 +331,13 @@ router.post('/member/commander/message', async (req, res) => {
     const { message, sessionContext } = req.body;
     if (!message) return res.status(400).json({ error: 'Message required' });
 
+    // If the member closes the app before Earl finishes (his reply can take a
+    // few seconds), we can't hand the answer back over this request — so we
+    // push them a notification instead. This flips true if the connection
+    // drops before we've sent the response.
+    let clientLeft = false;
+    res.on('close', () => { if (!res.writableEnded) clientLeft = true; });
+
     let conversationHistory = [];
     let sessionId = null;
     let summaryContext = null;
@@ -498,6 +505,19 @@ router.post('/member/commander/message', async (req, res) => {
     if (req.dbUser && sessionId) {
       const soulVersion = getSoulVersion();
       await saveCommanderMessage(req.dbUser.id, sessionId, 'assistant', response, soulVersion);
+
+      // If they left before Earl finished, the answer is saved but never
+      // reached their screen — tell them it's waiting.
+      if (clientLeft) {
+        try {
+          const { sendPushToUser } = require('../services/push');
+          await sendPushToUser(req.dbUser.id, {
+            title: 'Earl',
+            body: 'Earl has responded to you.',
+            url: '/app'
+          });
+        } catch (e) { console.error('left-chat push failed:', e.message); }
+      }
 
       // Background pass (non-blocking): the second of the three API calls.
       // A Haiku call reflects on the exchange, checks for a meaningful shift,
