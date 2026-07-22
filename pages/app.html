@@ -21,12 +21,9 @@
     html, body { height: 100%; margin: 0; background: #e8e2d6; overflow: hidden; }
     .shell { position: relative; display: flex; flex-direction: column; height: 100dvh; max-width: 480px; margin: 0 auto;
       background: #f5f0e8; color: #0a0a0f; box-shadow: 0 0 40px rgba(0,0,0,0.08); overflow: hidden; }
-    /* Top bar */
-    .tb { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; flex: 0 0 auto; }
-    .tb-btn { background: none; border: none; cursor: pointer; color: #3a3530; font-size: 1.2rem; line-height: 1; padding: 4px; }
-    .tb-title { font-family: var(--font-data); font-size: 0.7rem; font-weight: 700; letter-spacing: 0.14em; color: #0a0a0f; }
-    .tb-right { display: flex; align-items: center; gap: 12px; }
-    .tb-pfp { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; object-position: center top; border: 1px solid #d8d0c0; display: block; }
+    /* Earl's pic — floats top-left, doubles as the refresh button */
+    .tb-pfp { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; object-position: center top; border: 1px solid rgba(255,255,255,0.6); display: block; flex: 0 0 auto; pointer-events: auto; cursor: pointer; box-shadow: 0 4px 14px rgba(10,10,15,0.2); }
+    .tb-pfp:active { transform: scale(0.94); }
     /* Panels */
     .panels { flex: 1 1 auto; overflow: hidden; position: relative; }
     .track { display: flex; width: 300%; height: 100%; transition: transform 0.32s cubic-bezier(0.4,0,0.2,1); }
@@ -79,8 +76,8 @@
        conversation. It's positioned absolutely inside .panels so the messages
        scroll behind it and are visibly blurred through the glass (real
        glassmorphism needs content behind it — a flat strip just looks solid). */
-    .slider { position: absolute; top: 10px; left: 0; right: 0; z-index: 20; padding: 0 16px; pointer-events: none; }
-    .slider-inner { position: relative; display: flex; height: 44px; border-radius: 999px; pointer-events: auto;
+    .slider { position: absolute; top: 12px; left: 0; right: 0; z-index: 20; padding: 0 16px; display: flex; align-items: center; gap: 12px; pointer-events: none; }
+    .slider-inner { position: relative; display: flex; flex: 1 1 auto; height: 44px; border-radius: 999px; pointer-events: auto;
       background: transparent;
       -webkit-backdrop-filter: blur(20px) saturate(180%); backdrop-filter: blur(20px) saturate(180%);
       border: 1px solid rgba(255,255,255,0.65);
@@ -174,10 +171,7 @@
     /* ---- Dark mode ---- */
     /* Only black/white/gray spectrum is inverted. Gold, green, red stay. */
     .shell.dark, .shell.dark .panel-scroll, .shell.dark .msgs { background: #18181c; color: #f0ebe0; }
-    .shell.dark .tb { background: #18181c; }
-    .shell.dark .tb-title { color: #f0ebe0; }
-    .shell.dark .tb-btn { color: #888898; }
-    .shell.dark .tb-pfp { border-color: #2e2e3a; }
+    .shell.dark .tb-pfp { border-color: rgba(255,255,255,0.18); }
     .shell.dark .sp-title { color: #888898; border-bottom-color: #2e2e3a; }
     .shell.dark .sp-empty { color: #888898; }
     .shell.dark .chart-sec { border-bottom-color: #2e2e3a; }
@@ -252,16 +246,9 @@
 </head>
 <body>
   <div class="shell">
-    <div class="tb">
-      <span class="tb-title" id="tb-title">EARL</span>
-      <div class="tb-right">
-        <button class="tb-btn" id="history-btn" aria-label="History" style="font-size:1rem;">&#8635;</button>
-        <img class="tb-pfp" src="/assets/earl.png" alt="Earl" width="32" height="32">
-      </div>
-    </div>
-
     <div class="panels">
       <div class="slider">
+        <img class="tb-pfp" id="reload-pfp" src="/assets/earl.png" alt="Earl — tap to refresh" width="44" height="44" title="Refresh">
         <div class="slider-inner" id="slider">
           <div class="slider-pill" id="slider-pill"></div>
           <button data-i="0">Chart</button>
@@ -332,7 +319,6 @@
   <script>
     const TITLES = ['NAVIGATION CHART', 'EARL', 'YOUR PROGRESS'];
     const track = document.getElementById('track');
-    const tbTitle = document.getElementById('tb-title');
     const sliderBtns = Array.from(document.querySelectorAll('#slider button'));
     const pill = document.getElementById('slider-pill');
     let current = 1;
@@ -342,7 +328,6 @@
       current = Math.max(0, Math.min(2, i));
       track.style.transform = `translateX(-${current * 33.3333}%)`;
       pill.style.transform = `translateX(${current * 100}%)`;
-      tbTitle.textContent = TITLES[current];
       sliderBtns.forEach(b => b.classList.toggle('active', Number(b.dataset.i) === current));
       if (typeof gtag !== 'undefined') {
         gtag('event', 'page_view', { page_path: PANEL_PATHS[current], page_title: TITLES[current] });
@@ -598,7 +583,7 @@
       if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
     });
     prompts.querySelectorAll('.pill').forEach(p => p.addEventListener('click', () => { input.value = p.dataset.p; send(); }));
-    document.getElementById('history-btn').addEventListener('click', () => {
+    document.getElementById('reload-pfp').addEventListener('click', () => {
       sessionStorage.setItem('earlPanel', current);
       window.location.reload();
     });
