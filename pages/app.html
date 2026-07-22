@@ -31,9 +31,9 @@
     .panels { flex: 1 1 auto; overflow: hidden; position: relative; }
     .track { display: flex; width: 300%; height: 100%; transition: transform 0.32s cubic-bezier(0.4,0,0.2,1); }
     .panel { width: 33.3333%; height: 100%; display: flex; flex-direction: column; overflow: hidden; }
-    .panel-scroll { flex: 1 1 auto; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 16px; }
+    .panel-scroll { flex: 1 1 auto; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 70px 16px 16px; }
     /* Earl */
-    .msgs { flex: 1 1 auto; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 16px 14px; display: flex; flex-direction: column; gap: 10px; }
+    .msgs { flex: 1 1 auto; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 70px 14px 16px; display: flex; flex-direction: column; gap: 10px; }
     .m { max-width: 82%; padding: 9px 12px; font-size: 0.875rem; line-height: 1.5; border-radius: 12px; word-wrap: break-word; }
     .m-user { align-self: flex-end; background: #0a0a0f; color: #f0ebe0; border-bottom-right-radius: 3px; }
     .m-commander { align-self: flex-start; background: #ece7dc; color: #2a2520; border-bottom-left-radius: 3px; }
@@ -75,14 +75,16 @@
     .chart-sec:last-child { border-bottom: none; }
     .chart-sec-t { font-family: var(--font-data); font-size: 0.625rem; letter-spacing: 0.1em; text-transform: uppercase; color: #7a7570; margin-bottom: 6px; }
     .chart-sec-b { font-family: var(--font-ui); font-size: 0.8125rem; color: #3a3530; line-height: 1.65; }
-    /* Panel switcher — a frosted-glass segmented control floating under the
-       header (transparent strip, so it isn't attached to the nav bar). */
-    .slider { flex: 0 0 auto; padding: 12px 16px 14px; background: transparent; }
-    .slider-inner { position: relative; display: flex; height: 44px; border-radius: 999px;
-      background: rgba(255,255,255,0.32);
-      -webkit-backdrop-filter: blur(16px) saturate(150%); backdrop-filter: blur(16px) saturate(150%);
-      border: 1px solid rgba(255,255,255,0.55);
-      box-shadow: 0 8px 24px rgba(10,10,15,0.13), inset 0 1px 0 rgba(255,255,255,0.5); }
+    /* Panel switcher — a frosted-glass segmented control that FLOATS over the
+       conversation. It's positioned absolutely inside .panels so the messages
+       scroll behind it and are visibly blurred through the glass (real
+       glassmorphism needs content behind it — a flat strip just looks solid). */
+    .slider { position: absolute; top: 10px; left: 0; right: 0; z-index: 20; padding: 0 16px; pointer-events: none; }
+    .slider-inner { position: relative; display: flex; height: 44px; border-radius: 999px; pointer-events: auto;
+      background: transparent;
+      -webkit-backdrop-filter: blur(20px) saturate(180%); backdrop-filter: blur(20px) saturate(180%);
+      border: 1px solid rgba(255,255,255,0.65);
+      box-shadow: 0 8px 30px rgba(10,10,15,0.18), inset 0 1px 0 rgba(255,255,255,0.4); }
     .slider-pill { position: absolute; top: 4px; left: 0; height: calc(100% - 8px); width: 33.3333%; background: rgba(10,10,15,0.9); border-radius: 999px; box-shadow: 0 2px 10px rgba(10,10,15,0.28); transition: transform 0.32s cubic-bezier(0.4,0,0.2,1); z-index: 0; transform: translateX(0); }
     .slider-inner button { position: relative; z-index: 1; flex: 1; background: none; border: none; cursor: pointer; font-family: var(--font-data); font-size: 0.625rem; letter-spacing: 0.08em; text-transform: uppercase; color: #7a7570; transition: color 0.2s; }
     .slider-inner button.active { color: #f0ebe0; }
@@ -187,8 +189,8 @@
     .shell.dark .composer-row { background: #252530; border-color: #2e2e3a; }
     .shell.dark .composer textarea { color: #f0ebe0; }
     .shell.dark .slider { background: transparent; }
-    .shell.dark .slider-inner { background: rgba(255,255,255,0.07); border-color: rgba(255,255,255,0.14);
-      box-shadow: 0 8px 24px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.06); }
+    .shell.dark .slider-inner { background: transparent; border-color: rgba(255,255,255,0.16);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.08); }
     .shell.dark .slider-pill { background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.12); box-shadow: none; }
     .shell.dark .settings { border-top-color: #2e2e3a; }
     .shell.dark .settings-row { color: #c0b8b0; border-bottom-color: #2e2e3a; }
@@ -258,16 +260,15 @@
       </div>
     </div>
 
-    <div class="slider">
-      <div class="slider-inner" id="slider">
-        <div class="slider-pill" id="slider-pill"></div>
-        <button data-i="0">Chart</button>
-        <button data-i="1" class="active">Earl</button>
-        <button data-i="2">Progress</button>
-      </div>
-    </div>
-
     <div class="panels">
+      <div class="slider">
+        <div class="slider-inner" id="slider">
+          <div class="slider-pill" id="slider-pill"></div>
+          <button data-i="0">Chart</button>
+          <button data-i="1" class="active">Earl</button>
+          <button data-i="2">Progress</button>
+        </div>
+      </div>
       <div class="track" id="track">
 
         <!-- LEFT: Navigation Chart -->
