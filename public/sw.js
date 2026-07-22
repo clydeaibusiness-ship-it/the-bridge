@@ -16,6 +16,11 @@
 self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', (event) => event.waitUntil(self.clients.claim()));
 
+// Network pass-through. A registered fetch handler is what makes the app
+// installable as a PWA. We deliberately don't cache the app shell — the
+// content is authenticated and should always come fresh from the server.
+self.addEventListener('fetch', () => {});
+
 self.addEventListener('push', (event) => {
   let data = {};
   try { data = event.data ? event.data.json() : {}; } catch (e) { /* plain text fallback */ }
