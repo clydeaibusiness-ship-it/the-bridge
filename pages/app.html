@@ -27,7 +27,7 @@
   <link rel="stylesheet" href="/css/global.css">
   <style>
     html, body { height: 100%; margin: 0; background: #e8e2d6; overflow: hidden; }
-    .shell { position: relative; display: flex; flex-direction: column; height: 100dvh; max-width: 480px; margin: 0 auto;
+    .shell { position: relative; display: flex; flex-direction: column; height: 100dvh; height: var(--app-height, 100dvh); max-width: 480px; margin: 0 auto;
       background: #f5f0e8; color: #0a0a0f; box-shadow: 0 0 40px rgba(0,0,0,0.08); overflow: hidden; }
     /* Earl's pic — floats top-left, doubles as the refresh button */
     .tb-pfp { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; object-position: center top; border: 1px solid rgba(255,255,255,0.6); display: block; flex: 0 0 auto; pointer-events: auto; cursor: pointer; box-shadow: 0 4px 14px rgba(10,10,15,0.2); }
@@ -510,9 +510,23 @@
       shell.classList.toggle('dark', dark);
       themeBtn.textContent = dark ? 'Light mode' : 'Dark mode';
       localStorage.setItem('earl-theme', dark ? 'dark' : 'light');
+      // Match the phone's status bar (time/battery) to the app theme.
+      const tc = document.querySelector('meta[name="theme-color"]');
+      if (tc) tc.setAttribute('content', dark ? '#18181c' : '#f5f0e8');
     }
     applyTheme(localStorage.getItem('earl-theme') === 'dark');
     themeBtn.addEventListener('click', () => applyTheme(!shell.classList.contains('dark')));
+
+    // Pin the shell to the real visible height. In an installed PWA the height
+    // can be wrong on first paint, leaving the text box below the fold until a
+    // resize corrects it — which is exactly why it appeared only after leaving
+    // and returning. Re-assert on load, resize, rotate, and re-focus.
+    function setAppHeight() {
+      document.documentElement.style.setProperty('--app-height', window.innerHeight + 'px');
+    }
+    setAppHeight();
+    ['resize', 'orientationchange', 'pageshow'].forEach(ev => window.addEventListener(ev, setAppHeight));
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) setAppHeight(); });
 
     // ---- Notifications from Earl (toggle switch) ----
     const notifRow = document.getElementById('notif-row');
