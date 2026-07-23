@@ -104,7 +104,7 @@ async function requirePaidMember(req, res, next) {
         const clerkBase = isProd
           ? 'https://accounts.captainsbridge.io/sign-up'
           : 'https://obliging-python-5.accounts.dev/sign-up';
-        const redirect = clerkBase + '?redirect_url=' + encodeURIComponent(req.protocol + '://' + req.get('host') + '/dashboard') + (email ? '&email_address=' + encodeURIComponent(email) : '');
+        const redirect = clerkBase + '?redirect_url=' + encodeURIComponent(req.protocol + '://' + req.get('host') + req.originalUrl) + (email ? '&email_address=' + encodeURIComponent(email) : '');
         return res.redirect(redirect);
       } catch (e) {
         console.error('Post-payment Stripe session lookup failed:', e.message);
@@ -151,6 +151,12 @@ app.get('/login', (req, res) => {
 
 app.get('/subscribe', (req, res) => {
   res.sendFile(path.join(__dirname, '../pages/subscribe.html'));
+});
+
+// Post-purchase install-the-app offer. Paid members only, but NOT behind the
+// interview gate — this is shown right after checkout, before the interview.
+app.get('/welcome', requirePaidMember, (req, res) => {
+  res.sendFile(path.join(__dirname, '../pages/welcome.html'));
 });
 
 // Protected pages — must be logged in + paid. The member pages below also
