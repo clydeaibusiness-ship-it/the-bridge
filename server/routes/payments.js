@@ -22,7 +22,7 @@ router.get('/checkout-redirect', async (req, res) => {
       payment_method_types: ['card'],
       allow_promotion_codes: true,
       line_items: [{ price: PRICE_ID, quantity: 1 }],
-      success_url: `${process.env.BASE_URL || 'https://captainsbridge.io'}/dashboard?session_id={CHECKOUT_SESSION_ID}`,
+      success_url: `${process.env.BASE_URL || 'https://captainsbridge.io'}/welcome?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${process.env.BASE_URL || 'https://captainsbridge.io'}/#pricing`
     });
 
@@ -52,7 +52,7 @@ router.post('/create-checkout', async (req, res) => {
       payment_method_types: ['card'],
       allow_promotion_codes: true,
       line_items: [{ price: PRICE_ID, quantity: 1 }],
-      success_url: `${process.env.BASE_URL || 'https://captainsbridge.io'}/dashboard?session_id={CHECKOUT_SESSION_ID}`,
+      success_url: `${process.env.BASE_URL || 'https://captainsbridge.io'}/welcome?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${process.env.BASE_URL || 'https://captainsbridge.io'}/#pricing`,
       metadata: {}
     };

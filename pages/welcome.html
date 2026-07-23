@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Earl</title>
+  <link rel="stylesheet" href="/css/global.css">
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#f5f0e8">
+  <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Earl">
+  <style>
+    html, body { background: #f0ebe0 !important; color: #08080f !important; min-height: 100vh; margin: 0; }
+    .wel-page { min-height: 100vh; min-height: 100dvh; display: flex; align-items: center; justify-content: center; padding: 2rem 1.5rem calc(2rem + env(safe-area-inset-bottom, 0px)); box-sizing: border-box; }
+    .wel-card { max-width: 26rem; width: 100%; text-align: center; }
+    .wel-pfp { width: 96px; height: 96px; border-radius: 50%; object-fit: cover; object-position: center top; border: 2px solid #c8a96e; box-shadow: 0 6px 24px rgba(8,8,15,0.18); display: block; margin: 0 auto 1.4rem; }
+    .wel-kicker { font-family: var(--font-data); font-size: 0.625rem; letter-spacing: 0.16em; text-transform: uppercase; color: #c8a96e; margin-bottom: 0.75rem; }
+    .wel-title { font-family: var(--font-display, Georgia, serif); font-size: 1.75rem; line-height: 1.2; font-weight: 700; color: #08080f; margin: 0 0 0.9rem; text-wrap: balance; }
+    .wel-body { font-family: var(--font-ui); font-size: 0.95rem; line-height: 1.6; color: rgba(8,8,15,0.68); margin: 0 0 2rem; }
+    .wel-install { width: 100%; font-family: var(--font-data); font-size: 0.8125rem; letter-spacing: 0.08em; text-transform: uppercase; color: #1a1512; background: #c8a96e; border: none; border-radius: 4px; padding: 1.05rem; cursor: pointer; }
+    .wel-install:hover { background: #a8884c; }
+    .wel-note { font-family: var(--font-ui); font-size: 0.8125rem; line-height: 1.5; color: rgba(8,8,15,0.6); background: #ece7dc; border: 1px solid #d8d0c0; border-radius: 4px; padding: 0.9rem 1rem; margin-top: 1rem; text-align: left; display: none; }
+    .wel-continue { display: inline-block; margin-top: 1.6rem; font-family: var(--font-ui); font-size: 0.8125rem; color: rgba(8,8,15,0.42); text-decoration: underline; text-underline-offset: 2px; cursor: pointer; background: none; border: none; }
+    .wel-continue:hover { color: rgba(8,8,15,0.7); }
+  </style>
+</head>
+<body>
+  <div class="wel-page">
+    <div class="wel-card">
+      <img class="wel-pfp" src="/assets/earl.png" alt="Earl">
+      <div class="wel-kicker">You're in</div>
+      <h1 class="wel-title">Put Earl on your phone</h1>
+      <p class="wel-body">Earl works best as an app — one tap to open, full screen, and he can reach out with a thought between conversations. It takes a few seconds and doesn't go through any app store.</p>
+      <button class="wel-install" id="wel-install">Install the app</button>
+      <div class="wel-note" id="wel-note"></div>
+      <div><button class="wel-continue" id="wel-continue">Continue in your browser →</button></div>
+    </div>
+  </div>
+
+  <script>
+    // Carry the Stripe session_id through so the interview flow still sees it.
+    var params = new URLSearchParams(location.search);
+    var sid = params.get('session_id');
+    var NEXT = '/intake' + (sid ? ('?session_id=' + encodeURIComponent(sid)) : '');
+
+    if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(function(){});
+
+    var installBtn = document.getElementById('wel-install');
+    var note = document.getElementById('wel-note');
+    var deferred = null;
+
+    function isIos() { return /iphone|ipad|ipod/i.test(navigator.userAgent); }
+    function isStandalone() { return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true; }
+
+    // If they're already inside the installed app, there's nothing to install.
+    if (isStandalone()) { installBtn.textContent = 'Continue'; }
+
+    window.addEventListener('beforeinstallprompt', function (e) { e.preventDefault(); deferred = e; });
+    window.addEventListener('appinstalled', function () { window.location.href = NEXT; });
+
+    installBtn.addEventListener('click', async function () {
+      if (isStandalone()) { window.location.href = NEXT; return; }
+      if (deferred) {
+        deferred.prompt();
+        try { await deferred.userChoice; } catch (e) {}
+        deferred = null;
+        // Whether they accepted or not, let them move on.
+        window.location.href = NEXT;
+        return;
+      }
+      if (isIos()) {
+        note.style.display = 'block';
+        note.textContent = 'Tap the Share button at the bottom of Safari, then choose “Add to Home Screen.” Open Earl from that icon and you're set. Then come back here and continue.';
+        return;
+      }
+      // Desktop or a browser that can't install right now.
+      note.style.display = 'block';
+      note.textContent = 'Open captainsbridge.io on your phone to install Earl there, or continue in your browser below.';
+    });
+
+    document.getElementById('wel-continue').addEventListener('click', function () {
+      window.location.href = NEXT;
+    });
+  </script>
+</body>
+</html>
