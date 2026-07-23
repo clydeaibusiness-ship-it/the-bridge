@@ -67,7 +67,23 @@ function renderEmailHtml(issue, ctx = {}) {
        </p>`
     : '';
 
-  return `<!-- Earl newsletter -->
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Lock to light rendering so dark-mode mail apps never invert the colors
+     (which was turning Earl's face into a negative). -->
+<meta name="color-scheme" content="light">
+<meta name="supported-color-schemes" content="light">
+<style>
+  :root { color-scheme: light; supported-color-schemes: light; }
+  body { margin:0; padding:0; background:${CREAM}; }
+  img { -ms-interpolation-mode:bicubic; }
+</style>
+</head>
+<body>
+<!-- Earl newsletter -->
 <div style="background:${CREAM};margin:0;padding:0;">
   <div style="max-width:560px;margin:0 auto;padding:30px 24px;background:${CREAM};">
 
@@ -75,6 +91,7 @@ function renderEmailHtml(issue, ctx = {}) {
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-bottom:1px solid ${LINE};margin-bottom:20px;">
       <tr>
         <td style="padding-bottom:12px;vertical-align:middle;">
+          <img src="https://captainsbridge.io/assets/earl-email.jpg" width="40" height="40" alt="Earl" style="border-radius:50%;vertical-align:middle;margin-right:10px;display:inline-block;border:1px solid ${LINE};">
           <span style="font-family:'Playfair Display',Georgia,serif;font-size:18px;font-weight:700;color:${INK};letter-spacing:0.02em;vertical-align:middle;">Earl</span>
         </td>
         <td align="right" style="padding-bottom:12px;vertical-align:middle;font-family:'DM Mono','Space Mono',monospace;font-size:9px;color:${MUTE};">${dateStr}</td>
@@ -123,7 +140,9 @@ function renderEmailHtml(issue, ctx = {}) {
     </div>
 
   </div>
-</div>`;
+</div>
+</body>
+</html>`;
 }
 
 /** Plain-text fallback for email clients that want it. */
