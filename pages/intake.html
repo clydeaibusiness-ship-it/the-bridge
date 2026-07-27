@@ -183,6 +183,9 @@
     async function handleAnswerResult(field, data) {
       if (data.followUp) { renderFollowUp(field, data.followUp); return; }
 
+      // Free funnel: Stage 1 done, membership not yet — Earl's First Read.
+      if (data.paywall) { await markStarted(); renderFirstRead(); return; }
+
       // Exit interview (round 2): no stages or benchmark — go straight to the
       // certificate when finished.
       if (ROUND === 2) {
@@ -252,6 +255,29 @@
       });
     }
 
+    // The First Read — Earl's genuine take on their business, then the door.
+    async function renderFirstRead() {
+      panel.innerHTML = '<div class="iv-loading">Earl is reading your answers&#8230;</div>';
+      const data = await api('/api/member/first-read', 'GET');
+      const read = data && data.read;
+      let html = '';
+      if (read) {
+        html += '<div class="iv-msg" style="white-space:pre-wrap;">' + esc(read) + '</div>';
+      } else {
+        html += '<div class="iv-msg">Earl could not finish his read just now. Reload in a moment and it will be here.</div>';
+      }
+      html += '<div class="iv-msg" style="color:#7a7570;font-size:0.85rem;">That is his first read, from eight answers. The rest of the interview goes deeper, and what waits behind it:</div>';
+      html += '<div style="margin:4px 0 16px;">' +
+        ['Your full Navigation Chart, six sections, built from everything you tell him',
+         'Your goals in your own words, with the steps to reach them tracked to done',
+         'Earl himself, every day, who remembers all of it'].map(t =>
+          '<div style="display:flex;gap:9px;align-items:baseline;padding:7px 0;border-bottom:1px solid #e0d8c8;font-size:0.85rem;color:#3a3530;"><span style="opacity:0.55;">&#128274;</span><span>' + t + '</span></div>'
+        ).join('') + '</div>';
+      html += '<div><a class="iv-btn" href="/subscribe" style="display:inline-block;text-decoration:none;">Keep going with Earl &#8594;</a></div>';
+      panel.innerHTML = html;
+      setProgress({ answered: 8 });
+    }
+
     function renderDone() {
       setProgress({ answered: 30 });
       panel.innerHTML = '<div class="iv-msg">That is everything. Earl now has the full picture. Go have a real conversation.</div>' +
@@ -261,9 +287,10 @@
     async function loadState() {
       const data = await api('/api/member/interview/state' + (ROUND === 2 ? '?round=2' : ''), 'GET');
       if (!data || data.authenticated === false) {
-        panel.innerHTML = '<div class="iv-msg">Please <a href="/login">sign in</a> to begin.</div>';
+        panel.innerHTML = '<div class="iv-msg">Please <a href="/login?return=/intake">sign in</a> to begin.</div>';
         return;
       }
+      if (data.paywall) { renderFirstRead(); return; }
       if (data.done) {
         if (ROUND === 2) { window.location.href = '/certificate'; return; }
         renderDone(); return;

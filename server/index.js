@@ -170,7 +170,12 @@ app.get('/app', requirePaidMember, requireInterviewStarted, (req, res) => {
   res.sendFile(path.join(__dirname, '../pages/app.html'));
 });
 
-app.get('/intake', requirePaidMember, (req, res) => {
+// The interview: Stage 1 is free — any signed-in person can take it. The
+// paywall lives at the Stage 1 → Stage 2 boundary (Earl's First Read + the
+// door), enforced in the interview API.
+app.get('/intake', async (req, res) => {
+  await new Promise((resolve) => extractUser(req, res, resolve));
+  if (!req.dbUser) return res.redirect('/login?return=/intake');
   res.sendFile(path.join(__dirname, '../pages/intake.html'));
 });
 
