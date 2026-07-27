@@ -80,6 +80,11 @@ function renderEmailHtml(issue, ctx = {}) {
   :root { color-scheme: light; supported-color-schemes: light; }
   body { margin:0; padding:0; background:${CREAM}; }
   img { -ms-interpolation-mode:bicubic; }
+  summary { cursor:pointer; list-style:none; outline:none; }
+  summary::-webkit-details-marker { display:none; }
+  summary::marker { content:""; }
+  details[open] .caret { transform:rotate(180deg); }
+  .caret { display:inline-block; transition:transform .15s ease; }
 </style>
 </head>
 <body>
@@ -118,13 +123,17 @@ function renderEmailHtml(issue, ctx = {}) {
       )}</p>
     </div>
 
-    <!-- sources -->
-    <div style="border-top:1px solid ${LINE};padding-top:18px;margin-top:24px;">
-      <p style="${label}">Sources</p>
-      <p style="margin:0 0 10px;font-size:9.5px;line-height:1.7;color:${MUTE};font-family:'DM Mono','Space Mono',monospace;">
+    <!-- sources (collapsed by default; tap to expand) -->
+    ${
+      ctx.sources && ctx.sources.length
+        ? `<details style="border-top:1px solid ${LINE};padding-top:14px;margin-top:24px;">
+      <summary style="${label}margin:0;cursor:pointer;list-style:none;">Sources <span class="caret">&#9662;</span></summary>
+      <p style="margin:10px 0 0;font-size:9.5px;line-height:1.7;color:${MUTE};font-family:'DM Mono','Space Mono',monospace;">
         ${sourceLinks(ctx.sources)}
       </p>
-    </div>
+    </details>`
+        : ''
+    }
 
     <!-- footer -->
     <div style="border-top:1px solid ${LINE};padding-top:18px;margin-top:18px;text-align:center;">
