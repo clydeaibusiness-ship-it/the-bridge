@@ -315,7 +315,7 @@ async function commanderChat(message, gameState, sessionContext, conversationHis
     },
     {
       name: 'save_action_step',
-      description: "Call this when the member commits to a specific, concrete action they will take before your next conversation. Save it in their exact words, not your paraphrase. Do not invent action steps the member did not volunteer, and never save more than two in a single conversation. After saving, confirm to the member in your own voice. If this step clearly serves one of their named goals, include the exact benchmark_id from your context — copy it character for character, do not paraphrase or invent it.",
+      description: "Call this when the member commits to a specific, concrete action they will take before your next conversation. Save it in their exact words, not your paraphrase. Do not invent action steps the member did not volunteer — but if they name several at once, save every one they commit to (call this tool once per step, back to back). Never make them slow down or wait until later. After saving, confirm to the member in your own voice. If a step clearly serves one of their named goals, include the exact benchmark_id from your context — copy it character for character, do not paraphrase or invent it.",
       input_schema: {
         type: 'object',
         properties: {

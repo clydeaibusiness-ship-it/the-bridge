@@ -32,7 +32,7 @@ self.addEventListener('push', (event) => {
     badge: '/assets/earl.png',
     tag: 'earl-checkin',      // a newer message replaces an unread older one
     renotify: true,
-    data: { url: data.url || '/app' },
+    data: { url: data.url || '/app', token: data.token || null },
     actions: [
       { action: 'reply', type: 'text', title: 'Reply', placeholder: 'Reply to Earl…' },
       { action: 'clear', title: 'Clear' }
@@ -63,19 +63,32 @@ self.addEventListener('notificationclick', (event) => {
   // Reply — send the typed text straight to the server.
   if (event.action === 'reply') {
     const text = (event.reply || '').trim();
+    const token = (notification.data && notification.data.token) || null;
     notification.close();
     if (!text) {
       // No inline text box on this platform — open the chat to reply there.
       event.waitUntil(openChat());
       return;
     }
+    // The token authenticates the reply on its own, so it works even when the
+    // login cookie has gone stale (a reply typed minutes after the push). If
+    // it still fails, tell them — never lose their words silently.
     event.waitUntil(
       fetch('/api/member/checkin/reply', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ text })
-      }).catch(() => { /* Earl's reply push will confirm; failures stay quiet here */ })
+        body: JSON.stringify({ text, token })
+      })
+        .then((r) => { if (!r.ok) throw new Error('http ' + r.status); })
+        .catch(() =>
+          self.registration.showNotification('Earl', {
+            body: "Your reply didn't send. Tap to open the chat and send it again.",
+            icon: '/assets/earl.png',
+            badge: '/assets/earl.png',
+            data: { url: '/app' }
+          })
+        )
     );
     return;
   }
