@@ -76,6 +76,14 @@
     .pg-grad a { color: #8a6830; }
     .pg-grad-btn { font-family: var(--font-data); font-size: 0.6rem; letter-spacing: 0.08em; text-transform: uppercase; color: #f0ebe0; background: #0a0a0f; border: none; border-radius: 6px; padding: 9px 14px; cursor: pointer; }
     .pg-continue { display: inline-block; margin: 2px 0 6px; font-family: var(--font-data); font-size: 0.6rem; letter-spacing: 0.08em; text-transform: uppercase; color: #f0ebe0; background: #0a0a0f; border-radius: 6px; padding: 10px 14px; text-decoration: none; }
+    /* The semester arc + the Walk (stored value, visible) */
+    .pg-arc { margin-bottom: 18px; }
+    .pg-arc-week { font-family: var(--font-data); font-size: 0.625rem; letter-spacing: 0.1em; text-transform: uppercase; color: #8a6830; margin-bottom: 6px; }
+    .pg-arc-bar { height: 5px; background: #e0d8c8; border-radius: 3px; overflow: hidden; }
+    .pg-arc-fill { height: 100%; background: #c8a96e; border-radius: 3px; }
+    .pg-arc-meta { font-size: 0.75rem; color: #7a7570; margin-top: 8px; line-height: 1.5; }
+    /* Quiet streak line above the conversation */
+    .walk-line { text-align: center; font-family: var(--font-data); font-size: 0.5625rem; letter-spacing: 0.1em; text-transform: uppercase; color: #b0a898; padding: 2px 0 8px; }
     .chart-sec { margin-bottom: 18px; padding-bottom: 14px; border-bottom: 1px solid #d8d0c0; }
     .chart-sec:last-child { border-bottom: none; }
     .chart-sec-t { font-family: var(--font-data); font-size: 0.625rem; letter-spacing: 0.1em; text-transform: uppercase; color: #7a7570; margin-bottom: 6px; }
@@ -219,6 +227,10 @@
     .shell.dark .tl-add-cancel { color: #888898; border-color: #2e2e3a; }
     .shell.dark .tl-general-title { color: #888898; }
     .shell.dark .sp-block-title { color: #888898; }
+    .shell.dark .pg-arc-week { color: #c8a96e; }
+    .shell.dark .pg-arc-bar { background: #2e2e3a; }
+    .shell.dark .pg-arc-meta { color: #888898; }
+    .shell.dark .walk-line { color: #555560; }
     .shell.dark .pg-refl { color: #c0b8b0; border-bottom-color: #2e2e3a; }
     .shell.dark .pg-letter { background: #252530; color: #c0b8b0; }
     .shell.dark .pg-letter-date { color: #555560; }
@@ -751,6 +763,21 @@
 
       const st = data.stages || {};
 
+      // The Walk — one quiet line at the top of the conversation.
+      try {
+        const w = data.walk || {};
+        let wl = document.getElementById('walk-line');
+        if (w.current > 1) {
+          if (!wl) {
+            wl = document.createElement('div');
+            wl.id = 'walk-line';
+            wl.className = 'walk-line';
+            msgs.insertBefore(wl, msgs.firstChild);
+          }
+          wl.textContent = w.current + ' days walking together';
+        } else if (wl) { wl.remove(); }
+      } catch (e) { /* cosmetic only */ }
+
       // Gate: need Stage 2 for anything meaningful to show
       if (!st.stage_2) {
         const link = st.stage_1 ? '<a class="pg-continue" href="/intake">Continue to Stage 2 &#8594;</a>' : '';
@@ -759,6 +786,23 @@
       }
 
       let html = '';
+
+      // The semester arc + the Walk + what Earl carries — stored value, visible.
+      const sem = data.semester;
+      const walk = data.walk || {};
+      if (sem || walk.current > 0 || data.knowledgeCount > 0) {
+        html += '<div class="pg-arc">';
+        if (sem) {
+          const pct = Math.round((sem.week / sem.totalWeeks) * 100);
+          html += `<div class="pg-arc-week">Week ${sem.week} of ${sem.totalWeeks}</div>
+            <div class="pg-arc-bar"><div class="pg-arc-fill" style="width:${pct}%"></div></div>`;
+        }
+        const bits = [];
+        if (walk.current > 1) bits.push(`${walk.current} days walking together`);
+        if (data.knowledgeCount > 0) bits.push(`Earl is carrying ${data.knowledgeCount} things about your business`);
+        if (bits.length) html += `<div class="pg-arc-meta">${bits.join(' &nbsp;&middot;&nbsp; ')}</div>`;
+        html += '</div>';
+      }
 
       // Graduation block
       const g = data.graduation || {};
@@ -793,7 +837,8 @@
       if (benches.length) {
         html += '<div class="tl">';
         benches.forEach(b => {
-          const achieved = b.current_rating != null && b.current_rating >= 7;
+          // A goal is achieved when it was closed out in conversation with Earl.
+          const achieved = !!b.completed_at;
           const nodeClass = achieved ? 'done' : 'active';
           const steps = linkedSteps[b.id] || [];
           html += `<div class="tl-item">

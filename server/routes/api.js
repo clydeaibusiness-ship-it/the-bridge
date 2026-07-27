@@ -14,6 +14,7 @@ const {
   getCommanderSessionMessages, saveSessionNote, getSessionNotes, sessionNoteExists,
   upsertSessionDebrief,
   ensureMemberState, updateMemberState,
+  recordMemberActivity, countEarlKnowledge,
   getActionSteps, getActionStep, updateActionStepStatus,
   getBenchmarks, getBenchmarkRatingHistory,
   completeBenchmarkGoal,
@@ -451,6 +452,7 @@ router.post('/member/commander/message', async (req, res) => {
 
       // Save user message tagged with current soul version
       await saveCommanderMessage(req.dbUser.id, sessionId, 'user', message, soulVersion);
+      recordMemberActivity(req.dbUser.id).catch(() => {}); // the Walk: they showed up today
     }
 
     // Load actual intake data and run history from database
@@ -875,16 +877,23 @@ router.get('/member/progress', async (req, res) => {
   try {
     const userId = req.dbUser.id;
     const memberState = await ensureMemberState(userId);
-    const [benchmarks, ratingHistory, actionSteps, debriefs, periodicReport] = await Promise.all([
+    const [benchmarks, ratingHistory, actionSteps, debriefs, periodicReport, knowledgeCount] = await Promise.all([
       getBenchmarks(userId),
       getBenchmarkRatingHistory(userId),
       getActionSteps(userId),
       getSessionDebriefs(userId, 20),
-      getLatestPeriodicReport(userId)
+      getLatestPeriodicReport(userId),
+      countEarlKnowledge(userId).catch(() => 0)
     ]);
 
     // Lazy: kick off a periodic report if one is due (non-blocking).
     maybeGeneratePeriodicReport(userId, memberState, benchmarks, debriefs);
+
+    // The semester arc: six months from coaching start, walked week by week.
+    const startedAt = memberState?.coaching_started_at || null;
+    const week = startedAt
+      ? Math.min(26, Math.max(1, Math.floor(daysSince(startedAt) / 7) + 1))
+      : null;
 
     res.json({
       authenticated: true,
@@ -893,9 +902,16 @@ router.get('/member/progress', async (req, res) => {
         stage_2: !!memberState?.stage_2_complete,
         stage_3: !!memberState?.stage_3_complete
       },
+      walk: {
+        current: memberState?.current_streak || 0,
+        longest: memberState?.longest_streak || 0
+      },
+      knowledgeCount,
+      semester: startedAt ? { week, totalWeeks: 26, startedAt } : null,
       benchmarks: benchmarks.map(b => ({
         id: b.id, statement: b.statement, position: b.position,
-        starting_rating: b.starting_rating, current_rating: b.current_rating
+        starting_rating: b.starting_rating, current_rating: b.current_rating,
+        completed_at: b.completed_at || null
       })),
       ratingHistory,
       actionSteps: {
@@ -1163,6 +1179,7 @@ router.post('/member/action-steps/:id/complete', async (req, res) => {
 
     await updateActionStepStatus(stepId, 'completed');
     recordAnonymous(req.dbUser.id, 'action_completion', { status: 'completed' });
+    recordMemberActivity(req.dbUser.id).catch(() => {}); // the Walk: they showed up today
 
     res.json({ ok: true });
   } catch (e) {

@@ -708,6 +708,94 @@ async function updateMemberState(userId, patch) {
   return data;
 }
 
+// ---- The Walk: member streaks ----
+
+/** Today's date in Central time as YYYY-MM-DD (streaks live on Chicago days). */
+function chicagoDateStr(d = new Date()) {
+  const f = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/Chicago', year: 'numeric', month: '2-digit', day: '2-digit',
+  });
+  return f.format(d); // en-CA gives YYYY-MM-DD
+}
+
+/** Monday of the current Chicago week, as YYYY-MM-DD (grace resets weekly). */
+function chicagoWeekStart(d = new Date()) {
+  const today = chicagoDateStr(d);
+  const dt = new Date(today + 'T12:00:00Z');
+  const dow = dt.getUTCDay(); // 0=Sun
+  const back = dow === 0 ? 6 : dow - 1;
+  dt.setUTCDate(dt.getUTCDate() - back);
+  return dt.toISOString().slice(0, 10);
+}
+
+const GRACE_PER_WEEK = 2;
+
+/**
+ * Record that the member showed up for their business today (sent Earl a
+ * message, replied to a pulse, or closed an action step). Maintains the
+ * streak with two banked grace days per week so it bends before it breaks.
+ * Returns the updated { current_streak, longest_streak } or null.
+ */
+async function recordMemberActivity(userId) {
+  const state = await ensureMemberState(userId);
+  if (!state) return null;
+
+  const today = chicagoDateStr();
+  if (state.streak_last_date === today) {
+    return { current_streak: state.current_streak, longest_streak: state.longest_streak };
+  }
+
+  // Weekly grace reset.
+  const weekStart = chicagoWeekStart();
+  let graceUsed = state.streak_week_start === weekStart ? (state.streak_grace_used || 0) : 0;
+
+  let streak = state.current_streak || 0;
+  if (!state.streak_last_date) {
+    streak = 1;
+  } else {
+    const gapDays = Math.round(
+      (new Date(today + 'T12:00:00Z') - new Date(state.streak_last_date + 'T12:00:00Z')) / 86400000
+    );
+    const missed = gapDays - 1;
+    if (missed <= 0) {
+      streak += 1;
+    } else if (missed <= GRACE_PER_WEEK - graceUsed) {
+      graceUsed += missed; // rest days absorbed by grace
+      streak += 1;
+    } else {
+      streak = 1; // the walk starts again, quietly
+    }
+  }
+
+  const longest = Math.max(streak, state.longest_streak || 0);
+  await updateMemberState(userId, {
+    current_streak: streak,
+    longest_streak: longest,
+    streak_last_date: today,
+    streak_grace_used: graceUsed,
+    streak_week_start: weekStart,
+  });
+  return { current_streak: streak, longest_streak: longest };
+}
+
+/**
+ * "What Earl knows" — a count of everything the member has entrusted to Earl:
+ * memory facts, interview answers, goals, action steps, and session notes.
+ * Stored value, made visible.
+ */
+async function countEarlKnowledge(userId) {
+  const db = getClient();
+  if (!db) return 0;
+  const heads = await Promise.all([
+    db.from('memory_facts').select('id', { count: 'exact', head: true }).eq('user_id', userId).is('superseded_by', null),
+    db.from('intake_responses').select('id', { count: 'exact', head: true }).eq('user_id', userId),
+    db.from('member_benchmarks').select('id', { count: 'exact', head: true }).eq('user_id', userId),
+    db.from('action_steps').select('id', { count: 'exact', head: true }).eq('user_id', userId),
+    db.from('commander_session_notes').select('id', { count: 'exact', head: true }).eq('user_id', userId),
+  ]);
+  return heads.reduce((sum, r) => sum + (r.count || 0), 0);
+}
+
 // ---- Action Steps: reads + status ----
 
 async function getActionSteps(userId, status = null) {
@@ -1173,6 +1261,7 @@ module.exports = {
   getCommanderSessionMessages, saveSessionNote, getSessionNotes, sessionNoteExists,
   saveActionStep, upsertSessionDebrief,
   ensureMemberState, updateMemberState,
+  recordMemberActivity, countEarlKnowledge, chicagoDateStr,
   getActionSteps, getActionStep, updateActionStepText, updateActionStepStatus, updateActionStepFollowUp,
   getBenchmarks, addBenchmarkRating, getBenchmarkRatingHistory,
   recordEarlCheckIn, getLastEarlCheckIn, usersWithBenchmarks, getLastCommanderMessageAt,
