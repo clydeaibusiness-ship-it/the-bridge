@@ -1354,9 +1354,17 @@ router.get('/member/graduation', async (req, res) => {
   }
 });
 
+/** Paid membership check (mirrors requirePaidMember's tier list). */
+function isPaidMember(dbUser) {
+  const t = dbUser && dbUser.membership_tier;
+  return t === 'ensign' || t === 'navigator' || t === 'captain';
+}
+
 /**
  * GET /api/member/interview/state
  * The next question to ask (with stage framing if a stage is starting), or done.
+ * Stage 1 is free; unpaid members hitting Stage 2 get the paywall (Earl's
+ * First Read + the door).
  */
 router.get('/member/interview/state', async (req, res) => {
   if (!req.dbUser) return res.json({ authenticated: false });
@@ -1367,14 +1375,21 @@ router.get('/member/interview/state', async (req, res) => {
     const responses = await getIntakeResponses(userId, round);
     const answered = answeredFieldSet(responses);
     const q = nextQuestion(answered);
+    const paid = isPaidMember(req.dbUser);
+
+    // Free funnel: Stage 1 done, not yet paid → the First Read screen.
+    if (round === 1 && !paid && (memberState?.stage_1_complete || (q && q.stage > 1))) {
+      return res.json({ authenticated: true, paid: false, paywall: true, round,
+        stages: stageStatus(memberState) });
+    }
 
     if (!q) {
-      return res.json({ authenticated: true, done: true, round, stages: stageStatus(memberState),
+      return res.json({ authenticated: true, paid, done: true, round, stages: stageStatus(memberState),
         progress: { answered: answered.size, total: QUESTIONS.length } });
     }
     const framing = (q.n === STAGE_BOUNDS[q.stage].first) ? STAGE_FRAMING[q.stage] : null;
     res.json({
-      authenticated: true, done: false, round,
+      authenticated: true, paid, done: false, round,
       stages: stageStatus(memberState),
       progress: { answered: answered.size, total: QUESTIONS.length },
       stage: q.stage,
@@ -1384,6 +1399,39 @@ router.get('/member/interview/state', async (req, res) => {
   } catch (e) {
     console.error('Interview state error:', e.message);
     res.status(500).json({ error: 'Could not load the interview' });
+  }
+});
+
+/**
+ * GET /api/member/first-read
+ * Earl's first read on the business, generated once from the Stage-1 answers
+ * and stored word-for-word. The free taste that IS the sales pitch.
+ */
+router.get('/member/first-read', async (req, res) => {
+  if (!req.dbUser) return res.status(401).json({ error: 'Authentication required' });
+  try {
+    const userId = req.dbUser.id;
+    const state = await ensureMemberState(userId);
+    if (state?.first_read) return res.json({ read: state.first_read });
+
+    const responses = await getIntakeResponses(userId, 1);
+    const answers = {};
+    for (const r of responses) {
+      const q = getQuestionByField(r.question_field);
+      if (q && q.stage === 1 && r.answer) {
+        answers[r.question_field] = r.answer + (r.follow_up_answer ? ' ' + r.follow_up_answer : '');
+      }
+    }
+    if (!Object.keys(answers).length) return res.status(400).json({ error: 'Finish Stage 1 first' });
+
+    const { generateFirstRead } = require('../services/claude');
+    const read = await generateFirstRead(answers);
+    if (read) await updateMemberState(userId, { first_read: read });
+    res.json({ read });
+  } catch (e) {
+    console.error('First read error:', e.message);
+    sendOwnerAlert('first-read', 'First Read generation failed', `User ${req.dbUser.id}: ${e.message}`);
+    res.status(500).json({ error: 'Earl could not finish his read just now. Give it a moment and reload.' });
   }
 });
 
@@ -1403,6 +1451,10 @@ router.post('/member/interview/answer', async (req, res) => {
     if (!q) return res.status(400).json({ error: 'Unknown question' });
     if (answer == null || String(answer).trim() === '') {
       return res.status(400).json({ error: 'Answer required' });
+    }
+    // Stage 1 is free; the rest of the interview is membership.
+    if (round === 1 && q.stage > 1 && !isPaidMember(req.dbUser)) {
+      return res.status(402).json({ paywall: true });
     }
 
     if (isFollowUp) {
@@ -1455,6 +1507,15 @@ router.post('/member/interview/answer', async (req, res) => {
     const stageResult = await completeStageIfDone(userId, q.stage, answered);
     const nq = nextQuestion(answered);
     const memberState = await ensureMemberState(userId);
+
+    // Free funnel: Stage 1 just wrapped for an unpaid member → the First Read.
+    if (!isPaidMember(req.dbUser) && (!nq || nq.stage > 1)) {
+      return res.json({
+        paywall: true,
+        stageComplete: stageResult.completed ? stageResult.message : null,
+        stages: stageStatus(memberState)
+      });
+    }
 
     if (!nq) {
       return res.json({

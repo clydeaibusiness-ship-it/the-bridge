@@ -663,6 +663,41 @@ Write one thing — a single question or observation, tied to their real situati
 }
 
 /**
+ * Earl's First Read — the free taste at the end of Stage 1. One short,
+ * genuinely useful read on their business from the eight answers they just
+ * gave: what Earl sees, and the one thing he'd look at first. Written once,
+ * stored, shown before the paywall. It must be real value, not a teaser
+ * written like an ad — the read IS the sales pitch.
+ */
+async function generateFirstRead(answers) {
+  const soul = getSoulPrimer();
+  const lines = Object.entries(answers)
+    .filter(([, v]) => v && String(v).trim())
+    .map(([k, v]) => `- ${k.replace(/_/g, ' ')}: ${v}`)
+    .join('\n');
+
+  const prompt = `A business owner just finished the first stage of your interview. These are their answers:
+
+${lines}
+
+Give them your first read: four to six sentences, in your voice, speaking directly to them. Name what you actually see in their situation, one strength worth building on, and the single thing you would want to dig into first if you kept working together. Be specific to THEIR answers. No headers, no bullets, no greeting, no sign-off. Do not mention pricing, membership, or any system. Do not use em dashes. Never use the construction "this is not X, it's Y" in any form.`;
+
+  const messages = [
+    ...(soul ? [{ role: 'user', content: '.' }, { role: 'assistant', content: soul }] : []),
+    { role: 'user', content: prompt }
+  ];
+
+  const response = await client.messages.create({
+    model: 'claude-sonnet-4-6',
+    max_tokens: 350,
+    messages
+  });
+
+  const t = response.content.find(b => b.type === 'text');
+  return stripMarkdown(t ? t.text : '').trim();
+}
+
+/**
  * Interviewing Commander — generate one follow-up question (Haiku) in the
  * soul voice when an answer is judged vague. No strategy library, no case
  * studies — just the voice and the instruction.
@@ -964,6 +999,7 @@ module.exports = {
   generateBenchmark,
   generateGraduationComparison,
   generateChartFromInterview,
-  composeCheckIn
+  composeCheckIn,
+  generateFirstRead
 };
 
