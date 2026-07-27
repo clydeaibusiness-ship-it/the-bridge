@@ -38,9 +38,37 @@ function scrubTells(text) {
     .replace(/\s+–\s+/g, ', ') // spaced en dash → comma
     .replace(/—/g, ', ')
     .replace(/–/g, ', ')
+    .replace(/\bworth sitting with\b/gi, 'worth remembering') // grammar-safe last resort
     .replace(/[ \t]+\n/g, '\n')
     .trim();
 }
+
+/**
+ * Detect the AI tells Sasha called out: the negation-flip / antithesis
+ * construction (one- and two-sentence forms) and the "sit with it" family.
+ * When present, the issue is regenerated once with an emphatic reminder.
+ */
+function hasTells(text) {
+  if (!text) return false;
+  const t = String(text);
+  return (
+    // "not X, it's Y" / "isn't just X, it's Y" / "not just X, but Y" (one sentence)
+    /\b(not|isn'?t|aren'?t|wasn'?t|weren'?t|ain'?t)\s+(just\s+)?[a-z][^.,;:]{1,70}[,;]\s+(it'?s|it’s|that'?s|but\b|they'?re|you'?re)/i.test(t) ||
+    // "This is not X. This is Y." (two sentences)
+    /\b(this|that|it)\s+(is|was)\s+not\b[^.?!]*[.?!]+\s+(this|that|it)\s+(is|was)\b/i.test(t) ||
+    /\b(this|that|it)\s+(isn'?t|is\s?n'?t)\b[^.?!]*[.?!]+\s+(this|that|it)\s+(is|was|'?s)\b/i.test(t) ||
+    // "sit with it / worth sitting with / let that sit / let it land / breathe"
+    /\bsit(ting)?\s+with\b/i.test(t) ||
+    /\blet\s+(it|that|this)\s+(sit|land|breathe)\b/i.test(t)
+  );
+}
+
+const TELL_REMINDER =
+  'Your draft used a banned construction: either the negation-flip / antithesis ' +
+  '("not X, it\'s Y", or "This is not X. This is Y."), or a "sit with it / worth ' +
+  'sitting with / let that land" phrase. Rewrite the whole issue clean of BOTH. ' +
+  'Never define a thing by what it is not. Say what it is, once, and move on. ' +
+  'Return the exact output contract shape.';
 
 /**
  * Build the uncached "material for this issue" block.
@@ -108,28 +136,39 @@ async function generateIssue({ story, principle, resources }) {
     { type: 'text', text: material },
   ];
 
-  const messages = [
-    { role: 'user', content: '.' },
-    {
-      role: 'assistant',
-      content: [{ type: 'text', text: soul, cache_control: { type: 'ephemeral' } }],
-    },
-    {
-      role: 'user',
-      content:
-        'Write today\'s issue from the material in your context. Three sections, in order. Hold every rule. Return it exactly in the output contract shape.',
-    },
-  ];
+  async function runOnce(extraReminder) {
+    const messages = [
+      { role: 'user', content: '.' },
+      {
+        role: 'assistant',
+        content: [{ type: 'text', text: soul, cache_control: { type: 'ephemeral' } }],
+      },
+      {
+        role: 'user',
+        content:
+          'Write today\'s issue from the material in your context. Three sections, in order. Hold every rule. Return it exactly in the output contract shape.' +
+          (extraReminder ? '\n\n' + extraReminder : ''),
+      },
+    ];
+    const response = await client.messages.create({
+      model: MODEL,
+      max_tokens: 1200,
+      system: systemBlocks,
+      messages,
+    });
+    const raw = response.content.find((b) => b.type === 'text')?.text || '';
+    return { ...parseIssue(raw), raw };
+  }
 
-  const response = await client.messages.create({
-    model: MODEL,
-    max_tokens: 1600,
-    system: systemBlocks,
-    messages,
-  });
-
-  const raw = response.content.find((b) => b.type === 'text')?.text || '';
-  return { ...parseIssue(raw), raw };
+  let out = await runOnce();
+  // If a banned construction slipped in, regenerate once, clean.
+  if (hasTells([out.section1, out.section2, out.section3].join('\n'))) {
+    try {
+      const retry = await runOnce(TELL_REMINDER);
+      if (!hasTells([retry.section1, retry.section2, retry.section3].join('\n'))) out = retry;
+    } catch (e) { /* keep the first draft if the retry fails */ }
+  }
+  return out;
 }
 
 /**
