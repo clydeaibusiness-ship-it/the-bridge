@@ -20,6 +20,7 @@ const {
 } = require('./supabase');
 const { composeCheckIn, commanderChat, getSoulVersion } = require('./claude');
 const { sendPushToUser } = require('./push');
+const { mint: mintReplyToken } = require('./replytoken');
 const { chicagoNow } = require('./newsletter/jobs');
 
 const CADENCE_DAYS = 4;          // reach out after ~4 quiet days
@@ -109,6 +110,7 @@ async function checkInOne(userId) {
       title: 'Earl',
       body: message.length > 140 ? message.slice(0, 137) + '…' : message,
       url: '/app',
+      token: mintReplyToken(userId), // lets them reply from the notification later
     });
     pushed = delivered > 0;
   } catch (e) {
@@ -202,6 +204,7 @@ async function replyToCheckIn(userId, text) {
       title: 'Earl',
       body: reply.length > 140 ? reply.slice(0, 137) + '…' : reply,
       url: '/app',
+      token: mintReplyToken(userId), // so they can reply again from the notification
     });
   } catch (e) {
     console.error('[checkin] reply push failed for', userId, e.message);

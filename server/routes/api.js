@@ -967,21 +967,28 @@ router.post('/member/push/unsubscribe', async (req, res) => {
 
 /**
  * POST /api/member/checkin/reply
- * Body: { text }. A reply typed straight into a phone notification. Records it,
- * has Earl respond, and pushes his answer back. Auth rides the Clerk cookie
- * the service worker sends with the request.
+ * Body: { text, token? }. A reply typed straight into a phone notification.
+ * Auth: the signed token in the notification (works even when the login cookie
+ * has expired — a reply sent minutes after the push); falls back to the Clerk
+ * cookie when present. Records the reply, has Earl respond, pushes his answer.
  */
 router.post('/member/checkin/reply', async (req, res) => {
-  if (!req.dbUser) return res.status(401).json({ error: 'Authentication required' });
+  // Resolve the member from the notification token first, then the cookie.
+  let userId = req.dbUser && req.dbUser.id;
+  if (!userId && req.body && req.body.token) {
+    const { verify } = require('../services/replytoken');
+    userId = verify(req.body.token);
+  }
+  if (!userId) return res.status(401).json({ error: 'Authentication required' });
   try {
     const text = ((req.body && req.body.text) || '').trim();
     if (!text) return res.status(400).json({ error: 'text required' });
-    const result = await replyToCheckIn(req.dbUser.id, text);
+    const result = await replyToCheckIn(userId, text);
     res.json({ ok: true, reply: result.reply });
   } catch (e) {
     console.error('Check-in reply error:', e.message);
     // Surface, don't hide — a broken reply loop should reach the owner.
-    sendOwnerAlert('checkin-reply', 'Earl failed to answer a notification reply', `User ${req.dbUser.id}: ${e.message}`);
+    sendOwnerAlert('checkin-reply', 'Earl failed to answer a notification reply', `User ${userId}: ${e.message}`);
     res.status(500).json({ error: 'Could not send your reply' });
   }
 });
