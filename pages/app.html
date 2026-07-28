@@ -11,8 +11,9 @@
   gtag('config', 'AW-18281683834');
 </script>
   <meta charset="UTF-8">
-  <!-- Pinch-zoom stays available: plenty of members need bigger text. -->
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <!-- Native magnify stays off (it pans and breaks the app frame). Pinching
+       instead resizes the text and reflows it, handled in script below. -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Earl</title>
   <!-- Installable app (PWA) -->
   <link rel="manifest" href="/manifest.json">
@@ -119,6 +120,11 @@
     .switch.on .switch-knob { transform: translateX(18px); }
     .switch:focus-visible { outline: 2px solid #c8a96e; outline-offset: 2px; }
     .notif-note { font-size: 0.75rem; color: #7a7570; padding: 2px 0 13px; line-height: 1.45; border-bottom: 1px solid #e0d8c8; }
+    /* Text size control */
+    .font-ctl { display: flex; align-items: center; gap: 10px; flex: 0 0 auto; }
+    .font-btn { font-family: var(--font-ui); font-size: 0.875rem; font-weight: 600; color: #2a2520; background: #ece7dc; border: 1px solid #c8c0b0; border-radius: 6px; min-width: 34px; padding: 6px 8px; cursor: pointer; }
+    .font-btn:active { background: #ded6c6; }
+    .font-val { font-family: var(--font-data); font-size: 0.6875rem; color: #7a7570; min-width: 3.2em; text-align: center; font-variant-numeric: tabular-nums; }
     /* Change-answer modal */
     .modal-scrim { position: absolute; inset: 0; background: rgba(10,10,15,0.45); display: none; align-items: center; justify-content: center; z-index: 30; padding: 16px; }
     .modal-scrim.open { display: flex; }
@@ -223,6 +229,8 @@
     .shell.dark .switch { background: #3a3a48; }
     .shell.dark .switch.on { background: #c8a96e; }
     .shell.dark .notif-note { color: #888898; border-bottom-color: #2e2e3a; }
+    .shell.dark .font-btn { background: #252530; border-color: #2e2e3a; color: #c0b8b0; }
+    .shell.dark .font-val { color: #888898; }
     .shell.dark #app-version { color: #44444e; }
     .shell.dark .tl::before { background: #2e2e3a; }
     .shell.dark .tl-node { background: #18181c; border-color: #3a3a48; }
@@ -359,6 +367,15 @@
           <button class="settings-row" id="theme-toggle">Dark mode</button>
           <div class="notif-note" id="notif-note" style="display:none;"></div>
           <button class="settings-row" id="notif-test" style="display:none;">Send me a test message</button>
+          <div class="settings-row settings-toggle">
+            <span>Text size</span>
+            <span class="font-ctl">
+              <button class="font-btn" id="font-smaller" aria-label="Smaller text">A&#8722;</button>
+              <span class="font-val" id="font-size-label">100%</span>
+              <button class="font-btn" id="font-bigger" aria-label="Bigger text">A+</button>
+            </span>
+          </div>
+          <div class="notif-note" style="display:block;">You can also pinch with two fingers anywhere in the app.</div>
           <button class="settings-row" id="install-row" style="display:none;">Install Earl as an app</button>
           <div class="notif-note" id="install-note" style="display:none;"></div>
           <a class="settings-row" href="/subscribe">Manage subscription</a>
@@ -402,11 +419,49 @@
     sliderBtns.forEach(b => b.addEventListener('click', () => goTo(Number(b.dataset.i))));
     goTo(1); // start on Earl immediately
 
-    // Touch swipe between panels (ignored while swiping inside the message list horizontally)
+    // ---- Text size: pinch to resize, and the text reflows ----
+    // Native magnification is off, so pinching scales the ROOT font size
+    // instead. Every font in the app is set in rem while spacing is in px, so
+    // the words grow and re-wrap inside the same frame — no panning, nothing
+    // pushed off screen. Members who need big text get it and keep the app.
+    const FONT_MIN = 14, FONT_MAX = 30, FONT_DEFAULT = 16;
+    let fontPx = parseFloat(localStorage.getItem('earl-font')) || FONT_DEFAULT;
+    function applyFontSize(px, save) {
+      fontPx = Math.min(FONT_MAX, Math.max(FONT_MIN, px));
+      document.documentElement.style.fontSize = fontPx + 'px';
+      if (save) localStorage.setItem('earl-font', String(Math.round(fontPx)));
+      const label = document.getElementById('font-size-label');
+      if (label) label.textContent = Math.round((fontPx / FONT_DEFAULT) * 100) + '%';
+    }
+    applyFontSize(fontPx, false);
+
+    // Touch swipe between panels + two-finger pinch for text size.
     let sx = 0, sy = 0, swiping = false;
+    let pinchStart = 0, pinchFontStart = 0, pinching = false;
     const panels = document.querySelector('.panels');
-    panels.addEventListener('touchstart', e => { sx = e.touches[0].clientX; sy = e.touches[0].clientY; swiping = true; }, { passive: true });
+    const touchDist = (t) => Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY);
+
+    panels.addEventListener('touchstart', e => {
+      if (e.touches.length === 2) {
+        pinching = true; swiping = false;
+        pinchStart = touchDist(e.touches);
+        pinchFontStart = fontPx;
+        return;
+      }
+      sx = e.touches[0].clientX; sy = e.touches[0].clientY; swiping = true;
+    }, { passive: true });
+
+    panels.addEventListener('touchmove', e => {
+      if (!pinching || e.touches.length !== 2 || !pinchStart) return;
+      e.preventDefault(); // no rubber-banding while resizing
+      applyFontSize(pinchFontStart * (touchDist(e.touches) / pinchStart), false);
+    }, { passive: false });
+
     panels.addEventListener('touchend', e => {
+      if (pinching) {
+        if (e.touches.length === 0) { pinching = false; applyFontSize(fontPx, true); }
+        return;
+      }
       if (!swiping) return; swiping = false;
       const dx = e.changedTouches[0].clientX - sx;
       const dy = e.changedTouches[0].clientY - sy;
@@ -647,6 +702,11 @@
 
     // EarlPush loads from /js/push.js at the end of body; wait a tick.
     setTimeout(refreshNotifRow, 800);
+
+    // Text size buttons — same control as pinching, for anyone who won't find it.
+    applyFontSize(fontPx, false); // refresh the % label now the modal exists
+    document.getElementById('font-smaller').addEventListener('click', () => applyFontSize(fontPx - 2, true));
+    document.getElementById('font-bigger').addEventListener('click', () => applyFontSize(fontPx + 2, true));
 
     // ---- One Friend: the person who holds you to it ----
     // Lives at the top of the Progress page. The invite button is only there
