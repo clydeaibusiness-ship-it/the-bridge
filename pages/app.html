@@ -11,7 +11,8 @@
   gtag('config', 'AW-18281683834');
 </script>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <!-- Pinch-zoom stays available: plenty of members need bigger text. -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Earl</title>
   <!-- Installable app (PWA) -->
   <link rel="manifest" href="/manifest.json">
@@ -39,7 +40,7 @@
     .panel-scroll { flex: 1 1 auto; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: calc(env(safe-area-inset-top, 0px) + 70px) 16px 16px; }
     /* Earl */
     .msgs { flex: 1 1 auto; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: calc(env(safe-area-inset-top, 0px) + 70px) 14px 16px; display: flex; flex-direction: column; gap: 10px; }
-    .m { max-width: 82%; padding: 9px 12px; font-size: 0.875rem; line-height: 1.5; border-radius: 12px; word-wrap: break-word; }
+    .m { max-width: 82%; padding: 9px 12px; font-size: 0.875rem; line-height: 1.5; border-radius: 12px; word-wrap: break-word; overflow-wrap: anywhere; }
     .m-user { align-self: flex-end; background: #0a0a0f; color: #f0ebe0; border-bottom-right-radius: 3px; }
     .m-commander { align-self: flex-start; background: #ece7dc; color: #2a2520; border-bottom-left-radius: 3px; }
     .m-system { align-self: center; color: #9a7a4a; font-style: italic; font-size: 0.8125rem; text-align: center; }
@@ -82,6 +83,10 @@
     .pg-arc-bar { height: 5px; background: #e0d8c8; border-radius: 3px; overflow: hidden; }
     .pg-arc-fill { height: 100%; background: #c8a96e; border-radius: 3px; }
     .pg-arc-meta { font-size: 0.75rem; color: #7a7570; margin-top: 8px; line-height: 1.5; }
+    /* One Friend, at the top of Progress */
+    .pg-friend-btn { display: block; width: 100%; text-align: left; font-family: var(--font-ui); font-size: 0.8125rem; color: #2a2520; background: #ece7dc; border: 1px solid #d8d0c0; border-radius: 8px; padding: 11px 12px; cursor: pointer; margin-bottom: 4px; }
+    .pg-friend-btn:hover { border-color: #c8a96e; }
+    .pg-friend-has { font-size: 0.75rem; color: #7a7570; line-height: 1.5; padding: 2px 0 6px; }
     /* Quiet streak line above the conversation */
     .walk-line { text-align: center; font-family: var(--font-data); font-size: 0.5625rem; letter-spacing: 0.1em; text-transform: uppercase; color: #b0a898; padding: 2px 0 8px; }
     .chart-sec { margin-bottom: 18px; padding-bottom: 14px; border-bottom: 1px solid #d8d0c0; }
@@ -93,7 +98,7 @@
        scroll behind it and are visibly blurred through the glass (real
        glassmorphism needs content behind it — a flat strip just looks solid). */
     .slider { position: absolute; top: calc(env(safe-area-inset-top, 0px) + 12px); left: 0; right: 0; z-index: 20; padding: 0 16px; display: flex; align-items: center; gap: 12px; pointer-events: none; }
-    .slider-inner { position: relative; display: flex; flex: 1 1 auto; height: 44px; border-radius: 999px; pointer-events: auto;
+    .slider-inner { position: relative; display: flex; flex: 1 1 auto; min-height: 44px; border-radius: 999px; pointer-events: auto;
       background: transparent;
       -webkit-backdrop-filter: blur(20px) saturate(180%); backdrop-filter: blur(20px) saturate(180%);
       border: 1px solid rgba(255,255,255,0.65);
@@ -241,6 +246,8 @@
     .shell.dark .pg-arc-week { color: #c8a96e; }
     .shell.dark .pg-arc-bar { background: #2e2e3a; }
     .shell.dark .pg-arc-meta { color: #888898; }
+    .shell.dark .pg-friend-btn { background: #252530; border-color: #2e2e3a; color: #c0b8b0; }
+    .shell.dark .pg-friend-has { color: #888898; }
     .shell.dark .walk-line { color: #555560; }
     .shell.dark .pg-refl { color: #c0b8b0; border-bottom-color: #2e2e3a; }
     .shell.dark .pg-letter { background: #252530; color: #c0b8b0; }
@@ -354,19 +361,6 @@
           <button class="settings-row" id="notif-test" style="display:none;">Send me a test message</button>
           <button class="settings-row" id="install-row" style="display:none;">Install Earl as an app</button>
           <div class="notif-note" id="install-note" style="display:none;"></div>
-          <button class="settings-row" id="passkey-row" style="display:none;">Sign in with your fingerprint</button>
-          <div class="notif-note" id="passkey-note" style="display:none;"></div>
-          <button class="settings-row" id="friend-row">Invite someone who holds you to it</button>
-          <div class="tl-add-form" id="friend-form" style="padding:8px 0 14px;">
-            <div class="tl-add-hint">One person you trust. Once a month Earl writes them a short note about your progress, and nothing sends until you read and approve it.</div>
-            <input class="tl-add-input" id="friend-name" placeholder="Their name" style="min-height:0;height:auto;padding:9px 10px;margin-bottom:6px;">
-            <input class="tl-add-input" id="friend-email" type="email" placeholder="Their email" style="min-height:0;height:auto;padding:9px 10px;margin-bottom:6px;">
-            <input class="tl-add-input" id="friend-from" placeholder="Your name, as they know you" style="min-height:0;height:auto;padding:9px 10px;">
-            <div class="tl-add-actions">
-              <button class="tl-add-save" id="friend-save">Save</button>
-              <button class="tl-add-cancel" id="friend-cancel">Cancel</button>
-            </div>
-          </div>
           <a class="settings-row" href="/subscribe">Manage subscription</a>
           <a class="settings-row danger" href="/api/auth/logout">Sign out</a>
         </div>
@@ -654,73 +648,54 @@
     // EarlPush loads from /js/push.js at the end of body; wait a tick.
     setTimeout(refreshNotifRow, 800);
 
-    // ---- Fingerprint / Face ID sign-in (Clerk passkeys) ----
-    // Registers this device's biometric as a passkey, so signing back in after
-    // the 3-day expiry is a fingerprint instead of a password.
-    (async function () {
-      const row = document.getElementById('passkey-row');
-      const note = document.getElementById('passkey-note');
-      if (!row || !window.PublicKeyCredential) return;
-      try {
-        if (window.Clerk && !window.Clerk.loaded) await window.Clerk.load();
-        const user = window.Clerk && window.Clerk.user;
-        if (!user || typeof user.createPasskey !== 'function') return; // not enabled on this instance
-        const existing = (user.passkeys || []).length;
-        row.style.display = 'block';
-        row.textContent = existing ? 'Fingerprint sign-in is on' : 'Sign in with your fingerprint';
-        row.addEventListener('click', async () => {
-          if ((window.Clerk.user.passkeys || []).length) {
-            note.style.display = 'block';
-            note.textContent = 'Already set up on this device. Remove it from your phone settings if you want it gone.';
-            return;
-          }
-          row.textContent = 'Follow your phone’s prompt…';
-          try {
-            await window.Clerk.user.createPasskey();
-            row.textContent = 'Fingerprint sign-in is on';
-            note.style.display = 'block';
-            note.textContent = 'Next time you sign in, use your fingerprint or face instead of a password.';
-          } catch (e) {
-            row.textContent = 'Sign in with your fingerprint';
-            note.style.display = 'block';
-            // Say what actually went wrong — a silent failure helps nobody.
-            const raw = (e && (e.errors && e.errors[0] && (e.errors[0].longMessage || e.errors[0].message)) || e.message || '') + '';
-            note.textContent =
-              /not enabled|not supported|disabled/i.test(raw)
-                ? 'Fingerprint sign-in is not switched on for this account yet.'
-              : /already/i.test(raw)
-                ? 'This device is already set up.'
-              : /cancel|abort|NotAllowed/i.test(raw)
-                ? 'Cancelled. Tap again when you are ready.'
-                : (raw || 'That did not complete.');
-            console.error('passkey error:', raw, e);
-          }
-        });
-      } catch (e) { /* passkeys unavailable — leave the row hidden */ }
-    })();
-
     // ---- One Friend: the person who holds you to it ----
-    const friendRow = document.getElementById('friend-row');
-    const friendForm = document.getElementById('friend-form');
-    const fName = document.getElementById('friend-name');
-    const fEmail = document.getElementById('friend-email');
-    const fFrom = document.getElementById('friend-from');
-
+    // Lives at the top of the Progress page. The invite button is only there
+    // while nobody holds them to it; if that person opts out, it returns.
     async function loadFriend() {
       const { data } = await api('/api/member/friend');
       if (!data) return;
-      if (data.friend) {
-        friendRow.textContent = 'Accountability: ' + (data.friend.name || data.friend.email);
-        fName.value = data.friend.name || '';
-        fEmail.value = data.friend.email || '';
-        fFrom.value = data.friend.fromName || '';
-      } else {
-        friendRow.textContent = 'Invite someone who holds you to it';
-      }
+      renderFriendBlock(data.friend);
       renderPendingNote(data.pendingNote);
     }
 
-    // A note awaiting approval shows at the top of the conversation.
+    function renderFriendBlock(friend) {
+      const host = document.getElementById('pg-friend');
+      if (!host) return;
+      if (friend) {
+        host.innerHTML = '<div class="pg-friend-has">' + esc(friend.name || friend.email) +
+          ' is walking this with you. Earl writes them once a month, and nothing sends until you approve it.</div>';
+        return;
+      }
+      host.innerHTML =
+        '<button class="pg-friend-btn" id="pg-friend-open">Invite someone who holds you to it</button>' +
+        '<div class="tl-add-form" id="friend-form" style="padding:10px 0 4px;">' +
+          '<div class="tl-add-hint">One person you trust. Once a month Earl writes them a short note about your progress, and nothing sends until you read and approve it.</div>' +
+          '<input class="tl-add-input" id="friend-name" placeholder="Their name" style="min-height:0;height:auto;padding:9px 10px;margin-bottom:6px;">' +
+          '<input class="tl-add-input" id="friend-email" type="email" placeholder="Their email" style="min-height:0;height:auto;padding:9px 10px;margin-bottom:6px;">' +
+          '<input class="tl-add-input" id="friend-from" placeholder="Your name, as they know you" style="min-height:0;height:auto;padding:9px 10px;">' +
+          '<div class="tl-add-actions">' +
+            '<button class="tl-add-save" id="friend-save">Send the invitation</button>' +
+            '<button class="tl-add-cancel" id="friend-cancel">Cancel</button>' +
+          '</div>' +
+        '</div>';
+      const form = document.getElementById('friend-form');
+      document.getElementById('pg-friend-open').addEventListener('click', () => form.classList.toggle('open'));
+      document.getElementById('friend-cancel').addEventListener('click', () => form.classList.remove('open'));
+      document.getElementById('friend-save').addEventListener('click', async () => {
+        const btn = document.getElementById('friend-save');
+        const email = document.getElementById('friend-email').value.trim();
+        if (!email) return;
+        btn.disabled = true; btn.textContent = 'Sending…';
+        await api('/api/member/friend', 'POST', {
+          name: document.getElementById('friend-name').value.trim(),
+          email,
+          fromName: document.getElementById('friend-from').value.trim()
+        });
+        loadFriend();
+      });
+    }
+
+    // A note awaiting approval shows at the bottom of the conversation.
     function renderPendingNote(note) {
       const existing = document.getElementById('friend-note-card');
       if (existing) existing.remove();
@@ -745,21 +720,6 @@
       document.getElementById('fn-send').addEventListener('click', () => act('send'));
       document.getElementById('fn-skip').addEventListener('click', () => act('skip'));
     }
-
-    friendRow.addEventListener('click', () => {
-      friendForm.classList.toggle('open');
-    });
-    document.getElementById('friend-cancel').addEventListener('click', () => friendForm.classList.remove('open'));
-    document.getElementById('friend-save').addEventListener('click', async () => {
-      const btn = document.getElementById('friend-save');
-      btn.disabled = true; btn.textContent = 'Saving…';
-      await api('/api/member/friend', 'POST', {
-        name: fName.value.trim(), email: fEmail.value.trim(), fromName: fFrom.value.trim()
-      });
-      btn.disabled = false; btn.textContent = 'Save';
-      friendForm.classList.remove('open');
-      loadFriend();
-    });
     loadFriend();
 
     // ---- Newsletters, read inside the app ----
@@ -1031,6 +991,10 @@
         html += '</div>';
       }
 
+      // One Friend — only while nobody is holding them to it. Once invited the
+      // button disappears; if that person opts out, it comes back.
+      html += '<div id="pg-friend"></div>';
+
       // Graduation block
       const g = data.graduation || {};
       if (g.graduated) {
@@ -1260,7 +1224,7 @@
       sessionStorage.removeItem('earlPanel');
       goTo(isNaN(savedPanel) ? 1 : savedPanel);
       loadHistory();
-      loadProgress();
+      loadProgress().then(loadFriend);
       loadChart();
       fetch('/api/version').then(r => r.json()).then(d => {
         const el = document.getElementById('app-version');

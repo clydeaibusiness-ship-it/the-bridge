@@ -197,6 +197,38 @@ app.get('/certificate', requirePaidMember, requireInterviewStarted, (req, res) =
   res.sendFile(path.join(__dirname, '../pages/certificate.html'));
 });
 
+// The accountability friend opting out of the monthly note. Public, no login:
+// they hold a signed link from the email. Clearing the friend frees the member
+// to invite someone else.
+app.get('/friend/opt-out', async (req, res) => {
+  const page = (title, body) => `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>${title}</title></head>
+<body style="font-family:Georgia,serif;background:#f5f0e8;color:#1a1512;margin:0;">
+<div style="max-width:460px;margin:0 auto;padding:64px 24px;text-align:center;">
+<h2 style="font-size:22px;margin:0 0 12px;">${title}</h2>
+<p style="font-size:15px;line-height:1.7;color:#6a5c4a;margin:0;">${body}</p>
+</div></body></html>`;
+  try {
+    const { verifyFriendOptOut } = require('./services/replytoken');
+    const userId = verifyFriendOptOut(req.query.t);
+    if (!userId) {
+      return res.status(400).set('Content-Type', 'text/html')
+        .send(page('That link did not work', 'It may have been altered in transit. You can reply to the email instead and let them know.'));
+    }
+    const { updateMemberState } = require('./services/supabase');
+    await updateMemberState(userId, {
+      friend_name: null, friend_email: null, friend_from_name: null, friend_invited_at: null,
+    });
+    res.set('Content-Type', 'text/html').send(
+      page('Done. No more notes.', 'You will not hear from Earl again. Nothing was shared about you, and your friend has not been told, though they will see they can invite someone else.')
+    );
+  } catch (e) {
+    console.error('Friend opt-out error:', e.message);
+    res.status(500).set('Content-Type', 'text/html')
+      .send(page('Something went wrong', 'Try the link again in a moment.'));
+  }
+});
+
 app.get('/terms', (req, res) => {
   res.sendFile(path.join(__dirname, '../pages/terms.html'));
 });
