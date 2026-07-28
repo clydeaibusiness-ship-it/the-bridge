@@ -122,6 +122,17 @@
     .modal label { display: block; font-size: 0.8125rem; color: #3a3530; margin-bottom: 5px; }
     .modal select, .modal textarea { width: 100%; box-sizing: border-box; font-family: var(--font-ui); font-size: 0.9rem; background: #ece7dc; border: 1px solid #c8c0b0; border-radius: 8px; padding: 10px; margin-bottom: 12px; color: #0a0a0f; }
     .modal textarea { min-height: 90px; resize: vertical; }
+    /* Newsletter popup: nearly full height, with its own header and scroll */
+    .modal-tall { max-width: 420px; height: 88%; max-height: 88%; display: flex; flex-direction: column; padding: 0; overflow: hidden; }
+    .news-head { flex: 0 0 auto; display: flex; align-items: center; gap: 10px; padding: 14px 16px; border-bottom: 1px solid #d8d0c0; }
+    .news-title { flex: 1; font-family: var(--font-data); font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: #7a7570; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .news-back { background: none; border: none; cursor: pointer; font-family: var(--font-data); font-size: 0.625rem; letter-spacing: 0.06em; text-transform: uppercase; color: #8a6830; padding: 0; white-space: nowrap; }
+    .news-x { background: none; border: none; cursor: pointer; font-size: 1.3rem; line-height: 1; color: #7a7570; padding: 0 2px; }
+    .news-scroll { flex: 1 1 auto; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 8px 16px 18px; }
+    .news-item { display: block; width: 100%; text-align: left; background: none; border: none; cursor: pointer; padding: 13px 0; border-bottom: 1px solid #e0d8c8; font-family: var(--font-ui); color: #2a2520; }
+    .news-item:last-child { border-bottom: none; }
+    .news-item-date { font-family: var(--font-data); font-size: 0.5625rem; letter-spacing: 0.08em; text-transform: uppercase; color: #9a948a; margin-bottom: 3px; }
+    .news-item-subject { font-size: 0.875rem; line-height: 1.4; }
     .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 4px; }
     .modal-btn { font-family: var(--font-data); font-size: 0.625rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 9px 14px; border-radius: 6px; border: none; cursor: pointer; }
     .modal-btn.primary { background: #0a0a0f; color: #f0ebe0; }
@@ -242,6 +253,11 @@
     .shell.dark .modal select, .shell.dark .modal textarea { background: #18181c; border-color: #2e2e3a; color: #f0ebe0; }
     .shell.dark .modal-note { color: #888898; }
     .shell.dark .modal-scrim { background: rgba(0,0,0,0.6); }
+    .shell.dark .news-head { border-bottom-color: #2e2e3a; }
+    .shell.dark .news-title { color: #888898; }
+    .shell.dark .news-x { color: #888898; }
+    .shell.dark .news-item { color: #c0b8b0; border-bottom-color: #2e2e3a; }
+    .shell.dark .news-item-date { color: #555560; }
     .shell.dark .m-compress::before, .shell.dark .m-compress::after { background: #2e2e3a; }
     .shell.dark .m-compress span { color: #555560; }
     .shell.dark .iv-banner.red { background: #281818; color: #c08888; border-top-color: #381818; }
@@ -284,8 +300,7 @@
             <div class="sp-title">Navigation Chart</div>
             <div id="chart-body"><p class="sp-empty">Loading your chart&#8230;</p></div>
             <div class="settings">
-              <div class="sp-block-title" style="margin-bottom:4px;">From Earl</div>
-              <div id="news-list"><p class="sp-empty" style="padding:10px 0;">Loading&#8230;</p></div>
+              <button class="settings-row" id="news-open">Earl's newsletter</button>
             </div>
             <div id="app-version" style="font-family:var(--font-data);font-size:0.6rem;color:#b0a898;letter-spacing:0.08em;text-align:center;padding:16px 0 4px;"></div>
           </div>
@@ -359,11 +374,16 @@
       </div>
     </div>
 
-    <!-- A newsletter issue, read without leaving the app -->
+    <!-- Earl's newsletter, read without leaving the app. Two views inside one
+         popup: the list, and an issue opened full-height with a back button. -->
     <div class="modal-scrim" id="news-scrim">
-      <div class="modal">
-        <div id="news-body"></div>
-        <div class="modal-actions"><button class="modal-btn ghost" id="news-close">Close</button></div>
+      <div class="modal modal-tall">
+        <div class="news-head">
+          <button class="news-back" id="news-back" style="display:none;">&#8592; All issues</button>
+          <span class="news-title" id="news-head-title">Earl's newsletter</span>
+          <button class="news-x" id="news-close" aria-label="Close">&times;</button>
+        </div>
+        <div class="news-scroll" id="news-body"></div>
       </div>
     </div>
   </div>
@@ -663,7 +683,17 @@
           } catch (e) {
             row.textContent = 'Sign in with your fingerprint';
             note.style.display = 'block';
-            note.textContent = 'That did not complete. You can try again any time.';
+            // Say what actually went wrong — a silent failure helps nobody.
+            const raw = (e && (e.errors && e.errors[0] && (e.errors[0].longMessage || e.errors[0].message)) || e.message || '') + '';
+            note.textContent =
+              /not enabled|not supported|disabled/i.test(raw)
+                ? 'Fingerprint sign-in is not switched on for this account yet.'
+              : /already/i.test(raw)
+                ? 'This device is already set up.'
+              : /cancel|abort|NotAllowed/i.test(raw)
+                ? 'Cancelled. Tap again when you are ready.'
+                : (raw || 'That did not complete.');
+            console.error('passkey error:', raw, e);
           }
         });
       } catch (e) { /* passkeys unavailable — leave the row hidden */ }
@@ -738,36 +768,50 @@
     document.getElementById('news-close').addEventListener('click', () => newsScrim.classList.remove('open'));
     newsScrim.addEventListener('click', (e) => { if (e.target === newsScrim) newsScrim.classList.remove('open'); });
 
-    async function loadNewsletters() {
-      const list = document.getElementById('news-list');
-      if (!list) return;
+    const newsBack = document.getElementById('news-back');
+    const newsHeadTitle = document.getElementById('news-head-title');
+    newsBack.addEventListener('click', () => showIssueList());
+    document.getElementById('news-open').addEventListener('click', () => {
+      newsScrim.classList.add('open');
+      showIssueList();
+    });
+
+    // View one: the list of issues.
+    async function showIssueList() {
+      newsBack.style.display = 'none';
+      newsHeadTitle.textContent = "Earl's newsletter";
+      newsBody.innerHTML = '<p class="modal-note">Loading&#8230;</p>';
       const { ok, data } = await api('/api/newsletter/issues');
       const issues = (ok && data && data.issues) ? data.issues : [];
       if (!issues.length) {
-        list.innerHTML = '<p class="sp-empty" style="padding:10px 0;">Earl\'s letters will appear here as they go out.</p>';
+        newsBody.innerHTML = '<p class="modal-note">Earl\'s letters will appear here as they go out.</p>';
         return;
       }
-      list.innerHTML = issues.map(i =>
-        '<button class="settings-row" data-slug="' + esc(i.slug) + '" style="padding:12px 0;">' +
-          '<div style="font-size:0.5625rem;font-family:var(--font-data);letter-spacing:0.08em;text-transform:uppercase;color:#9a948a;margin-bottom:3px;">' + esc(fmtDate(i.sent_at)) + '</div>' +
-          '<div>' + esc(i.subject) + '</div>' +
+      newsBody.innerHTML = issues.map(i =>
+        '<button class="news-item" data-slug="' + esc(i.slug) + '">' +
+          '<div class="news-item-date">' + esc(fmtDate(i.sent_at)) + '</div>' +
+          '<div class="news-item-subject">' + esc(i.subject) + '</div>' +
         '</button>'
       ).join('');
-      list.querySelectorAll('[data-slug]').forEach(b =>
+      newsBody.querySelectorAll('[data-slug]').forEach(b =>
         b.addEventListener('click', () => openIssue(b.dataset.slug))
       );
+      newsBody.scrollTop = 0;
     }
 
+    // View two: one issue, filling the popup, with a way back.
     async function openIssue(slug) {
+      newsBack.style.display = 'block';
+      newsHeadTitle.textContent = '';
       newsBody.innerHTML = '<p class="modal-note">Loading&#8230;</p>';
-      newsScrim.classList.add('open');
+      newsBody.scrollTop = 0;
       const { ok, data } = await api('/api/newsletter/issues/' + encodeURIComponent(slug));
       if (!ok || !data || !data.issue) { newsBody.innerHTML = '<p class="modal-note">Could not open that one.</p>'; return; }
       const i = data.issue;
       const para = (t) => String(t || '').split(/\n{2,}/).map(p => p.trim()).filter(Boolean)
         .map(p => '<p style="font-size:0.875rem;line-height:1.65;margin:0 0 10px;">' + esc(p).replace(/\n/g, '<br>') + '</p>').join('');
       const lab = (t) => '<div style="font-family:var(--font-data);font-size:0.5625rem;letter-spacing:0.12em;text-transform:uppercase;color:#8a6830;margin:16px 0 6px;">' + t + '</div>';
-      let html = '<div style="max-height:60vh;overflow-y:auto;">';
+      let html = '<div>';
       html += '<div style="font-size:0.5625rem;font-family:var(--font-data);letter-spacing:0.08em;text-transform:uppercase;color:#9a948a;">' + esc(fmtDate(i.sent_at)) + '</div>';
       html += '<h3 style="margin:4px 0 2px;">' + esc(i.subject) + '</h3>';
       html += lab('One thing from the world') + para(i.section1);
@@ -785,8 +829,8 @@
       }
       html += '</div>';
       newsBody.innerHTML = html;
+      newsBody.scrollTop = 0;
     }
-    loadNewsletters();
 
     // ---- Install as an app (PWA) ----
     if ('serviceWorker' in navigator) {
