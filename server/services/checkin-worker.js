@@ -22,8 +22,9 @@ const {
   getLatestCommanderSessionId, saveCommanderMessage, recordEarlCheckIn,
   getCommanderMessagesForApi, ensureMemberState, updateMemberState,
   recordMemberActivity, chicagoDateStr, getClient,
+  usersWithFriends, getLastFriendNote, saveFriendNote,
 } = require('./supabase');
-const { composeCheckIn, commanderChat, getSoulVersion } = require('./claude');
+const { composeCheckIn, commanderChat, getSoulVersion, composeFriendNote } = require('./claude');
 const { sendPushToUser } = require('./push');
 const { mint: mintReplyToken } = require('./replytoken');
 const { chicagoNow } = require('./newsletter/jobs');
@@ -227,8 +228,48 @@ async function ownerDigest() {
   }
 }
 
+/**
+ * One Friend — on the 1st of each month, draft the progress note for every
+ * member who invited someone. The member approves it in the app before it
+ * sends; drafting never emails anyone.
+ */
+async function draftFriendNotes() {
+  const friends = await usersWithFriends();
+  for (const f of friends) {
+    try {
+      const last = await getLastFriendNote(f.user_id);
+      if (last && daysSince(last.created_at) < 25) continue; // one per month
+      const situation = await buildSituation(f.user_id);
+      const note = await composeFriendNote({
+        fromName: f.friend_from_name, friendName: f.friend_name, situation,
+      });
+      if (!note) continue;
+      await saveFriendNote(f.user_id, note);
+      try {
+        await sendPushToUser(f.user_id, {
+          title: 'Earl',
+          body: `Your monthly note to ${f.friend_name || 'your friend'} is ready. Read it over and send it when it feels right.`,
+          url: '/app',
+          token: mintReplyToken(f.user_id),
+        });
+      } catch (e) { /* push optional */ }
+      console.log('[friend] note drafted for', f.user_id);
+    } catch (e) {
+      console.error('[friend] draft failed for', f.user_id, e.message);
+    }
+  }
+}
+
 function tick() {
   const c = chicagoNow();
+  // 1st of the month, 9am CT: draft the friend notes.
+  if (c.day === 1 && c.hour === 9) {
+    const fkey = `friend-${c.dateStr}`;
+    if (!fired.has(fkey)) {
+      fired.add(fkey);
+      draftFriendNotes().catch((e) => console.error('[friend] error:', e.message));
+    }
+  }
   // Monday 8am CT: the owner digest (before the day's pulses).
   if (c.weekday === 1 && c.hour === 8) {
     const dkey = `digest-${c.dateStr}`;

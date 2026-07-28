@@ -108,7 +108,26 @@
       html += '</div>';
       html += '<div class="ct-actions"><button class="ct-btn" onclick="window.print()">Download / Print</button>' +
         '<a class="ct-btn ct-btn-ghost" href="/dashboard">Back to Earl</a></div>';
+
+      // The alumni door: the next six months, and the drumbeat between.
+      html += '<div class="ct-cert" style="margin-top:22px;">' +
+        '<div class="ct-kicker">What comes next</div>' +
+        '<div class="ct-lead" style="margin-top:10px;">You climbed the mountain you named six months ago. There is another one, and you are not the same person standing at the bottom of it. When you are ready to name it, Earl will be here, and he remembers everything.</div>' +
+        '<div class="ct-actions" style="margin-top:16px;">' +
+        '<a class="ct-btn" href="/subscribe">Start the next six months</a>' +
+        '<button class="ct-btn ct-btn-ghost" id="ct-news">Send me Earl\'s newsletter</button>' +
+        '</div></div>';
+
       root.innerHTML = html;
+
+      const news = document.getElementById('ct-news');
+      if (news) news.addEventListener('click', async () => {
+        news.disabled = true; news.textContent = 'Signing you up…';
+        try {
+          const r = await fetch('/api/member/newsletter-optin', { method: 'POST' });
+          news.textContent = r.ok ? 'You are on the list' : 'Could not sign you up';
+        } catch (e) { news.textContent = 'Could not sign you up'; }
+      });
     })();
   </script>
   <script src="/js/nav.js"></script>

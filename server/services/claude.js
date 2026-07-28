@@ -698,6 +698,36 @@ Give them your first read: four to six sentences, in your voice, speaking direct
 }
 
 /**
+ * One Friend — the monthly one-paragraph progress note Earl drafts for the
+ * member's accountability person. The member reads and approves it before it
+ * is ever sent. Progress only: no revenue numbers, no financial details, no
+ * struggles the member hasn't publicly owned. Warm, specific, short.
+ */
+async function composeFriendNote({ fromName, friendName, situation }) {
+  const soul = getSoulPrimer();
+  const prompt = `You are writing a short monthly note to ${friendName || 'a trusted friend'}, the person ${fromName || 'your member'} chose to keep them honest. It will be read by the friend, not the member. The member will approve it before it sends.
+
+Here is where the member actually is:
+${situation}
+
+Write ONE warm paragraph, three to five sentences, in your voice. Say what they have been working on and what has genuinely moved this month, specifically. Never mention money amounts, revenue, or anything that would embarrass them. No greeting line, no sign-off, no headers. Do not use em dashes. Never use the construction "this is not X, it's Y" in any form.`;
+
+  const messages = [
+    ...(soul ? [{ role: 'user', content: '.' }, { role: 'assistant', content: soul }] : []),
+    { role: 'user', content: prompt }
+  ];
+
+  const response = await client.messages.create({
+    model: 'claude-sonnet-4-6',
+    max_tokens: 300,
+    messages
+  });
+
+  const t = response.content.find(b => b.type === 'text');
+  return stripMarkdown(t ? t.text : '').trim();
+}
+
+/**
  * Interviewing Commander — generate one follow-up question (Haiku) in the
  * soul voice when an answer is judged vague. No strategy library, no case
  * studies — just the voice and the instruction.
@@ -1000,6 +1030,7 @@ module.exports = {
   generateGraduationComparison,
   generateChartFromInterview,
   composeCheckIn,
-  generateFirstRead
+  generateFirstRead,
+  composeFriendNote
 };
 

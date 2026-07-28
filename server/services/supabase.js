@@ -778,6 +778,73 @@ async function recordMemberActivity(userId) {
   return { current_streak: streak, longest_streak: longest };
 }
 
+// ---- One Friend: accountability notes ----
+
+async function saveFriendNote(userId, note) {
+  const db = getClient();
+  if (!db) return null;
+  const { data, error } = await db
+    .from('friend_notes')
+    .insert({ user_id: userId, note, status: 'draft' })
+    .select()
+    .single();
+  if (error) { console.error('saveFriendNote error:', error.message); return null; }
+  return data;
+}
+
+async function getDraftFriendNote(userId) {
+  const db = getClient();
+  if (!db) return null;
+  const { data } = await db
+    .from('friend_notes')
+    .select('*')
+    .eq('user_id', userId)
+    .eq('status', 'draft')
+    .order('created_at', { ascending: false })
+    .limit(1);
+  return (data && data.length > 0) ? data[0] : null;
+}
+
+async function getLastFriendNote(userId) {
+  const db = getClient();
+  if (!db) return null;
+  const { data } = await db
+    .from('friend_notes')
+    .select('created_at, status')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
+    .limit(1);
+  return (data && data.length > 0) ? data[0] : null;
+}
+
+async function setFriendNoteStatus(noteId, userId, status) {
+  const db = getClient();
+  if (!db) return null;
+  const patch = { status };
+  if (status === 'sent') patch.sent_at = new Date().toISOString();
+  const { data, error } = await db
+    .from('friend_notes')
+    .update(patch)
+    .eq('id', noteId)
+    .eq('user_id', userId)
+    .select()
+    .single();
+  if (error) { console.error('setFriendNoteStatus error:', error.message); return null; }
+  return data;
+}
+
+/** Members who have invited a friend (for the monthly note draft). */
+async function usersWithFriends() {
+  const db = getClient();
+  if (!db) return [];
+  const { data, error } = await db
+    .from('member_state')
+    .select('user_id, friend_name, friend_email, friend_from_name')
+    .not('friend_email', 'is', null);
+  if (error) { console.error('usersWithFriends error:', error.message); return []; }
+  return data || [];
+}
+
 /**
  * "What Earl knows" — a count of everything the member has entrusted to Earl:
  * memory facts, interview answers, goals, action steps, and session notes.
@@ -1262,6 +1329,7 @@ module.exports = {
   saveActionStep, upsertSessionDebrief,
   ensureMemberState, updateMemberState,
   recordMemberActivity, countEarlKnowledge, chicagoDateStr,
+  saveFriendNote, getDraftFriendNote, getLastFriendNote, setFriendNoteStatus, usersWithFriends,
   getActionSteps, getActionStep, updateActionStepText, updateActionStepStatus, updateActionStepFollowUp,
   getBenchmarks, addBenchmarkRating, getBenchmarkRatingHistory,
   recordEarlCheckIn, getLastEarlCheckIn, usersWithBenchmarks, getLastCommanderMessageAt,

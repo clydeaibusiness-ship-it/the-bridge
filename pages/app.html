@@ -294,6 +294,17 @@
               <button class="settings-row" id="notif-test" style="display:none;">Send me a test message</button>
               <button class="settings-row" id="install-row" style="display:none;">Install Earl as an app</button>
               <div class="notif-note" id="install-note" style="display:none;"></div>
+              <button class="settings-row" id="friend-row">Invite someone who holds you to it</button>
+              <div class="tl-add-form" id="friend-form" style="padding:8px 0 14px;">
+                <div class="tl-add-hint">One person you trust. Once a month Earl writes them a short note about your progress, and nothing sends until you read and approve it.</div>
+                <input class="tl-add-input" id="friend-name" placeholder="Their name" style="min-height:0;height:auto;padding:9px 10px;margin-bottom:6px;">
+                <input class="tl-add-input" id="friend-email" type="email" placeholder="Their email" style="min-height:0;height:auto;padding:9px 10px;margin-bottom:6px;">
+                <input class="tl-add-input" id="friend-from" placeholder="Your name, as they know you" style="min-height:0;height:auto;padding:9px 10px;">
+                <div class="tl-add-actions">
+                  <button class="tl-add-save" id="friend-save">Save</button>
+                  <button class="tl-add-cancel" id="friend-cancel">Cancel</button>
+                </div>
+              </div>
               <a class="settings-row" href="/subscribe">Manage subscription</a>
               <a class="settings-row danger" href="/api/auth/logout">Sign out</a>
             </div>
@@ -609,6 +620,69 @@
 
     // EarlPush loads from /js/push.js at the end of body; wait a tick.
     setTimeout(refreshNotifRow, 800);
+
+    // ---- One Friend: the person who holds you to it ----
+    const friendRow = document.getElementById('friend-row');
+    const friendForm = document.getElementById('friend-form');
+    const fName = document.getElementById('friend-name');
+    const fEmail = document.getElementById('friend-email');
+    const fFrom = document.getElementById('friend-from');
+
+    async function loadFriend() {
+      const { data } = await api('/api/member/friend');
+      if (!data) return;
+      if (data.friend) {
+        friendRow.textContent = 'Accountability: ' + (data.friend.name || data.friend.email);
+        fName.value = data.friend.name || '';
+        fEmail.value = data.friend.email || '';
+        fFrom.value = data.friend.fromName || '';
+      } else {
+        friendRow.textContent = 'Invite someone who holds you to it';
+      }
+      renderPendingNote(data.pendingNote);
+    }
+
+    // A note awaiting approval shows at the top of the conversation.
+    function renderPendingNote(note) {
+      const existing = document.getElementById('friend-note-card');
+      if (existing) existing.remove();
+      if (!note) return;
+      const card = document.createElement('div');
+      card.id = 'friend-note-card';
+      card.className = 'm m-commander';
+      card.style.cssText = 'border:1px solid #c8a96e;background:#f5efe2;';
+      card.innerHTML =
+        '<div style="font-family:var(--font-data);font-size:0.5625rem;letter-spacing:0.1em;text-transform:uppercase;color:#8a6830;margin-bottom:8px;">Your monthly note — send it?</div>' +
+        '<div style="white-space:pre-wrap;margin-bottom:10px;">' + esc(note.note) + '</div>' +
+        '<div style="display:flex;gap:8px;"><button class="tl-add-save" id="fn-send">Send it</button>' +
+        '<button class="tl-add-cancel" id="fn-skip">Not this month</button></div>';
+      msgs.appendChild(card);
+      msgs.scrollTop = msgs.scrollHeight;
+      const act = async (action) => {
+        card.querySelectorAll('button').forEach(b => b.disabled = true);
+        await api('/api/member/friend/note', 'POST', { noteId: note.id, action });
+        card.remove();
+        if (action === 'send') addMsg('Sent. They will hear from Earl about how you are doing.', 'system');
+      };
+      document.getElementById('fn-send').addEventListener('click', () => act('send'));
+      document.getElementById('fn-skip').addEventListener('click', () => act('skip'));
+    }
+
+    friendRow.addEventListener('click', () => {
+      friendForm.classList.toggle('open');
+    });
+    document.getElementById('friend-cancel').addEventListener('click', () => friendForm.classList.remove('open'));
+    document.getElementById('friend-save').addEventListener('click', async () => {
+      const btn = document.getElementById('friend-save');
+      btn.disabled = true; btn.textContent = 'Saving…';
+      await api('/api/member/friend', 'POST', {
+        name: fName.value.trim(), email: fEmail.value.trim(), fromName: fFrom.value.trim()
+      });
+      btn.disabled = false; btn.textContent = 'Save';
+      friendForm.classList.remove('open');
+      loadFriend();
+    });
+    loadFriend();
 
     // ---- Install as an app (PWA) ----
     if ('serviceWorker' in navigator) {
