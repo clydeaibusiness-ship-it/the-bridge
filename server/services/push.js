@@ -49,6 +49,22 @@ async function saveSubscription(userId, subscription, userAgent = null) {
   if (error) throw new Error('saveSubscription: ' + error.message);
 }
 
+/**
+ * How many devices this member can actually receive a push on. Checked
+ * BEFORE composing a pulse: writing a message for someone with no device
+ * costs an API call and reaches nobody.
+ */
+async function countSubscriptions(userId) {
+  const db = getClient();
+  if (!db) return 0;
+  const { count, error } = await db
+    .from('push_subscriptions')
+    .select('id', { count: 'exact', head: true })
+    .eq('user_id', userId);
+  if (error) { console.error('countSubscriptions error:', error.message); return 0; }
+  return count || 0;
+}
+
 /** Remove a subscription by endpoint (member disabled, or push service said gone). */
 async function removeSubscription(endpoint) {
   const db = getClient();
@@ -99,4 +115,4 @@ async function sendPushToUser(userId, payload) {
   return delivered;
 }
 
-module.exports = { getVapidPublicKey, saveSubscription, removeSubscription, sendPushToUser };
+module.exports = { getVapidPublicKey, saveSubscription, removeSubscription, sendPushToUser, countSubscriptions };
