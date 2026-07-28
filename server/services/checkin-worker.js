@@ -25,7 +25,7 @@ const {
   usersWithFriends, getLastFriendNote, saveFriendNote,
 } = require('./supabase');
 const { composeCheckIn, commanderChat, getSoulVersion, composeFriendNote } = require('./claude');
-const { sendPushToUser } = require('./push');
+const { sendPushToUser, countSubscriptions } = require('./push');
 const { mint: mintReplyToken } = require('./replytoken');
 const { chicagoNow } = require('./newsletter/jobs');
 
@@ -156,6 +156,9 @@ async function run() {
       if (lastCheckIn?.created_at && chicagoDateStr(new Date(lastCheckIn.created_at)) === today) continue;
       // Member already talked to Earl today → they're engaged; don't add noise.
       if (lastMsg && chicagoDateStr(new Date(lastMsg)) === today) continue;
+      // No device to reach. The pulse exists to arrive on their phone; composing
+      // one for a member who cannot receive it spends an API call on nobody.
+      if ((await countSubscriptions(userId)) === 0) continue;
 
       const { created } = await checkInOne(userId);
       if (created) {
@@ -239,6 +242,9 @@ async function draftFriendNotes() {
     try {
       const last = await getLastFriendNote(f.user_id);
       if (last && daysSince(last.created_at) < 25) continue; // one per month
+      // Same rule as the pulse: a draft they can't be told about is spend for
+      // nobody. They approve it from the notification.
+      if ((await countSubscriptions(f.user_id)) === 0) continue;
       const situation = await buildSituation(f.user_id);
       const note = await composeFriendNote({
         fromName: f.friend_from_name, friendName: f.friend_name, situation,
