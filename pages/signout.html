@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Earl</title>
+  <link rel="stylesheet" href="/css/global.css">
+  <meta name="theme-color" content="#f5f0e8">
+  <style>
+    html, body { background: #f0ebe0 !important; color: #08080f !important; margin: 0; height: 100%; }
+    .so { height: 100vh; height: 100dvh; display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-data); font-size: 0.6875rem; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(8,8,15,0.4); }
+  </style>
+  <script>var _isProd = location.hostname === 'captainsbridge.io' || location.hostname === 'www.captainsbridge.io'; window.__clerk_publishable_key = _isProd ? 'pk_live_Y2xlcmsuY2FwdGFpbnNicmlkZ2UuaW8k' : 'pk_test_b2JsaWdpbmctcHl0aG9uLTUuY2xlcmsuYWNjb3VudHMuZGV2JA';</script>
+  <script src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@5/dist/clerk.browser.js"></script>
+</head>
+<body>
+  <div class="so">Signing out&#8230;</div>
+  <script>
+    (async function () {
+      try { localStorage.removeItem('earlLastOpen'); } catch (e) {}
+      try {
+        if (window.Clerk) {
+          if (!window.Clerk.loaded) await window.Clerk.load();
+          await window.Clerk.signOut({ redirectUrl: '/signin' });
+          return;
+        }
+      } catch (e) { /* fall through */ }
+      window.location.replace('/signin');
+    })();
+  </script>
+</body>
+</html>

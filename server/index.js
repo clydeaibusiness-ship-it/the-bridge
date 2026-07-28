@@ -110,7 +110,10 @@ async function requirePaidMember(req, res, next) {
         console.error('Post-payment Stripe session lookup failed:', e.message);
       }
     }
-    return res.redirect('/login?action=subscribe');
+    // Signed out. App routes get the app's own sign-in screen; everything else
+    // keeps the marketing-side subscribe flow.
+    const isAppRoute = req.path === '/app' || req.path === '/dashboard';
+    return res.redirect(isAppRoute ? '/signin' : '/login?action=subscribe');
   }
 
   const tier = req.dbUser.membership_tier;
@@ -151,6 +154,17 @@ app.get('/login', (req, res) => {
 
 app.get('/subscribe', (req, res) => {
   res.sendFile(path.join(__dirname, '../pages/subscribe.html'));
+});
+
+// The app's own sign-in screen. Signing out of the installed app lands here
+// rather than on the marketing site.
+app.get('/signin', (req, res) => {
+  res.sendFile(path.join(__dirname, '../pages/signin.html'));
+});
+
+// Clears the Clerk session client-side, then lands on /signin.
+app.get('/signout', (req, res) => {
+  res.sendFile(path.join(__dirname, '../pages/signout.html'));
 });
 
 // Post-purchase install-the-app offer. Paid members only, but NOT behind the
