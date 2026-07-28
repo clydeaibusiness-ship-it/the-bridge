@@ -37,6 +37,47 @@ function escapeHtml(s) {
   return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
+// ---- In-app reader (published issues as JSON, for the app's newsletter tab) ----
+
+/** GET /api/newsletter/issues — the published list, newest first. */
+router.get('/issues', async (req, res) => {
+  try {
+    const issues = await store.listPublishedIssues({ limit: 40 });
+    res.json({
+      issues: issues.map((i) => ({
+        slug: i.slug,
+        subject: i.subject || (i.story && i.story.headline) || 'Issue',
+        sent_at: i.sent_at,
+      })),
+    });
+  } catch (e) {
+    console.error('Newsletter issues error:', e.message);
+    res.json({ issues: [] });
+  }
+});
+
+/** GET /api/newsletter/issues/:slug — one issue, for the in-app popup. */
+router.get('/issues/:slug', async (req, res) => {
+  try {
+    const issue = await store.getPublishedIssueBySlug(req.params.slug);
+    if (!issue) return res.status(404).json({ error: 'Not found' });
+    res.json({
+      issue: {
+        subject: issue.subject || '',
+        sent_at: issue.sent_at,
+        section1: issue.section1 || '',
+        section2: issue.section2 || '',
+        section3: issue.section3 || '',
+        resource: issue.resource || null,
+        sources: Array.isArray(issue.sources) ? issue.sources : [],
+      },
+    });
+  } catch (e) {
+    console.error('Newsletter issue error:', e.message);
+    res.status(500).json({ error: 'Could not load' });
+  }
+});
+
 // ---- Admin (owner only) ----
 
 // Window state + current run in one call. The page polls this every 60s.

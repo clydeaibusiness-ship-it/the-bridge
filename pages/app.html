@@ -132,9 +132,9 @@
     .iv-banner { flex: 0 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 9px 14px; font-family: var(--font-ui); font-size: 0.78rem; line-height: 1.4; }
     .iv-banner a { font-weight: 600; text-decoration: underline; white-space: nowrap; }
     .iv-banner-dismiss { background: none; border: none; cursor: pointer; font-size: 1rem; line-height: 1; opacity: 0.5; padding: 0; flex-shrink: 0; }
-    .iv-banner.red { background: #fde8e8; color: #7a2020; border-bottom: 1px solid #f0c0c0; }
+    .iv-banner.red { background: #fde8e8; color: #7a2020; border-top: 1px solid #f0c0c0; }
     .iv-banner.red a { color: #7a2020; }
-    .iv-banner.yellow { background: #fdf6e0; color: #7a5e10; border-bottom: 1px solid #f0d880; }
+    .iv-banner.yellow { background: #fdf6e0; color: #7a5e10; border-top: 1px solid #f0d880; }
     .iv-banner.yellow a { color: #7a5e10; }
     /* Cascading timeline */
     .tl { position: relative; padding-left: 22px; padding-bottom: 8px; }
@@ -244,8 +244,8 @@
     .shell.dark .modal-scrim { background: rgba(0,0,0,0.6); }
     .shell.dark .m-compress::before, .shell.dark .m-compress::after { background: #2e2e3a; }
     .shell.dark .m-compress span { color: #555560; }
-    .shell.dark .iv-banner.red { background: #281818; color: #c08888; border-bottom-color: #381818; }
-    .shell.dark .iv-banner.yellow { background: #242010; color: #b89050; border-bottom-color: #342e10; }
+    .shell.dark .iv-banner.red { background: #281818; color: #c08888; border-top-color: #381818; }
+    .shell.dark .iv-banner.yellow { background: #242010; color: #b89050; border-top-color: #342e10; }
     .shell.dark .tl-step-edit-form { background: transparent; }
   </style>
   <!-- Microsoft Clarity -->
@@ -284,29 +284,8 @@
             <div class="sp-title">Navigation Chart</div>
             <div id="chart-body"><p class="sp-empty">Loading your chart&#8230;</p></div>
             <div class="settings">
-              <button class="settings-row" data-change-answer>Change an interview answer</button>
-              <button class="settings-row" id="theme-toggle">Dark mode</button>
-              <div class="settings-row settings-toggle" id="notif-row" style="display:none;">
-                <span>Allow Earl to send you messages</span>
-                <span class="switch" id="notif-switch" role="switch" aria-checked="false" tabindex="0"><span class="switch-knob"></span></span>
-              </div>
-              <div class="notif-note" id="notif-note" style="display:none;"></div>
-              <button class="settings-row" id="notif-test" style="display:none;">Send me a test message</button>
-              <button class="settings-row" id="install-row" style="display:none;">Install Earl as an app</button>
-              <div class="notif-note" id="install-note" style="display:none;"></div>
-              <button class="settings-row" id="friend-row">Invite someone who holds you to it</button>
-              <div class="tl-add-form" id="friend-form" style="padding:8px 0 14px;">
-                <div class="tl-add-hint">One person you trust. Once a month Earl writes them a short note about your progress, and nothing sends until you read and approve it.</div>
-                <input class="tl-add-input" id="friend-name" placeholder="Their name" style="min-height:0;height:auto;padding:9px 10px;margin-bottom:6px;">
-                <input class="tl-add-input" id="friend-email" type="email" placeholder="Their email" style="min-height:0;height:auto;padding:9px 10px;margin-bottom:6px;">
-                <input class="tl-add-input" id="friend-from" placeholder="Your name, as they know you" style="min-height:0;height:auto;padding:9px 10px;">
-                <div class="tl-add-actions">
-                  <button class="tl-add-save" id="friend-save">Save</button>
-                  <button class="tl-add-cancel" id="friend-cancel">Cancel</button>
-                </div>
-              </div>
-              <a class="settings-row" href="/subscribe">Manage subscription</a>
-              <a class="settings-row danger" href="/api/auth/logout">Sign out</a>
+              <div class="sp-block-title" style="margin-bottom:4px;">From Earl</div>
+              <div id="news-list"><p class="sp-empty" style="padding:10px 0;">Loading&#8230;</p></div>
             </div>
             <div id="app-version" style="font-family:var(--font-data);font-size:0.6rem;color:#b0a898;letter-spacing:0.08em;text-align:center;padding:16px 0 4px;"></div>
           </div>
@@ -314,7 +293,6 @@
 
         <!-- CENTER: Earl -->
         <section class="panel">
-          <div id="interview-banner" style="display:none;"></div>
           <div class="msgs" id="msgs"></div>
           <div class="prompts" id="prompts">
             <button class="pill" data-p="What are you, exactly — and why would I talk to you instead of just figuring things out myself?">What are you, exactly?</button>
@@ -322,6 +300,7 @@
             <button class="pill" data-p="What do you know about my business so far, and what do you still need to know?">What do you know about me so far?</button>
             <button class="pill" data-p="What's the most important thing you'd want to know about me and my business right now?">What do you want to know first?</button>
           </div>
+          <div id="interview-banner" style="display:none;"></div>
           <div class="composer">
             <div class="composer-row">
               <textarea id="composer-input" name="message" rows="1" placeholder="Ask Earl&#8230;" autocomplete="off" autocapitalize="sentences" autocorrect="on" spellcheck="true" enterkeyhint="send" data-lpignore="true" data-1p-ignore data-form-type="other"></textarea>
@@ -345,6 +324,46 @@
       <div class="modal">
         <h3>Change an interview answer</h3>
         <div id="ca-body"></div>
+      </div>
+    </div>
+
+    <!-- Settings, opened by tapping Earl's picture -->
+    <div class="modal-scrim" id="set-scrim">
+      <div class="modal">
+        <h3>Settings</h3>
+        <div class="settings" style="margin-top:0;border-top:none;">
+          <button class="settings-row" id="refresh-row">Refresh the app</button>
+          <button class="settings-row" data-change-answer>Change an interview answer</button>
+          <button class="settings-row" id="theme-toggle">Dark mode</button>
+          <div class="notif-note" id="notif-note" style="display:none;"></div>
+          <button class="settings-row" id="notif-test" style="display:none;">Send me a test message</button>
+          <button class="settings-row" id="install-row" style="display:none;">Install Earl as an app</button>
+          <div class="notif-note" id="install-note" style="display:none;"></div>
+          <button class="settings-row" id="passkey-row" style="display:none;">Sign in with your fingerprint</button>
+          <div class="notif-note" id="passkey-note" style="display:none;"></div>
+          <button class="settings-row" id="friend-row">Invite someone who holds you to it</button>
+          <div class="tl-add-form" id="friend-form" style="padding:8px 0 14px;">
+            <div class="tl-add-hint">One person you trust. Once a month Earl writes them a short note about your progress, and nothing sends until you read and approve it.</div>
+            <input class="tl-add-input" id="friend-name" placeholder="Their name" style="min-height:0;height:auto;padding:9px 10px;margin-bottom:6px;">
+            <input class="tl-add-input" id="friend-email" type="email" placeholder="Their email" style="min-height:0;height:auto;padding:9px 10px;margin-bottom:6px;">
+            <input class="tl-add-input" id="friend-from" placeholder="Your name, as they know you" style="min-height:0;height:auto;padding:9px 10px;">
+            <div class="tl-add-actions">
+              <button class="tl-add-save" id="friend-save">Save</button>
+              <button class="tl-add-cancel" id="friend-cancel">Cancel</button>
+            </div>
+          </div>
+          <a class="settings-row" href="/subscribe">Manage subscription</a>
+          <a class="settings-row danger" href="/api/auth/logout">Sign out</a>
+        </div>
+        <div class="modal-actions"><button class="modal-btn ghost" id="set-close">Close</button></div>
+      </div>
+    </div>
+
+    <!-- A newsletter issue, read without leaving the app -->
+    <div class="modal-scrim" id="news-scrim">
+      <div class="modal">
+        <div id="news-body"></div>
+        <div class="modal-actions"><button class="modal-btn ghost" id="news-close">Close</button></div>
       </div>
     </div>
   </div>
@@ -540,6 +559,28 @@
     applyTheme(localStorage.getItem('earl-theme') === 'dark');
     themeBtn.addEventListener('click', () => applyTheme(!shell.classList.contains('dark')));
 
+    // ---- Session freshness: sign out after 3 quiet days ----
+    // A member who has not opened Earl in three days gets signed out, so a lost
+    // or borrowed phone does not leave the conversation standing open.
+    (function () {
+      const KEY = 'earlLastOpen';
+      const MAX_QUIET_MS = 3 * 24 * 60 * 60 * 1000;
+      try {
+        const last = parseInt(localStorage.getItem(KEY) || '0', 10);
+        if (last && Date.now() - last > MAX_QUIET_MS) {
+          localStorage.removeItem(KEY);
+          window.location.replace('/signout?expired=1');
+          return;
+        }
+        localStorage.setItem(KEY, String(Date.now()));
+        // Keep it current while the app is open and on every return to it.
+        document.addEventListener('visibilitychange', () => {
+          if (!document.hidden) localStorage.setItem(KEY, String(Date.now()));
+        });
+        setInterval(() => localStorage.setItem(KEY, String(Date.now())), 5 * 60 * 1000);
+      } catch (e) { /* storage blocked — skip the freshness check */ }
+    })();
+
     // Pin the shell to the real visible height. In an installed PWA the height
     // can be wrong on first paint, leaving the text box below the fold until a
     // resize corrects it — which is exactly why it appeared only after leaving
@@ -551,61 +592,33 @@
     ['resize', 'orientationchange', 'pageshow'].forEach(ev => window.addEventListener(ev, setAppHeight));
     document.addEventListener('visibilitychange', () => { if (!document.hidden) setAppHeight(); });
 
-    // ---- Notifications from Earl (toggle switch) ----
-    const notifRow = document.getElementById('notif-row');
-    const notifSwitch = document.getElementById('notif-switch');
+    // ---- Notifications from Earl ----
+    // No in-app on/off switch by design: permission is granted once through
+    // the phone, and turning it off happens in the phone's own settings. All
+    // that lives here is a status note and the test message.
     const notifNote = document.getElementById('notif-note');
     const notifTestBtn = document.getElementById('notif-test');
 
-    function setSwitch(on) {
-      notifSwitch.classList.toggle('on', on);
-      notifSwitch.setAttribute('aria-checked', on ? 'true' : 'false');
-    }
-
     async function refreshNotifRow() {
       if (!window.EarlPush) return;
-      notifRow.style.display = 'flex';
       const status = await window.EarlPush.status();
-      notifSwitch.classList.remove('disabled');
       notifNote.style.display = 'none';
       notifTestBtn.style.display = 'none';
 
       if (status === 'on') {
-        setSwitch(true);
         notifTestBtn.style.display = 'block';
-      } else if (status === 'off') {
-        setSwitch(false);
       } else {
-        // blocked / needs-install / unsupported — off, dimmed, with a plain note.
-        setSwitch(false);
-        notifSwitch.classList.add('disabled');
         notifNote.style.display = 'block';
         notifNote.textContent =
           status === 'blocked'
-            ? 'Notifications are turned off for this site. Tap the icon just left of the web address, open Permissions, allow Notifications, then reload this page.'
+            ? 'Earl cannot reach your phone. Notifications are turned off for this site in your phone settings.'
           : status === 'needs-install'
-            ? 'On iPhone, add Earl to your home screen first (Share → Add to Home Screen), then open it from that icon and turn this on.'
-            : 'This browser doesn’t support notifications.';
+            ? 'On iPhone, add Earl to your home screen first (Share → Add to Home Screen), then open it from that icon.'
+          : status === 'unsupported'
+            ? 'This browser does not support notifications.'
+            : 'Earl is not set up to reach your phone yet.';
       }
     }
-
-    async function toggleNotif() {
-      if (!window.EarlPush) return;
-      const status = await window.EarlPush.status();
-      if (status === 'blocked' || status === 'needs-install' || status === 'unsupported') {
-        return refreshNotifRow(); // just (re)show the note; nothing to toggle
-      }
-      try {
-        if (status === 'on') await window.EarlPush.disable();
-        else await window.EarlPush.enable();
-      } catch (e) { console.error('notif toggle failed:', e.message); }
-      await refreshNotifRow();
-    }
-
-    notifSwitch.addEventListener('click', toggleNotif);
-    notifSwitch.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleNotif(); }
-    });
 
     notifTestBtn.addEventListener('click', async () => {
       notifTestBtn.textContent = 'Sending…';
@@ -620,6 +633,41 @@
 
     // EarlPush loads from /js/push.js at the end of body; wait a tick.
     setTimeout(refreshNotifRow, 800);
+
+    // ---- Fingerprint / Face ID sign-in (Clerk passkeys) ----
+    // Registers this device's biometric as a passkey, so signing back in after
+    // the 3-day expiry is a fingerprint instead of a password.
+    (async function () {
+      const row = document.getElementById('passkey-row');
+      const note = document.getElementById('passkey-note');
+      if (!row || !window.PublicKeyCredential) return;
+      try {
+        if (window.Clerk && !window.Clerk.loaded) await window.Clerk.load();
+        const user = window.Clerk && window.Clerk.user;
+        if (!user || typeof user.createPasskey !== 'function') return; // not enabled on this instance
+        const existing = (user.passkeys || []).length;
+        row.style.display = 'block';
+        row.textContent = existing ? 'Fingerprint sign-in is on' : 'Sign in with your fingerprint';
+        row.addEventListener('click', async () => {
+          if ((window.Clerk.user.passkeys || []).length) {
+            note.style.display = 'block';
+            note.textContent = 'Already set up on this device. Remove it from your phone settings if you want it gone.';
+            return;
+          }
+          row.textContent = 'Follow your phone’s prompt…';
+          try {
+            await window.Clerk.user.createPasskey();
+            row.textContent = 'Fingerprint sign-in is on';
+            note.style.display = 'block';
+            note.textContent = 'Next time you sign in, use your fingerprint or face instead of a password.';
+          } catch (e) {
+            row.textContent = 'Sign in with your fingerprint';
+            note.style.display = 'block';
+            note.textContent = 'That did not complete. You can try again any time.';
+          }
+        });
+      } catch (e) { /* passkeys unavailable — leave the row hidden */ }
+    })();
 
     // ---- One Friend: the person who holds you to it ----
     const friendRow = document.getElementById('friend-row');
@@ -684,6 +732,62 @@
     });
     loadFriend();
 
+    // ---- Newsletters, read inside the app ----
+    const newsScrim = document.getElementById('news-scrim');
+    const newsBody = document.getElementById('news-body');
+    document.getElementById('news-close').addEventListener('click', () => newsScrim.classList.remove('open'));
+    newsScrim.addEventListener('click', (e) => { if (e.target === newsScrim) newsScrim.classList.remove('open'); });
+
+    async function loadNewsletters() {
+      const list = document.getElementById('news-list');
+      if (!list) return;
+      const { ok, data } = await api('/api/newsletter/issues');
+      const issues = (ok && data && data.issues) ? data.issues : [];
+      if (!issues.length) {
+        list.innerHTML = '<p class="sp-empty" style="padding:10px 0;">Earl\'s letters will appear here as they go out.</p>';
+        return;
+      }
+      list.innerHTML = issues.map(i =>
+        '<button class="settings-row" data-slug="' + esc(i.slug) + '" style="padding:12px 0;">' +
+          '<div style="font-size:0.5625rem;font-family:var(--font-data);letter-spacing:0.08em;text-transform:uppercase;color:#9a948a;margin-bottom:3px;">' + esc(fmtDate(i.sent_at)) + '</div>' +
+          '<div>' + esc(i.subject) + '</div>' +
+        '</button>'
+      ).join('');
+      list.querySelectorAll('[data-slug]').forEach(b =>
+        b.addEventListener('click', () => openIssue(b.dataset.slug))
+      );
+    }
+
+    async function openIssue(slug) {
+      newsBody.innerHTML = '<p class="modal-note">Loading&#8230;</p>';
+      newsScrim.classList.add('open');
+      const { ok, data } = await api('/api/newsletter/issues/' + encodeURIComponent(slug));
+      if (!ok || !data || !data.issue) { newsBody.innerHTML = '<p class="modal-note">Could not open that one.</p>'; return; }
+      const i = data.issue;
+      const para = (t) => String(t || '').split(/\n{2,}/).map(p => p.trim()).filter(Boolean)
+        .map(p => '<p style="font-size:0.875rem;line-height:1.65;margin:0 0 10px;">' + esc(p).replace(/\n/g, '<br>') + '</p>').join('');
+      const lab = (t) => '<div style="font-family:var(--font-data);font-size:0.5625rem;letter-spacing:0.12em;text-transform:uppercase;color:#8a6830;margin:16px 0 6px;">' + t + '</div>';
+      let html = '<div style="max-height:60vh;overflow-y:auto;">';
+      html += '<div style="font-size:0.5625rem;font-family:var(--font-data);letter-spacing:0.08em;text-transform:uppercase;color:#9a948a;">' + esc(fmtDate(i.sent_at)) + '</div>';
+      html += '<h3 style="margin:4px 0 2px;">' + esc(i.subject) + '</h3>';
+      html += lab('One thing from the world') + para(i.section1);
+      html += lab('One thing learned the hard way') + para(i.section2);
+      if (i.resource && i.resource.url) {
+        html += '<p style="font-size:0.8125rem;margin:0 0 10px;"><a href="' + esc(i.resource.url) + '" target="_blank" rel="noopener" style="color:#8a6830;">' + esc(i.resource.person || 'Learn more') + (i.resource.title ? ' — ' + esc(i.resource.title) : '') + '</a></p>';
+      }
+      html += lab('One question to carry');
+      html += '<p style="font-size:0.9375rem;line-height:1.55;font-style:italic;">' + esc(i.section3) + '</p>';
+      if (i.sources && i.sources.length) {
+        const seen = new Set();
+        const links = i.sources.filter(s => s.domain && !seen.has(s.domain) && seen.add(s.domain))
+          .map(s => '<a href="' + esc(s.url) + '" target="_blank" rel="noopener" style="color:#9a948a;">' + esc(s.domain) + '</a>').join(' &middot; ');
+        if (links) html += '<details style="margin-top:14px;"><summary style="font-family:var(--font-data);font-size:0.5625rem;letter-spacing:0.12em;text-transform:uppercase;color:#9a948a;cursor:pointer;">Sources</summary><p style="font-size:0.6875rem;margin:8px 0 0;line-height:1.7;">' + links + '</p></details>';
+      }
+      html += '</div>';
+      newsBody.innerHTML = html;
+    }
+    loadNewsletters();
+
     // ---- Install as an app (PWA) ----
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('/sw.js').catch(() => {});
@@ -725,7 +829,12 @@
       if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
     });
     prompts.querySelectorAll('.pill').forEach(p => p.addEventListener('click', () => { input.value = p.dataset.p; send(); }));
-    document.getElementById('reload-pfp').addEventListener('click', () => {
+    // Earl's picture opens Settings.
+    const setScrim = document.getElementById('set-scrim');
+    document.getElementById('reload-pfp').addEventListener('click', () => setScrim.classList.add('open'));
+    document.getElementById('set-close').addEventListener('click', () => setScrim.classList.remove('open'));
+    setScrim.addEventListener('click', (e) => { if (e.target === setScrim) setScrim.classList.remove('open'); });
+    document.getElementById('refresh-row').addEventListener('click', () => {
       sessionStorage.setItem('earlPanel', current);
       window.location.reload();
     });

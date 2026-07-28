@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Earl</title>
+  <link rel="stylesheet" href="/css/global.css">
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#f5f0e8">
+  <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Earl">
+  <style>
+    html, body { background: #f0ebe0 !important; color: #08080f !important; margin: 0; min-height: 100%; }
+    .si-page { min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 2rem 1.5rem calc(2rem + env(safe-area-inset-bottom, 0px)); box-sizing: border-box; text-align: center; }
+    .si-pfp { width: 104px; height: 104px; border-radius: 50%; object-fit: cover; object-position: center top;
+      border: 2px solid #c8a96e; box-shadow: 0 6px 24px rgba(8,8,15,0.18); margin-bottom: 1.4rem; }
+    .si-name { font-family: var(--font-data); font-size: 0.7rem; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: #08080f; margin-bottom: 0.5rem; }
+    .si-line { font-family: var(--font-ui); font-size: 0.95rem; line-height: 1.6; color: rgba(8,8,15,0.6); max-width: 22rem; margin: 0 0 2rem; }
+    .si-btn { width: 100%; max-width: 20rem; font-family: var(--font-data); font-size: 0.75rem; letter-spacing: 0.1em; text-transform: uppercase;
+      color: #1a1512; background: #c8a96e; border: none; border-radius: 4px; padding: 1rem; cursor: pointer; margin-bottom: 0.7rem; text-decoration: none; display: block; }
+    .si-btn:hover { background: #a8884c; }
+    .si-btn.ghost { background: transparent; color: #08080f; border: 1px solid rgba(8,8,15,0.25); }
+    .si-btn.ghost:hover { border-color: #08080f; background: transparent; }
+  </style>
+</head>
+<body>
+  <div class="si-page">
+    <img class="si-pfp" src="/assets/earl.png" alt="Earl">
+    <div class="si-name">Earl</div>
+    <p class="si-line" id="si-line">Sign back in and pick up where you left off.</p>
+    <a class="si-btn" id="si-in" href="#">Sign in</a>
+    <a class="si-btn ghost" id="si-up" href="#">I'm new here</a>
+  </div>
+
+  <script>
+    var isProd = location.hostname === 'captainsbridge.io' || location.hostname === 'www.captainsbridge.io';
+    var base = isProd ? 'https://accounts.captainsbridge.io' : 'https://obliging-python-5.accounts.dev';
+    var back = encodeURIComponent(location.origin + '/app');
+
+    document.getElementById('si-in').href = base + '/sign-in?redirect_url=' + back;
+    // New people start with the free interview, not a paywall.
+    document.getElementById('si-up').href = base + '/sign-up?redirect_url=' + encodeURIComponent(location.origin + '/intake');
+
+    // Clear the local session marker so the app doesn't think we're still in.
+    try { localStorage.removeItem('earlLastOpen'); } catch (e) {}
+    if (new URLSearchParams(location.search).get('expired') === '1') {
+      document.getElementById('si-line').textContent = 'It has been a few days. Sign back in to pick up with Earl.';
+    }
+  </script>
+</body>
+</html>

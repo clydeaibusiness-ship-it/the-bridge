@@ -60,10 +60,12 @@ router.post('/webhook', async (req, res) => {
 
 /**
  * GET /api/auth/logout
- * Clear session and redirect
+ * End the session and land on the app's own sign-in screen (not the marketing
+ * site). Clerk's session cookie is cleared client-side by /signout, which then
+ * lands here — this route is the destination and the fallback.
  */
 router.get('/logout', (req, res) => {
-  res.redirect('/');
+  res.redirect('/signout');
 });
 
 module.exports = router;
