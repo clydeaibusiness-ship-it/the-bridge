@@ -15,6 +15,7 @@ const {
   upsertSessionDebrief,
   ensureMemberState, updateMemberState,
   recordMemberActivity, countEarlKnowledge,
+  getDraftFriendNote, setFriendNoteStatus,
   getActionSteps, getActionStep, updateActionStepStatus,
   getBenchmarks, getBenchmarkRatingHistory,
   completeBenchmarkGoal,
@@ -1006,6 +1007,120 @@ router.post('/member/checkin/reply', async (req, res) => {
     // Surface, don't hide — a broken reply loop should reach the owner.
     sendOwnerAlert('checkin-reply', 'Earl failed to answer a notification reply', `User ${userId}: ${e.message}`);
     res.status(500).json({ error: 'Could not send your reply' });
+  }
+});
+
+/**
+ * GET /api/member/friend
+ * The member's accountability person + any note awaiting their approval.
+ */
+router.get('/member/friend', async (req, res) => {
+  if (!req.dbUser) return res.status(401).json({ error: 'Authentication required' });
+  try {
+    const state = await ensureMemberState(req.dbUser.id);
+    const draft = await getDraftFriendNote(req.dbUser.id);
+    res.json({
+      friend: state?.friend_email
+        ? { name: state.friend_name, email: state.friend_email, fromName: state.friend_from_name }
+        : null,
+      pendingNote: draft ? { id: draft.id, note: draft.note, created_at: draft.created_at } : null,
+    });
+  } catch (e) {
+    console.error('Friend fetch error:', e.message);
+    res.status(500).json({ error: 'Could not load' });
+  }
+});
+
+/**
+ * POST /api/member/friend
+ * Body: { name, email, fromName }. Invite (or replace) the one person who
+ * holds you to it. Pass empty email to remove.
+ */
+router.post('/member/friend', async (req, res) => {
+  if (!req.dbUser) return res.status(401).json({ error: 'Authentication required' });
+  try {
+    const { name, email, fromName } = req.body || {};
+    await ensureMemberState(req.dbUser.id);
+    if (!email || !String(email).trim()) {
+      await updateMemberState(req.dbUser.id, { friend_name: null, friend_email: null, friend_from_name: null, friend_invited_at: null });
+      return res.json({ ok: true, removed: true });
+    }
+    const clean = String(email).trim().toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(clean)) return res.status(400).json({ error: 'That email does not look right' });
+    await updateMemberState(req.dbUser.id, {
+      friend_name: String(name || '').trim() || null,
+      friend_email: clean,
+      friend_from_name: String(fromName || '').trim() || null,
+      friend_invited_at: new Date().toISOString(),
+    });
+    res.json({ ok: true });
+  } catch (e) {
+    console.error('Friend save error:', e.message);
+    res.status(500).json({ error: 'Could not save' });
+  }
+});
+
+/**
+ * POST /api/member/friend/note
+ * Body: { noteId, action: 'send' | 'skip' }. Approving sends the note to the
+ * friend by email; skipping quietly drops it. Nothing sends without this.
+ */
+router.post('/member/friend/note', async (req, res) => {
+  if (!req.dbUser) return res.status(401).json({ error: 'Authentication required' });
+  try {
+    const { noteId, action } = req.body || {};
+    if (!noteId || !['send', 'skip'].includes(action)) return res.status(400).json({ error: 'noteId and action required' });
+
+    if (action === 'skip') {
+      await setFriendNoteStatus(noteId, req.dbUser.id, 'skipped');
+      return res.json({ ok: true });
+    }
+
+    const state = await ensureMemberState(req.dbUser.id);
+    if (!state?.friend_email) return res.status(400).json({ error: 'No friend on file' });
+    const draft = await getDraftFriendNote(req.dbUser.id);
+    if (!draft || draft.id !== noteId) return res.status(404).json({ error: 'Note not found' });
+
+    const from = state.friend_from_name || 'your friend';
+    const html = `<div style="font-family:Georgia,serif;max-width:520px;margin:0 auto;padding:26px;background:#f5f0e8;color:#1a1512;">
+      <p style="margin:0 0 14px;font-size:15px;line-height:1.7;">${String(draft.note).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/\n/g,'<br>')}</p>
+      <p style="margin:0 0 4px;font-size:13px;color:#6a5c4a;">— Earl, walking alongside ${from.replace(/&/g,'&amp;').replace(/</g,'&lt;')}</p>
+      <p style="margin:16px 0 0;font-size:11px;color:#9a948a;">${from.replace(/&/g,'&amp;').replace(/</g,'&lt;')} chose you as the person who keeps them honest, and approved this note before it was sent. Curious what Earl is? <a href="https://captainsbridge.io" style="color:#8a6830;">captainsbridge.io</a></p>
+    </div>`;
+    const r = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        from: 'Earl <earl@captainsbridge.io>',
+        to: [state.friend_email],
+        subject: `A note about ${from}`,
+        html,
+      }),
+    });
+    if (!r.ok) throw new Error('Resend ' + r.status);
+    await setFriendNoteStatus(noteId, req.dbUser.id, 'sent');
+    res.json({ ok: true, sent: true });
+  } catch (e) {
+    console.error('Friend note error:', e.message);
+    sendOwnerAlert('friend-note', 'Friend note send failed', `User ${req.dbUser.id}: ${e.message}`);
+    res.status(500).json({ error: 'Could not send the note' });
+  }
+});
+
+/**
+ * POST /api/member/newsletter-optin
+ * Alumni drumbeat: subscribe the signed-in member's own email to the
+ * newsletter (used on the certificate page).
+ */
+router.post('/member/newsletter-optin', async (req, res) => {
+  if (!req.dbUser) return res.status(401).json({ error: 'Authentication required' });
+  try {
+    const store = require('../services/newsletter/store');
+    await store.addSubscriber({ email: req.dbUser.email, userId: req.dbUser.id, source: 'alumni' });
+    res.json({ ok: true });
+  } catch (e) {
+    console.error('Newsletter opt-in error:', e.message);
+    res.status(500).json({ error: 'Could not subscribe' });
   }
 });
 
