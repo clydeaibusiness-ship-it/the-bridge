@@ -48,4 +48,32 @@ function verify(token) {
   return userId;
 }
 
-module.exports = { mint, verify };
+/**
+ * A separate token for the accountability friend to opt out of the monthly
+ * note. Signed with a different purpose string so it can never be replayed
+ * against the reply endpoint (which posts chat messages as the member).
+ */
+function signOptOut(body) {
+  return crypto.createHmac('sha256', SECRET).update('friend-optout:' + body).digest('base64url');
+}
+
+function mintFriendOptOut(userId) {
+  const body = `${userId}.0`; // no expiry: the link must work whenever they read it
+  return `${body}.${signOptOut(body)}`;
+}
+
+function verifyFriendOptOut(token) {
+  if (!token || typeof token !== 'string') return null;
+  const parts = token.split('.');
+  if (parts.length !== 3) return null;
+  const [userId, exp, sig] = parts;
+  const expected = signOptOut(`${userId}.${exp}`);
+  try {
+    if (!crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(expected))) return null;
+  } catch (e) {
+    return null;
+  }
+  return userId;
+}
+
+module.exports = { mint, verify, mintFriendOptOut, verifyFriendOptOut };

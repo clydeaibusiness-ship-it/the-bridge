@@ -1082,10 +1082,13 @@ router.post('/member/friend/note', async (req, res) => {
     if (!draft || draft.id !== noteId) return res.status(404).json({ error: 'Note not found' });
 
     const from = state.friend_from_name || 'your friend';
+    const { mintFriendOptOut } = require('../services/replytoken');
+    const base = process.env.PUBLIC_BASE_URL || 'https://captainsbridge.io';
+    const optOut = `${base}/friend/opt-out?t=${encodeURIComponent(mintFriendOptOut(req.dbUser.id))}`;
     const html = `<div style="font-family:Georgia,serif;max-width:520px;margin:0 auto;padding:26px;background:#f5f0e8;color:#1a1512;">
       <p style="margin:0 0 14px;font-size:15px;line-height:1.7;">${String(draft.note).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/\n/g,'<br>')}</p>
       <p style="margin:0 0 4px;font-size:13px;color:#6a5c4a;">— Earl, walking alongside ${from.replace(/&/g,'&amp;').replace(/</g,'&lt;')}</p>
-      <p style="margin:16px 0 0;font-size:11px;color:#9a948a;">${from.replace(/&/g,'&amp;').replace(/</g,'&lt;')} chose you as the person who keeps them honest, and approved this note before it was sent. Curious what Earl is? <a href="https://captainsbridge.io" style="color:#8a6830;">captainsbridge.io</a></p>
+      <p style="margin:16px 0 0;font-size:11px;color:#9a948a;">${from.replace(/&/g,'&amp;').replace(/</g,'&lt;')} chose you as the person who keeps them honest, and approved this note before it was sent. Curious what Earl is? <a href="https://captainsbridge.io" style="color:#8a6830;">captainsbridge.io</a><br><a href="${optOut}" style="color:#9a948a;">I would rather not receive these</a></p>
     </div>`;
     const r = await fetch('https://api.resend.com/emails', {
       method: 'POST',
