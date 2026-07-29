@@ -365,8 +365,11 @@
           <button class="settings-row" id="refresh-row">Refresh the app</button>
           <button class="settings-row" data-change-answer>Change an interview answer</button>
           <button class="settings-row" id="theme-toggle">Dark mode</button>
-          <div class="notif-note" id="notif-note" style="display:none;"></div>
-          <button class="settings-row" id="notif-test" style="display:none;">Send me a test message</button>
+          <button class="settings-row" id="notif-row">Manage notifications</button>
+          <div class="tl-add-form" id="notif-panel" style="padding:10px 0 4px;">
+            <div class="tl-add-hint" id="notif-status"></div>
+            <div class="tl-add-actions" id="notif-actions"></div>
+          </div>
           <div class="settings-row settings-toggle">
             <span>Text size</span>
             <span class="font-ctl">
@@ -662,43 +665,91 @@
     document.addEventListener('visibilitychange', () => { if (!document.hidden) setAppHeight(); });
 
     // ---- Notifications from Earl ----
-    // No in-app on/off switch by design: permission is granted once through
-    // the phone, and turning it off happens in the phone's own settings. All
-    // that lives here is a status note and the test message.
-    const notifNote = document.getElementById('notif-note');
-    const notifTestBtn = document.getElementById('notif-test');
+    // One permanent row that always opens to a live status and the single
+    // action that fits it. There is deliberately no off switch here: turning
+    // them off belongs to the phone's own settings. But turning them ON must
+    // always be reachable, or a member who dismissed the first-run prompt has
+    // no way in at all.
+    const notifRow = document.getElementById('notif-row');
+    const notifPanel = document.getElementById('notif-panel');
+    const notifStatus = document.getElementById('notif-status');
+    const notifActions = document.getElementById('notif-actions');
+
+    notifRow.addEventListener('click', () => {
+      notifPanel.classList.toggle('open');
+      if (notifPanel.classList.contains('open')) refreshNotifRow();
+    });
+
+    function notifButton(label, handler) {
+      const b = document.createElement('button');
+      b.className = 'tl-add-save';
+      b.textContent = label;
+      b.addEventListener('click', () => handler(b));
+      notifActions.appendChild(b);
+      return b;
+    }
 
     async function refreshNotifRow() {
       if (!window.EarlPush) return;
       const status = await window.EarlPush.status();
-      notifNote.style.display = 'none';
-      notifTestBtn.style.display = 'none';
+      notifActions.innerHTML = '';
 
       if (status === 'on') {
-        notifTestBtn.style.display = 'block';
-      } else {
-        notifNote.style.display = 'block';
-        notifNote.textContent =
-          status === 'blocked'
-            ? 'Earl cannot reach your phone. Notifications are turned off for this site in your phone settings.'
-          : status === 'needs-install'
-            ? 'On iPhone, add Earl to your home screen first (Share → Add to Home Screen), then open it from that icon.'
-          : status === 'unsupported'
-            ? 'This browser does not support notifications.'
-            : 'Earl is not set up to reach your phone yet.';
+        notifRow.textContent = 'Manage notifications';
+        notifStatus.textContent = 'Earl can reach this phone. To stop them, use your phone’s notification settings for Earl.';
+        notifButton('Send me a test message', async (b) => {
+          b.disabled = true; b.textContent = 'Sending…';
+          try {
+            const r = await window.EarlPush.sendTest();
+            b.textContent = r && r.pushed ? 'Sent — check your phone' : 'Saved to your chat';
+          } catch (e) { b.textContent = 'Could not send'; }
+          setTimeout(() => { b.disabled = false; b.textContent = 'Send me a test message'; }, 4000);
+        });
+        return;
       }
-    }
 
-    notifTestBtn.addEventListener('click', async () => {
-      notifTestBtn.textContent = 'Sending…';
-      try {
-        const r = await window.EarlPush.sendTest();
-        notifTestBtn.textContent = r && r.pushed ? 'Sent — check your phone' : 'Saved to your chat (no device got the push)';
-      } catch (e) {
-        notifTestBtn.textContent = 'Could not send — try again';
+      if (status === 'blocked') {
+        notifRow.textContent = 'Notifications are blocked';
+        notifStatus.textContent = 'Your phone is blocking Earl. Open your browser settings for this site, allow Notifications, then come back and reload.';
+        notifButton('I have allowed it — check again', async (b) => {
+          b.disabled = true; b.textContent = 'Checking…';
+          try { await window.EarlPush.enable(); } catch (e) {}
+          refreshNotifRow();
+        });
+        return;
       }
-      setTimeout(() => { notifTestBtn.textContent = 'Send me a test message'; }, 4000);
-    });
+
+      if (status === 'needs-install') {
+        notifRow.textContent = 'Turn on notifications';
+        notifStatus.textContent = 'On iPhone, Earl has to live on your home screen before it can send you anything. Tap the Share button, choose Add to Home Screen, then open Earl from that icon and come back here.';
+        return;
+      }
+
+      if (status === 'unsupported') {
+        notifRow.textContent = 'Notifications';
+        notifStatus.textContent = 'This browser cannot receive notifications. Opening Earl in Chrome or Safari, or installing it to your home screen, will fix that.';
+        return;
+      }
+
+      // 'off' — supported, nothing granted yet. This is the path that was
+      // missing: the member needs a way in.
+      notifRow.textContent = 'Turn on notifications';
+      notifStatus.textContent = 'Earl checks in each morning with one short thought about your business. He cannot reach this phone yet.';
+      notifButton('Turn them on', async (b) => {
+        b.disabled = true; b.textContent = 'Waiting for your phone…';
+        try {
+          const result = await window.EarlPush.enable();
+          if (result === 'on') {
+            notifActions.innerHTML = '';
+            notifStatus.textContent = 'Done. Earl can reach this phone now.';
+            notifRow.textContent = 'Manage notifications';
+            setTimeout(refreshNotifRow, 1800);
+            return;
+          }
+        } catch (e) { /* fall through to a re-read of the real state */ }
+        refreshNotifRow();
+      });
+    }
 
     // EarlPush loads from /js/push.js at the end of body; wait a tick.
     setTimeout(refreshNotifRow, 800);
