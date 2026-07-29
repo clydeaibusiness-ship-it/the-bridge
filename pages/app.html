@@ -206,6 +206,15 @@
     .tl-step-icon:hover, .tl-step-icon:active { color: #3a3530; background: #e8e2d6; }
     .tl-step-icon.danger { color: #8a4a3a; background: #f6e3de; }
     .tl-step-confirm { font-family: var(--font-data); font-size: 0.5625rem; letter-spacing: 0.06em; text-transform: uppercase; white-space: nowrap; }
+    .tl-step-manage { font-family: var(--font-data); font-size: 0.5625rem; letter-spacing: 0.08em; text-transform: uppercase; color: #7a7570; background: none; border: 1px solid #d8d0c0; border-radius: 6px; padding: 5px 9px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+    .tl-step-manage:hover, .tl-step-manage:active { color: #3a3530; border-color: #b0a898; }
+    /* Action-step menu (one popup, all the actions) */
+    .sm-item { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; background: none; border: none; border-bottom: 1px solid #e0d8c8; cursor: pointer; font-family: var(--font-ui); font-size: 0.9rem; color: #2a2520; padding: 13px 2px; }
+    .sm-item:last-child { border-bottom: none; }
+    .sm-item svg { flex: 0 0 auto; color: #7a7570; }
+    .sm-item.danger { color: #8a4a3a; }
+    .sm-item.danger svg { color: #8a4a3a; }
+    .sm-step-text { font-size: 0.8125rem; color: #7a7570; line-height: 1.45; padding: 2px 2px 12px; border-bottom: 1px solid #e0d8c8; margin-bottom: 4px; }
     .tl-step-edit-form { display: none; padding: 8px 0 8px 14px; }
     .tl-step-edit-form.open { display: block; }
     /* ---- Dark mode ---- */
@@ -240,6 +249,10 @@
     .shell.dark .tl-label { color: #d8d0c8; }
     .shell.dark .tl-label.muted { color: #555560; }
     .shell.dark .tl-steps { border-left-color: #2e2e3a; }
+    .shell.dark .tl-step-manage { color: #888898; border-color: #2e2e3a; }
+    .shell.dark .sm-item { color: #c0b8b0; border-bottom-color: #2e2e3a; }
+    .shell.dark .sm-item svg { color: #888898; }
+    .shell.dark .sm-step-text { color: #888898; border-bottom-color: #2e2e3a; }
     .shell.dark .tl-step { color: #c0b8b0; border-bottom-color: #2e2e3a; }
     .shell.dark .tl-step.done { color: #555560; }
     .shell.dark .tl-step-dot { background: #3a3a48; }
@@ -387,6 +400,16 @@
           <a class="settings-row danger" href="/api/auth/logout">Sign out</a>
         </div>
         <div class="modal-actions"><button class="modal-btn ghost" id="set-close">Close</button></div>
+      </div>
+    </div>
+
+    <!-- One menu for everything you can do to an action step -->
+    <div class="modal-scrim" id="stepmenu-scrim">
+      <div class="modal" style="max-width:320px;">
+        <h3>Action step</h3>
+        <div class="sm-step-text" id="stepmenu-text"></div>
+        <div id="stepmenu-actions"></div>
+        <div class="modal-actions"><button class="modal-btn ghost" id="stepmenu-close">Close</button></div>
       </div>
     </div>
 
@@ -981,14 +1004,11 @@
       const sid = esc(s.id || '');
       const txt = esc(s.step_text || '');
       const td = esc(s.target_date || '');
-      return `<div class="tl-step${done ? ' done' : ''}" data-sid="${sid}" data-text="${txt}" data-date="${td}">
+      return `<div class="tl-step${done ? ' done' : ''}" data-sid="${sid}" data-text="${txt}" data-date="${td}" data-status="${esc(s.status || 'active')}">
         <div class="tl-step-dot"></div>
         <span class="tl-step-text">${txt}</span>
         <div class="tl-step-icons">
-          ${done ? '' : `<button class="tl-step-icon step-done-btn" title="Mark as done">${CHECK_ICON}</button>`}
-          <button class="tl-step-icon step-edit-btn" title="Edit">${PENCIL}</button>
-          <button class="tl-step-icon step-cal-btn" title="Add to calendar">${CAL_ICON}</button>
-          <button class="tl-step-icon step-del-btn" title="Delete">${TRASH_ICON}</button>
+          <button class="tl-step-manage step-manage-btn" data-sid="${sid}">Manage</button>
         </div>
       </div>
       <div class="tl-step-edit-form" id="ef-${sid}">
@@ -1238,24 +1258,17 @@
           return;
         }
 
-        // Edit step: open
-        const editBtn = e.target.closest('.step-edit-btn');
-        if (editBtn) {
-          const step = editBtn.closest('.tl-step');
-          const sid = step.dataset.sid;
-          const form = document.getElementById('ef-' + sid);
-          form.querySelector('textarea').value = step.dataset.text;
-          form.classList.add('open');
-          form.querySelector('textarea').focus();
-          return;
-        }
-        // Edit step: cancel
+        // Open the Manage menu for a step.
+        const manageBtn = e.target.closest('.step-manage-btn');
+        if (manageBtn) { openStepMenu(manageBtn.closest('.tl-step')); return; }
+
+        // Edit step: cancel (inline form)
         const editCancel = e.target.closest('.step-edit-cancel');
         if (editCancel) {
           document.getElementById('ef-' + editCancel.dataset.sid).classList.remove('open');
           return;
         }
-        // Edit step: save
+        // Edit step: save (inline form)
         const editSave = e.target.closest('.step-edit-save');
         if (editSave) {
           const sid = editSave.dataset.sid;
@@ -1273,63 +1286,6 @@
           editSave.disabled = false; editSave.textContent = 'Save';
           return;
         }
-        // Calendar
-        const calBtn = e.target.closest('.step-cal-btn');
-        if (calBtn) {
-          const step = calBtn.closest('.tl-step');
-          openCalendarEvent(step.dataset.text, step.dataset.date);
-          return;
-        }
-        // Mark a step done
-        const doneBtn = e.target.closest('.step-done-btn');
-        if (doneBtn) {
-          const step = doneBtn.closest('.tl-step');
-          const sid = step.dataset.sid;
-          doneBtn.disabled = true;
-          const { ok } = await api('/api/member/action-steps/' + sid + '/complete', 'POST');
-          if (ok) {
-            step.classList.add('done');
-            doneBtn.remove();
-            loadProgress().then(loadFriend);
-          } else { doneBtn.disabled = false; }
-          return;
-        }
-        // Delete a step, once they confirm
-        const delBtn = e.target.closest('.step-del-btn');
-        if (delBtn) {
-          const step = delBtn.closest('.tl-step');
-          const sid = step.dataset.sid;
-          if (delBtn.dataset.armed !== '1') {
-            delBtn.dataset.armed = '1';
-            delBtn.classList.add('danger');
-            delBtn.title = 'Tap again to delete';
-            delBtn.innerHTML = '<span class="tl-step-confirm">Delete?</span>';
-            // If they don't confirm, put it back the way it was.
-            setTimeout(() => {
-              if (delBtn.dataset.armed === '1') {
-                delBtn.dataset.armed = '';
-                delBtn.classList.remove('danger');
-                delBtn.title = 'Delete';
-                delBtn.innerHTML = TRASH_ICON;
-              }
-            }, 4000);
-            return;
-          }
-          delBtn.disabled = true;
-          const { ok } = await api('/api/member/action-steps/' + sid, 'DELETE');
-          if (ok) {
-            const form = document.getElementById('ef-' + sid);
-            if (form) form.remove();
-            step.remove();
-            loadProgress().then(loadFriend);
-          } else {
-            delBtn.disabled = false;
-            delBtn.dataset.armed = '';
-            delBtn.classList.remove('danger');
-            delBtn.innerHTML = TRASH_ICON;
-          }
-          return;
-        }
       });
 
       const gb = document.getElementById('pg-grad-start');
@@ -1339,6 +1295,75 @@
         if (ok) location.href = '/intake?round=2';
         else { gb.disabled = false; gb.textContent = 'Begin exit interview'; }
       });
+    }
+
+    // ---- Action-step Manage menu (one button, all the actions) ----
+    const smScrim = document.getElementById('stepmenu-scrim');
+    const smText = document.getElementById('stepmenu-text');
+    const smActions = document.getElementById('stepmenu-actions');
+    function closeStepMenu() { smScrim.classList.remove('open'); }
+    document.getElementById('stepmenu-close').addEventListener('click', closeStepMenu);
+    smScrim.addEventListener('click', (e) => { if (e.target === smScrim) closeStepMenu(); });
+
+    function openStepMenu(step) {
+      if (!step) return;
+      const sid = step.dataset.sid;
+      const text = step.dataset.text || '';
+      const date = step.dataset.date || '';
+      const status = step.dataset.status || 'active';
+      smText.textContent = text;
+      smActions.innerHTML = '';
+
+      const item = (icon, label, cls, handler) => {
+        const b = document.createElement('button');
+        b.className = 'sm-item' + (cls ? ' ' + cls : '');
+        b.innerHTML = icon + '<span>' + label + '</span>';
+        b.addEventListener('click', handler);
+        smActions.appendChild(b);
+      };
+
+      if (status === 'active') {
+        item(CHECK_ICON, 'Mark as done', '', async () => {
+          const { ok } = await api('/api/member/action-steps/' + sid + '/complete', 'POST');
+          closeStepMenu();
+          if (ok) loadProgress().then(loadFriend);
+        });
+      }
+      item(PENCIL, 'Edit', '', () => {
+        closeStepMenu();
+        const form = document.getElementById('ef-' + sid);
+        if (form) {
+          form.querySelector('textarea').value = text;
+          form.classList.add('open');
+          form.querySelector('textarea').focus();
+        }
+      });
+      item(CAL_ICON, 'Add to calendar', '', () => { closeStepMenu(); openCalendarEvent(text, date); });
+      item(TRASH_ICON, 'Delete', 'danger', () => {
+        smText.textContent = 'Delete this step for good?';
+        smActions.innerHTML = '';
+        const wrap = document.createElement('div');
+        wrap.className = 'modal-actions';
+        wrap.style.justifyContent = 'flex-start';
+        const yes = document.createElement('button');
+        yes.className = 'modal-btn primary';
+        yes.style.background = '#8a4a3a';
+        yes.textContent = 'Yes, delete it';
+        yes.addEventListener('click', async () => {
+          yes.disabled = true;
+          const { ok } = await api('/api/member/action-steps/' + sid, 'DELETE');
+          closeStepMenu();
+          if (ok) loadProgress().then(loadFriend);
+        });
+        const keep = document.createElement('button');
+        keep.className = 'modal-btn ghost';
+        keep.textContent = 'Keep it';
+        keep.addEventListener('click', () => openStepMenu(step));
+        wrap.appendChild(yes); wrap.appendChild(keep);
+        smActions.appendChild(wrap);
+      });
+
+      smScrim.classList.add('open');
     }
 
     // ---- Chart ----
