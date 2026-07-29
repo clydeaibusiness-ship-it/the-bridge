@@ -639,7 +639,13 @@ async function composeCheckIn(situation) {
 Here is where they actually are right now:
 ${situation}
 
-Write one thing — a single question or observation, tied to their real situation above. One or two sentences. The way a mentor who had been thinking about them would text — warm, direct, specific. Not a check-in form, not a list, not "just checking in." Output only the message itself, nothing else.`;
+Before you write, read the conversation above and hold on to what you already know:
+- If they already answered something, it is answered. Do not ask it again.
+- If they told you a thread was dead, a lead was not going anywhere, or a plan changed, that is settled. Never ask them to update you on something they already closed.
+- Do not repeat the last message you sent them, in words or in substance.
+- If there is genuinely nothing new to ask, say something useful instead: name what you are watching, or reflect one thing back. A pulse must never be a recycled question.
+
+Write one thing, a single question or observation that moves from where the conversation actually left off. One or two sentences. The way a mentor who had been thinking about them would text, warm and direct and specific. Not a check-in form, not a list, not "just checking in." Output only the message itself, nothing else.`;
 
   const systemBlocks = [];
   if (commanderContext) {

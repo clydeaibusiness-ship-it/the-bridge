@@ -91,6 +91,29 @@ async function buildSituation(userId) {
   const daysQuiet = Math.round(daysSince(await getLastCommanderMessageAt(userId)));
   lines.push(`It has been about ${daysQuiet} day(s) since they last talked with you.`);
 
+  // The actual conversation. Without this the pulse is composed blind: it asks
+  // about things already answered, or repeats a question the member closed
+  // days ago. Earl in the chat knows this; Earl writing the pulse must too.
+  try {
+    const recent = await getCommanderMessagesForApi(userId, 14, getSoulVersion());
+    if (recent.length) {
+      lines.push('\nHOW THE LAST CONVERSATION ACTUALLY WENT (most recent last). Read this before you write anything:');
+      for (const m of recent) {
+        const who = m.role === 'user' ? 'THEM' : 'YOU';
+        const text = String(m.content || '').replace(/\s+/g, ' ').slice(0, 400);
+        if (text) lines.push(`  ${who}: ${text}`);
+      }
+    }
+  } catch (e) { /* non-fatal: better a thinner brief than no pulse */ }
+
+  // What you already asked. Never send the same question twice.
+  try {
+    const last = await getLastEarlCheckIn(userId);
+    if (last && last.content) {
+      lines.push(`\nTHE LAST THING YOU SENT THEM (do not repeat it, do not re-ask it): "${String(last.content).replace(/\s+/g, ' ').slice(0, 300)}"`);
+    }
+  } catch (e) { /* non-fatal */ }
+
   // The Walk — their streak of showing up. On a milestone day, Earl marks it:
   // one warm sentence, in his voice, no fanfare.
   try {

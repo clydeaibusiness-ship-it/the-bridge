@@ -589,9 +589,50 @@ async function sessionNoteExists(userId, sessionId) {
  * Stores the member's exact words. Called when the Commander invokes the
  * save_action_step tool.
  */
+/** Loose text key for spotting the same commitment written twice. */
+function stepKey(t) {
+  return String(t || '')
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, '')
+    .replace(/\b(the|a|an|my|to|for|and|today|this|that)\b/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 async function saveActionStep(userId, stepText, sourceSessionId = null, targetDate = null, benchmarkId = null) {
   const db = getClient();
   if (!db) return null;
+
+  // Don't stack the same commitment twice. Earl re-saves a step he already
+  // saved (he can see them, but seeing is not remembering) and the member ends
+  // up with "create the video today" three times over, written a minute apart.
+  // Two cases count as the same commitment:
+  //   - an OPEN step that already says this, at any age
+  //   - any step saved in the last day, whatever its status (the same
+  //     conversation coming back around)
+  // Genuinely repeating an old task still works: a step closed weeks ago can
+  // be created again.
+  const key = stepKey(stepText);
+  if (key) {
+    const dayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    const { data: existing } = await db
+      .from('action_steps')
+      .select('*')
+      .eq('user_id', userId)
+      .or(`status.eq.active,created_at.gte.${dayAgo}`);
+    const match = (existing || []).find((s) => stepKey(s.step_text) === key);
+    if (match) {
+      // Fill in a date or goal link if this call carried one and the original didn't.
+      const patch = {};
+      if (targetDate && !match.target_date) patch.target_date = targetDate;
+      if (benchmarkId && !match.benchmark_id) patch.benchmark_id = benchmarkId;
+      if (Object.keys(patch).length) {
+        const { data: upd } = await db.from('action_steps').update(patch).eq('id', match.id).select().single();
+        return upd || match;
+      }
+      return match;
+    }
+  }
 
   const row = {
     user_id: userId,
@@ -913,6 +954,19 @@ async function updateActionStepStatus(actionStepId, status, followUpAnswer = nul
 /**
  * Record a check-in follow-up note on an action step without changing its status.
  */
+/** Member deletes one of their own action steps outright. */
+async function deleteActionStep(actionStepId, userId) {
+  const db = getClient();
+  if (!db) return false;
+  const { error } = await db
+    .from('action_steps')
+    .delete()
+    .eq('id', actionStepId)
+    .eq('user_id', userId);
+  if (error) { console.error('deleteActionStep error:', error.message); return false; }
+  return true;
+}
+
 async function updateActionStepFollowUp(actionStepId, followUpAnswer) {
   const db = getClient();
   if (!db) return null;
@@ -1331,6 +1385,7 @@ module.exports = {
   recordMemberActivity, countEarlKnowledge, chicagoDateStr,
   saveFriendNote, getDraftFriendNote, getLastFriendNote, setFriendNoteStatus, usersWithFriends,
   getActionSteps, getActionStep, updateActionStepText, updateActionStepStatus, updateActionStepFollowUp,
+  deleteActionStep,
   getBenchmarks, addBenchmarkRating, getBenchmarkRatingHistory,
   recordEarlCheckIn, getLastEarlCheckIn, usersWithBenchmarks, getLastCommanderMessageAt,
   completeBenchmarkGoal,

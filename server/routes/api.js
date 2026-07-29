@@ -1282,6 +1282,23 @@ router.post('/member/action-steps', async (req, res) => {
 });
 
 /**
+ * DELETE /api/member/action-steps/:id
+ * The member removing a step they no longer want. Theirs to delete.
+ */
+router.delete('/member/action-steps/:id', async (req, res) => {
+  if (!req.dbUser) return res.status(401).json({ error: 'Authentication required' });
+  try {
+    const { deleteActionStep } = require('../services/supabase');
+    const ok = await deleteActionStep(req.params.id, req.dbUser.id);
+    if (!ok) return res.status(404).json({ error: 'Step not found or not yours' });
+    res.json({ ok: true });
+  } catch (e) {
+    console.error('Delete action step error:', e.message);
+    res.status(500).json({ error: 'Could not delete that step' });
+  }
+});
+
+/**
  * POST /api/member/action-steps/:id/complete
  * Marks a step complete from the progress view. The "how did it go?"
  * follow-up now happens in conversation with Earl, not a popup.

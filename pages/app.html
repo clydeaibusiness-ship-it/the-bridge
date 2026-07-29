@@ -204,6 +204,8 @@
     .tl-step-icons { display: flex; gap: 2px; align-items: center; flex-shrink: 0; margin-left: auto; padding-left: 8px; }
     .tl-step-icon { background: none; border: none; cursor: pointer; color: #9a948a; padding: 7px; display: flex; align-items: center; border-radius: 6px; -webkit-tap-highlight-color: transparent; }
     .tl-step-icon:hover, .tl-step-icon:active { color: #3a3530; background: #e8e2d6; }
+    .tl-step-icon.danger { color: #8a4a3a; background: #f6e3de; }
+    .tl-step-confirm { font-family: var(--font-data); font-size: 0.5625rem; letter-spacing: 0.06em; text-transform: uppercase; white-space: nowrap; }
     .tl-step-edit-form { display: none; padding: 8px 0 8px 14px; }
     .tl-step-edit-form.open { display: block; }
     /* ---- Dark mode ---- */
@@ -971,6 +973,8 @@
     // ---- Step helpers ----
     const PENCIL = `<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 2L14 5L5 14H2V11L11 2Z"/></svg>`;
     const CAL_ICON = `<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1.5" y="3" width="13" height="11" rx="1.5"/><line x1="1.5" y1="7" x2="14.5" y2="7"/><line x1="5" y1="1.5" x2="5" y2="4.5"/><line x1="11" y1="1.5" x2="11" y2="4.5"/></svg>`;
+    const CHECK_ICON = `<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5L6.5 12L13 4.5"/></svg>`;
+    const TRASH_ICON = `<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 4h11M6 4V2.5h4V4M4 4l.5 9.5h7L12 4"/><line x1="6.5" y1="6.5" x2="6.5" y2="11"/><line x1="9.5" y1="6.5" x2="9.5" y2="11"/></svg>`;
 
     function renderStep(s) {
       const done = s.status !== 'active';
@@ -981,8 +985,10 @@
         <div class="tl-step-dot"></div>
         <span class="tl-step-text">${txt}</span>
         <div class="tl-step-icons">
+          ${done ? '' : `<button class="tl-step-icon step-done-btn" title="Mark as done">${CHECK_ICON}</button>`}
           <button class="tl-step-icon step-edit-btn" title="Edit">${PENCIL}</button>
           <button class="tl-step-icon step-cal-btn" title="Add to calendar">${CAL_ICON}</button>
+          <button class="tl-step-icon step-del-btn" title="Delete">${TRASH_ICON}</button>
         </div>
       </div>
       <div class="tl-step-edit-form" id="ef-${sid}">
@@ -1272,6 +1278,56 @@
         if (calBtn) {
           const step = calBtn.closest('.tl-step');
           openCalendarEvent(step.dataset.text, step.dataset.date);
+          return;
+        }
+        // Mark a step done
+        const doneBtn = e.target.closest('.step-done-btn');
+        if (doneBtn) {
+          const step = doneBtn.closest('.tl-step');
+          const sid = step.dataset.sid;
+          doneBtn.disabled = true;
+          const { ok } = await api('/api/member/action-steps/' + sid + '/complete', 'POST');
+          if (ok) {
+            step.classList.add('done');
+            doneBtn.remove();
+            loadProgress().then(loadFriend);
+          } else { doneBtn.disabled = false; }
+          return;
+        }
+        // Delete a step, once they confirm
+        const delBtn = e.target.closest('.step-del-btn');
+        if (delBtn) {
+          const step = delBtn.closest('.tl-step');
+          const sid = step.dataset.sid;
+          if (delBtn.dataset.armed !== '1') {
+            delBtn.dataset.armed = '1';
+            delBtn.classList.add('danger');
+            delBtn.title = 'Tap again to delete';
+            delBtn.innerHTML = '<span class="tl-step-confirm">Delete?</span>';
+            // If they don't confirm, put it back the way it was.
+            setTimeout(() => {
+              if (delBtn.dataset.armed === '1') {
+                delBtn.dataset.armed = '';
+                delBtn.classList.remove('danger');
+                delBtn.title = 'Delete';
+                delBtn.innerHTML = TRASH_ICON;
+              }
+            }, 4000);
+            return;
+          }
+          delBtn.disabled = true;
+          const { ok } = await api('/api/member/action-steps/' + sid, 'DELETE');
+          if (ok) {
+            const form = document.getElementById('ef-' + sid);
+            if (form) form.remove();
+            step.remove();
+            loadProgress().then(loadFriend);
+          } else {
+            delBtn.disabled = false;
+            delBtn.dataset.armed = '';
+            delBtn.classList.remove('danger');
+            delBtn.innerHTML = TRASH_ICON;
+          }
           return;
         }
       });
