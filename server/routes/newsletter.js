@@ -37,12 +37,22 @@ function escapeHtml(s) {
   return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
-// ---- In-app reader (published issues as JSON, for the app's newsletter tab) ----
+// ---- In-app reader (JSON, for the app's newsletter tab) ----
+// Paying members read every issue the day it sends. The seven-day archive
+// delay is for the public page only, where it earns a subscription.
 
-/** GET /api/newsletter/issues — the published list, newest first. */
+function isPaidMember(dbUser) {
+  const t = dbUser && dbUser.membership_tier;
+  return t === 'ensign' || t === 'navigator' || t === 'captain';
+}
+
+/** GET /api/newsletter/issues — newest first. Members see all; public sees published. */
 router.get('/issues', async (req, res) => {
   try {
-    const issues = await store.listPublishedIssues({ limit: 40 });
+    const member = isPaidMember(req.dbUser);
+    const issues = member
+      ? await store.listSentIssues({ limit: 40 })
+      : await store.listPublishedIssues({ limit: 40 });
     res.json({
       issues: issues.map((i) => ({
         slug: i.slug,
@@ -59,7 +69,9 @@ router.get('/issues', async (req, res) => {
 /** GET /api/newsletter/issues/:slug — one issue, for the in-app popup. */
 router.get('/issues/:slug', async (req, res) => {
   try {
-    const issue = await store.getPublishedIssueBySlug(req.params.slug);
+    const issue = isPaidMember(req.dbUser)
+      ? await store.getSentIssueBySlug(req.params.slug)
+      : await store.getPublishedIssueBySlug(req.params.slug);
     if (!issue) return res.status(404).json({ error: 'Not found' });
     res.json({
       issue: {

@@ -103,6 +103,39 @@ async function listPublishedIssues({ limit = 200 } = {}) {
 }
 
 /** A single published issue by slug (public). */
+/**
+ * Every issue that has actually emailed, newest first, ignoring the archive
+ * delay. This is what paying members see: they bought Earl, so they read his
+ * letters the day they go out. The seven-day delay exists to give the public
+ * archive a reason to subscribe, not to hold members back.
+ */
+async function listSentIssues({ limit = 40 } = {}) {
+  const db = getClient();
+  if (!db) return [];
+  const { data, error } = await db
+    .from('newsletter_issues')
+    .select('slug, subject, story, sent_at, publish_at')
+    .not('sent_at', 'is', null)
+    .order('sent_at', { ascending: false })
+    .limit(limit);
+  if (error) return [];
+  return data;
+}
+
+/** One sent issue by slug, published or not. Members only. */
+async function getSentIssueBySlug(slug) {
+  const db = getClient();
+  if (!db) return null;
+  const { data, error } = await db
+    .from('newsletter_issues')
+    .select('*')
+    .eq('slug', slug)
+    .not('sent_at', 'is', null)
+    .limit(1);
+  if (error || !data?.length) return null;
+  return data[0];
+}
+
 async function getPublishedIssueBySlug(slug) {
   const db = getClient();
   if (!db) return null;
@@ -284,6 +317,8 @@ module.exports = {
   createIssue,
   listIssues,
   listPublishedIssues,
+  listSentIssues,
+  getSentIssueBySlug,
   getPublishedIssueBySlug,
   purgeExpiredRuns,
   getSubscriberByEmail,
