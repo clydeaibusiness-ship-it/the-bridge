@@ -142,6 +142,20 @@ async function runSend() {
   const subscribers = await store.getActiveSubscribers();
   const result = await sendIssueToList({ issue, sources: story.sources, resourceChosen: resource, subscribers });
   await store.markRunSent(run.id);
+
+  // Say what happened, out loud. A send that quietly reaches nobody looks
+  // identical to a send that worked, and the owner finds out days later.
+  try {
+    const { sendOwnerAlert } = require('../alert');
+    if (result.failed > 0 || result.sent === 0) {
+      sendOwnerAlert(
+        'newsletter-send',
+        `Newsletter delivery problem: ${result.sent} sent, ${result.failed} failed`,
+        `Issue: ${issue.subject}\nSlug: ${issue.slug}\nSubscribers on the list: ${subscribers.length}\nDelivered: ${result.sent}\nFailed: ${result.failed}${result.error ? '\nError: ' + result.error : ''}`
+      );
+    }
+  } catch (_) { /* never let alerting break the send */ }
+
   return { status: 'sent', issueId: issue.id, slug: issue.slug, recipients: result.sent, failed: result.failed };
 }
 
@@ -152,8 +166,14 @@ async function runPurge() {
   return { purged, published };
 }
 
+/** Hourly: flip any issue whose seven-day archive delay has elapsed. */
+async function runPublish() {
+  const published = await store.publishDueIssues();
+  return published ? { published } : null; // stay quiet when there is nothing to do
+}
+
 module.exports = {
   chicagoNow, nextSendDate, timespanForSendDate, slugify,
   windowState, SEND_DAYS, GEN_DAYS, FAST_TRACK_COUNT,
-  runGenerate, runSend, runPurge,
+  runGenerate, runSend, runPurge, runPublish,
 };

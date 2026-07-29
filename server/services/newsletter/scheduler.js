@@ -12,7 +12,7 @@
  * sent), so a restart mid-window can't double-send.
  */
 
-const { chicagoNow, runGenerate, runSend, runPurge, GEN_DAYS } = require('./jobs');
+const { chicagoNow, runGenerate, runSend, runPurge, runPublish, GEN_DAYS } = require('./jobs');
 
 const fired = new Set();
 
@@ -34,6 +34,11 @@ function tick() {
   if (GEN_DAYS.includes(c.weekday)   && c.hour === 19 && inWindow) once('gen-'  + day, runGenerate);
   if ([1, 3, 5].includes(c.weekday) && c.hour === 7  && inWindow) once('send-' + day, runSend);
   if (c.hour === 3 && inWindow) once('purge-' + day, runPurge);
+  // Publish due issues to the archive every hour. The daily 3am purge alone
+  // missed them: an issue becomes due at 7am (seven days after its 7am send),
+  // which is four hours after the check has already run, so every issue sat
+  // unpublished for an extra day.
+  if (inWindow) once('publish-' + day + '-' + c.hour, runPublish);
 }
 
 let timer = null;
