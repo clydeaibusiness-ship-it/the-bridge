@@ -54,7 +54,8 @@ What is the single number that most honestly tells you whether the business is h
 
 *Get this wrong and every other lever you pull is pointed in the wrong direction.*
 
-- Before pulling any other lever, identify which level of your business is most broken right now. Sales, profit, operational order, meaningful impact, and legacy are not equally urgent — they build on each other. Trying to solve a positioning problem when you cannot make payroll is solving in the wrong order. (Fix This Next — Michalowicz)
+- Before pulling any other lever, diagnose which level of the business is most broken right now and fix that one thing first. Sales, profit, operational order, impact, and legacy build on each other and are not equally urgent. Find the single most urgent broken thing at the lowest unmet level — the Vital Need — and put every resource there. Working many problems at once while the foundation is cracked is how businesses die feeling busy. (Fix This Next — Michalowicz)
+- Symptoms are not causes. The problem a member names is usually the place the pain shows up, not the place it starts. Low cash, a slow month, churn, burnout — trace each back to the lever actually leaking (positioning, pricing, the wrong customer, broken ops, the wrong people) before prescribing anything. Treating the symptom while the cause runs untouched is the most common way good advice fails.
 - Am I competing where I can win, or fighting on someone else's terms in a market they already own?
 - Keep it stupid simple, especially in your offerings. If a customer has to think hard about what you do or why they need it, you've already lost most of them.
 - You don't have to be the best to win. You have to be the favorite. Red Bull doesn't make the best energy drink. Coca-Cola doesn't make the best cola. They own an emotional territory so completely that logic doesn't get a vote.
@@ -99,13 +100,11 @@ What is the single number that most honestly tells you whether the business is h
 
 ### Lever 4 — Capital
 
-*A business that doesn't understand its money cannot make strategic decisions. It can only react.*
+*Money trouble is usually a symptom read on a gauge, not the engine. Read it honestly, then look upstream for the lever that is actually leaking — and stop the bleeding while you fix it.*
 
-- Revenue is vanity, profit is sanity, cash is reality. More businesses die from cash flow problems than from lack of revenue. Know the difference between what you earn and what you keep. (Profit First — Michalowicz)
-- Allocate profit first, not last. The traditional formula — revenue minus expenses equals profit — guarantees profit is always what is left over, which is usually nothing. Reverse it: revenue minus profit equals what you have to run the business on. (Profit First — Michalowicz)
-- Small, regular profit allocations compound into financial stability faster than waiting for a big year. The discipline of taking profit consistently, even when amounts are small, changes how the business is managed. (Profit First — Michalowicz)
-- The Business Hierarchy of Needs: sales must come before profit, profit before operational order, order before impact. A business trying to build impact before it has reliable profit is building on air. Fix the most foundational broken thing first. (Fix This Next — Michalowicz)
-- Identify the single Vital Need — the one thing most urgently broken at the lowest unfulfilled level of your business. Every resource you have goes there first. Fixing multiple things simultaneously when the foundation is cracked is how businesses die feeling busy. (Fix This Next — Michalowicz)
+- Cash is a reading, not usually a cause. When money is tight, the leak is almost always upstream: competing on price with no margin (Positioning), undercharging (Differentiation), one client too big or churning (Switching Costs), or leaking operations (Systems). Diagnose which lever is actually leaking and fix that. An allocation trick applied while the real hole stays open only manages the bleeding. (Framework synthesis)
+- Stop the bleeding in parallel: take profit first, not last. Revenue minus profit equals what you have to run on, which forces the business to live within what it truly keeps. Small, consistent profit allocations build stability faster than waiting for a big year. Treat this as a discipline that buys runway while the upstream fix takes hold — not as the fix itself. (Profit First — Michalowicz)
+- Know your runway before you need it. After a downturn or a lost anchor customer the first job is survival, not strategy: how many weeks of cash remain, what the worst case is, and whether it is survivable. Triage first, then do the deeper work. (Framework synthesis)
 - The Dhandho principle: heads I win, tails I don't lose much. Before any significant capital commitment, define the worst-case scenario. If the worst case is survivable, the bet may be worth taking. If it isn't, no upside justifies it. (The Dhandho Investor — Pabrai)
 - Few bets, big bets, infrequent bets. Spreading capital across many small experiments sounds prudent but produces mediocre results everywhere. Concentrate on your highest-conviction opportunities. (The Dhandho Investor — Pabrai)
 - A business that starts with very little capital and finds revenue before spending is more likely to survive than one that raises money and then looks for a market. Constraints produce creativity. (The $100 Startup — Guillebeau)

@@ -52,14 +52,15 @@ not the book. The book and the author get named.
 
 If you tell the story of how the principle was learned, it must
 be the documented case behind that book, attributed to the real
-person in it. As examples of the shape only: Michalowicz watching
-businesses die with revenue on the books and no cash in the account,
-or Guidara and the unreasonable gesture that built a table's loyalty.
-Those are two illustrations, not your well. Draw the case from
-whatever principle you are actually teaching, anywhere in the
-library. Never an anonymous owner. Never a person you assembled
-to make a point. If there is no documented case, give the principle
-alone.
+person in it. As examples of the shape only: Guidara and the
+unreasonable gesture that built a table's loyalty, or Voss talking
+a cornered negotiator to "that's right." Those are two illustrations,
+not your well. Draw the case from whatever principle you are actually
+teaching, anywhere in the library. Rotate across authors: you have
+twenty-plus of them, so if your last few issues leaned on the same
+name, reach for a different one. Never an anonymous owner. Never a
+person you assembled to make a point. If there is no documented case,
+give the principle alone.
 
 This is where the one resource link goes. One link, to the human
 whose work the principle came from. Not to us. Not to a program.
