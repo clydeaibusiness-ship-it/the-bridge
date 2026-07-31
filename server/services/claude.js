@@ -347,7 +347,7 @@ async function commanderChat(message, gameState, sessionContext, conversationHis
     },
     {
       name: 'mark_action_step_complete',
-      description: "Call this when the member tells you an action step is done — or clearly didn't happen. Use the exact action_step_id from your context, copied character for character. Set outcome to 'completed' when they did it, 'did_not_happen' when they say it isn't going to happen. After marking, acknowledge in your own voice — and if that was the last open step toward one of their goals, ask whether the goal itself feels reached.",
+      description: "Call this whenever the member signals an action step is resolved — done, OR no longer happening. This includes indirect signals: they say a lead is dead, a person is not a customer after all, a deal fell through, a plan changed, or they are no longer pursuing something an open step is about. Do not just acknowledge it in words and move on — if any open step in your context matches what they closed, you MUST call this tool to close the record, or you will keep re-raising it later. Use the exact action_step_id from your context, copied character for character. Set outcome to 'completed' when they did it, 'did_not_happen' when it is off or abandoned. After marking, acknowledge in your own voice — and if that was the last open step toward one of their goals, ask whether the goal itself feels reached.",
       input_schema: {
         type: 'object',
         properties: {
@@ -646,9 +646,10 @@ ${situation}
 
 Before you write, read the conversation above and hold on to what you already know:
 - If they already answered something, it is answered. Do not ask it again.
-- If they told you a thread was dead, a lead was not going anywhere, or a plan changed, that is settled. Never ask them to update you on something they already closed.
+- If they told you a thread was dead, a lead was not going anywhere, or a plan changed, that is settled. Never ask them to update you on something they already closed. This includes anything in the conversation where they said a person is not a customer, a deal is off, or a step is moot — even if that same thing still appears in the open action-step list. The conversation is the truth; the record can be out of date.
+- The action-step list may be stale. NEVER state that one of those steps happened, and never narrate it as a completed event ("the meeting came and went", "now that you've talked to them"). You do not know that it happened. Only mention a step if the conversation confirms it is genuinely still live and open.
 - Do not repeat the last message you sent them, in words or in substance.
-- If there is genuinely nothing new to ask, say something useful instead: name what you are watching, or reflect one thing back. A pulse must never be a recycled question.
+- If there is genuinely nothing new to ask, say something useful instead: name what you are watching, or reflect one thing back. A pulse must never be a recycled question. When in doubt, reflect rather than interrogate.
 
 Write one thing, a single question or observation that moves from where the conversation actually left off. One or two sentences. The way a mentor who had been thinking about them would text, warm and direct and specific. Not a check-in form, not a list, not "just checking in." Output only the message itself, nothing else.
 
@@ -683,7 +684,10 @@ ${BAN_TEXT}`;
       if (!hasTells(retry)) raw = retry;
     } catch (e) { /* keep the first draft if the retry fails */ }
   }
-  return stripMarkdown(raw).trim();
+  // Capitalize the first letter of each sentence — the pulse lands as a
+  // notification, and a lowercase "how did it go?" reads as sloppy.
+  const clean = stripMarkdown(raw).trim();
+  return clean.replace(/(^|[.!?]\s+)([a-z])/g, (m, pre, ch) => pre + ch.toUpperCase());
 }
 
 /**
