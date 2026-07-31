@@ -638,28 +638,30 @@ ${debriefLines}`;
 async function composeCheckIn({ situation = '', history = [], memoryContext = '' } = {}) {
   const soul = getSoulPrimer();
 
-  // The pulse is NOT a separate, lighter Earl. It is the SAME Earl the member
-  // chats with: same library and identity (getSystemPrompt = commander context
-  // + strategy book + case studies), same memory system (buildMemoryContext:
-  // the member file, recency-weighted facts, and the decision ledger that marks
-  // threads RESOLVED / AVOIDED / OPEN), and the same conversation history — all
-  // assembled exactly as commanderChat assembles them. The only thing that
-  // differs is the final instruction: reach out first, instead of reply.
-  const systemPrompt = getSystemPrompt();
+  // The pulse is the SAME Earl the member chats with where it counts: same
+  // soul (voice), same memory system (buildMemoryContext: the member file,
+  // recency-weighted facts, and the decision ledger that marks threads
+  // RESOLVED / AVOIDED / OPEN), same conversation history — assembled just as
+  // commanderChat assembles them. The one deliberate difference from chat: the
+  // strategy library and case studies are NOT loaded. A one-line reach-out does
+  // not reason over 91 principles or cite a case; it speaks from memory. If the
+  // member replies, they step into full chat, where the library IS loaded and
+  // belongs. So the pulse carries only the operational/voice context, not the
+  // whole book. The other difference is the final instruction: reach out first.
+  const systemPrompt = getCommanderContext();
 
   const contextParts = [];
   if (memoryContext) contextParts.push(memoryContext);
   if (situation) contextParts.push('WHERE THEY ARE RIGHT NOW (structured records — the conversation and your memory above outrank these if they disagree):\n' + situation);
   const context = contextParts.join('\n\n---\n\n');
 
-  const systemBlocks = [
-    { type: 'text', text: systemPrompt, cache_control: { type: 'ephemeral' } },
-  ];
+  const systemBlocks = [];
+  if (systemPrompt) systemBlocks.push({ type: 'text', text: systemPrompt, cache_control: { type: 'ephemeral' } });
   if (context) systemBlocks.push({ type: 'text', text: '---\n\n' + context });
 
   const prompt = `You are reaching out to this member first, between conversations — the same you they talk with, thinking about them before they think to message you. Write the one short line that lands on their phone and waits at the top of your chat.
 
-Everything you know is already in front of you: who they are, what your library offers, and your memory of them — the member file, what still stands from past conversations, and your standing decisions and threads. Use it the way you would in a live chat.
+Everything you know about them is already in front of you: your memory of them — the member file, what still stands from past conversations, and your standing decisions and threads. Use it the way you would in a live chat.
 
 Hold to what you already know:
 - Your memory's RESOLVED and settled threads are closed. Do not reopen one unless the member does. If your ledger or the conversation shows a lead is dead, a person is not a customer, or a plan changed, it is finished — never ask them to update you on it.
@@ -698,7 +700,7 @@ ${BAN_TEXT}`;
     const response = await client.messages.create({
       model: 'claude-sonnet-4-6',
       max_tokens: 200,
-      system: systemBlocks,
+      ...(systemBlocks.length ? { system: systemBlocks } : {}),
       messages: build(extra),
     });
     const t = response.content.find(b => b.type === 'text');
