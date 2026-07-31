@@ -92,20 +92,9 @@ async function buildSituation(userId) {
   const daysQuiet = Math.round(daysSince(await getLastCommanderMessageAt(userId)));
   lines.push(`It has been about ${daysQuiet} day(s) since they last talked with you.`);
 
-  // The actual conversation. Without this the pulse is composed blind: it asks
-  // about things already answered, or repeats a question the member closed
-  // days ago. Earl in the chat knows this; Earl writing the pulse must too.
-  try {
-    const recent = await getCommanderMessagesForApi(userId, 14, getSoulVersion());
-    if (recent.length) {
-      lines.push('\nHOW THE LAST CONVERSATION ACTUALLY WENT (most recent last). Read this before you write anything:');
-      for (const m of recent) {
-        const who = m.role === 'user' ? 'THEM' : 'YOU';
-        const text = String(m.content || '').replace(/\s+/g, ' ').slice(0, 400);
-        if (text) lines.push(`  ${who}: ${text}`);
-      }
-    }
-  } catch (e) { /* non-fatal: better a thinner brief than no pulse */ }
+  // (The actual conversation is no longer embedded here as text — checkInOne
+  // now passes it to the composer as real history turns, exactly as the chat
+  // does, so the pulse reads it the same way Earl reads a live thread.)
 
   // What you already asked. Never send the same question twice.
   try {
@@ -137,8 +126,27 @@ async function buildSituation(userId) {
  * received the notification.
  */
 async function checkInOne(userId) {
-  const situation = await buildSituation(userId);
-  const message = await composeCheckIn(situation);
+  const soulVersion = getSoulVersion();
+  const [situation, history] = await Promise.all([
+    buildSituation(userId),
+    getCommanderMessagesForApi(userId, 14, soulVersion),
+  ]);
+
+  // The same memory read the live chat does — the member file, recency-weighted
+  // facts, and the decision ledger. Seed retrieval with their last message (or
+  // the situation) so the most relevant memories surface.
+  let seed = '';
+  for (let i = (history || []).length - 1; i >= 0; i--) {
+    if (history[i].role === 'user' && history[i].content) { seed = String(history[i].content); break; }
+  }
+  if (!seed) seed = situation.slice(0, 500);
+  let memoryContext = '';
+  try {
+    const { buildMemoryContext } = require('./memory/context');
+    memoryContext = (await buildMemoryContext(userId, seed)) || '';
+  } catch (e) { /* memory optional — never block the pulse */ }
+
+  const message = await composeCheckIn({ situation, history, memoryContext });
   if (!message || message.length < 2) return { created: false, pushed: false };
 
   // Put it in the chat thread as an assistant message (tagged with the current
