@@ -635,48 +635,78 @@ ${debriefLines}`;
  * `situation` is a plain-text brief the scheduler assembles. Returns one or
  * two sentences — a single question or observation, never a list.
  */
-async function composeCheckIn(situation) {
+async function composeCheckIn({ situation = '', history = [], memoryContext = '' } = {}) {
   const soul = getSoulPrimer();
-  const commanderContext = getCommanderContext();
 
-  const prompt = `You are reaching out to this member first, between conversations. Write the short message that will land on their phone and wait at the top of your chat with them.
+  // The pulse is NOT a separate, lighter Earl. It is the SAME Earl the member
+  // chats with: same library and identity (getSystemPrompt = commander context
+  // + strategy book + case studies), same memory system (buildMemoryContext:
+  // the member file, recency-weighted facts, and the decision ledger that marks
+  // threads RESOLVED / AVOIDED / OPEN), and the same conversation history — all
+  // assembled exactly as commanderChat assembles them. The only thing that
+  // differs is the final instruction: reach out first, instead of reply.
+  const systemPrompt = getSystemPrompt();
 
-Here is where they actually are right now:
-${situation}
+  const contextParts = [];
+  if (memoryContext) contextParts.push(memoryContext);
+  if (situation) contextParts.push('WHERE THEY ARE RIGHT NOW (structured records — the conversation and your memory above outrank these if they disagree):\n' + situation);
+  const context = contextParts.join('\n\n---\n\n');
 
-Before you write, read the conversation above and hold on to what you already know:
-- If they already answered something, it is answered. Do not ask it again.
-- If they told you a thread was dead, a lead was not going anywhere, or a plan changed, that is settled. Never ask them to update you on something they already closed. This includes anything in the conversation where they said a person is not a customer, a deal is off, or a step is moot — even if that same thing still appears in the open action-step list. The conversation is the truth; the record can be out of date.
-- The action-step list may be stale. NEVER state that one of those steps happened, and never narrate it as a completed event ("the meeting came and went", "now that you've talked to them"). You do not know that it happened. Only mention a step if the conversation confirms it is genuinely still live and open.
-- Do not repeat the last message you sent them, in words or in substance.
-- If there is genuinely nothing new to ask, say something useful instead: name what you are watching, or reflect one thing back. A pulse must never be a recycled question. When in doubt, reflect rather than interrogate.
+  const systemBlocks = [
+    { type: 'text', text: systemPrompt, cache_control: { type: 'ephemeral' } },
+  ];
+  if (context) systemBlocks.push({ type: 'text', text: '---\n\n' + context });
 
-Write one thing, a single question or observation that moves from where the conversation actually left off. One or two sentences. The way a mentor who had been thinking about them would text, warm and direct and specific. Not a check-in form, not a list, not "just checking in." Output only the message itself, nothing else.
+  const prompt = `You are reaching out to this member first, between conversations — the same you they talk with, thinking about them before they think to message you. Write the one short line that lands on their phone and waits at the top of your chat.
+
+Everything you know is already in front of you: who they are, what your library offers, and your memory of them — the member file, what still stands from past conversations, and your standing decisions and threads. Use it the way you would in a live chat.
+
+Hold to what you already know:
+- Your memory's RESOLVED and settled threads are closed. Do not reopen one unless the member does. If your ledger or the conversation shows a lead is dead, a person is not a customer, or a plan changed, it is finished — never ask them to update you on it.
+- The structured action-step list can be out of date. NEVER state that a step happened or narrate it as an event ("the meeting came and went"). Only raise one if your memory and the conversation confirm it is genuinely still live.
+- Do not repeat the last thing you sent them, in words or substance.
+- If there is nothing genuinely new to ask, reflect one thing back or name what you are watching. Never a recycled question, never "just checking in."
+
+One thing. A single question or observation that moves from where you actually left off, warm and direct and specific. One or two sentences. Output only the message itself, nothing else.
 
 ${BAN_TEXT}`;
 
-  const systemBlocks = [];
-  if (commanderContext) {
-    systemBlocks.push({ type: 'text', text: commanderContext });
+  // Mirror commanderChat's assembly: silent prime, soul prefill (cached),
+  // real history turns, then the proactive instruction. Merge consecutive
+  // same-role turns (the API requires alternation; history may open with an
+  // assistant turn right after the soul prefill).
+  function build(extra) {
+    const raw = [
+      ...(soul ? [
+        { role: 'user', content: '.' },
+        { role: 'assistant', content: [{ type: 'text', text: soul, cache_control: { type: 'ephemeral' } }] },
+      ] : []),
+      ...(history || []),
+      { role: 'user', content: prompt + (extra ? '\n\n' + extra : '') },
+    ];
+    const toBlocks = (c) => (Array.isArray(c) ? c : [{ type: 'text', text: String(c) }]);
+    const merged = [];
+    for (const m of raw) {
+      const prev = merged[merged.length - 1];
+      if (prev && prev.role === m.role) prev.content = [...toBlocks(prev.content), ...toBlocks(m.content)];
+      else merged.push({ role: m.role, content: m.content });
+    }
+    return merged;
   }
 
   async function runOnce(extra) {
-    const messages = [
-      ...(soul ? [{ role: 'user', content: '.' }, { role: 'assistant', content: soul }] : []),
-      { role: 'user', content: prompt + (extra ? '\n\n' + extra : '') }
-    ];
     const response = await client.messages.create({
       model: 'claude-sonnet-4-6',
       max_tokens: 200,
-      ...(systemBlocks.length ? { system: systemBlocks } : {}),
-      messages
+      system: systemBlocks,
+      messages: build(extra),
     });
     const t = response.content.find(b => b.type === 'text');
     return (t ? t.text : '');
   }
 
-  // This runs in the background scheduler, not in front of a waiting member,
-  // so it can afford the newsletter's regenerate-once if a tell slips in.
+  // Runs in the background scheduler, so it can afford the newsletter's
+  // regenerate-once if a tell slips in.
   let raw = await runOnce();
   if (hasTells(raw)) {
     try {
