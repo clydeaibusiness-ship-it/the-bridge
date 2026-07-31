@@ -60,9 +60,9 @@ async function buildSituation(userId) {
 
   const activeSteps = steps.filter(s => s.status === 'active');
   if (activeSteps.length) {
-    lines.push('Action steps they have not closed yet:');
+    lines.push('Action steps still marked open in the record. TREAT THIS LIST AS POSSIBLY STALE: the member may have finished or abandoned any of these in conversation without it being marked closed. Never assume one of these actually happened, and never narrate it as an event ("the meeting came and went"). Only raise one if the recent conversation below confirms it is still live and unresolved.');
     for (const s of activeSteps.slice(0, 5)) {
-      const overdue = s.target_date && new Date(s.target_date) < new Date() ? ' (past the date they set)' : '';
+      const overdue = s.target_date && new Date(s.target_date) < new Date() ? ' (its date has passed, which may just mean the record is out of date)' : '';
       lines.push(`  - "${s.step_text}"${overdue}`);
     }
   }
@@ -84,8 +84,9 @@ async function buildSituation(userId) {
   // they are and what they have been wrestling with.
   try {
     const memStore = require('./memory/store');
-    const profile = await memStore.getProfile(userId);
-    if (profile) lines.push(`What you remember about them:\n${profile}`);
+    const row = await memStore.getProfile(userId);
+    const profileText = row && typeof row.profile === 'string' ? row.profile : '';
+    if (profileText) lines.push(`What you remember about them:\n${profileText}`);
   } catch (e) { /* memory optional */ }
 
   const daysQuiet = Math.round(daysSince(await getLastCommanderMessageAt(userId)));
