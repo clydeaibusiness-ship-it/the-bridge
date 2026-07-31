@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const Anthropic = require('@anthropic-ai/sdk');
+const { BAN_TEXT, TELL_REMINDER, hasTells, scrubTells } = require('./antitells');
 
 // Use the platform's native fetch when present. The SDK's bundled node-fetch
 // intermittently aborts gzipped responses on newer Node ("premature close"),
@@ -18,13 +19,17 @@ const client = new Anthropic({
  * to avoid stray asterisks and hash symbols in plain text.
  */
 function stripMarkdown(text) {
-  return text
+  const cleaned = text
     .replace(/\*\*(.+?)\*\*/g, '$1')   // **bold** → bold
     .replace(/\*(.+?)\*/g, '$1')       // *italic* → italic
     .replace(/^#{1,3}\s+/gm, '')       // ### headers → nothing
     .replace(/^[\-•]\s+/gm, '')        // - or • bullets → clean lines
     .replace(/\s*—\s*/g, '. ')         // em dash → period + space
     .trim();
+  // Every member-facing string — chat, the pulse notification, first read,
+  // friend note — returns through here, so it is the one place to catch the
+  // AI tells as a last resort (see antitells.js).
+  return scrubTells(cleaned);
 }
 
 /**
@@ -645,27 +650,40 @@ Before you write, read the conversation above and hold on to what you already kn
 - Do not repeat the last message you sent them, in words or in substance.
 - If there is genuinely nothing new to ask, say something useful instead: name what you are watching, or reflect one thing back. A pulse must never be a recycled question.
 
-Write one thing, a single question or observation that moves from where the conversation actually left off. One or two sentences. The way a mentor who had been thinking about them would text, warm and direct and specific. Not a check-in form, not a list, not "just checking in." Output only the message itself, nothing else.`;
+Write one thing, a single question or observation that moves from where the conversation actually left off. One or two sentences. The way a mentor who had been thinking about them would text, warm and direct and specific. Not a check-in form, not a list, not "just checking in." Output only the message itself, nothing else.
+
+${BAN_TEXT}`;
 
   const systemBlocks = [];
   if (commanderContext) {
     systemBlocks.push({ type: 'text', text: commanderContext });
   }
 
-  const messages = [
-    ...(soul ? [{ role: 'user', content: '.' }, { role: 'assistant', content: soul }] : []),
-    { role: 'user', content: prompt }
-  ];
+  async function runOnce(extra) {
+    const messages = [
+      ...(soul ? [{ role: 'user', content: '.' }, { role: 'assistant', content: soul }] : []),
+      { role: 'user', content: prompt + (extra ? '\n\n' + extra : '') }
+    ];
+    const response = await client.messages.create({
+      model: 'claude-sonnet-4-6',
+      max_tokens: 200,
+      ...(systemBlocks.length ? { system: systemBlocks } : {}),
+      messages
+    });
+    const t = response.content.find(b => b.type === 'text');
+    return (t ? t.text : '');
+  }
 
-  const response = await client.messages.create({
-    model: 'claude-sonnet-4-6',
-    max_tokens: 200,
-    ...(systemBlocks.length ? { system: systemBlocks } : {}),
-    messages
-  });
-
-  const t = response.content.find(b => b.type === 'text');
-  return stripMarkdown(t ? t.text : '').trim();
+  // This runs in the background scheduler, not in front of a waiting member,
+  // so it can afford the newsletter's regenerate-once if a tell slips in.
+  let raw = await runOnce();
+  if (hasTells(raw)) {
+    try {
+      const retry = await runOnce(TELL_REMINDER);
+      if (!hasTells(retry)) raw = retry;
+    } catch (e) { /* keep the first draft if the retry fails */ }
+  }
+  return stripMarkdown(raw).trim();
 }
 
 /**
@@ -686,7 +704,7 @@ async function generateFirstRead(answers) {
 
 ${lines}
 
-Give them your first read: four to six sentences, in your voice, speaking directly to them. Name what you actually see in their situation, one strength worth building on, and the single thing you would want to dig into first if you kept working together. Be specific to THEIR answers. No headers, no bullets, no greeting, no sign-off. Do not mention pricing, membership, or any system. Do not use em dashes. Never use the construction "this is not X, it's Y" in any form.`;
+Give them your first read: four to six sentences, in your voice, speaking directly to them. Name what you actually see in their situation, one strength worth building on, and the single thing you would want to dig into first if you kept working together. Be specific to THEIR answers. No headers, no bullets, no greeting, no sign-off. Do not mention pricing, membership, or any system. Do not use em dashes. ${BAN_TEXT}`;
 
   const messages = [
     ...(soul ? [{ role: 'user', content: '.' }, { role: 'assistant', content: soul }] : []),
@@ -716,7 +734,7 @@ async function composeFriendNote({ fromName, friendName, situation }) {
 Here is where the member actually is:
 ${situation}
 
-Write ONE warm paragraph, three to five sentences, in your voice. Say what they have been working on and what has genuinely moved this month, specifically. Never mention money amounts, revenue, or anything that would embarrass them. No greeting line, no sign-off, no headers. Do not use em dashes. Never use the construction "this is not X, it's Y" in any form.`;
+Write ONE warm paragraph, three to five sentences, in your voice. Say what they have been working on and what has genuinely moved this month, specifically. Never mention money amounts, revenue, or anything that would embarrass them. No greeting line, no sign-off, no headers. Do not use em dashes. ${BAN_TEXT}`;
 
   const messages = [
     ...(soul ? [{ role: 'user', content: '.' }, { role: 'assistant', content: soul }] : []),
