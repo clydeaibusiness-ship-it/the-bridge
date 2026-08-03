@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex" />
+  <title>Demo builder — Earl</title>
+  <script>var _isProd = location.hostname === 'captainsbridge.io' || location.hostname === 'www.captainsbridge.io'; window.__clerk_publishable_key = _isProd ? 'pk_live_Y2xlcmsuY2FwdGFpbnNicmlkZ2UuaW8k' : 'pk_test_b2JsaWdpbmctcHl0aG9uLTUuY2xlcmsuYWNjb3VudHMuZGV2JA';</script>
+  <script src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@5/dist/clerk.browser.js"></script>
+  <style>
+    :root { --bg:#f5f0e8; --ink:#1a1512; --muted:#6a5c4a; --line:#e0d7c8; --accent:#7a5c3a; --card:#fffdf8; }
+    * { box-sizing:border-box; }
+    body { margin:0; font-family:Georgia,'Times New Roman',serif; background:var(--bg); color:var(--ink); line-height:1.5; }
+    .wrap { max-width:780px; margin:0 auto; padding:28px 20px 80px; }
+    h1 { font-size:26px; margin:0 0 4px; }
+    .sub { color:var(--muted); font-size:14px; margin:0 0 24px; }
+    label { display:block; font-size:13px; color:var(--muted); margin:14px 0 4px; }
+    input, textarea { width:100%; font-family:inherit; font-size:15px; padding:9px 11px; border:1px solid var(--line); border-radius:8px; background:var(--card); color:var(--ink); }
+    textarea { resize:vertical; min-height:70px; }
+    button { font-family:inherit; font-size:15px; padding:9px 16px; border:none; border-radius:8px; background:var(--accent); color:#fff; cursor:pointer; }
+    button.ghost { background:transparent; color:var(--accent); border:1px solid var(--accent); }
+    button.danger { background:transparent; color:#a33; border:1px solid #d9b8b8; padding:5px 10px; font-size:13px; }
+    button:disabled { opacity:.5; cursor:default; }
+    .row { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+    .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:18px; margin:18px 0; }
+    .statusline { font-size:14px; color:var(--muted); min-height:20px; margin:10px 0; }
+    .statusline.err { color:#a33; }
+    .chart-sec { border-top:1px solid var(--line); padding-top:12px; margin-top:12px; }
+    .link { word-break:break-all; font-size:15px; color:var(--accent); }
+    .demo-item { display:flex; justify-content:space-between; align-items:center; gap:10px; border-top:1px solid var(--line); padding:10px 0; }
+    .demo-item:first-child { border-top:none; }
+    .pill { font-size:12px; padding:2px 8px; border-radius:20px; background:#efe7d8; color:var(--muted); }
+    .pill.live { background:#dcecdc; color:#3a6a3a; }
+    .hidden { display:none; }
+    a { color:var(--accent); }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Demo builder</h1>
+    <p class="sub">Build a temporary, pre-briefed Earl for a company you're onboarding. Enter what you know, review what Earl generates, then publish a link they can chat with.</p>
+
+    <div class="card" id="build-card">
+      <label>Company name *</label>
+      <input id="f-name" placeholder="Acme Landscaping" />
+      <label>Website URL</label>
+      <input id="f-web" placeholder="https://acmelandscaping.com" />
+      <label>Facebook page URL (optional)</label>
+      <input id="f-fb" placeholder="https://facebook.com/acme" />
+      <label>Everything else you know about them</label>
+      <textarea id="f-notes" placeholder="Owner's name, what they sell, who their customers are, what they're struggling with, anything you picked up talking to them..."></textarea>
+      <div class="statusline" id="build-status"></div>
+      <button id="build-btn">Build demo</button>
+    </div>
+
+    <!-- Review / edit -->
+    <div class="card hidden" id="edit-card">
+      <h2 style="margin:0 0 2px;">Review &amp; edit</h2>
+      <p class="sub" style="margin:0 0 8px;">Fix anything the scrape got wrong, then publish.</p>
+      <label>Company name</label>
+      <input id="e-name" />
+      <label>Earl's first read (what the prospect sees first)</label>
+      <textarea id="e-firstread" style="min-height:120px;"></textarea>
+
+      <div id="e-context"></div>
+      <div id="e-chart"></div>
+
+      <div class="statusline" id="edit-status"></div>
+      <div class="row">
+        <button id="save-btn">Save edits</button>
+        <button class="ghost" id="regen-btn">Regenerate from scratch</button>
+        <button id="publish-btn">Publish &amp; get link</button>
+      </div>
+
+      <div class="hidden" id="link-box" style="margin-top:16px;">
+        <label>Shareable link (temporary, expires in 30 days)</label>
+        <div class="link" id="link-url"></div>
+        <div class="row" style="margin-top:8px;">
+          <button class="ghost" id="copy-btn">Copy link</button>
+          <button class="ghost" id="open-btn">Open it</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2 style="margin:0 0 10px;">Your demos</h2>
+      <div id="demo-list"><p class="sub">Loading…</p></div>
+    </div>
+  </div>
+
+  <script>
+    let CURRENT = null; // the demo being edited
+
+    async function api(path, method, body) {
+      const opts = { method: method || 'GET', headers: { 'Content-Type': 'application/json' } };
+      if (body) opts.body = JSON.stringify(body);
+      const r = await fetch(path, opts);
+      let data = null; try { data = await r.json(); } catch (e) {}
+      return { ok: r.ok, status: r.status, data };
+    }
+    const $ = (id) => document.getElementById(id);
+    const esc = (s) => String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    function setStatus(id, t, err){ const el=$(id); el.textContent=t||''; el.className='statusline'+(err?' err':''); }
+
+    function renderContextFields(bc) {
+      const keys = Object.keys(bc || {});
+      const rows = keys.map(k => {
+        const label = k.replace(/([A-Z])/g,' $1').replace(/^./,c=>c.toUpperCase());
+        return `<label>${esc(label)}</label><input data-bc="${esc(k)}" value="${esc(bc[k])}" />`;
+      }).join('');
+      $('e-context').innerHTML = '<div class="chart-sec"><strong>How Earl understands the business</strong>'+rows+'</div>';
+    }
+
+    function renderChartFields(sections) {
+      const rows = (sections||[]).map((s,i) => `
+        <div class="chart-sec">
+          <input data-chart-title="${i}" value="${esc(s.title)}" style="font-weight:bold;margin-bottom:6px;" />
+          <textarea data-chart-body="${i}">${esc(s.body)}</textarea>
+        </div>`).join('');
+      $('e-chart').innerHTML = '<div style="margin-top:14px;"><strong>Navigation Chart</strong>'+rows+'</div>';
+    }
+
+    function loadIntoEditor(demo) {
+      CURRENT = demo;
+      $('e-name').value = demo.company_name || '';
+      $('e-firstread').value = demo.first_read || '';
+      renderContextFields(demo.business_context || {});
+      renderChartFields(demo.chart_sections || []);
+      $('link-box').classList.add('hidden');
+      $('edit-card').classList.remove('hidden');
+      $('edit-card').scrollIntoView({ behavior:'smooth' });
+    }
+
+    function collectEdits() {
+      const bc = {};
+      document.querySelectorAll('[data-bc]').forEach(el => { bc[el.getAttribute('data-bc')] = el.value; });
+      const sections = [];
+      document.querySelectorAll('[data-chart-title]').forEach(el => {
+        const i = el.getAttribute('data-chart-title');
+        const body = document.querySelector(`[data-chart-body="${i}"]`);
+        sections.push({ title: el.value, body: body ? body.value : '' });
+      });
+      return {
+        company_name: $('e-name').value.trim(),
+        first_read: $('e-firstread').value,
+        business_context: bc,
+        chart_sections: sections,
+      };
+    }
+
+    $('build-btn').onclick = async () => {
+      const name = $('f-name').value.trim();
+      if (!name) { setStatus('build-status','Company name is required.',true); return; }
+      $('build-btn').disabled = true;
+      setStatus('build-status','Scraping the site and briefing Earl… this takes a few seconds.');
+      const { ok, data } = await api('/api/demo','POST',{
+        companyName:name, websiteUrl:$('f-web').value.trim(),
+        facebookUrl:$('f-fb').value.trim(), notes:$('f-notes').value.trim(),
+      });
+      $('build-btn').disabled = false;
+      if (!ok || !data || !data.demo) { setStatus('build-status',(data&&data.error)||'Could not build.',true); return; }
+      setStatus('build-status','');
+      loadIntoEditor(data.demo);
+      loadList();
+    };
+
+    $('save-btn').onclick = async () => {
+      if (!CURRENT) return;
+      setStatus('edit-status','Saving…');
+      const { ok, data } = await api('/api/demo/'+CURRENT.id,'PATCH',collectEdits());
+      if (ok && data.demo) { CURRENT = data.demo; setStatus('edit-status','Saved.'); }
+      else setStatus('edit-status','Could not save.',true);
+    };
+
+    $('regen-btn').onclick = async () => {
+      if (!CURRENT) return;
+      if (!confirm('Re-scrape and regenerate? This overwrites your current edits.')) return;
+      setStatus('edit-status','Regenerating…');
+      const { ok, data } = await api('/api/demo/'+CURRENT.id+'/regenerate','POST');
+      if (ok && data.demo) { loadIntoEditor(data.demo); setStatus('edit-status','Regenerated.'); }
+      else setStatus('edit-status','Could not regenerate.',true);
+    };
+
+    $('publish-btn').onclick = async () => {
+      if (!CURRENT) return;
+      setStatus('edit-status','Saving edits, then publishing…');
+      await api('/api/demo/'+CURRENT.id,'PATCH',collectEdits());
+      const { ok, data } = await api('/api/demo/'+CURRENT.id+'/publish','POST');
+      if (ok && data.url) {
+        $('link-url').textContent = data.url;
+        $('link-box').classList.remove('hidden');
+        $('open-btn').onclick = () => window.open(data.url,'_blank');
+        $('copy-btn').onclick = () => { navigator.clipboard.writeText(data.url); $('copy-btn').textContent='Copied'; setTimeout(()=>$('copy-btn').textContent='Copy link',1500); };
+        setStatus('edit-status','Published.');
+        loadList();
+      } else setStatus('edit-status','Could not publish.',true);
+    };
+
+    async function loadList() {
+      const { ok, data } = await api('/api/demo/list');
+      const el = $('demo-list');
+      if (!ok || !data || !data.demos || !data.demos.length) { el.innerHTML = '<p class="sub">No demos yet.</p>'; return; }
+      el.innerHTML = data.demos.map(d => `
+        <div class="demo-item">
+          <div>
+            <strong>${esc(d.company_name)}</strong>
+            <span class="pill ${d.status==='published'?'live':''}">${d.status==='published'?'live':'draft'}</span>
+            <div class="sub" style="margin:2px 0 0;">${d.messages_used}/${d.message_cap} messages used</div>
+          </div>
+          <div class="row">
+            ${d.status==='published' ? `<button class="ghost" data-copy="${esc(d.url)}">Copy</button><button class="ghost" data-open="${esc(d.url)}">Open</button>` : ''}
+            <button class="ghost" data-edit="${d.id}">Edit</button>
+            <button class="danger" data-del="${d.id}">Delete</button>
+          </div>
+        </div>`).join('');
+      el.querySelectorAll('[data-copy]').forEach(b=>b.onclick=()=>{navigator.clipboard.writeText(b.getAttribute('data-copy'));b.textContent='Copied';setTimeout(()=>b.textContent='Copy',1500);});
+      el.querySelectorAll('[data-open]').forEach(b=>b.onclick=()=>window.open(b.getAttribute('data-open'),'_blank'));
+      el.querySelectorAll('[data-edit]').forEach(b=>b.onclick=async()=>{
+        const { ok, data } = await api('/api/demo/'+b.getAttribute('data-edit'));
+        if (ok && data.demo) loadIntoEditor(data.demo);
+      });
+      el.querySelectorAll('[data-del]').forEach(b=>b.onclick=async()=>{
+        if(!confirm('Delete this demo? The link will stop working.'))return;
+        await api('/api/demo/'+b.getAttribute('data-del'),'DELETE'); loadList();
+      });
+    }
+
+    (async function boot(){
+      try { if (window.Clerk && !window.Clerk.loaded) await window.Clerk.load(); } catch(e){ location.href='/login'; return; }
+      try { if (window.Clerk && window.Clerk.session) await window.Clerk.session.getToken(); } catch(e){}
+      if (window.Clerk && !window.Clerk.user) { location.href='/login'; return; }
+      loadList();
+    })();
+  </script>
+</body>
+</html>
