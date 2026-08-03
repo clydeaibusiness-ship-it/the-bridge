@@ -11,6 +11,7 @@ const authRoutes = require('./routes/auth');
 const paymentRoutes = require('./routes/payments');
 const commanderRoutes = require('./routes/commander');
 const newsletterRoutes = require('./routes/newsletter');
+const demoRoutes = require('./routes/demo');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -77,6 +78,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/commander', commanderRoutes);
 app.use('/api/newsletter', newsletterRoutes);
+app.use('/api/demo', demoRoutes);
 
 // Auth + tier gate middleware for protected pages
 const { extractUser } = require('./middleware/auth');
@@ -240,6 +242,17 @@ app.get('/config-panel', (req, res) => {
 // Newsletter admin desk — Clerk-gated client-side; the API enforces owner-only.
 app.get('/newsletter-admin', (req, res) => {
   res.sendFile(path.join(__dirname, '../pages/newsletter-admin.html'));
+});
+
+// Demo builder — owner-only sales tool; the /api/demo endpoints enforce owner.
+app.get('/demo-builder', (req, res) => {
+  res.sendFile(path.join(__dirname, '../pages/demo-builder.html'));
+});
+
+// Public demo Earl — a prospect chats with a briefed Earl. No auth; the token
+// is the key, and the demo is temporary and message-capped.
+app.get('/demo/:token', (req, res) => {
+  res.sendFile(path.join(__dirname, '../pages/demo.html'));
 });
 
 // OG image generator — opens in browser, click Download PNG, put in /public/assets/og-image.png

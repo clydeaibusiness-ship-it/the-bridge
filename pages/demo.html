@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex" />
+  <title>Earl — a first look</title>
+  <style>
+    :root { --bg:#f5f0e8; --ink:#1a1512; --muted:#6a5c4a; --line:#e0d7c8; --accent:#7a5c3a; --card:#fffdf8; --earl:#efe7d8; }
+    * { box-sizing:border-box; }
+    body { margin:0; font-family:Georgia,'Times New Roman',serif; background:var(--bg); color:var(--ink); line-height:1.55; }
+    .wrap { max-width:640px; margin:0 auto; padding:28px 18px 40px; }
+    .kicker { font-size:13px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); }
+    h1 { font-size:28px; margin:4px 0 2px; }
+    .company { color:var(--accent); }
+    .card { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:20px; margin:18px 0; }
+    .firstread { font-size:17px; }
+    .sec { border-top:1px solid var(--line); padding-top:14px; margin-top:14px; }
+    .sec:first-child { border-top:none; padding-top:0; margin-top:0; }
+    .sec h3 { margin:0 0 4px; font-size:16px; }
+    .sec p { margin:0; color:#33291f; }
+    /* chat */
+    #chat { display:flex; flex-direction:column; gap:12px; margin:14px 0; }
+    .msg { padding:11px 14px; border-radius:14px; max-width:85%; white-space:pre-wrap; }
+    .msg.earl { background:var(--earl); align-self:flex-start; border-bottom-left-radius:4px; }
+    .msg.you { background:var(--accent); color:#fff; align-self:flex-end; border-bottom-right-radius:4px; }
+    .composer { display:flex; gap:8px; position:sticky; bottom:0; background:var(--bg); padding:10px 0; }
+    .composer textarea { flex:1; font-family:inherit; font-size:16px; padding:10px 12px; border:1px solid var(--line); border-radius:10px; resize:none; background:var(--card); color:var(--ink); }
+    .composer button { font-family:inherit; font-size:15px; padding:0 18px; border:none; border-radius:10px; background:var(--accent); color:#fff; cursor:pointer; }
+    .composer button:disabled { opacity:.5; }
+    .note { font-size:12px; color:var(--muted); text-align:center; margin-top:6px; }
+    .center { text-align:center; color:var(--muted); padding:60px 20px; }
+    .hidden { display:none; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div id="loading" class="center">Loading…</div>
+
+    <div id="content" class="hidden">
+      <div class="kicker">A first look at what Earl could be for</div>
+      <h1 class="company" id="company"></h1>
+
+      <div class="card">
+        <div class="kicker" style="margin-bottom:6px;">Earl's first read</div>
+        <div class="firstread" id="firstread"></div>
+      </div>
+
+      <div class="card" id="chart-card">
+        <div class="kicker" style="margin-bottom:10px;">Your Navigation Chart</div>
+        <div id="chart"></div>
+      </div>
+
+      <div class="card">
+        <div class="kicker" style="margin-bottom:6px;">Talk to Earl</div>
+        <p class="sub" style="color:var(--muted);font-size:14px;margin:0 0 6px;">He's been briefed on your business from what's public. Ask him anything, or tell him where he got it wrong.</p>
+        <div id="chat"></div>
+        <div class="composer">
+          <textarea id="input" rows="1" placeholder="Ask Earl about your business…"></textarea>
+          <button id="send">Send</button>
+        </div>
+        <div class="note" id="note"></div>
+      </div>
+    </div>
+
+    <div id="gone" class="center hidden">This demo isn't available anymore.</div>
+  </div>
+
+  <script>
+    const TOKEN = location.pathname.split('/').filter(Boolean).pop();
+    const history = [];
+    let messagesLeft = 0;
+    const $ = (id) => document.getElementById(id);
+    const esc = (s) => String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+    function addMsg(role, text) {
+      const d = document.createElement('div');
+      d.className = 'msg ' + (role === 'user' ? 'you' : 'earl');
+      d.textContent = text;
+      $('chat').appendChild(d);
+      d.scrollIntoView({ behavior:'smooth', block:'end' });
+    }
+
+    async function load() {
+      let r, data;
+      try { r = await fetch('/api/demo/public/'+encodeURIComponent(TOKEN)); data = await r.json(); }
+      catch (e) { $('loading').classList.add('hidden'); $('gone').classList.remove('hidden'); return; }
+      if (!r.ok || !data || !data.demo) { $('loading').classList.add('hidden'); $('gone').classList.remove('hidden'); return; }
+      const d = data.demo;
+      $('company').textContent = d.companyName;
+      $('firstread').textContent = d.firstRead || 'Earl is still forming his read.';
+      if (Array.isArray(d.chartSections) && d.chartSections.length) {
+        $('chart').innerHTML = d.chartSections.map(s => `<div class="sec"><h3>${esc(s.title)}</h3><p>${esc(s.body)}</p></div>`).join('');
+      } else { $('chart-card').classList.add('hidden'); }
+      messagesLeft = d.messagesLeft;
+      updateNote();
+      $('loading').classList.add('hidden');
+      $('content').classList.remove('hidden');
+      addMsg('assistant', `I've had a look at ${d.companyName}. What's the thing that's been weighing on you most about the business right now?`);
+    }
+
+    function updateNote() {
+      $('note').textContent = messagesLeft > 0 ? `${messagesLeft} messages left in this preview` : 'This preview has reached its limit.';
+      if (messagesLeft <= 0) { $('send').disabled = true; $('input').disabled = true; }
+    }
+
+    async function send() {
+      const text = $('input').value.trim();
+      if (!text || messagesLeft <= 0) return;
+      $('input').value = '';
+      $('send').disabled = true;
+      addMsg('user', text);
+      history.push({ role:'user', content:text });
+      const typing = document.createElement('div');
+      typing.className = 'msg earl'; typing.textContent = 'Earl is thinking…';
+      $('chat').appendChild(typing);
+      try {
+        const r = await fetch('/api/demo/public/'+encodeURIComponent(TOKEN)+'/chat', {
+          method:'POST', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({ message:text, history })
+        });
+        const data = await r.json();
+        typing.remove();
+        if (!r.ok) { addMsg('assistant', data && data.error ? data.error : 'Earl hit a snag.'); if (data && data.messagesLeft===0){messagesLeft=0;updateNote();} $('send').disabled=false; return; }
+        addMsg('assistant', data.reply);
+        history.push({ role:'assistant', content:data.reply });
+        messagesLeft = data.messagesLeft;
+        updateNote();
+      } catch (e) {
+        typing.remove(); addMsg('assistant', 'Something went wrong reaching Earl.');
+      }
+      if (messagesLeft > 0) $('send').disabled = false;
+      $('input').focus();
+    }
+
+    $('send').onclick = send;
+    $('input').addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } });
+    load();
+  </script>
+</body>
+</html>
