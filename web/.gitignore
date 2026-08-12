@@ -1,0 +1,3 @@
+node_modules/
+.astro/
+# dist/ is intentionally committed: Express serves it and Railway runs no build.

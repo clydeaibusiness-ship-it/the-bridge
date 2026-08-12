@@ -72,6 +72,11 @@ app.use('/data', express.static(path.join(__dirname, '../public/data')));
 // Static files
 app.use(express.static(path.join(__dirname, '../public')));
 
+// Built Astro output (Phase 2 migration). Serves /_astro/* hashed assets for
+// pages that have moved to Astro. Nothing about the Railway build/start changes
+// — the built files are committed and Express serves them like any static file.
+app.use(express.static(path.join(__dirname, '../web/dist')));
+
 // API routes
 app.use('/api', apiRoutes);
 app.use('/api/auth', authRoutes);
@@ -250,9 +255,11 @@ app.get('/demo-builder', (req, res) => {
 });
 
 // Public demo Earl — a prospect chats with a briefed Earl. No auth; the token
-// is the key, and the demo is temporary and message-capped.
+// is the key, and the demo is temporary and message-capped. Served from the
+// Astro build (Phase 2); one static page serves every token (data loads by
+// token client-side).
 app.get('/demo/:token', (req, res) => {
-  res.sendFile(path.join(__dirname, '../pages/demo.html'));
+  res.sendFile(path.join(__dirname, '../web/dist/demo/index.html'));
 });
 
 // OG image generator — opens in browser, click Download PNG, put in /public/assets/og-image.png
