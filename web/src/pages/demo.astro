@@ -1,0 +1,160 @@
+---
+// Prospect demo page (Astro pilot). Static HTML + a small client script.
+// Data is fetched client-side by the /demo/:token URL, so one static page
+// serves every demo. Express serves this file for /demo/:token.
+---
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex" />
+  <title>Earl — a first look</title>
+</head>
+<body class="min-h-screen bg-bg text-ink font-serif antialiased">
+  <!-- Loading -->
+  <div id="loading" class="grid min-h-screen place-items-center text-muted text-fluid-base">Loading…</div>
+
+  <!-- Not available -->
+  <div id="gone" class="hidden grid min-h-screen place-items-center px-6 text-center text-muted text-fluid-base">
+    This demo isn't available anymore.
+  </div>
+
+  <!-- Content -->
+  <main id="content" class="hidden">
+    <!-- Hero with animated gradient -->
+    <section class="relative overflow-hidden">
+      <div class="pointer-events-none absolute inset-0 -z-10 opacity-70">
+        <div class="absolute -left-1/4 -top-1/3 h-[70vmax] w-[70vmax] animate-drift rounded-full blur-3xl"
+             style="background: radial-gradient(circle at 30% 30%, #d8c3a0, transparent 60%);"></div>
+        <div class="absolute -right-1/4 top-0 h-[60vmax] w-[60vmax] animate-drift rounded-full blur-3xl"
+             style="background: radial-gradient(circle at 70% 40%, #c9d3c0, transparent 60%); animation-delay:-6s;"></div>
+        <div class="absolute bottom-[-30%] left-1/3 h-[55vmax] w-[55vmax] animate-drift rounded-full blur-3xl"
+             style="background: radial-gradient(circle at 50% 50%, #e6d3c0, transparent 62%); animation-delay:-11s;"></div>
+      </div>
+      <div class="mx-auto max-w-reading px-5 pb-10 pt-16 sm:pt-24">
+        <p class="text-fluid-sm uppercase tracking-[0.14em] text-muted">A first look at what Earl could be for</p>
+        <h1 id="company" class="mt-2 text-fluid-2xl font-bold leading-tight text-accent"></h1>
+      </div>
+    </section>
+
+    <div class="mx-auto max-w-reading space-y-5 px-5 pb-16">
+      <!-- First read -->
+      <section class="rounded-2xl border border-line bg-card p-6 shadow-sm">
+        <p class="mb-2 text-fluid-sm uppercase tracking-[0.12em] text-muted">Earl's first read</p>
+        <p id="firstread" class="text-fluid-lg leading-relaxed"></p>
+      </section>
+
+      <!-- Navigation Chart as a bento grid -->
+      <section id="chart-card" class="rounded-2xl border border-line bg-card p-6 shadow-sm">
+        <p class="mb-4 text-fluid-sm uppercase tracking-[0.12em] text-muted">Your Navigation Chart</p>
+        <div id="chart" class="grid grid-cols-1 gap-3 sm:grid-cols-2"></div>
+      </section>
+
+      <!-- Chat -->
+      <section class="rounded-2xl border border-line bg-card p-6 shadow-sm">
+        <p class="mb-1 text-fluid-sm uppercase tracking-[0.12em] text-muted">Talk to Earl</p>
+        <p class="mb-4 text-fluid-sm text-muted">He's been briefed on your business from what's public. Ask him anything, or tell him where he got it wrong.</p>
+        <div id="chat" class="flex flex-col gap-3"></div>
+        <div class="sticky bottom-0 mt-4 flex gap-2 bg-card py-2">
+          <textarea id="input" rows="1"
+            class="min-h-[46px] flex-1 resize-none rounded-xl border border-line bg-bg px-3 py-3 text-fluid-base outline-none focus:border-accent"
+            placeholder="Ask Earl about your business…"></textarea>
+          <button id="send"
+            class="rounded-xl bg-accent px-5 text-fluid-base font-medium text-white transition hover:opacity-90 disabled:opacity-50">Send</button>
+        </div>
+        <p id="note" class="mt-2 text-center text-fluid-sm text-muted"></p>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    const TOKEN = location.pathname.split('/').filter(Boolean).pop();
+    const history = [];
+    let messagesLeft = 0;
+    const $ = (id) => document.getElementById(id);
+
+    function addMsg(role, text) {
+      const d = document.createElement('div');
+      const base = 'max-w-[85%] whitespace-pre-wrap rounded-2xl px-4 py-3 text-fluid-base leading-relaxed';
+      d.className = role === 'user'
+        ? base + ' self-end rounded-br-sm bg-accent text-white'
+        : base + ' self-start rounded-bl-sm bg-earl';
+      d.textContent = text;
+      $('chat').appendChild(d);
+      d.scrollIntoView({ behavior: 'smooth', block: 'end' });
+      return d;
+    }
+
+    function showGone() { $('loading').classList.add('hidden'); $('gone').classList.remove('hidden'); }
+
+    async function load() {
+      let r, data;
+      try { r = await fetch('/api/demo/public/' + encodeURIComponent(TOKEN)); data = await r.json(); }
+      catch (e) { showGone(); return; }
+      if (!r.ok || !data || !data.demo) { showGone(); return; }
+      const d = data.demo;
+      $('company').textContent = d.companyName;
+      $('firstread').textContent = d.firstRead || 'Earl is still forming his read.';
+
+      if (Array.isArray(d.chartSections) && d.chartSections.length) {
+        $('chart').innerHTML = d.chartSections.map((s, i) => {
+          const wide = i === 0 ? 'sm:col-span-2' : '';
+          return `<div class="${wide} rounded-xl border border-line bg-bg/60 p-4">
+            <h3 class="mb-1 text-fluid-base font-bold text-accent">${esc(s.title)}</h3>
+            <p class="text-fluid-sm leading-relaxed text-ink/80">${esc(s.body)}</p>
+          </div>`;
+        }).join('');
+      } else { $('chart-card').classList.add('hidden'); }
+
+      messagesLeft = d.messagesLeft;
+      updateNote();
+      $('loading').classList.add('hidden');
+      $('content').classList.remove('hidden');
+      addMsg('assistant', `I've had a look at ${d.companyName}. What's the thing that's been weighing on you most about the business right now?`);
+    }
+
+    function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+    function updateNote() {
+      $('note').textContent = messagesLeft > 0 ? `${messagesLeft} messages left in this preview` : 'This preview has reached its limit.';
+      if (messagesLeft <= 0) { $('send').disabled = true; $('input').disabled = true; }
+    }
+
+    async function send() {
+      const text = $('input').value.trim();
+      if (!text || messagesLeft <= 0) return;
+      $('input').value = '';
+      $('send').disabled = true;
+      addMsg('user', text);
+      history.push({ role: 'user', content: text });
+      const typing = addMsg('assistant', 'Earl is thinking…');
+      try {
+        const r = await fetch('/api/demo/public/' + encodeURIComponent(TOKEN) + '/chat', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: text, history })
+        });
+        const data = await r.json();
+        typing.remove();
+        if (!r.ok) {
+          addMsg('assistant', (data && data.error) ? data.error : 'Earl hit a snag.');
+          if (data && data.messagesLeft === 0) { messagesLeft = 0; updateNote(); }
+          $('send').disabled = false; return;
+        }
+        addMsg('assistant', data.reply);
+        history.push({ role: 'assistant', content: data.reply });
+        messagesLeft = data.messagesLeft;
+        updateNote();
+      } catch (e) {
+        typing.remove(); addMsg('assistant', 'Something went wrong reaching Earl.');
+      }
+      if (messagesLeft > 0) $('send').disabled = false;
+      $('input').focus();
+    }
+
+    $('send').addEventListener('click', send);
+    $('input').addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } });
+    load();
+  </script>
+</body>
+</html>
