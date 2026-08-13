@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ClerkProvider } from "@clerk/nextjs";
 import { Playfair_Display, Epilogue, Space_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -11,10 +12,16 @@ export const metadata: Metadata = {
   description: "Your AI business mentor.",
 };
 
+// ClerkProvider reads its config from env (publishable key, and the satellite
+// vars NEXT_PUBLIC_CLERK_IS_SATELLITE / NEXT_PUBLIC_CLERK_DOMAIN /
+// NEXT_PUBLIC_CLERK_SIGN_IN_URL) so app.captainsbridge.io shares the same Clerk
+// instance as the primary domain. See .env.example.
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${display.variable} ${ui.variable} ${mono.variable}`}>
-      <body>{children}</body>
-    </html>
+    <ClerkProvider>
+      <html lang="en" className={`${display.variable} ${ui.variable} ${mono.variable}`}>
+        <body>{children}</body>
+      </html>
+    </ClerkProvider>
   );
 }
