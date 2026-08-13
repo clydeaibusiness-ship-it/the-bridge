@@ -76,6 +76,21 @@
         y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
     })(window, document, "clarity", "script", "xba4o8doyt");
   </script>
+
+  <style is:global>
+    /* Animated hero gradient canvas — blurred so 2D blobs read as a soft mesh. */
+    #hero-canvas { position:absolute; inset:0; width:100%; height:100%; filter:blur(52px) saturate(1.15); opacity:.9; z-index:0; }
+    /* Kinetic headline: words rise in with a stagger on load. */
+    .kinetic .word { display:inline-block; opacity:0; transform:translateY(0.55em); transition:opacity .55s ease, transform .55s cubic-bezier(.2,.7,.2,1); }
+    .kinetic.loaded .word { opacity:1; transform:none; }
+    /* Scroll reveals. */
+    .reveal { opacity:0; transform:translateY(30px); transition:opacity .8s ease, transform .8s cubic-bezier(.2,.7,.2,1); }
+    .reveal.in { opacity:1; transform:none; }
+    @media (prefers-reduced-motion: reduce) {
+      #hero-canvas { display:none; }
+      .kinetic .word, .reveal { opacity:1 !important; transform:none !important; transition:none !important; }
+    }
+  </style>
 </head>
 
 <body class="bg-bg font-ui text-ink2 antialiased">
@@ -90,20 +105,21 @@
 </header>
 
 <!-- HERO -->
-<section class="relative grid min-h-[520px] grid-cols-1 overflow-hidden border-b border-line/80 md:grid-cols-2">
-  <div class="pointer-events-none absolute inset-0 -z-10 opacity-60">
-    <div class="absolute -left-1/4 -top-1/3 h-[60vmax] w-[60vmax] animate-drift rounded-full blur-3xl" style="background: radial-gradient(circle at 30% 30%, #e6cfa0, transparent 60%);"></div>
-    <div class="absolute -bottom-1/3 left-0 h-[45vmax] w-[45vmax] animate-drift rounded-full blur-3xl" style="background: radial-gradient(circle at 50% 50%, #e6d3c0, transparent 62%); animation-delay:-9s;"></div>
-  </div>
-  <div class="relative z-10 flex flex-col justify-center px-6 py-14 sm:px-10 md:py-16">
-    <div class="mb-4 font-data text-[0.62rem] uppercase tracking-[0.15em] text-gold">For the small business owner</div>
-    <h1 class="mb-5 text-fluid-2xl font-bold leading-tight text-ink2">You started this to do more of what you love. Nobody mentioned the other eighteen jobs that came with it.</h1>
-    <p class="mb-8 max-w-md text-fluid-base leading-relaxed text-ink/70">Being great at your craft and knowing how to run a business turn out to be two completely different skills. You found that out somewhere between the excitement of starting and the reality of surviving. Earl is here for the owner who is still trying to find their way back to why they started.</p>
-    <a href="/intake" class="self-start rounded-sm bg-gold px-7 py-3.5 font-data text-xs tracking-[0.1em] text-dark transition hover:bg-golddark">Start the free interview</a>
-    <p class="mt-3 text-xs text-ink/40">One-time payment. Six months of full access. No recurring billing.</p>
-  </div>
-  <div class="order-first h-60 overflow-hidden md:order-none md:h-auto">
-    <img src="/assets/hero.jpg" alt="Small business owner overwhelmed by decisions, papers, and late nights." class="h-full w-full object-cover object-[center_top]" />
+<section class="relative overflow-hidden border-b border-line/80" id="hero">
+  <canvas id="hero-canvas"></canvas>
+  <div class="relative z-10 mx-auto grid max-w-6xl grid-cols-1 items-center gap-10 px-6 py-20 md:grid-cols-[1.05fr_0.95fr] md:py-28">
+    <div>
+      <div class="mb-5 font-data text-[0.62rem] uppercase tracking-[0.16em] text-golddark">For the small business owner</div>
+      <h1 class="kinetic mb-6 text-fluid-3xl font-bold leading-[1.08] text-ink2">You started this to do more of what you love. Nobody mentioned the other eighteen jobs that came with it.</h1>
+      <p class="mb-8 max-w-md text-fluid-base leading-relaxed text-ink/70">Being great at your craft and knowing how to run a business turn out to be two completely different skills. You found that out somewhere between the excitement of starting and the reality of surviving. Earl is here for the owner who is still trying to find their way back to why they started.</p>
+      <a href="/intake" class="inline-block self-start rounded-md bg-gold px-8 py-4 font-data text-xs tracking-[0.1em] text-dark shadow-lg shadow-gold/20 transition duration-200 hover:-translate-y-0.5 hover:bg-golddark hover:shadow-xl hover:shadow-gold/30">Start the free interview</a>
+      <p class="mt-4 text-xs text-ink/40">One-time payment. Six months of full access. No recurring billing.</p>
+    </div>
+    <div class="reveal order-first md:order-none">
+      <div class="overflow-hidden rounded-3xl border border-white/40 shadow-2xl shadow-ink2/10">
+        <img src="/assets/hero.jpg" alt="Small business owner overwhelmed by decisions, papers, and late nights." class="aspect-[4/3] w-full object-cover object-[center_top] md:aspect-auto md:h-[440px]" />
+      </div>
+    </div>
   </div>
 </section>
 
@@ -111,7 +127,7 @@
 <section class="px-6 py-20" id="problem">
   <div class="mx-auto max-w-reading">
     <div class="mb-6 font-data text-[0.62rem] uppercase tracking-[0.15em] text-golddark">The part nobody warns you about</div>
-    <div class="space-y-5 text-fluid-base leading-relaxed text-ink/80">
+    <div class="reveal space-y-5 text-fluid-base leading-relaxed text-ink/80">
       <p>Nobody warned you about this part. Not the work itself, which you were always good at, but the weight of everything that comes with owning the business that does the work.</p>
       <p>You did not sign up to be a manager, an accountant, a salesperson, and a strategist on top of the thing you actually came here to do. You signed up because you were good at something and believed that skill was enough to build a life around. The business was supposed to be the vehicle. Somewhere it became the destination.</p>
       <p>The advice that exists for people in your position was built for someone else. Courses want you to scale. Coaches want you to think like a CEO. Books assume you have a team executing while you strategize. None of that is what you are dealing with. What you are dealing with is this: the decisions that will shape the next three years get made in five minutes, alone, on a gut feeling, with no one to think them through with.</p>
@@ -142,17 +158,17 @@
     <p class="mb-10 max-w-2xl text-fluid-base leading-relaxed text-ink/70">Most AI tools give you a blank box and wait for you to figure out what to ask. Earl starts differently, because the answers you get are only as useful as the context behind them.</p>
 
     <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
-      <div class="rounded-2xl border border-line bg-card p-6">
+      <div class="reveal rounded-2xl border border-line bg-card p-6 transition duration-300 hover:-translate-y-1.5 hover:border-gold/50 hover:shadow-xl hover:shadow-ink2/5">
         <div class="mb-2 font-data text-4xl text-line">01</div>
         <div class="mb-2 text-fluid-base font-semibold text-ink2">Answer the interview first</div>
         <div class="text-fluid-sm leading-relaxed text-ink/70">Three stages, about twenty-five minutes in total, covering your business, your goals, your numbers, and what you are actually trying to build. Earl needs to know who you are before he can help you with anything.</div>
       </div>
-      <div class="rounded-2xl border border-line bg-card p-6">
+      <div class="reveal rounded-2xl border border-line bg-card p-6 transition duration-300 hover:-translate-y-1.5 hover:border-gold/50 hover:shadow-xl hover:shadow-ink2/5">
         <div class="mb-2 font-data text-4xl text-line">02</div>
         <div class="mb-2 text-fluid-base font-semibold text-ink2">Review your Navigation Chart</div>
         <div class="text-fluid-sm leading-relaxed text-ink/70">When the interview is done, Earl produces a plain-language read of your specific situation: where the danger is, what to stop doing, where your leverage is, and what the next ninety days should focus on. Not theory. Your business.</div>
       </div>
-      <div class="rounded-2xl border border-line bg-card p-6">
+      <div class="reveal rounded-2xl border border-line bg-card p-6 transition duration-300 hover:-translate-y-1.5 hover:border-gold/50 hover:shadow-xl hover:shadow-ink2/5">
         <div class="mb-2 font-data text-4xl text-line">03</div>
         <div class="mb-2 text-fluid-base font-semibold text-ink2">Talk with Earl who already knows you</div>
         <div class="text-fluid-sm leading-relaxed text-ink/70">From there, every conversation starts from what Earl learned about you. Bring any decision, any problem, any question you cannot shake. He asks before he answers and tracks every step you commit to between sessions.</div>
@@ -173,7 +189,7 @@
     <p class="text-fluid-base leading-relaxed text-ink/70">You do not just start chatting with an AI. Earl learns who you are and where you are going first. That extra step is exactly what makes everything after it useful.</p>
   </div>
   <div class="mx-auto grid max-w-4xl grid-cols-1 gap-5 sm:grid-cols-2">
-    <div class="rounded-xl border border-line bg-bg p-4">
+    <div class="reveal rounded-xl border border-line bg-bg p-4 transition duration-300 hover:-translate-y-1 hover:border-gold/50 hover:shadow-lg">
       <div class="rounded-lg border border-line bg-white p-4">
         <div class="mb-3 flex gap-1.5">
           <div class="h-[7px] flex-1 rounded bg-gold"></div>
@@ -185,7 +201,7 @@
       </div>
       <div class="mt-3 font-data text-[0.68rem] text-ink/50">First, the interview. Earl learns who you are.</div>
     </div>
-    <div class="rounded-xl border border-line bg-bg p-4">
+    <div class="reveal rounded-xl border border-line bg-bg p-4 transition duration-300 hover:-translate-y-1 hover:border-gold/50 hover:shadow-lg">
       <div class="rounded-lg border border-line bg-white p-4">
         <div class="mb-2 max-w-[88%] rounded-xl bg-earl px-3 py-2 text-[0.78rem] leading-snug text-ink">What specifically are you trying to fix this month?</div>
         <div class="mb-2 ml-auto max-w-[88%] rounded-xl bg-ink2 px-3 py-2 text-[0.78rem] leading-snug text-bg">Cash. We look profitable but we are always short.</div>
@@ -193,7 +209,7 @@
       </div>
       <div class="mt-3 font-data text-[0.68rem] text-ink/50">Then you talk, and Earl already knows your business.</div>
     </div>
-    <div class="rounded-xl border border-line bg-bg p-4">
+    <div class="reveal rounded-xl border border-line bg-bg p-4 transition duration-300 hover:-translate-y-1 hover:border-gold/50 hover:shadow-lg">
       <div class="rounded-lg border border-line bg-white p-4">
         <div class="font-data text-[0.6rem] uppercase tracking-[0.14em] text-ink/50">Kill Risk</div>
         <div class="text-[0.74rem] leading-snug text-ink/80">You are the only one who can sell right now, and you do not want to.</div>
@@ -202,7 +218,7 @@
       </div>
       <div class="mt-3 font-data text-[0.68rem] text-ink/50">Your Navigation Chart, a real strategic picture of your business.</div>
     </div>
-    <div class="rounded-xl border border-line bg-bg p-4">
+    <div class="reveal rounded-xl border border-line bg-bg p-4 transition duration-300 hover:-translate-y-1 hover:border-gold/50 hover:shadow-lg">
       <div class="rounded-lg border border-line bg-white p-4">
         <div class="flex items-start gap-2.5">
           <span class="mt-1 h-2.5 w-2.5 flex-none rounded-full bg-ink2"></span>
@@ -246,7 +262,7 @@
     <h2 class="mb-3 text-fluid-xl font-bold text-ink2">One price. Six months. Full access.</h2>
     <p class="mx-auto mb-10 max-w-2xl text-fluid-base leading-relaxed text-ink/70">A single session with a business consultant typically runs anywhere from $150 to $400. They take notes. They forget half of what you told them by next time. Earl remembers everything from every conversation for six months and is there whenever a decision needs to be made.</p>
 
-    <div class="mx-auto max-w-md rounded-2xl border border-line bg-card p-8 text-left shadow-sm">
+    <div class="reveal mx-auto max-w-md rounded-2xl border border-line bg-card p-8 text-left shadow-sm transition duration-300 hover:-translate-y-1 hover:border-gold/50 hover:shadow-xl">
       <div class="font-data text-sm font-bold tracking-[0.06em] text-ink2">Earl Membership</div>
       <div class="mb-5 text-fluid-sm text-ink/60">Six months of full access, one-time payment</div>
       <ul class="mb-7 space-y-3">
@@ -315,6 +331,78 @@
 </footer>
 
 <script>
+  // ---- Motion (respects prefers-reduced-motion via CSS) ----
+  const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // Kinetic headline: split into words, stagger them in on load.
+  (function () {
+    const h1 = document.querySelector('h1.kinetic');
+    if (!h1 || reduce) { if (h1) h1.classList.add('loaded'); return; }
+    const words = h1.textContent.trim().split(/\s+/);
+    h1.innerHTML = words.map((w, i) => `<span class="word" style="transition-delay:${(i * 0.035).toFixed(3)}s">${w}</span>`).join(' ');
+    requestAnimationFrame(() => requestAnimationFrame(() => h1.classList.add('loaded')));
+    // Safety net: the headline must never stay invisible if rAF/transitions
+    // are throttled — force the end state directly, not via the transition.
+    setTimeout(() => {
+      h1.classList.add('loaded');
+      h1.querySelectorAll('.word').forEach(s => { s.style.transition = 'none'; s.style.opacity = '1'; s.style.transform = 'none'; });
+    }, 1400);
+  })();
+
+  // Scroll reveals.
+  (function () {
+    const els = document.querySelectorAll('.reveal');
+    if (reduce || !('IntersectionObserver' in window)) { els.forEach(el => el.classList.add('in')); return; }
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+    }, { threshold: 0.12 });
+    els.forEach(el => io.observe(el));
+    // Safety net: never leave content hidden if the observer/transition misbehaves.
+    setTimeout(() => els.forEach(el => { el.classList.add('in'); el.style.transition = 'none'; el.style.opacity = '1'; el.style.transform = 'none'; }), 4000);
+  })();
+
+  // Animated hero gradient (canvas 2D, CSS-blurred into a soft mesh).
+  (function () {
+    const c = document.getElementById('hero-canvas');
+    if (!c || reduce) return;
+    const ctx = c.getContext('2d');
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    function size() { c.width = Math.max(1, c.clientWidth * dpr); c.height = Math.max(1, c.clientHeight * dpr); }
+    size(); window.addEventListener('resize', size);
+    const stops = [
+      { col: '#e8c78a', a: 0.95, x: 0.24, y: 0.30, ax: 0.14, ay: 0.10, sp: 1.0 },
+      { col: '#e0a878', a: 0.80, x: 0.76, y: 0.34, ax: 0.12, ay: 0.13, sp: 0.8 },
+      { col: '#cfe0c0', a: 0.65, x: 0.58, y: 0.76, ax: 0.13, ay: 0.10, sp: 1.2 },
+      { col: '#f0d6b0', a: 0.85, x: 0.16, y: 0.80, ax: 0.10, ay: 0.09, sp: 0.9 },
+    ];
+    let t = 0, raf = null, vis = true;
+    function frame() {
+      if (!vis) { raf = null; return; }
+      t += 0.006;
+      const w = c.width, h = c.height, R = Math.max(w, h) * 0.55;
+      ctx.clearRect(0, 0, w, h);
+      ctx.fillStyle = '#f5f0e8'; ctx.fillRect(0, 0, w, h);
+      for (const s of stops) {
+        const x = (s.x + Math.sin(t * s.sp) * s.ax) * w;
+        const y = (s.y + Math.cos(t * s.sp * 0.9) * s.ay) * h;
+        const g = ctx.createRadialGradient(x, y, 0, x, y, R);
+        g.addColorStop(0, s.col); g.addColorStop(1, 'rgba(245,240,232,0)');
+        ctx.globalAlpha = s.a; ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
+      }
+      ctx.globalAlpha = 1;
+      raf = requestAnimationFrame(frame);
+    }
+    // Pause when the hero scrolls out of view.
+    const hero = document.getElementById('hero');
+    if ('IntersectionObserver' in window && hero) {
+      new IntersectionObserver((e) => {
+        vis = e[0].isIntersecting;
+        if (vis && !raf) frame();
+      }, { threshold: 0 }).observe(hero);
+    }
+    frame();
+  })();
+
   // Newsletter subscribe
   (function () {
     const f = document.getElementById('nl-form');
