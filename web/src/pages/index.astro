@@ -42,7 +42,7 @@
   <link rel="canonical" href="https://captainsbridge.io" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&family=Epilogue:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
 
   <script type="application/ld+json" is:inline>
   [
@@ -78,8 +78,14 @@
   </script>
 
   <style is:global>
+    /* Editorial display type on all headings (Playfair), body stays Epilogue. */
+    h1, h2, h3, .display { font-family: 'Playfair Display', Georgia, serif; }
+    h1, h2 { letter-spacing: -0.015em; }
     /* Animated hero gradient canvas, blurred so the 2D blobs read as a soft mesh. */
     #hero-canvas { position:absolute; inset:0; width:100%; height:100%; filter:blur(44px) saturate(1.35); opacity:1; z-index:0; }
+    /* Marquee: duplicate the track and translate -50% for a seamless loop. */
+    .marquee-mask { -webkit-mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent); mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent); }
+    @media (prefers-reduced-motion: reduce) { .animate-marquee { animation: none !important; } }
     .kinetic .word { display:inline-block; opacity:0; transform:translateY(0.55em); transition:opacity .55s ease, transform .55s cubic-bezier(.2,.7,.2,1); }
     .kinetic.loaded .word { opacity:1; transform:none; }
     .reveal { opacity:0; transform:translateY(30px); transition:opacity .8s ease, transform .8s cubic-bezier(.2,.7,.2,1); }
@@ -155,20 +161,63 @@
 
 <!-- THE GUIDE -->
 <section class="border-y border-line bg-white px-5 py-24 sm:px-8 md:py-28">
-  <div class="mx-auto grid max-w-5xl grid-cols-1 items-center gap-12 md:grid-cols-[280px_1fr]">
-    <div class="reveal mx-auto">
-      <div class="relative">
-        <div class="absolute inset-0 -z-10 translate-x-3 translate-y-3 rounded-[1.75rem] bg-gold/25"></div>
-        <img src="/assets/earl.png" alt="Earl" class="h-64 w-64 rounded-[1.75rem] border border-line object-cover object-[center_top] shadow-xl" />
+  <div class="mx-auto max-w-5xl">
+    <div class="reveal mx-auto mb-14 max-w-2xl text-center">
+      <div class="relative mx-auto mb-7 w-28">
+        <div class="absolute inset-0 -z-10 translate-x-2 translate-y-2 rounded-full bg-gold/30"></div>
+        <img src="/assets/earl.png" alt="Earl" class="h-28 w-28 rounded-full border border-line object-cover object-[center_top] shadow-lg" />
       </div>
-      <div class="mt-5 flex flex-wrap justify-center gap-2">
-        <span class="rounded-full bg-earl px-3 py-1 font-data text-[0.6rem] uppercase tracking-[0.1em] text-golddark">100+ books</span>
-        <span class="rounded-full bg-earl px-3 py-1 font-data text-[0.6rem] uppercase tracking-[0.1em] text-golddark">Six months of memory</span>
+      <h2 class="mb-5 text-fluid-2xl font-bold leading-tight text-ink2">Not just another AI, and not a mentor you can only afford once.</h2>
+      <p class="text-fluid-lg leading-relaxed text-ink/80">A good mentor has lived it and asks the question you are avoiding. An AI holds every book ever written and never gets tired. Earl is what you get when the judgment of the first meets the memory of the second.</p>
+    </div>
+
+    <!-- Split comparison -->
+    <div class="reveal grid grid-cols-1 overflow-hidden rounded-[1.75rem] border border-line shadow-2xl shadow-ink2/10 md:grid-cols-2">
+      <div class="bg-dark p-8 md:p-10">
+        <div class="mb-6 font-data text-[0.6rem] uppercase tracking-[0.18em] text-[#8a7f72]">On your own</div>
+        <ul class="space-y-4 text-fluid-base leading-relaxed text-[#b3aaa0]">
+          <li>A blank chat box that waits for you to already know the right question.</li>
+          <li>A consultant at $150 to $400 who forgets half of it by the next meeting.</li>
+          <li>Advice built for someone with a team, not for the work you actually do.</li>
+          <li>The decisions that shape the next three years, made in five minutes, alone.</li>
+        </ul>
+      </div>
+      <div class="relative bg-card p-8 md:p-10">
+        <div class="mb-6 font-data text-[0.6rem] uppercase tracking-[0.18em] text-golddark">With Earl in your corner</div>
+        <ul class="space-y-4 text-fluid-base leading-relaxed text-ink/85">
+          <li class="flex gap-3"><span class="mt-1.5 h-1.5 w-1.5 flex-none rounded-full bg-gold"></span>He learns your business in full before he says a word about it.</li>
+          <li class="flex gap-3"><span class="mt-1.5 h-1.5 w-1.5 flex-none rounded-full bg-gold"></span>He remembers everything from every conversation for six months.</li>
+          <li class="flex gap-3"><span class="mt-1.5 h-1.5 w-1.5 flex-none rounded-full bg-gold"></span>Answers drawn from every serious book ever written on surviving in business.</li>
+          <li class="flex gap-3"><span class="mt-1.5 h-1.5 w-1.5 flex-none rounded-full bg-gold"></span>Someone who knows your whole situation every time a decision comes up.</li>
+        </ul>
       </div>
     </div>
-    <div class="reveal">
-      <h2 class="mb-5 text-fluid-2xl font-bold leading-tight text-ink2">Not just another AI, and not a mentor you can only afford once.</h2>
-      <p class="text-fluid-lg leading-relaxed text-ink/80">A good mentor has lived it and asks the question you are avoiding. An AI holds every book ever written and never gets tired. Earl is what you get when the judgment of the first meets the memory of the second. He was built from the collected wisdom of every serious book ever written about surviving and running a small business. When he gives you an answer, it comes from somewhere real.</p>
+  </div>
+</section>
+
+<!-- BUILT FROM (author marquee) -->
+<section class="overflow-hidden border-b border-line bg-bg py-12">
+  <div class="mb-7 px-5 text-center font-data text-[0.62rem] uppercase tracking-[0.18em] text-golddark">Built from the people who have actually done it</div>
+  <div class="marquee-mask relative overflow-hidden">
+    <div class="flex w-max animate-marquee items-center gap-12 whitespace-nowrap will-change-transform">
+      <span class="font-display text-2xl italic text-ink/45">Mike Michalowicz</span><span class="h-1.5 w-1.5 rounded-full bg-gold/60"></span>
+      <span class="font-display text-2xl italic text-ink/45">Will Guidara</span><span class="h-1.5 w-1.5 rounded-full bg-gold/60"></span>
+      <span class="font-display text-2xl italic text-ink/45">Chris Voss</span><span class="h-1.5 w-1.5 rounded-full bg-gold/60"></span>
+      <span class="font-display text-2xl italic text-ink/45">Peter Thiel</span><span class="h-1.5 w-1.5 rounded-full bg-gold/60"></span>
+      <span class="font-display text-2xl italic text-ink/45">Simon Sinek</span><span class="h-1.5 w-1.5 rounded-full bg-gold/60"></span>
+      <span class="font-display text-2xl italic text-ink/45">Dale Carnegie</span><span class="h-1.5 w-1.5 rounded-full bg-gold/60"></span>
+      <span class="font-display text-2xl italic text-ink/45">Michael Gerber</span><span class="h-1.5 w-1.5 rounded-full bg-gold/60"></span>
+      <span class="font-display text-2xl italic text-ink/45">Eric Ries</span><span class="h-1.5 w-1.5 rounded-full bg-gold/60"></span>
+      <span class="font-display text-2xl italic text-ink/45">Mohnish Pabrai</span><span class="h-1.5 w-1.5 rounded-full bg-gold/60"></span>
+      <span class="font-display text-2xl italic text-ink/45" aria-hidden="true">Mike Michalowicz</span><span class="h-1.5 w-1.5 rounded-full bg-gold/60" aria-hidden="true"></span>
+      <span class="font-display text-2xl italic text-ink/45" aria-hidden="true">Will Guidara</span><span class="h-1.5 w-1.5 rounded-full bg-gold/60" aria-hidden="true"></span>
+      <span class="font-display text-2xl italic text-ink/45" aria-hidden="true">Chris Voss</span><span class="h-1.5 w-1.5 rounded-full bg-gold/60" aria-hidden="true"></span>
+      <span class="font-display text-2xl italic text-ink/45" aria-hidden="true">Peter Thiel</span><span class="h-1.5 w-1.5 rounded-full bg-gold/60" aria-hidden="true"></span>
+      <span class="font-display text-2xl italic text-ink/45" aria-hidden="true">Simon Sinek</span><span class="h-1.5 w-1.5 rounded-full bg-gold/60" aria-hidden="true"></span>
+      <span class="font-display text-2xl italic text-ink/45" aria-hidden="true">Dale Carnegie</span><span class="h-1.5 w-1.5 rounded-full bg-gold/60" aria-hidden="true"></span>
+      <span class="font-display text-2xl italic text-ink/45" aria-hidden="true">Michael Gerber</span><span class="h-1.5 w-1.5 rounded-full bg-gold/60" aria-hidden="true"></span>
+      <span class="font-display text-2xl italic text-ink/45" aria-hidden="true">Eric Ries</span><span class="h-1.5 w-1.5 rounded-full bg-gold/60" aria-hidden="true"></span>
+      <span class="font-display text-2xl italic text-ink/45" aria-hidden="true">Mohnish Pabrai</span><span class="h-1.5 w-1.5 rounded-full bg-gold/60" aria-hidden="true"></span>
     </div>
   </div>
 </section>

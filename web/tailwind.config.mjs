@@ -24,10 +24,13 @@ export default {
         dark: '#1a1512',
       },
       fontFamily: {
-        // Real brand type: Space Grotesk (UI) + Space Mono (labels/data).
-        ui: ['Space Grotesk', 'system-ui', 'sans-serif'],
+        // Editorial pairing (matches the iconsrg.org family): Playfair Display
+        // for display headings, Epilogue for body, Space Mono for tiny
+        // instrument-style labels.
+        display: ['Playfair Display', 'Georgia', 'serif'],
+        ui: ['Epilogue', 'system-ui', 'sans-serif'],
         data: ['Space Mono', 'ui-monospace', 'monospace'],
-        serif: ['Georgia', 'Times New Roman', 'serif'],
+        serif: ['Playfair Display', 'Georgia', 'serif'],
       },
       // Fluid type: scales smoothly between phone and desktop, no jumps.
       fontSize: {
@@ -47,9 +50,14 @@ export default {
           '0%, 100%': { transform: 'translate3d(0,0,0) scale(1)' },
           '50%': { transform: 'translate3d(-3%, 2%, 0) scale(1.08)' },
         },
+        marquee: {
+          '0%': { transform: 'translateX(0)' },
+          '100%': { transform: 'translateX(-50%)' },
+        },
       },
       animation: {
         drift: 'drift 18s ease-in-out infinite',
+        marquee: 'marquee 38s linear infinite',
       },
     },
   },
