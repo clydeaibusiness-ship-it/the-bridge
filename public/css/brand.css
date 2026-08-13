@@ -1,0 +1,65 @@
+/*
+ * brand.css — the shared design system, matching the Astro landing.
+ * Load AFTER global.css on any page to bring it onto the new brand:
+ * Playfair Display headings + Epilogue body, warm cream/gold palette.
+ * Keeps Space Mono for tiny instrument-style labels (var(--font-data)).
+ */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&family=Epilogue:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
+
+:root {
+  --font-ui: 'Epilogue', system-ui, -apple-system, sans-serif;
+  --font-data: 'Space Mono', ui-monospace, monospace;
+  --font-display: 'Playfair Display', Georgia, serif;
+
+  --brand-bg: #f5f0e8;
+  --brand-card: #fffdf8;
+  --brand-ink: #1a1512;
+  --brand-ink2: #0a0a0f;
+  --brand-muted: #6a5c4a;
+  --brand-line: #e0d7c8;
+  --brand-gold: #c8a96e;
+  --brand-golddark: #a8884c;
+  --brand-dark: #1a1512;
+}
+
+/* Display type on headings; body inherits Epilogue via --font-ui. */
+h1, h2, h3 {
+  font-family: var(--font-display);
+  letter-spacing: -0.01em;
+}
+
+/* Certificate + sign-in display names read better in the serif. */
+.ct-name { font-family: var(--font-display) !important; font-weight: 600 !important; }
+
+/* Shared components for pages that opt in with these class names. */
+.brand-btn {
+  font-family: var(--font-data);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background: var(--brand-gold);
+  color: var(--brand-dark);
+  border: none;
+  border-radius: 0.6rem;
+  padding: 0.85rem 1.6rem;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+  transition: background .18s, transform .18s, box-shadow .18s;
+  box-shadow: 0 8px 20px rgba(200,169,110,0.22);
+}
+.brand-btn:hover { background: var(--brand-golddark); transform: translateY(-1px); }
+.brand-btn.ghost {
+  background: transparent;
+  color: var(--brand-ink2);
+  border: 1px solid var(--brand-line);
+  box-shadow: none;
+}
+.brand-btn.ghost:hover { border-color: var(--brand-ink2); background: transparent; }
+
+.brand-card {
+  background: var(--brand-card);
+  border: 1px solid var(--brand-line);
+  border-radius: 1.25rem;
+  box-shadow: 0 10px 30px rgba(10,10,15,0.06);
+}
