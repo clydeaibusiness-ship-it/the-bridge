@@ -33,7 +33,40 @@ app.use(helmet({
   }
 }));
 
-app.use(cors());
+// CORS: locked to known origins. The main site and app subdomain call the API;
+// everything else is refused. Cross-origin requests carry a Clerk Bearer token
+// (Authorization header), not cookies. Same-origin requests (no Origin header)
+// and server-to-server calls are always allowed. Configurable via
+// CORS_ALLOWED_ORIGINS (comma-separated) for future domains.
+const CORS_ALLOWED_ORIGINS = (
+  process.env.CORS_ALLOWED_ORIGINS ||
+  'https://captainsbridge.io,https://www.captainsbridge.io,https://app.captainsbridge.io'
+)
+  .split(',')
+  .map((s) => s.trim())
+  .filter(Boolean);
+
+app.use(
+  cors({
+    origin(origin, cb) {
+      // No Origin = same-origin, curl, or server-to-server — allow.
+      if (!origin) return cb(null, true);
+      if (CORS_ALLOWED_ORIGINS.includes(origin)) return cb(null, true);
+      // Localhost during development only.
+      if (process.env.NODE_ENV !== 'production' && /^https?:\/\/localhost(:\d+)?$/.test(origin)) {
+        return cb(null, true);
+      }
+      // Unknown cross-origin: grant no CORS headers, but never error. The
+      // browser blocks disallowed cross-origin responses on its own; same-origin
+      // requests (which still carry an Origin header on POST) are unaffected
+      // because the browser does not enforce CORS on them.
+      return cb(null, false);
+    },
+    credentials: true,
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS'],
+  })
+);
 app.use(cookieParser());
 
 // Behind Railway's proxy — trust it so Clerk's handshake builds https URLs.

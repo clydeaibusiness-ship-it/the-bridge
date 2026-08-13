@@ -40,10 +40,21 @@ function resolvePublishableKey() {
 function clerkPageMiddleware(req, res, next) {
   if (!clerkExpress || !process.env.CLERK_SECRET_KEY) return next();
   if (!clerkPageMiddleware._mw) {
-    clerkPageMiddleware._mw = clerkExpress.clerkMiddleware({
+    const opts = {
       publishableKey: resolvePublishableKey(),
       secretKey: process.env.CLERK_SECRET_KEY,
-    });
+    };
+    // Only accept session tokens minted for our own front ends (validates the
+    // token's `azp` claim). Prevents a token issued for a different Clerk app
+    // from authenticating here. OPT-IN via env: enforced only once
+    // CLERK_AUTHORIZED_PARTIES is set to the verified origin list, so the live
+    // app's existing sessions are never locked out by an unverified default.
+    const parties = (process.env.CLERK_AUTHORIZED_PARTIES || '')
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean);
+    if (parties.length) opts.authorizedParties = parties;
+    clerkPageMiddleware._mw = clerkExpress.clerkMiddleware(opts);
   }
   return clerkPageMiddleware._mw(req, res, next);
 }

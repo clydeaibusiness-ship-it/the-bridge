@@ -34,6 +34,17 @@ Visit `https://app.captainsbridge.io`. Signed out → the sign-in screen. After
 signing in on the existing account portal, the session is shared to the
 subdomain, and the chat loads real history via the Bearer token to the API.
 
+## Security (already hardened on the Express side)
+- **CORS** is now locked to `captainsbridge.io`, `www`, and `app.captainsbridge.io`
+  (was wide-open `*`). Same-origin and server-to-server calls are unaffected.
+  Add origins with `CORS_ALLOWED_ORIGINS` (comma-separated) if ever needed.
+- **Token party check**: after the app subdomain is live and you've confirmed
+  sign-in works, set `CLERK_AUTHORIZED_PARTIES` on the Express service to
+  `https://captainsbridge.io,https://www.captainsbridge.io,https://app.captainsbridge.io`.
+  That makes the API reject any Clerk token not minted for our own front ends.
+  It is OFF until you set that var, so existing sessions are never locked out by
+  an unverified default. Confirm sign-in still works right after enabling it.
+
 ## Fallback if the subdomain path ever costs or misbehaves
 Serve this app at `captainsbridge.io/app` (same origin, guaranteed free, no
 Clerk domain config). That is a routing change on the Express side, not a
