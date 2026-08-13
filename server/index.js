@@ -72,10 +72,12 @@ app.use('/data', express.static(path.join(__dirname, '../public/data')));
 // Static files
 app.use(express.static(path.join(__dirname, '../public')));
 
-// Built Astro output (Phase 2 migration). Serves /_astro/* hashed assets for
-// pages that have moved to Astro. Nothing about the Railway build/start changes
-// — the built files are committed and Express serves them like any static file.
-app.use(express.static(path.join(__dirname, '../web/dist')));
+// Built Astro output (Phase 1/2 migration). Serves /_astro/* hashed assets for
+// pages that have moved to Astro. index:false so it never auto-serves a page
+// for a bare directory path — explicit routes below decide which pages are
+// Astro. Nothing about the Railway build/start changes: the built files are
+// committed and Express serves them like any static file.
+app.use(express.static(path.join(__dirname, '../web/dist'), { index: false }));
 
 // API routes
 app.use('/api', apiRoutes);
@@ -151,8 +153,10 @@ async function requireInterviewStarted(req, res, next) {
 }
 
 // Public pages — no gate
+// Landing page migrated to Astro (Phase 1). Old pages/index.html kept as a
+// fallback for quick rollback if ever needed.
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, '../pages/index.html'));
+  res.sendFile(path.join(__dirname, '../web/dist/index.html'));
 });
 
 app.get('/login', (req, res) => {

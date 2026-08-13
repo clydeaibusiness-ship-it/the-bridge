@@ -13,12 +13,20 @@ export default {
         bg: '#f5f0e8',
         card: '#fffdf8',
         ink: '#1a1512',
+        ink2: '#0a0a0f',
         muted: '#6a5c4a',
         line: '#e0d7c8',
         accent: '#7a5c3a',
         earl: '#efe7d8',
+        // Marketing brand accent (the landing's gold).
+        gold: '#c8a96e',
+        golddark: '#a8884c',
+        dark: '#1a1512',
       },
       fontFamily: {
+        // Real brand type: Space Grotesk (UI) + Space Mono (labels/data).
+        ui: ['Space Grotesk', 'system-ui', 'sans-serif'],
+        data: ['Space Mono', 'ui-monospace', 'monospace'],
         serif: ['Georgia', 'Times New Roman', 'serif'],
       },
       // Fluid type: scales smoothly between phone and desktop, no jumps.
