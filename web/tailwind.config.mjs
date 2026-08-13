@@ -36,6 +36,7 @@ export default {
         'fluid-lg': 'clamp(1.15rem, 1rem + 0.8vw, 1.4rem)',
         'fluid-xl': 'clamp(1.5rem, 1.2rem + 1.6vw, 2.1rem)',
         'fluid-2xl': 'clamp(1.9rem, 1.4rem + 2.6vw, 3rem)',
+        'fluid-3xl': 'clamp(2.2rem, 1.5rem + 3.4vw, 3.8rem)',
       },
       maxWidth: {
         reading: '42rem',
