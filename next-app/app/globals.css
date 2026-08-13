@@ -1,0 +1,24 @@
+@import "tailwindcss";
+
+/* Earl brand design system (Tailwind v4 @theme). Matches the Astro landing:
+   Playfair Display headings, Epilogue body, Space Mono labels, warm palette. */
+@theme {
+  --color-bg: #f5f0e8;
+  --color-card: #fffdf8;
+  --color-ink: #1a1512;
+  --color-ink2: #0a0a0f;
+  --color-muted: #6a5c4a;
+  --color-line: #e0d7c8;
+  --color-gold: #c8a96e;
+  --color-golddark: #a8884c;
+  --color-earl: #efe7d8;
+  --color-dark: #1a1512;
+
+  --font-display: var(--f-display), Georgia, serif;
+  --font-ui: var(--f-ui), system-ui, sans-serif;
+  --font-data: var(--f-data), ui-monospace, monospace;
+}
+
+html, body { background: var(--color-bg); color: var(--color-ink); }
+body { font-family: var(--font-ui); -webkit-font-smoothing: antialiased; }
+h1, h2, h3 { font-family: var(--font-display); letter-spacing: -0.01em; }
