@@ -14,9 +14,9 @@
   --color-earl: #efe7d8;
   --color-dark: #1a1512;
 
-  --font-display: var(--f-display), Georgia, serif;
-  --font-ui: var(--f-ui), system-ui, sans-serif;
-  --font-data: var(--f-data), ui-monospace, monospace;
+  --font-display: "Playfair Display", Georgia, serif;
+  --font-ui: "Epilogue", system-ui, sans-serif;
+  --font-data: "Space Mono", ui-monospace, monospace;
 }
 
 html, body { background: var(--color-bg); color: var(--color-ink); }
