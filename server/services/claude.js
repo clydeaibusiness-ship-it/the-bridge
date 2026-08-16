@@ -1046,6 +1046,70 @@ Return this exact JSON structure with 6 sections. Each section has a "title" and
 }
 
 /**
+ * Regenerate the Navigation Chart as a LIVING document. Unlike the intake-time
+ * chart (a snapshot of who they were), this rewrites the six sections from where
+ * the member actually is now: their memory, their goals and how they've moved,
+ * the steps they've finished, and what the recent conversation surfaced. Same
+ * six-section shape, so the app renders it unchanged.
+ *
+ * @param {Object} ctx
+ *   { baseline: string, memoryContext: string, goals: [{statement, done, total}],
+ *     recentSteps: [string], recentThreads: [string] }
+ * @returns {Array<{title, body}>}
+ */
+async function regenerateNavigationChart(ctx = {}) {
+  const soul = getSoulPrimer();
+  const strategy = getSystemPrompt(false); // library, no operational context
+
+  const goalLines = (ctx.goals || [])
+    .map(g => `- "${g.statement}"${g.total ? ` (${g.done}/${g.total} steps done)` : ''}`)
+    .join('\n') || '(no goals named yet)';
+  const stepLines = (ctx.recentSteps || []).map(s => `- ${s}`).join('\n') || '(none recorded)';
+  const threadLines = (ctx.recentThreads || []).map(t => `- ${t}`).join('\n') || '(none)';
+
+  const prompt = `You drew this member a Navigation Chart when they started. Time has passed. They have been working, and you now know them far better than you did that first day. Redraw the chart to reflect where they ACTUALLY are now, not where they were. What danger has receded or grown, what leverage has opened, what the next ninety days should hold given everything below.
+
+WHO THEY WERE AT THE START (baseline):
+${ctx.baseline || '(baseline unavailable)'}
+
+${ctx.memoryContext ? ctx.memoryContext + '\n' : ''}
+THEIR GOALS AND MOVEMENT:
+${goalLines}
+
+STEPS THEY HAVE RECENTLY FINISHED OR COMMITTED TO:
+${stepLines}
+
+OPEN THREADS FROM RECENT CONVERSATIONS:
+${threadLines}
+
+Return ONLY a JSON object, no other text, six sections in this exact shape:
+{
+  "sections": [
+    { "title": "Where You Stand", "body": "Their current state, accounting for what has changed since the start" },
+    { "title": "Kill Risk", "body": "The single most dangerous vulnerability right now" },
+    { "title": "Lever Map", "body": "Which strategic levers are strong, weak, or missing today" },
+    { "title": "Leverage Sequence", "body": "The order to address the gaps now" },
+    { "title": "What to Stop", "body": "What they are doing now that is hurting their position" },
+    { "title": "90-Day Focus", "body": "The one thing to focus on for the next 90 days and the measurable outcome" }
+  ]
+}
+Write 3 to 5 sentences per body. Be specific to THIS member as they are now. Do not use em dashes. Never use the construction "this is not X, it's Y".`;
+
+  const system = soul ? `${soul}\n\n---\n\n${strategy}` : strategy;
+  const response = await client.messages.create({
+    model: 'claude-sonnet-4-6',
+    max_tokens: 2500,
+    system,
+    messages: [{ role: 'user', content: prompt }],
+  });
+  const text = response.content[0].text;
+  const m = text.match(/\{[\s\S]*\}/);
+  if (!m) throw new Error('regenerateNavigationChart: non-JSON response: ' + text.substring(0, 200));
+  const parsed = JSON.parse(m[0]);
+  return Array.isArray(parsed.sections) ? parsed.sections : [];
+}
+
+/**
  * Extract structured knowledge from a completed Commander session.
  * Called when 30+ minutes of inactivity ends a session.
  * Returns { operator_insights, strategic_ground, unresolved_threads }
@@ -1091,6 +1155,7 @@ module.exports = {
   generateChartFromInterview,
   composeCheckIn,
   generateFirstRead,
-  composeFriendNote
+  composeFriendNote,
+  regenerateNavigationChart
 };
 
