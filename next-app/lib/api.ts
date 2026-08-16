@@ -28,3 +28,9 @@ export async function apiPost<T = unknown>(path: string, body: unknown, token?: 
   if (!r.ok) throw new Error(`POST ${path} -> ${r.status}`);
   return r.json() as Promise<T>;
 }
+
+export async function apiDelete<T = unknown>(path: string, token?: string | null): Promise<T> {
+  const r = await fetch(API_BASE + path, { method: "DELETE", headers: headers(token) });
+  if (!r.ok) throw new Error(`DELETE ${path} -> ${r.status}`);
+  return r.json() as Promise<T>;
+}
