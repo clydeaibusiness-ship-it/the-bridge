@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useApi } from "@/lib/useApi";
 
 type Section = { title: string; body: string };
-type IntakeResp = { intake?: { chartSections?: Section[] | string | null } | null };
+type IntakeResp = { session?: { chartSections?: Section[] | string | null } | null };
 
 export default function ChartView() {
   const { get } = useApi();
@@ -15,7 +15,7 @@ export default function ChartView() {
     (async () => {
       try {
         const data = await get<IntakeResp>("/api/intake/data");
-        let cs = data?.intake?.chartSections ?? [];
+        let cs = data?.session?.chartSections ?? [];
         if (typeof cs === "string") { try { cs = JSON.parse(cs); } catch { cs = []; } }
         setSections(Array.isArray(cs) ? cs : []);
       } catch { /* empty */ }
