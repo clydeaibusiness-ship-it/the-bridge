@@ -6,7 +6,7 @@ import { useAuth } from "@clerk/nextjs";
 import { apiGet, apiPost } from "@/lib/api";
 
 type Msg = { role: "user" | "earl"; text: string };
-type HistoryResp = { messages?: { message_role: string; message_content: string }[] };
+type HistoryResp = { messages?: { role: string; content: string }[] };
 type SendResp = { response?: string };
 
 export default function Page() {
@@ -54,8 +54,8 @@ function ChatScreen() {
         const data = await apiGet<HistoryResp>("/api/member/commander/history", token);
         setMessages(
           (data.messages || []).map((m) => ({
-            role: m.message_role === "user" ? "user" : "earl",
-            text: m.message_content,
+            role: m.role === "user" ? "user" : "earl",
+            text: m.content,
           }))
         );
       } catch {
