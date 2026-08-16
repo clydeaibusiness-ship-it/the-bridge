@@ -5,6 +5,7 @@ import { useState } from "react";
 import EarlChat from "./EarlChat";
 import ProgressView from "./ProgressView";
 import ChartView from "./ChartView";
+import SettingsSheet from "./SettingsSheet";
 
 type Tab = "chart" | "earl" | "progress";
 const TABS: { id: Tab; label: string }[] = [
@@ -15,12 +16,15 @@ const TABS: { id: Tab; label: string }[] = [
 
 export default function AppShell() {
   const [tab, setTab] = useState<Tab>("earl");
+  const [settings, setSettings] = useState(false);
 
   return (
     <div className="mx-auto flex h-[100dvh] max-w-2xl flex-col">
       <header className="sticky top-0 z-10 border-b border-line bg-bg/85 backdrop-blur">
         <div className="flex items-center gap-3 px-4 py-2.5">
-          <Image src="/assets/earl.png" alt="Earl" width={36} height={36} className="h-9 w-9 flex-none rounded-full border border-line object-cover object-top" />
+          <button onClick={() => setSettings(true)} aria-label="Settings" className="flex-none rounded-full transition hover:ring-2 hover:ring-gold/50">
+            <Image src="/assets/earl.png" alt="Earl" width={36} height={36} className="h-9 w-9 rounded-full border border-line object-cover object-top" />
+          </button>
           <nav className="mx-auto flex rounded-full border border-line bg-card p-1 font-data text-[0.68rem] uppercase tracking-[0.08em]">
             {TABS.map((t) => (
               <button
@@ -42,6 +46,8 @@ export default function AppShell() {
       {tab === "earl" && <EarlChat />}
       {tab === "progress" && <ProgressView />}
       {tab === "chart" && <ChartView />}
+
+      {settings && <SettingsSheet onClose={() => setSettings(false)} />}
     </div>
   );
 }
