@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const crypto = require('crypto');
-const { personalizeIntake, commanderChat, generateConversationSummary, generateChart, getSoulVersion, compressSession, generateSessionDebrief, generatePeriodicReport, generateIntakeFollowUp, generateBenchmark, generateGraduationComparison, generateChartFromInterview } = require('../services/claude');
+const { personalizeIntake, commanderChat, generateConversationSummary, generateChart, getSoulVersion, compressSession, generateSessionDebrief, generatePeriodicReport, generateIntakeFollowUp, generateBenchmark, generateGraduationComparison, generateChartFromInterview, regenerateNavigationChart } = require('../services/claude');
 const {
   QUESTIONS, STAGE_FRAMING, STAGE_COMPLETE, STAGE_BOUNDS, getQuestionByField
 } = require('../data/intake-questions');
@@ -623,6 +623,55 @@ router.post('/member/chart/generate', async (req, res) => {
 });
 
 /**
+ * POST /api/member/chart/refresh
+ * Redraw the Navigation Chart from the member's LIVING context — memory, goals
+ * and their movement, finished steps, recent threads — so it evolves with them
+ * instead of staying frozen at intake. Saves the new sections and returns them.
+ */
+router.post('/member/chart/refresh', async (req, res) => {
+  if (!req.dbUser) return res.status(401).json({ error: 'Authentication required' });
+  try {
+    const userId = req.dbUser.id;
+    const { saveChartSections } = require('../services/supabase');
+    const [responses, benchmarks, activeSteps, completedSteps, debriefs] = await Promise.all([
+      getIntakeResponses(userId).catch(() => []),
+      getBenchmarks(userId, false),
+      getActionSteps(userId, 'active'),
+      getActionSteps(userId, 'completed'),
+      getSessionDebriefs(userId, 5),
+    ]);
+
+    const baseline = (responses || [])
+      .map(r => `- ${String(r.field || r.question_field || '').replace(/_/g, ' ')}: ${r.response || r.answer || ''}`)
+      .filter(l => l.length > 4)
+      .join('\n')
+      .slice(0, 2000) || 'Baseline not recorded.';
+
+    let memoryContext = '';
+    try { memoryContext = (await buildMemoryContext(userId, 'overall business situation, risks, and strategy')) || ''; } catch (e) { /* optional */ }
+
+    const goals = (benchmarks || []).filter(b => !b.completed_at).map(b => {
+      const done = completedSteps.filter(s => s.benchmark_id === b.id).length;
+      const total = done + activeSteps.filter(s => s.benchmark_id === b.id).length;
+      return { statement: b.statement, done, total };
+    });
+    const recentSteps = [
+      ...completedSteps.slice(0, 6).map(s => `Finished: ${s.step_text}`),
+      ...activeSteps.slice(0, 6).map(s => `Working on: ${s.step_text}`),
+    ];
+    const recentThreads = (debriefs || []).map(d => d && d.unresolved_item).filter(Boolean).slice(0, 5);
+
+    const sections = await regenerateNavigationChart({ baseline, memoryContext, goals, recentSteps, recentThreads });
+    if (!sections.length) return res.status(500).json({ error: 'Could not redraw the chart' });
+    await saveChartSections(userId, sections);
+    res.json({ sections, updatedAt: new Date().toISOString() });
+  } catch (e) {
+    console.error('Chart refresh error:', e.message);
+    res.status(500).json({ error: 'Could not redraw the chart' });
+  }
+});
+
+/**
  * POST /api/intake/scan-urls
  * Fetch and extract text from website and Facebook URLs
  */
@@ -710,6 +759,7 @@ router.get('/intake/data', async (req, res) => {
         industryKey: intake.industry_key,
         businessContext: intake.business_context,
         chartSections: intake.chart_sections,
+        chartUpdatedAt: intake.updated_at,
         scannedContent: intake.scanned_content,
         completedAt: intake.intake_completed_at,
         intakeAnswers: {
