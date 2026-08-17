@@ -4,12 +4,13 @@ import { useEffect, useRef, useState } from "react";
 import { useApi } from "@/lib/useApi";
 
 type Msg = { role: "user" | "earl"; text: string };
-type HistoryResp = { messages?: { role: string; content: string }[] };
+type HistoryResp = { messages?: { role: string; content: string }[]; preConversation?: string | null };
 type SendResp = { response?: string };
 
 export default function EarlChat() {
   const { get, post } = useApi();
   const [messages, setMessages] = useState<Msg[]>([]);
+  const [pre, setPre] = useState<string | null>(null);
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
   const [ready, setReady] = useState(false);
@@ -25,6 +26,7 @@ export default function EarlChat() {
             text: m.content,
           }))
         );
+        setPre(data.preConversation || null);
       } catch {
         /* leave empty */
       }
@@ -74,6 +76,11 @@ export default function EarlChat() {
             {m.text}
           </div>
         ))}
+        {pre && !sending && (
+          <div className="mx-auto max-w-md px-2 py-2 text-center text-[0.85rem] italic leading-relaxed text-golddark">
+            Last time, this was left open: {pre}
+          </div>
+        )}
         {sending && (
           <div className="max-w-[82%] self-start rounded-2xl rounded-bl-sm bg-earl px-4 py-3 text-[0.95rem] italic text-muted">
             Earl is thinking…
