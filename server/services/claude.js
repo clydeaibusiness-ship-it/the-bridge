@@ -1014,7 +1014,7 @@ async function generateChartFromInterview(answers) {
 Interview answers:
 ${lines}
 
-Return this exact JSON structure with 6 sections. Each section has a "title" and "body". Write 3-5 sentences per body. Be direct, specific, and reference their actual business. Use Big Book of Strategy framework language.
+Return this exact JSON structure with 6 sections. Each section has a "title" and "body". Write ONE or TWO tight sentences per body — plain, specific, no filler, no hedging, no restating the title. Reference their actual business. Use Big Book of Strategy framework language.
 
 {
   "sections": [
@@ -1093,7 +1093,7 @@ Return ONLY a JSON object, no other text, six sections in this exact shape:
     { "title": "90-Day Focus", "body": "The one thing to focus on for the next 90 days and the measurable outcome" }
   ]
 }
-Write 3 to 5 sentences per body. Be specific to THIS member as they are now. Do not use em dashes. Never use the construction "this is not X, it's Y".`;
+Write ONE or TWO tight sentences per body — plain, specific, no filler, no hedging, no restating the title. Say the essential thing and stop. Be specific to THIS member as they are now. Do not use em dashes. Never use the construction "this is not X, it's Y".`;
 
   const system = soul ? `${soul}\n\n---\n\n${strategy}` : strategy;
   const response = await client.messages.create({

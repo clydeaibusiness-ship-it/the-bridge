@@ -672,6 +672,24 @@ router.post('/member/chart/refresh', async (req, res) => {
 });
 
 /**
+ * GET /api/member/knowledge
+ * What Earl has actually learned about the member — the derived memory facts,
+ * newest first. Powers the "Earl knows" box on the progress screen.
+ */
+router.get('/member/knowledge', async (req, res) => {
+  if (!req.dbUser) return res.status(401).json({ error: 'Authentication required' });
+  try {
+    const { listFacts } = require('../services/memory/store');
+    const facts = await listFacts(req.dbUser.id, 200);
+    const items = (facts || []).map((f) => f.fact).filter(Boolean);
+    res.json({ items, count: items.length });
+  } catch (e) {
+    console.error('Knowledge list error:', e.message);
+    res.json({ items: [], count: 0 });
+  }
+});
+
+/**
  * POST /api/intake/scan-urls
  * Fetch and extract text from website and Facebook URLs
  */
