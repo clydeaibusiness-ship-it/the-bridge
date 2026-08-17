@@ -1,11 +1,27 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useClerk, useUser } from "@clerk/nextjs";
+import { useApi } from "@/lib/useApi";
+import { enablePush, pushState } from "@/lib/push";
 
 export default function SettingsSheet({ onClose }: { onClose: () => void }) {
   const { signOut } = useClerk();
   const { user } = useUser();
+  const { get, post } = useApi();
   const email = user?.primaryEmailAddress?.emailAddress || "";
+
+  const [notif, setNotif] = useState<"on" | "off" | "denied" | "unsupported" | "working">("off");
+  useEffect(() => { setNotif(pushState()); }, []);
+
+  async function turnOnNotifications() {
+    setNotif("working");
+    const result = await enablePush(
+      () => get<{ key: string }>("/api/member/push/vapid-public-key").then((r) => r.key),
+      (sub) => post("/api/member/push/subscribe", { subscription: sub }).then(() => undefined)
+    );
+    setNotif(result === "on" ? "on" : result === "denied" ? "denied" : result === "unsupported" ? "unsupported" : "off");
+  }
 
   return (
     <div
@@ -25,6 +41,27 @@ export default function SettingsSheet({ onClose }: { onClose: () => void }) {
         </div>
 
         <div className="space-y-2">
+          {notif === "on" ? (
+            <div className="rounded-xl border border-line bg-earl/40 px-4 py-3">
+              <div className="font-medium text-ink2">Notifications on</div>
+              <div className="text-xs text-muted">Turn them off in your phone's settings.</div>
+            </div>
+          ) : notif === "denied" ? (
+            <div className="rounded-xl border border-line px-4 py-3">
+              <div className="font-medium text-ink2">Notifications blocked</div>
+              <div className="text-xs text-muted">Allow them for this site in your phone's settings.</div>
+            </div>
+          ) : notif === "unsupported" ? null : (
+            <button
+              onClick={turnOnNotifications}
+              disabled={notif === "working"}
+              className="w-full rounded-xl border border-line px-4 py-3 text-left transition hover:border-gold disabled:opacity-60"
+            >
+              <div className="font-medium text-ink2">{notif === "working" ? "Turning on…" : "Turn on notifications"}</div>
+              <div className="text-xs text-muted">Earl reaches out with a morning line.</div>
+            </button>
+          )}
+
           <button
             onClick={() => window.location.reload()}
             className="w-full rounded-xl border border-line px-4 py-3 text-left transition hover:border-gold"
@@ -41,10 +78,6 @@ export default function SettingsSheet({ onClose }: { onClose: () => void }) {
             <div className="text-xs text-muted">You'll sign back in to return.</div>
           </button>
         </div>
-
-        <p className="mt-4 text-center font-data text-[0.58rem] uppercase tracking-[0.1em] text-muted">
-          Notifications live in your phone's settings
-        </p>
       </div>
     </div>
   );
