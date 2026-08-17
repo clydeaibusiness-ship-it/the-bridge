@@ -6,10 +6,13 @@ import AppShell from "./AppShell";
 import InterviewFlow from "./InterviewFlow";
 
 type StateResp = { done?: boolean; paywall?: boolean; question?: { field: string } | null };
+type ProgResp = { benchmarks?: unknown[] };
 
 // Decides what a signed-in member sees: the onboarding interview (new users with
 // an unanswered question or sitting at the paywall) or the app itself
-// (established members). Fails open to the app so nobody gets trapped.
+// (established members). An established member — anyone who already has goals —
+// ALWAYS gets the app, so the interview can never trap someone who's onboarded.
+// Fails open to the app.
 export default function Gate() {
   const { get } = useApi();
   const [view, setView] = useState<"loading" | "app" | "interview">("loading");
@@ -17,8 +20,12 @@ export default function Gate() {
   useEffect(() => {
     (async () => {
       try {
-        const s = await get<StateResp>("/api/member/interview/state");
-        if (!s.done && (s.question || s.paywall)) setView("interview");
+        const [s, prog] = await Promise.all([
+          get<StateResp>("/api/member/interview/state"),
+          get<ProgResp>("/api/member/progress").catch(() => ({} as ProgResp)),
+        ]);
+        const established = (prog?.benchmarks?.length || 0) > 0;
+        if (!established && !s.done && (s.question || s.paywall)) setView("interview");
         else setView("app");
       } catch {
         setView("app");
