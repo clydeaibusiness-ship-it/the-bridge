@@ -3,14 +3,14 @@
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useAuth } from "@clerk/nextjs";
-import AppShell from "./components/AppShell";
+import Gate from "./components/Gate";
 
 export default function Page() {
   const { isLoaded, isSignedIn } = useAuth();
   if (!isLoaded) {
     return <div className="grid min-h-screen place-items-center text-muted">Loading…</div>;
   }
-  return isSignedIn ? <AppShell /> : <SignInPrompt />;
+  return isSignedIn ? <Gate /> : <SignInPrompt />;
 }
 
 function SignInPrompt() {
