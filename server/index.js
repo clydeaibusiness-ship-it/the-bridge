@@ -217,16 +217,12 @@ app.get('/welcome', requirePaidMember, (req, res) => {
   res.sendFile(path.join(__dirname, '../pages/welcome.html'));
 });
 
-// Protected pages — must be logged in + paid. The member pages below also
-// require Stage 1 of the interview to be complete (else → /intake).
-// The chat-first shell is now the default landing after login.
-app.get('/dashboard', requirePaidMember, requireInterviewStarted, (req, res) => {
-  res.sendFile(path.join(__dirname, '../pages/app.html'));
-});
-
-app.get('/app', requirePaidMember, requireInterviewStarted, (req, res) => {
-  res.sendFile(path.join(__dirname, '../pages/app.html'));
-});
+// CUTOVER: the member app now lives at app.captainsbridge.io (the Next app).
+// The old entry routes redirect there. Reversible — restore the sendFile lines
+// to roll back to the old app.html. The new app handles its own auth gating.
+const APP_URL = process.env.APP_URL || 'https://app.captainsbridge.io/';
+app.get('/dashboard', (req, res) => res.redirect(302, APP_URL));
+app.get('/app', (req, res) => res.redirect(302, APP_URL));
 
 // The interview: Stage 1 is free — any signed-in person can take it. The
 // paywall lives at the Stage 1 → Stage 2 boundary (Earl's First Read + the
