@@ -59,6 +59,7 @@ export default function EarlChat() {
   const [pre, setPre] = useState<string | null>(null);
   const [input, setInput] = useState("");
   const [pending, setPending] = useState<Pending | null>(null);
+  const [showAttach, setShowAttach] = useState(false);
   const [sending, setSending] = useState(false);
   const [ready, setReady] = useState(false);
   const [loadError, setLoadError] = useState(false);
@@ -119,6 +120,19 @@ export default function EarlChat() {
     }
   }
 
+  // Open the file picker in a specific mode. "camera" jumps straight to the
+  // camera; "library"/"file" open the photo library or the Files browser.
+  function pick(mode: "camera" | "library" | "file") {
+    const el = fileRef.current;
+    if (!el) return;
+    if (mode === "camera") el.setAttribute("capture", "environment");
+    else el.removeAttribute("capture");
+    // Earl reads images, so every path funnels to an image.
+    el.setAttribute("accept", "image/*");
+    setShowAttach(false);
+    el.click();
+  }
+
   async function send() {
     const text = input.trim();
     if ((!text && !pending) || sending) return;
@@ -163,6 +177,9 @@ export default function EarlChat() {
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       <div className="flex flex-1 flex-col gap-4 overflow-y-auto px-5 py-6">
+        {!ready && (
+          <div className="m-auto text-center text-muted">Loading your history…</div>
+        )}
         {ready && loadError && (
           <div className="m-auto max-w-sm text-center">
             <h2 className="mb-2 text-xl font-bold text-ink2">Couldn't load your history.</h2>
@@ -251,11 +268,21 @@ export default function EarlChat() {
             </button>
           </div>
         )}
-        <div className="flex items-center gap-2">
+        <div className="relative flex items-center gap-2">
           <input ref={fileRef} type="file" accept="image/*" onChange={onPick} className="hidden" />
+          {showAttach && (
+            <>
+              <div className="fixed inset-0 z-10" onClick={() => setShowAttach(false)} />
+              <div className="absolute bottom-full left-0 z-20 mb-2 w-44 overflow-hidden rounded-xl border border-line bg-card shadow-lg">
+                <button onClick={() => pick("camera")} className="block w-full px-4 py-3 text-left text-[0.9rem] text-ink transition hover:bg-earl/50">Take a photo</button>
+                <button onClick={() => pick("library")} className="block w-full border-t border-line px-4 py-3 text-left text-[0.9rem] text-ink transition hover:bg-earl/50">Photo library</button>
+                <button onClick={() => pick("file")} className="block w-full border-t border-line px-4 py-3 text-left text-[0.9rem] text-ink transition hover:bg-earl/50">Choose a file</button>
+              </div>
+            </>
+          )}
           <button
-            onClick={() => fileRef.current?.click()}
-            aria-label="Add a photo"
+            onClick={() => setShowAttach((v) => !v)}
+            aria-label="Add an attachment"
             className="flex-none rounded-xl border border-line bg-card px-3 py-3 text-lg leading-none text-golddark transition hover:border-gold"
           >
             +
