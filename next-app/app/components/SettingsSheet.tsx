@@ -5,14 +5,41 @@ import { useClerk, useUser } from "@clerk/nextjs";
 import { useApi } from "@/lib/useApi";
 import { enablePush, pushState } from "@/lib/push";
 
+type MemberImage = { id: string; url: string | null; createdAt: string };
+
 export default function SettingsSheet({ onClose }: { onClose: () => void }) {
   const { signOut } = useClerk();
   const { user } = useUser();
-  const { get, post } = useApi();
+  const { get, post, del } = useApi();
   const email = user?.primaryEmailAddress?.emailAddress || "";
 
   const [notif, setNotif] = useState<"on" | "off" | "denied" | "unsupported" | "working">("off");
   useEffect(() => { setNotif(pushState()); }, []);
+
+  const [view, setView] = useState<"main" | "images">("main");
+  const [images, setImages] = useState<MemberImage[]>([]);
+  const [imagesReady, setImagesReady] = useState(false);
+
+  async function openImages() {
+    setView("images");
+    setImagesReady(false);
+    try {
+      const r = await get<{ images: MemberImage[] }>("/api/member/images");
+      setImages(r.images || []);
+    } catch {
+      setImages([]);
+    }
+    setImagesReady(true);
+  }
+
+  async function removeImage(id: string) {
+    setImages((cur) => cur.filter((im) => im.id !== id)); // optimistic
+    try {
+      await del(`/api/member/images/${id}`);
+    } catch {
+      openImages(); // reload the true state if it failed
+    }
+  }
 
   async function turnOnNotifications() {
     setNotif("working");
@@ -33,13 +60,46 @@ export default function SettingsSheet({ onClose }: { onClose: () => void }) {
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-4 flex items-start justify-between">
-          <div>
-            <h2 className="text-lg font-bold text-ink2">Settings</h2>
-            {email && <p className="text-xs text-muted">{email}</p>}
+          <div className="flex items-center gap-2">
+            {view === "images" && (
+              <button onClick={() => setView("main")} aria-label="Back" className="text-lg leading-none text-muted transition hover:text-ink2">‹</button>
+            )}
+            <div>
+              <h2 className="text-lg font-bold text-ink2">{view === "images" ? "Your uploads" : "Settings"}</h2>
+              {view === "main" && email && <p className="text-xs text-muted">{email}</p>}
+              {view === "images" && <p className="text-xs text-muted">Photos you've shared with Earl.</p>}
+            </div>
           </div>
           <button onClick={onClose} aria-label="Close" className="text-xl leading-none text-muted transition hover:text-ink2">×</button>
         </div>
 
+        {view === "images" ? (
+          <div className="max-h-[60vh] overflow-y-auto">
+            {!imagesReady ? (
+              <p className="py-8 text-center text-muted">Loading…</p>
+            ) : images.length === 0 ? (
+              <p className="py-8 text-center text-muted">No uploads yet. Share a photo in your chat with Earl.</p>
+            ) : (
+              <div className="grid grid-cols-2 gap-3">
+                {images.map((im) => (
+                  <div key={im.id} className="group relative overflow-hidden rounded-xl border border-line">
+                    {im.url && (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={im.url} alt="upload" className="aspect-square w-full object-cover" />
+                    )}
+                    <button
+                      onClick={() => removeImage(im.id)}
+                      aria-label="Delete image"
+                      className="absolute right-1.5 top-1.5 grid h-7 w-7 place-items-center rounded-full bg-ink2/70 text-sm leading-none text-white transition hover:bg-[#c0503f]"
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        ) : (
         <div className="space-y-2">
           {notif === "on" ? (
             <div className="rounded-xl border border-line bg-earl/40 px-4 py-3">
@@ -63,6 +123,14 @@ export default function SettingsSheet({ onClose }: { onClose: () => void }) {
           )}
 
           <button
+            onClick={openImages}
+            className="w-full rounded-xl border border-line px-4 py-3 text-left transition hover:border-gold"
+          >
+            <div className="font-medium text-ink2">Your uploads</div>
+            <div className="text-xs text-muted">See and manage photos you've shared with Earl.</div>
+          </button>
+
+          <button
             onClick={() => window.location.reload()}
             className="w-full rounded-xl border border-line px-4 py-3 text-left transition hover:border-gold"
           >
@@ -78,6 +146,7 @@ export default function SettingsSheet({ onClose }: { onClose: () => void }) {
             <div className="text-xs text-muted">You'll sign back in to return.</div>
           </button>
         </div>
+        )}
       </div>
     </div>
   );

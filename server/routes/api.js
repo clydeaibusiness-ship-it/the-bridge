@@ -330,8 +330,14 @@ router.get('/member/commander/history', async (req, res) => {
  */
 router.post('/member/commander/message', async (req, res) => {
   try {
-    const { message, sessionContext } = req.body;
-    if (!message) return res.status(400).json({ error: 'Message required' });
+    const { message, sessionContext, image } = req.body;
+    // An image on its own is a valid message. Normalize the image payload and
+    // the text we store in history when the member sends only a photo.
+    const imageData = image && image.data
+      ? { data: image.data, media_type: image.media_type || 'image/jpeg' }
+      : null;
+    if (!message && !imageData) return res.status(400).json({ error: 'Message required' });
+    const storedText = (message && message.trim()) ? message : '[shared an image]';
 
     // If the member closes the app before Earl finishes (his reply can take a
     // few seconds), we can't hand the answer back over this request — so we
@@ -452,8 +458,18 @@ router.post('/member/commander/message', async (req, res) => {
       }
 
       // Save user message tagged with current soul version
-      await saveCommanderMessage(req.dbUser.id, sessionId, 'user', message, soulVersion);
+      await saveCommanderMessage(req.dbUser.id, sessionId, 'user', storedText, soulVersion);
       recordMemberActivity(req.dbUser.id).catch(() => {}); // the Walk: they showed up today
+
+      // Persist the image to the member's gallery (context + Settings view).
+      // Background: never block or fail the reply on a storage hiccup.
+      if (imageData) {
+        const uid = req.dbUser.id;
+        runBackground('save-member-image', async () => {
+          const { uploadMemberImage } = require('../services/supabase');
+          await uploadMemberImage(uid, imageData.data, imageData.media_type);
+        });
+      }
     }
 
     // Load actual intake data and run history from database
@@ -494,14 +510,16 @@ router.post('/member/commander/message', async (req, res) => {
       if (coaching) intakeContext = coaching + (intakeContext ? '\n\n' + intakeContext : '');
     }
 
+    const persist = { userId: req.dbUser ? req.dbUser.id : null, sessionId };
     const response = await commanderChat(
-      message,
+      message || '',
       {},
       intakeContext,
       conversationHistory,
       summaryContext,
       sessionNotesContext,
-      { userId: req.dbUser ? req.dbUser.id : null, sessionId }
+      persist,
+      imageData
     );
 
     // Save assistant response tagged with current soul version
@@ -544,7 +562,7 @@ router.post('/member/commander/message', async (req, res) => {
       });
     }
 
-    res.json({ response });
+    res.json({ response, financialSuggestion: persist.financialSuggestion || null });
   } catch (e) {
     console.error('Commander error:', e.message, e.stack);
     // Surface, don't hide: notify the owner so a real failure gets fixed
@@ -681,8 +699,22 @@ router.post('/member/financials', async (req, res) => {
   if (!req.dbUser) return res.status(401).json({ error: 'Authentication required' });
   try {
     const { normalize, computeRemark } = require('../services/financials');
-    const { saveFinancials } = require('../services/supabase');
-    const fin = normalize(req.body || {});
+    const { saveFinancials, getIntake } = require('../services/supabase');
+    let fin = normalize(req.body || {});
+    // merge:true (used by the chat "add these numbers?" confirm) overlays only
+    // the provided fields onto what's already saved, so a partial suggestion
+    // never wipes the fields it didn't include. The manual editor omits merge
+    // and sends all four, so a cleared field is intentionally cleared.
+    if (req.body && req.body.merge) {
+      const existing = normalize((await getIntake(req.dbUser.id))?.financials);
+      fin = {
+        revenue: fin.revenue ?? existing.revenue,
+        expenses: fin.expenses ?? existing.expenses,
+        cash: fin.cash ?? existing.cash,
+        debt: fin.debt ?? existing.debt,
+        updatedAt: null,
+      };
+    }
     fin.updatedAt = new Date().toISOString();
     const saved = await saveFinancials(req.dbUser.id, fin);
     const out = saved || fin;
@@ -690,6 +722,33 @@ router.post('/member/financials', async (req, res) => {
   } catch (e) {
     console.error('Save financials error:', e.message);
     res.status(500).json({ error: 'Could not save your numbers' });
+  }
+});
+
+/**
+ * GET /api/member/images — the member's uploaded images (newest first, signed
+ * URLs). DELETE /api/member/images/:id — remove one. Powers the Settings gallery.
+ */
+router.get('/member/images', async (req, res) => {
+  if (!req.dbUser) return res.status(401).json({ error: 'Authentication required' });
+  try {
+    const { listMemberImages } = require('../services/supabase');
+    res.json({ images: await listMemberImages(req.dbUser.id) });
+  } catch (e) {
+    console.error('List images error:', e.message);
+    res.status(500).json({ error: 'Could not load your images' });
+  }
+});
+
+router.delete('/member/images/:id', async (req, res) => {
+  if (!req.dbUser) return res.status(401).json({ error: 'Authentication required' });
+  try {
+    const { deleteMemberImage } = require('../services/supabase');
+    const ok = await deleteMemberImage(req.dbUser.id, req.params.id);
+    res.json({ deleted: ok });
+  } catch (e) {
+    console.error('Delete image error:', e.message);
+    res.status(500).json({ error: 'Could not delete the image' });
   }
 });
 

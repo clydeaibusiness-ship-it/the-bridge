@@ -213,7 +213,7 @@ export default function ChartView() {
 
         <div className="mb-6 flex items-end justify-between gap-3">
           <div>
-            <h2 className="text-xl font-bold text-ink2">Your Situation</h2>
+            <h2 className="text-xl font-bold text-ink2">Status Report</h2>
             <p className="text-muted">
               Earl's read of your business{updatedAt ? `, ${ago(updatedAt)}` : ""}.
             </p>

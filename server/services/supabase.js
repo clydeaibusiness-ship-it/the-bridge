@@ -1289,6 +1289,80 @@ async function saveFinancials(userId, financials) {
   return data?.financials || financials;
 }
 
+// ---- Member images (chat uploads for context + the Settings gallery) ----
+
+const IMAGE_BUCKET = 'member-images';
+
+/** Create the private storage bucket if it does not exist yet. Idempotent. */
+async function ensureImageBucket() {
+  const db = getClient();
+  if (!db) return false;
+  const { data } = await db.storage.getBucket(IMAGE_BUCKET);
+  if (data) return true;
+  const { error } = await db.storage.createBucket(IMAGE_BUCKET, { public: false });
+  if (error && !/exist/i.test(error.message || '')) {
+    console.error('ensureImageBucket error:', error.message);
+    return false;
+  }
+  return true;
+}
+
+/** Store one uploaded image (base64) and record it. Returns the row or null. */
+async function uploadMemberImage(userId, base64Data, mediaType = 'image/jpeg') {
+  const db = getClient();
+  if (!db) return null;
+  const ok = await ensureImageBucket();
+  if (!ok) return null;
+  const ext = (String(mediaType).split('/')[1] || 'jpg').replace('jpeg', 'jpg');
+  const path = `${userId}/${require('crypto').randomUUID()}.${ext}`;
+  const buf = Buffer.from(base64Data, 'base64');
+  const { error: upErr } = await db.storage
+    .from(IMAGE_BUCKET)
+    .upload(path, buf, { contentType: mediaType, upsert: false });
+  if (upErr) { console.error('image upload error:', upErr.message); return null; }
+  const { data, error } = await db
+    .from('member_images')
+    .insert({ user_id: userId, storage_path: path, media_type: mediaType })
+    .select()
+    .single();
+  if (error) { console.error('member_images insert error:', error.message); return null; }
+  return data;
+}
+
+/** All of a member's images, newest first, each with a fresh signed URL. */
+async function listMemberImages(userId) {
+  const db = getClient();
+  if (!db) return [];
+  const { data, error } = await db
+    .from('member_images')
+    .select('id, storage_path, created_at')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false });
+  if (error) { console.error('listMemberImages error:', error.message); return []; }
+  const out = [];
+  for (const row of data || []) {
+    const { data: signed } = await db.storage.from(IMAGE_BUCKET).createSignedUrl(row.storage_path, 60 * 60);
+    out.push({ id: row.id, url: signed?.signedUrl || null, createdAt: row.created_at });
+  }
+  return out;
+}
+
+/** Delete one image (storage object + row), scoped to its owner. */
+async function deleteMemberImage(userId, id) {
+  const db = getClient();
+  if (!db) return false;
+  const { data: row } = await db
+    .from('member_images')
+    .select('storage_path, user_id')
+    .eq('id', id)
+    .single();
+  if (!row || row.user_id !== userId) return false;
+  await db.storage.from(IMAGE_BUCKET).remove([row.storage_path]);
+  const { error } = await db.from('member_images').delete().eq('id', id).eq('user_id', userId);
+  if (error) { console.error('deleteMemberImage error:', error.message); return false; }
+  return true;
+}
+
 // ---- Graduation ----
 
 async function getGraduationRecord(userId) {
@@ -1415,6 +1489,7 @@ module.exports = {
   flagExtensionRequest,
   saveChartSections,
   saveFinancials,
+  uploadMemberImage, listMemberImages, deleteMemberImage,
   createPendingActivation,
   consumePendingActivation,
 };

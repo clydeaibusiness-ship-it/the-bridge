@@ -9,7 +9,7 @@ import SettingsSheet from "./SettingsSheet";
 
 type Tab = "chart" | "earl" | "progress";
 const TABS: { id: Tab; label: string }[] = [
-  { id: "chart", label: "Situation" },
+  { id: "chart", label: "Status" },
   { id: "earl", label: "Earl" },
   { id: "progress", label: "Progress" },
 ];
