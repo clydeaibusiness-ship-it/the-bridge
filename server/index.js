@@ -82,7 +82,7 @@ app.use(clerkPageMiddleware);
 app.use('/api/payments/webhook', express.raw({ type: 'application/json' }));
 
 // Parse JSON for everything else
-app.use(express.json());
+app.use(express.json({ limit: '12mb' })); // headroom for chat image uploads (downscaled client-side)
 app.use(express.urlencoded({ extended: true }));
 
 // Block direct access to /system directory

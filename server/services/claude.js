@@ -222,7 +222,21 @@ ${JSON.stringify(intakeAnswers, null, 2)}`;
  * Commander chat — strategic advice with full business context.
  * Now supports conversation history passed as messages array.
  */
-async function commanderChat(message, gameState, sessionContext, conversationHistory, summaryContext, sessionNotesContext, persist = {}) {
+/**
+ * Build the final user turn. With an image, returns content blocks (image first,
+ * then the member's text or a gentle default so Earl knows to look). Without one,
+ * returns the plain string so nothing about the text-only path changes.
+ */
+function buildUserContent(message, imageData) {
+  if (!imageData || !imageData.data) return message;
+  const text = message && message.trim() ? message : 'I am sharing an image with you. Take a look.';
+  return [
+    { type: 'image', source: { type: 'base64', media_type: imageData.media_type || 'image/jpeg', data: imageData.data } },
+    { type: 'text', text },
+  ];
+}
+
+async function commanderChat(message, gameState, sessionContext, conversationHistory, summaryContext, sessionNotesContext, persist = {}, imageData = null) {
   // Build pure data context — no behavioral instructions.
   // The soul file is the ONLY source of behavioral directives.
   let context = '';
@@ -272,7 +286,7 @@ async function commanderChat(message, gameState, sessionContext, conversationHis
       }
     ] : []),
     ...(conversationHistory || []),
-    { role: 'user', content: message }
+    { role: 'user', content: buildUserContent(message, imageData) }
   ];
 
   // Merge consecutive same-role messages into one turn (the API requires
@@ -362,6 +376,20 @@ async function commanderChat(message, gameState, sessionContext, conversationHis
           }
         },
         required: ['action_step_id', 'outcome']
+      }
+    },
+    {
+      name: 'suggest_financials',
+      description: "Call this when the member shares an image or message that clearly contains their business's own financial figures — monthly income/revenue, monthly expenses, cash on hand, or total debt. Include only a field you can actually read a clear number for; leave the rest out. This does NOT save anything: it offers to add the numbers to the member's 'Your Numbers', and they confirm first. After calling, tell them in your own voice what you saw and that you can add it if they want. Do not call this for numbers that are not the member's own business finances.",
+      input_schema: {
+        type: 'object',
+        properties: {
+          revenue: { type: 'number', description: "Monthly income or revenue, only if a clear figure is shown" },
+          expenses: { type: 'number', description: "Monthly expenses, only if a clear figure is shown" },
+          cash: { type: 'number', description: "Cash on hand, only if a clear figure is shown" },
+          debt: { type: 'number', description: "Total debt owed, only if a clear figure is shown" },
+          label: { type: 'string', description: "A short plain description of what these numbers are, e.g. 'March sales'" }
+        }
       }
     },
     {
@@ -455,6 +483,19 @@ async function commanderChat(message, gameState, sessionContext, conversationHis
           type: 'tool_result',
           tool_use_id: block.id,
           content: 'Goal marked complete.'
+        });
+      } else if (block.name === 'suggest_financials') {
+        // Surface the detected numbers to the route so the member gets a
+        // confirm card. Nothing is saved here — confirmation happens client-side.
+        const inp = block.input || {};
+        const hasNumber = ['revenue', 'expenses', 'cash', 'debt'].some((k) => typeof inp[k] === 'number');
+        if (persist && hasNumber) persist.financialSuggestion = inp;
+        toolResults.push({
+          type: 'tool_result',
+          tool_use_id: block.id,
+          content: hasNumber
+            ? 'Offered to the member. They will confirm before anything is saved.'
+            : 'No clear figure found; nothing offered.'
         });
       } else if (block.name === 'request_extension') {
         if (persist && persist.userId) {
