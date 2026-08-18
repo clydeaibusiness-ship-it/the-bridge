@@ -67,9 +67,15 @@ export default function EarlChat() {
 
   const load = useCallback(async () => {
     setLoadError(false);
-    setReady(false);
     try {
-      const data = await get<HistoryResp>("/api/member/commander/history");
+      // Never hang forever: if the request doesn't resolve in 15s, surface a
+      // retry instead of leaving the screen blank with no signal.
+      const withTimeout = <T,>(p: Promise<T>) =>
+        Promise.race([
+          p,
+          new Promise<never>((_, rej) => setTimeout(() => rej(new Error("timeout")), 15000)),
+        ]);
+      const data = await withTimeout(get<HistoryResp>("/api/member/commander/history"));
       // A real failure to load history is surfaced, not silently shown as an
       // empty chat (which reads as if the whole conversation vanished).
       if (data.historyError) {
@@ -89,7 +95,12 @@ export default function EarlChat() {
     setReady(true);
   }, [get]);
 
+  // Load once on mount. A ref guard keeps a changing `get`/`load` identity from
+  // re-triggering the fetch (which would reset state and could blank the view).
+  const didLoad = useRef(false);
   useEffect(() => {
+    if (didLoad.current) return;
+    didLoad.current = true;
     load();
   }, [load]);
 
