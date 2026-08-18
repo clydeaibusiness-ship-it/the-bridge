@@ -672,6 +672,28 @@ router.post('/member/chart/refresh', async (req, res) => {
 });
 
 /**
+ * POST /api/member/financials
+ * Save the owner's self-reported numbers (income, expenses, cash, debt) and
+ * return them plus Earl's one-line read. Numbers are the owner's own — Earl
+ * organizes and reflects, never invents.
+ */
+router.post('/member/financials', async (req, res) => {
+  if (!req.dbUser) return res.status(401).json({ error: 'Authentication required' });
+  try {
+    const { normalize, computeRemark } = require('../services/financials');
+    const { saveFinancials } = require('../services/supabase');
+    const fin = normalize(req.body || {});
+    fin.updatedAt = new Date().toISOString();
+    const saved = await saveFinancials(req.dbUser.id, fin);
+    const out = saved || fin;
+    res.json({ financials: out, remark: computeRemark(out) });
+  } catch (e) {
+    console.error('Save financials error:', e.message);
+    res.status(500).json({ error: 'Could not save your numbers' });
+  }
+});
+
+/**
  * GET /api/member/knowledge
  * What Earl has actually learned about the member — the derived memory facts,
  * newest first. Powers the "Earl knows" box on the progress screen.
@@ -778,6 +800,8 @@ router.get('/intake/data', async (req, res) => {
         businessContext: intake.business_context,
         chartSections: intake.chart_sections,
         chartUpdatedAt: intake.updated_at,
+        financials: intake.financials || null,
+        financialsRemark: require('../services/financials').computeRemark(intake.financials),
         scannedContent: intake.scanned_content,
         completedAt: intake.intake_completed_at,
         intakeAnswers: {
