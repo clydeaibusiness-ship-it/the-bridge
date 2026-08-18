@@ -4,7 +4,14 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Earl",
-  description: "Your AI business mentor.",
+  description: "An AI-powered survival guide for small business owners.",
+  manifest: "/manifest.json",
+  appleWebApp: { capable: true, title: "Earl", statusBarStyle: "default" },
+  icons: { apple: "/icons/apple-touch-icon.png" },
+};
+
+export const viewport = {
+  themeColor: "#f5f0e8",
 };
 
 // Fonts load via a stylesheet link (Playfair Display, Epilogue, Space Mono), so
