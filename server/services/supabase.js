@@ -1272,6 +1272,23 @@ async function saveChartSections(userId, sections) {
   return true;
 }
 
+/**
+ * Persist the owner's self-reported financials (JSONB) on their user_intake row.
+ * Does NOT bump updated_at — that column drives the chart's staleness clock, and
+ * saving numbers should not make the strategic chart look freshly redrawn.
+ */
+async function saveFinancials(userId, financials) {
+  const db = getClient();
+  if (!db) return null;
+  const { data, error } = await db
+    .from('user_intake')
+    .upsert({ user_id: userId, financials }, { onConflict: 'user_id' })
+    .select('financials')
+    .single();
+  if (error) { console.error('saveFinancials error:', error.message); return null; }
+  return data?.financials || financials;
+}
+
 // ---- Graduation ----
 
 async function getGraduationRecord(userId) {
@@ -1397,6 +1414,7 @@ module.exports = {
   getGraduationRecord, createGraduationRecord, finalizeGraduationRecord,
   flagExtensionRequest,
   saveChartSections,
+  saveFinancials,
   createPendingActivation,
   consumePendingActivation,
 };
