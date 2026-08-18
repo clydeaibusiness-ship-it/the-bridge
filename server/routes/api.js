@@ -267,8 +267,18 @@ router.get('/member/commander/history', async (req, res) => {
     return res.json({ messages: [], sessionId: null });
   }
 
+  // Load the chat history on its own footing: if it genuinely fails, tell the
+  // member so they can retry — never hand back an empty list that reads as if
+  // their whole conversation vanished.
+  let messages;
   try {
-    const messages = await getCommanderHistory(req.dbUser.id, 40);
+    messages = await getCommanderHistory(req.dbUser.id, 40);
+  } catch (histErr) {
+    console.error('Commander history load failed:', histErr.message);
+    return res.json({ messages: [], sessionId: null, historyError: true });
+  }
+
+  try {
     const sessionInfo = await getLatestCommanderSessionId(req.dbUser.id);
     
     // Check if we need a summary (>24h gap)

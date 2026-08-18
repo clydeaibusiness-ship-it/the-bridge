@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useApi } from "@/lib/useApi";
 
 type Suggestion = { revenue?: number; expenses?: number; cash?: number; debt?: number; label?: string };
 type Msg = { role: "user" | "earl" | "suggest"; text?: string; image?: string; suggestion?: Suggestion };
-type HistoryResp = { messages?: { role: string; content: string }[]; preConversation?: string | null };
+type HistoryResp = { messages?: { role: string; content: string }[]; preConversation?: string | null; historyError?: boolean };
 type SendResp = { response?: string; financialSuggestion?: Suggestion | null };
 
 type Pending = { dataUrl: string; base64: string; media_type: string };
@@ -61,13 +61,20 @@ export default function EarlChat() {
   const [pending, setPending] = useState<Pending | null>(null);
   const [sending, setSending] = useState(false);
   const [ready, setReady] = useState(false);
+  const [loadError, setLoadError] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    (async () => {
-      try {
-        const data = await get<HistoryResp>("/api/member/commander/history");
+  const load = useCallback(async () => {
+    setLoadError(false);
+    setReady(false);
+    try {
+      const data = await get<HistoryResp>("/api/member/commander/history");
+      // A real failure to load history is surfaced, not silently shown as an
+      // empty chat (which reads as if the whole conversation vanished).
+      if (data.historyError) {
+        setLoadError(true);
+      } else {
         setMessages(
           (data.messages || []).map((m) => ({
             role: m.role === "user" ? "user" : "earl",
@@ -75,12 +82,16 @@ export default function EarlChat() {
           }))
         );
         setPre(data.preConversation || null);
-      } catch {
-        /* leave empty */
       }
-      setReady(true);
-    })();
+    } catch {
+      setLoadError(true);
+    }
+    setReady(true);
   }, [get]);
+
+  useEffect(() => {
+    load();
+  }, [load]);
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -141,7 +152,19 @@ export default function EarlChat() {
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       <div className="flex flex-1 flex-col gap-4 overflow-y-auto px-5 py-6">
-        {ready && messages.length === 0 && (
+        {ready && loadError && (
+          <div className="m-auto max-w-sm text-center">
+            <h2 className="mb-2 text-xl font-bold text-ink2">Couldn't load your history.</h2>
+            <p className="mb-4 text-muted">Your conversation is safe. This is just a hiccup reaching it.</p>
+            <button
+              onClick={load}
+              className="rounded-xl bg-gold px-6 py-2.5 font-data text-xs uppercase tracking-[0.08em] text-dark transition hover:bg-golddark"
+            >
+              Retry
+            </button>
+          </div>
+        )}
+        {ready && !loadError && messages.length === 0 && (
           <div className="m-auto max-w-sm text-center">
             <h2 className="mb-2 text-2xl font-bold text-ink2">Good to see you.</h2>
             <p className="text-muted">Tell Earl what is on your mind, or share a photo of something you are looking at.</p>
