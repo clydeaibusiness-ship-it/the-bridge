@@ -283,19 +283,22 @@ async function getCommanderHistory(userId, limit = 20) {
   const db = getClient();
   if (!db) return [];
 
-  const { data, error } = await db
-    .from('commander_messages')
-    .select('*')
-    .eq('user_id', userId)
-    .order('created_at', { ascending: false })
-    .limit(limit);
-
-  if (error) {
-    console.error('Get commander history error:', error.message);
-    return [];
+  // Retry once on a transient error. If the query genuinely fails, THROW —
+  // do not return [], which would blank the member's whole chat and read as
+  // data loss. The route surfaces the failure so they get a retry, not silence.
+  let lastError = null;
+  for (let attempt = 0; attempt < 2; attempt++) {
+    const { data, error } = await db
+      .from('commander_messages')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+      .limit(limit);
+    if (!error) return (data || []).reverse(); // chronological order
+    lastError = error;
+    console.error(`Get commander history error (attempt ${attempt + 1}):`, error.message);
   }
-  // Return in chronological order
-  return (data || []).reverse();
+  throw new Error('commander history load failed: ' + (lastError?.message || 'unknown'));
 }
 
 async function getLatestCommanderSessionId(userId) {
