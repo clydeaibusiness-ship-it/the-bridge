@@ -176,7 +176,7 @@ export default function EarlChat() {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <div className="flex flex-1 flex-col gap-4 overflow-y-auto px-5 py-6">
+      <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-5 py-6">
         {!ready && (
           <div className="m-auto text-center text-muted">Loading your history…</div>
         )}
@@ -200,7 +200,7 @@ export default function EarlChat() {
         )}
         {messages.map((m, i) =>
           m.role === "suggest" && m.suggestion ? (
-            <div key={i} className="max-w-[82%] self-start rounded-2xl rounded-bl-sm border border-gold/50 bg-card px-4 py-3">
+            <div key={i} className="max-w-[82%] shrink-0 self-start rounded-2xl rounded-bl-sm border border-gold/50 bg-card px-4 py-3">
               <div className="mb-2 font-data text-[0.58rem] uppercase tracking-[0.12em] text-golddark">
                 Add to Your Numbers{m.suggestion.label ? ` · ${m.suggestion.label}` : ""}?
               </div>
@@ -231,7 +231,7 @@ export default function EarlChat() {
             <div
               key={i}
               className={
-                "max-w-[82%] overflow-hidden whitespace-pre-wrap rounded-2xl text-[0.95rem] leading-relaxed " +
+                "max-w-[82%] shrink-0 overflow-hidden whitespace-pre-wrap rounded-2xl text-[0.95rem] leading-relaxed " +
                 (m.role === "user"
                   ? "self-end rounded-br-sm bg-gold text-dark"
                   : "self-start rounded-bl-sm bg-earl text-ink")
@@ -246,12 +246,12 @@ export default function EarlChat() {
           )
         )}
         {pre && !sending && (
-          <div className="mx-auto max-w-md px-2 py-2 text-center text-[0.85rem] italic leading-relaxed text-golddark">
+          <div className="mx-auto max-w-md shrink-0 px-2 py-2 text-center text-[0.85rem] italic leading-relaxed text-golddark">
             Last time, this was left open: {pre}
           </div>
         )}
         {sending && (
-          <div className="max-w-[82%] self-start rounded-2xl rounded-bl-sm bg-earl px-4 py-3 text-[0.95rem] italic text-muted">
+          <div className="max-w-[82%] shrink-0 self-start rounded-2xl rounded-bl-sm bg-earl px-4 py-3 text-[0.95rem] italic text-muted">
             Earl is thinking…
           </div>
         )}

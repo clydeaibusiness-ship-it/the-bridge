@@ -112,19 +112,19 @@ export default function InterviewFlow({ onComplete }: { onComplete: () => void }
         </div>
       </header>
 
-      <div className="flex flex-1 flex-col gap-4 overflow-y-auto px-5 py-6">
+      <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-5 py-6">
         {turns.map((t, i) => (
           <div
             key={i}
             className={
-              "max-w-[85%] whitespace-pre-wrap rounded-2xl px-4 py-3 text-[0.95rem] leading-relaxed " +
+              "max-w-[85%] shrink-0 whitespace-pre-wrap rounded-2xl px-4 py-3 text-[0.95rem] leading-relaxed " +
               (t.role === "you" ? "self-end rounded-br-sm bg-gold text-dark" : "self-start rounded-bl-sm bg-earl text-ink")
             }
           >
             {t.text}
           </div>
         ))}
-        {busy && <div className="max-w-[85%] self-start rounded-2xl rounded-bl-sm bg-earl px-4 py-3 text-[0.95rem] italic text-muted">…</div>}
+        {busy && <div className="max-w-[85%] shrink-0 self-start rounded-2xl rounded-bl-sm bg-earl px-4 py-3 text-[0.95rem] italic text-muted">…</div>}
         <div ref={endRef} />
       </div>
 
