@@ -263,6 +263,9 @@ router.get('/member/commander/sessions', async (req, res) => {
  * Fetch last 20 commander messages for the authenticated user
  */
 router.get('/member/commander/history', async (req, res) => {
+  // Logged BEFORE the auth check so we can tell "request never arrived" apart
+  // from "arrived without a valid session".
+  console.log(`[history] hit origin=${req.headers.origin || '-'} authHeader=${req.headers.authorization ? 'yes' : 'no'} user=${req.dbUser ? String(req.dbUser.id).slice(0, 8) : 'NONE'}`);
   if (!req.dbUser) {
     return res.json({ messages: [], sessionId: null });
   }
