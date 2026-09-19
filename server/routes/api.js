@@ -273,6 +273,7 @@ router.get('/member/commander/history', async (req, res) => {
   let messages;
   try {
     messages = await getCommanderHistory(req.dbUser.id, 40);
+    console.log(`[history] user=${String(req.dbUser.id).slice(0, 8)} rows=${messages.length}`);
   } catch (histErr) {
     console.error('Commander history load failed:', histErr.message);
     return res.json({ messages: [], sessionId: null, historyError: true });
