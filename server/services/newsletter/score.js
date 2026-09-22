@@ -14,7 +14,7 @@ const client = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
   ...(typeof globalThis.fetch === 'function' ? { fetch: globalThis.fetch } : {}),
 });
-const MODEL = 'claude-sonnet-4-6';
+const MODEL = 'claude-haiku-4-5'; // scoring is a rubric check, not writing
 
 const RUBRIC = `You are a hard, fair editor grading a small-business newsletter issue.
 Score each factor from 1 to 10. Be critical. Do not inflate. A 4 means a 4.

@@ -18,8 +18,8 @@ const { generateCandidates } = require('./index');
 const { sendIssueToList } = require('./send');
 const { markUsed } = require('./library');
 
-const SEND_DAYS = [1, 3, 5];   // Mon, Wed, Fri
-const GEN_DAYS  = [0, 2, 4];   // Sun, Tue, Thu (evening before each send)
+const SEND_DAYS = [1];         // Monday only (weekly)
+const GEN_DAYS  = [0];         // Sunday evening (the night before)
 const FAST_TRACK_COUNT = 6;    // first N issues publish to archive immediately
 
 // ---- Central-time helpers ----
@@ -48,10 +48,9 @@ function nextSendDate(date = new Date()) {
   return anchor.toISOString().slice(0, 10);
 }
 
-/** Monday reaches back 3 days; Wed/Fri reach back 2. */
-function timespanForSendDate(sendDate) {
-  const d = new Date(sendDate + 'T12:00:00Z');
-  return d.getUTCDay() === 1 ? '3d' : '2d';
+/** Weekly: every send reaches back a full 7 days. */
+function timespanForSendDate() {
+  return '7d'; // weekly cadence: one send covers the whole week
 }
 
 /**

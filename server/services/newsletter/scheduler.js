@@ -3,9 +3,10 @@
  * newsletter jobs at the right America/Chicago times. No external cron, nothing
  * to configure in Railway.
  *
- *   Generate  Sun/Tue/Thu 20:00  (the evening before each send)
- *   Send      Mon/Wed/Fri 07:00
+ *   Generate  Sunday 19:00  (the evening before the send)
+ *   Send      Monday 07:00  (weekly)
  *   Purge     daily 03:00
+ *   Publish   daily 08:00
  *
  * Firing is guarded per job-per-day, and the jobs themselves are idempotent
  * (generate skips if a draft exists; send only touches a draft and marks it
@@ -31,14 +32,13 @@ function tick() {
   const day = c.dateStr;
   const inWindow = c.minute < 5; // a 5-minute catch window each hour
 
-  if (GEN_DAYS.includes(c.weekday)   && c.hour === 19 && inWindow) once('gen-'  + day, runGenerate);
-  if ([1, 3, 5].includes(c.weekday) && c.hour === 7  && inWindow) once('send-' + day, runSend);
+  if (GEN_DAYS.includes(c.weekday) && c.hour === 19 && inWindow) once('gen-'  + day, runGenerate);
+  if (c.weekday === 1 && c.hour === 7 && inWindow) once('send-' + day, runSend);
   if (c.hour === 3 && inWindow) once('purge-' + day, runPurge);
-  // Publish due issues to the archive every hour. The daily 3am purge alone
-  // missed them: an issue becomes due at 7am (seven days after its 7am send),
-  // which is four hours after the check has already run, so every issue sat
-  // unpublished for an extra day.
-  if (inWindow) once('publish-' + day + '-' + c.hour, runPublish);
+  // Publish due issues to the archive once a day, just after the 7am send
+  // boundary (an issue becomes due seven days after its 7am send). Hourly
+  // polling was pointless -- publishing is never more than a day sensitive.
+  if (c.hour === 8 && inWindow) once('publish-' + day, runPublish);
 }
 
 let timer = null;
@@ -52,7 +52,7 @@ function start() {
   }
   if (timer) return;
   timer = setInterval(tick, 60 * 1000);
-  console.log('[newsletter scheduler] started — generate Sun/Tue/Thu 19:00 CT, send Mon/Wed/Fri 07:00 CT, purge daily 03:00 CT');
+  console.log('[newsletter scheduler] started — generate Sun 19:00 CT, send Mon 07:00 CT, purge daily 03:00 CT');
 }
 
 module.exports = { start };
