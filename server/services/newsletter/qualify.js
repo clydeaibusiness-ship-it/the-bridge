@@ -98,8 +98,8 @@ function qualifyStories(articles, { minLeanBuckets = 2 } = {}) {
     const crossSpectrum = leanBuckets.size >= minLeanBuckets;
     const score =
       leanBuckets.size * 3 + // cross-spectrum agreement weighs most
-      Math.min(domains.size, 8) + // breadth of coverage
-      recencyScore(c.articles) * 4; // freshness
+      Math.min(domains.size, 12) * 2 + // breadth: how universally the story was covered
+      recencyScore(c.articles); // freshness matters less on a weekly cadence
 
     return {
       headline: pickHeadline(c.articles),

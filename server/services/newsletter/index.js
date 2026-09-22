@@ -35,12 +35,12 @@ async function buildCandidate(story, usedPrincipleTexts) {
 /**
  * Generate the candidate set.
  * @param {Object} [opts]
- * @param {number} [opts.count]          how many candidates (default 3)
+ * @param {number} [opts.count]          how many candidates (default 1)
  * @param {number} [opts.gateThreshold]  min overall before regenerate (default 6)
  * @param {string} [opts.timespan]       GDELT lookback (default '2d')
  * @returns {Promise<{candidates:Array, research:Object}>}
  */
-async function generateCandidates({ count = 3, gateThreshold = GATE_THRESHOLD, timespan = '2d', onProgress } = {}) {
+async function generateCandidates({ count = 1, gateThreshold = GATE_THRESHOLD, timespan = '7d', onProgress } = {}) {
   const report = (stage, detail) => { try { onProgress && onProgress({ stage, detail }); } catch (_) {} };
 
   report('fetching', 'pulling the news');
